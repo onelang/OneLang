@@ -1,0 +1,18 @@
+{
+  "name": "kslang",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "dependencies": {
+    "serializer.ts": "0.0.12",
+    "ts-simple-ast": "^0.48.2",
+    "ts-type-info": "^7.0.1",
+    "typescript": "^2.4.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,56 @@
+enums:
+  token_type:
+    values:
+      - end_token
+      - whitespace
+      - identifier
+      - operator
+classes:
+  token:
+    fields:
+      is_operator:
+        visibility: public
+        type: bool
+        mode: constructor
+      value:
+        visibility: public
+        type: string
+        mode: constructor
+  tokenizer:
+    fields:
+      text:
+        visibility: protected
+        type: string
+      operators:
+        visibility: protected
+        type: array
+        type_argument: string
+      offset:
+        visibility: protected
+        type: int32
+        default_value: 0
+    constructor:
+      visibility: protected
+      arguments:
+        text:
+          type: string
+        operators:
+          type: array
+          type_argument: string
+      code:
+        - this.text = text
+        - this.operators = operators
+    methods:
+      get_token_type:
+        returns:
+          type: token_type
+        code:
+          - if:
+            condition: offset >= text.length
+            code:
+              - return: token_type.end_token
+          - var c = text[offset]
+          - return: |
+              c == ' ' || c == '\n' || c == '\t' || c == '\r' ? token_type.whitespace :
+              ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || ('0' <= c && c <= '9') || c == '_' ? token_type.identifier :
+              token_type.operator

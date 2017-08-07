@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "sourceMap": true
+    },
+    "exclude": [
+        "input/*",
+        "node_modules"
+    ]
+}
