@@ -15,7 +15,7 @@ class Token
 
 export class Tokenizer
 {
-    offset = 5;
+    offset = 0;
 
     protected constructor(public text: string, public operators: string[]) { }
 

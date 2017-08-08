@@ -21,7 +21,15 @@ export namespace KSLangSchema {
     }
 
     export enum Visibility { Public = "public", Protected = "protected", Private = "private" }
-    export enum PrimitiveType { Array = "array", String = "string", Int32 = "int32", Class = "class" }
+    
+    export enum PrimitiveType { 
+        Void = "void",
+        Boolean = "boolean",
+        Array = "array",
+        String = "string",
+        Int32 = "int32",
+        Class = "class"
+    }
 
     export interface Type {
         type: PrimitiveType;
@@ -42,12 +50,12 @@ export namespace KSLangSchema {
     export interface MethodParameter extends VariableBase { }
 
     export interface Constructor {
-        parameters: { [name: string]: MethodParameter }
+        parameters: MethodParameter[];
     }
 
     export interface Method {
         name?: string;
-        parameters: { [name: string]: MethodParameter }
+        parameters: MethodParameter[];
         returns: Type;
     }
 }

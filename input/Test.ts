@@ -11,4 +11,7 @@ class Item {
 class Container {
     itemList: List<Item>;
     stringList: List<string>;
+
+    method0(){}
+    method1(str = "x"){ return str; }
 }
