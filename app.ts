@@ -1,8 +1,7 @@
 import * as ts from "typescript";
 import fs = require("fs");
-import { KSLangSchema } from "./KSLangSchema";
-
-//const code = fs.readFileSync("input/Tokenizer.ts", "utf8");
+import { KSLangSchema as ks } from "./KSLangSchema";
+import * as SimpleAst from "ts-simple-ast";
 
 function logNodeError(message: string, node?: Node) {
     console.warn(message, node);
@@ -21,229 +20,216 @@ function nameToKS(name: string, node?: Node) {
     return result;
 }
 
-// function getType(node: ts.Node): ts.Type {
-//     var ts2 = ts;
-//     const typeChecker = program.getTypeChecker();
-//     const symbol = typeChecker.getSymbolAtLocation(node);
-//     const type = typeChecker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration);
-//     //const typeStr = typeChecker.typeToString(type);
-//     return type;
-// }
-
-// function convertType(tsType: ts.TypeNode): KSLangSchema.Type {
-//     const ksType = <KSLangSchema.Type> {};
-//     if (tsType.kind === ts.SyntaxKind.ArrayType) {
-//         const tsArrayType = <ts.ArrayTypeNode> tsType;
-//         ksType.type = KSLangSchema.PrimitiveType.Array;
-//         ksType.typeArguments = [convertType(tsArrayType.elementType)];
-//         return ksType;
-//     } else if(tsType.kind === ts.SyntaxKind.TypeReference) {
-//         const tsTypeRef = <ts.TypeReferenceNode> tsType;
-//         ksType.type = KSLangSchema.PrimitiveType.Class;
-//         ksType.className = tsTypeRef.typeName.getText();
-//         return ksType;
-//     } else
-//         logNodeError(`Unexpected type kind "${ts.SyntaxKind[tsType.kind]}". Only Constructor, Property and Method are supported.`);
-// }
-
-// function createSchemaFromTSFile(sourceFile: ts.SourceFile): KSLangSchema.SchemaFile {
-//     const schema = <KSLangSchema.SchemaFile> { enums: {}, classes: {} };
-
-//     for (let statement of sourceFile.statements) {
-//         if (statement.kind === ts.SyntaxKind.ClassDeclaration) {
-//             const classDecl = <ts.ClassDeclaration> statement;
-//             const className = nameToKS(classDecl.name.getText());
-//             const classSchema = schema.classes[className] = <KSLangSchema.Class> { name: className, fields: {}, methods: {} };
-//             for (let member of classDecl.members) {
-
-//                 if (member.kind === ts.SyntaxKind.PropertyDeclaration) {
-//                     const propDecl = <ts.PropertyDeclaration> member;
-//                     const propName = nameToKS(member.name.getText());
-//                     const fieldSchema = classSchema.fields[propName] = <KSLangSchema.Field>{ name: propName };
-//                     fieldSchema.defaultValue = propDecl.initializer && propDecl.initializer.getText();
-//                     getType(propDecl);
-//                     const propType = convertType(propDecl.type);
-//                     fieldSchema.type = propType;
-//                 } else if (member.kind === ts.SyntaxKind.Constructor) {
-//                 } else if (member.kind === ts.SyntaxKind.MethodDeclaration) {
-//                 } else
-//                     logNodeError(`Unexpected node kind "${ts.SyntaxKind[member.kind]}". Only Constructor, Property and Method are supported.`);
-//             }
-//         } else if (statement.kind === ts.SyntaxKind.EnumDeclaration) {
-//             const enumDecl = <ts.EnumDeclaration> statement;
-//             const enumName = nameToKS(enumDecl.name.getText());
-//             const enumSchema = schema.enums[enumName] = <KSLangSchema.Enum> { name: enumName, values: {} };
-//             for (let member of enumDecl.members) {
-//                 const enumMemberName = nameToKS(member.name.getText());
-//                 const enumMember = enumSchema.values[enumMemberName] = <KSLangSchema.EnumMember> { name: enumMemberName };
-//             }
-//         } else
-//             logNodeError(`Unexpected node kind "${ts.SyntaxKind[statement.kind]}". Only Class and Enum are supported.`);
-//     }
-
-//     return schema;
-// }
-
-// function exportSchema(schema: KSLangSchema.SchemaFile) {
-//     schema = Object.assign({}, schema);
-//     if (Object.keys(schema.classes).length === 0)
-//         delete schema.classes;
-//     else {
-//         for (let className of Object.keys(schema.classes)) {
-//             const _class = Object.assign({}, schema.classes[className]);
-//             if (_class.name)
-//                 delete _class.name;
-//         }
-//     }
-//     //if (Object.keys(schema.enums).length === 0) delete schema.enums;
-// }
-
-import * as SimpleAst from "ts-simple-ast";
-
 const ast = new SimpleAst.default();
 ast.addSourceFiles("input/Tokenizer.ts");
 const sourceFile = ast.getSourceFiles()[0];
 
-// import * as TsTypeInfo from "ts-type-info";
-
-// function convertTsType(tsType: TsTypeInfo.TypeDefinition) {
-//     const result = <KSLangSchema.Type> { };
-
-//     if (tsType.text === "number")
-//         result.type = KSLangSchema.PrimitiveType.Int32;
-//     else if (tsType.text === "string")
-//         result.type = KSLangSchema.PrimitiveType.String;
-//     else if (tsType.isArrayType())
-//         result.type = KSLangSchema.PrimitiveType.Array;
-//     else if (tsType.definitions.length === 0)
-//         result.type = KSLangSchema.PrimitiveType.Void;
-//     else {
-//         result.type = KSLangSchema.PrimitiveType.Class;
-//         result.className = tsType.definitions[0].name;
-//     }
-
-//     if (tsType.typeArguments.length > 0)
-//         result.typeArguments = tsType.typeArguments.map(x => convertTsType(x));
-
-//     return result;
-// }
-
-// function convertParameter(tsParam: TsTypeInfo.BaseParameterDefinition) {
-//     return <KSLangSchema.MethodParameter> { name: tsParam.name, type: convertTsType(tsParam.type) };
-// }
-
-// function createSchemaFromTSTypeInfo(typeInfo: TsTypeInfo.FileDefinition): KSLangSchema.SchemaFile {
-//     const schema = <KSLangSchema.SchemaFile> { enums: {}, classes: {} };
-    
-//     for (const tsEnum of typeInfo.enums) {
-//         schema.enums[tsEnum.name] = <KSLangSchema.Enum> { 
-//             name: tsEnum.name,
-//             values: tsEnum.members.map(tsEnumMember => ({ name: tsEnumMember.name }))
-//         };
-//     }
-
-//     for (const tsClass of typeInfo.classes) {
-//         const classSchema = schema.classes[tsClass.name] = <KSLangSchema.Class> { fields: { }, methods: { } };
-        
-//         for (const tsProp of tsClass.properties) {
-//             const fieldSchema = classSchema.fields[tsProp.name] = <KSLangSchema.Field> { 
-//                 type: convertTsType(tsProp.type),
-//                 visibility: tsProp.scope === "public" ? KSLangSchema.Visibility.Public : 
-//                     tsProp.scope === "protected" ? KSLangSchema.Visibility.Protected : 
-//                     KSLangSchema.Visibility.Private,
-//             };
-
-//             if (tsProp.defaultExpression)
-//                 fieldSchema.defaultValue = tsProp.defaultExpression.text;
-//         }
-
-//         for (const tsMethod of tsClass.methods) {
-//             const methodSchema = classSchema.methods[tsMethod.name] = <KSLangSchema.Method> { };
-//             methodSchema.returns = convertTsType(tsMethod.returnType);
-//             methodSchema.parameters = tsMethod.parameters.map(tsParam => convertParameter(tsParam));
-//             const tsNode = tsMethod.tsNode;
-//             console.log(tsNode);
-//         }
-
-//         if (tsClass.constructorDef)
-//             classSchema.constructor = { parameters: tsClass.constructorDef.parameters
-//                 .map(tsParam => convertParameter(tsParam)) };
-//     }
-//     return schema;
-// }
-
 function convertTsType(tsType: ts.Type) {
-    const result = <KSLangSchema.Type> { };
+    const result = <ks.Type> { };
 
     const typeText = (<any>tsType).intrinsicName || tsType.symbol.name;
     if (typeText === "number")
-        result.type = KSLangSchema.PrimitiveType.Int32;
+        result.type = ks.PrimitiveType.Int32;
     else if (typeText === "string")
-        result.type = KSLangSchema.PrimitiveType.String;
+        result.type = ks.PrimitiveType.String;
     else if (typeText === "boolean")
-        result.type = KSLangSchema.PrimitiveType.Boolean;
+        result.type = ks.PrimitiveType.Boolean;
     else if (typeText === "void")
-        result.type = KSLangSchema.PrimitiveType.Void;
+        result.type = ks.PrimitiveType.Void;
     else {
         const isArray = typeText === "Array";
-        result.type = isArray ? KSLangSchema.PrimitiveType.Array : 
-            KSLangSchema.PrimitiveType.Class;
+        result.type = isArray ? ks.PrimitiveType.Array : 
+            ks.PrimitiveType.Class;
         
         if(!isArray)
-            result.className = typeText;
+            result.className = nameToKS(typeText);
 
         const typeArgs = <ts.Type[]>(<any>tsType).typeArguments;
         if (typeArgs)
             result.typeArguments = typeArgs.map(x => convertTsType(x));
     }
-    // else if (tsType.isArrayType())
-    //     result.type = KSLangSchema.PrimitiveType.Array;
-    // else if (tsType.definitions.length === 0)
-    //     result.type = KSLangSchema.PrimitiveType.Void;
-    // else {
-    //     result.type = KSLangSchema.PrimitiveType.Class;
-    //     result.className = tsType.definitions[0].name;
-    // }
-
-    // if (tsType.typeArguments.length > 0)
-    //     result.typeArguments = tsType.typeArguments.map(x => convertTsType(x));
 
     return result;
 }
 
 function convertParameter(tsParam: SimpleAst.ParameterDeclaration) {
-    return <KSLangSchema.MethodParameter> {
-        name: tsParam.getName(),
+    return <ks.MethodParameter> {
+        name: nameToKS(tsParam.getName()),
         type: convertTsType(tsParam.getType().compilerType)
     };
 }
 
-/*function convertExpression(tsExpression: ts.Expression) {
+function convertExpression(tsExpr: ts.Expression): ks.Expression {
+    if (typeof tsExpr === "undefined") return undefined;
 
-}*/
+    if (tsExpr.kind === ts.SyntaxKind.CallExpression) {
+        const callExpr = <ts.CallExpression> tsExpr;
+        return <ks.CallExpression> {
+            type: ks.ExpressionType.Call,
+            method: convertExpression(callExpr.expression),
+            arguments: callExpr.arguments.map(arg => convertExpression(arg))
+        };
+    } else if (tsExpr.kind === ts.SyntaxKind.BinaryExpression) {
+        const binaryExpr = <ts.BinaryExpression> tsExpr;
+        return <ks.BinaryExpression> {
+            type: ks.ExpressionType.Binary,
+            left: convertExpression(binaryExpr.left),
+            right: convertExpression(binaryExpr.right),
+            operator: binaryExpr.operatorToken.getText()
+        };
+    } else if (tsExpr.kind === ts.SyntaxKind.PropertyAccessExpression) {
+        const propAccessExpr = <ts.PropertyAccessExpression> tsExpr;
+        return <ks.PropertyAccessExpression> {
+            type: ks.ExpressionType.PropertyAccess,
+            object: convertExpression(propAccessExpr.expression),
+            propertyName: convertExpression(propAccessExpr.name)
+        };
+    } else if (tsExpr.kind === ts.SyntaxKind.Identifier) {
+        const identifier = <ts.Identifier> tsExpr;
+        return <ks.Identifier> { 
+            type: ks.ExpressionType.Identifier,
+            text: identifier.text
+        };
+    } else if (tsExpr.kind === ts.SyntaxKind.NewExpression) {
+        const newExpr = <ts.NewExpression> tsExpr;
+        return <ks.NewExpression> { 
+            type: ks.ExpressionType.New,
+            class: convertExpression(newExpr.expression),
+            arguments: newExpr.arguments.map(arg => convertExpression(arg))
+        };
+    } else if (tsExpr.kind === ts.SyntaxKind.ConditionalExpression) {
+        const condExpr = <ts.ConditionalExpression> tsExpr;
+        return <ks.ConditionalExpression> { 
+            type: ks.ExpressionType.Conditional,
+            condition: convertExpression(condExpr.condition),
+            whenTrue: convertExpression(condExpr.whenTrue),
+            whenFalse: convertExpression(condExpr.whenFalse),
+        };
+    } else if (tsExpr.kind === ts.SyntaxKind.ThisKeyword) {
+        return <ks.Identifier> { 
+            type: ks.ExpressionType.Identifier,
+            text: "this"
+        };
+    } else if (tsExpr.kind === ts.SyntaxKind.StringLiteral) {
+        const stringLiteralExpr = <ts.StringLiteral> tsExpr;
+        return <ks.StringLiteral> { 
+            type: ks.ExpressionType.StringLiteral,
+            value: stringLiteralExpr.text
+        };
+    } else if (tsExpr.kind === ts.SyntaxKind.ParenthesizedExpression) {
+        const parenExpr = <ts.ParenthesizedExpression> tsExpr;
+        return <ks.ParenthesizedExpression> { 
+            type: ks.ExpressionType.Parenthesized,
+            expression: convertExpression(parenExpr.expression)
+        };
+    } else if (tsExpr.kind === ts.SyntaxKind.PostfixUnaryExpression) {
+        const postfixUnaryExpr = <ts.PostfixUnaryExpression> tsExpr;
+        return <ks.PostfixUnaryExpression> { 
+            type: ks.ExpressionType.PostfixUnary,
+            operator: 
+                postfixUnaryExpr.operator === ts.SyntaxKind.PlusPlusToken ? "++" : 
+                postfixUnaryExpr.operator === ts.SyntaxKind.MinusMinusToken ? "--" : null,
+            operand: convertExpression(postfixUnaryExpr.operand)
+        };
+    } else if (tsExpr.kind === ts.SyntaxKind.PrefixUnaryExpression) {
+        const prefixUnaryExpr = <ts.PrefixUnaryExpression> tsExpr;
+        return <ks.PrefixUnaryExpression> { 
+            type: ks.ExpressionType.PrefixUnary,
+            operator: 
+                prefixUnaryExpr.operator === ts.SyntaxKind.PlusPlusToken ? "++" : 
+                prefixUnaryExpr.operator === ts.SyntaxKind.MinusMinusToken ? "--" : 
+                prefixUnaryExpr.operator === ts.SyntaxKind.PlusToken ? "+" : 
+                prefixUnaryExpr.operator === ts.SyntaxKind.MinusToken ? "-" : 
+                prefixUnaryExpr.operator === ts.SyntaxKind.TildeToken ? "~" : 
+                prefixUnaryExpr.operator === ts.SyntaxKind.ExclamationToken ? "!" : null,
+            operand: convertExpression(prefixUnaryExpr.operand)
+        };
+    } else if (tsExpr.kind === ts.SyntaxKind.SuperKeyword) {
+        return <ks.Identifier> { 
+            type: ks.ExpressionType.Identifier,
+            text: "super"
+        };
+    } else
+        logNodeError(`Unexpected expression kind "${ts.SyntaxKind[tsExpr.kind]}".`); 
+    return null;
+}
 
-function createSchemaFromTSTypeInfo(typeInfo: SimpleAst.SourceFile): KSLangSchema.SchemaFile {
-    const schema = <KSLangSchema.SchemaFile> { enums: {}, classes: {} };
+function convertStatement(tsStatement: ts.Statement): ks.Statement {
+    if (typeof tsStatement === "undefined") return undefined;
+
+    if (tsStatement.kind === ts.SyntaxKind.IfStatement) {
+        const ifStatement = <ts.IfStatement> tsStatement;
+        return <ks.IfStatement> {
+            type: ks.StatementType.If,
+            condition: convertExpression(ifStatement.expression),
+            then: convertBlock(ifStatement.thenStatement),
+            else: convertBlock(ifStatement.elseStatement),
+        };
+    } else if (tsStatement.kind === ts.SyntaxKind.ReturnStatement) {
+        const returnStatement = <ts.ReturnStatement> tsStatement;
+        return <ks.ReturnStatement> {
+            type: ks.StatementType.Return,
+            expression: convertExpression(returnStatement.expression),
+        };
+    } else if (tsStatement.kind === ts.SyntaxKind.ThrowStatement) {
+        const throwStatement = <ts.ReturnStatement> tsStatement;
+        return <ks.ThrowStatement> {
+            type: ks.StatementType.Throw,
+            expression: convertExpression(throwStatement.expression),
+        };
+    } else if (tsStatement.kind === ts.SyntaxKind.ExpressionStatement) {
+        const expressionStatement = <ts.ExpressionStatement> tsStatement;
+        return <ks.ExpressionStatement> {
+            type: ks.StatementType.Expression,
+            expression: convertExpression(expressionStatement.expression),
+        };
+    } else if (tsStatement.kind === ts.SyntaxKind.VariableStatement) {
+        const variableStatement = <ts.ExpressionStatement> tsStatement;
+        return <ks.ExpressionStatement> {
+            type: ks.StatementType.Variable,
+            expression: convertExpression(variableStatement.expression),
+        };
+    } else if (tsStatement.kind === ts.SyntaxKind.WhileStatement) {
+        const whileStatement = <ts.WhileStatement> tsStatement;
+        return <ks.WhileStatement> {
+            type: ks.StatementType.While,
+            condition: convertExpression(whileStatement.expression),
+            body: convertBlock(<ts.Block>whileStatement.statement),
+        };
+    } else
+        logNodeError(`Unexpected statement kind "${ts.SyntaxKind[tsStatement.kind]}".`); 
+}
+
+function convertBlock(tsBlock: ts.BlockLike|ts.Statement): ks.Block {
+    if (typeof tsBlock === "undefined") return undefined;
+
+    if ("statements" in tsBlock)
+        return { statements: (<ts.BlockLike>tsBlock).statements.map(x => convertStatement(x)) };
+    else
+        return { statements: [convertStatement(<ts.Statement>tsBlock)] };
+}
+
+function createSchemaFromTSTypeInfo(typeInfo: SimpleAst.SourceFile): ks.SchemaFile {
+    const schema = <ks.SchemaFile> { enums: {}, classes: {} };
     
     for (const tsEnum of typeInfo.getEnums()) {
-        schema.enums[tsEnum.getName()] = <KSLangSchema.Enum> { 
-            name: tsEnum.getName(),
-            values: tsEnum.getMembers().map(tsEnumMember => ({ name: tsEnumMember.getName() }))
+        schema.enums[nameToKS(tsEnum.getName())] = <ks.Enum> { 
+            values: tsEnum.getMembers().map(tsEnumMember => ({ name: nameToKS(tsEnumMember.getName()) }))
         };
     }
 
     for (const tsClass of typeInfo.getClasses()) {
-        const classSchema = schema.classes[tsClass.getName()] = <KSLangSchema.Class> { fields: { }, methods: { } };
+        const classSchema = schema.classes[nameToKS(tsClass.getName())] = <ks.Class> { fields: { }, methods: { } };
         
         for (const tsProp of tsClass.getInstanceProperties()) {
             if (!(tsProp instanceof SimpleAst.PropertyDeclaration) && !(tsProp instanceof SimpleAst.ParameterDeclaration))
                 continue;
 
-            const fieldSchema = classSchema.fields[tsProp.getName()] = <KSLangSchema.Field> { 
+            const fieldSchema = classSchema.fields[nameToKS(tsProp.getName())] = <ks.Field> { 
                 type: convertTsType(tsProp.getType().compilerType),
-                visibility: tsProp.getScope() === "public" ? KSLangSchema.Visibility.Public : 
-                    tsProp.getScope() === "protected" ? KSLangSchema.Visibility.Protected : 
-                    KSLangSchema.Visibility.Private,
+                visibility: tsProp.getScope() === "public" ? ks.Visibility.Public : 
+                    tsProp.getScope() === "protected" ? ks.Visibility.Protected : 
+                    ks.Visibility.Private,
             };
 
             const initializer = tsProp.getInitializer();
@@ -252,34 +238,42 @@ function createSchemaFromTSTypeInfo(typeInfo: SimpleAst.SourceFile): KSLangSchem
         }
 
         for (const tsMethod of tsClass.getInstanceMethods()) {
-            const methodSchema = classSchema.methods[tsMethod.getName()] = <KSLangSchema.Method> { };
+            const methodSchema = classSchema.methods[nameToKS(tsMethod.getName())] = <ks.Method> { };
             methodSchema.returns = convertTsType(tsMethod.getReturnType().compilerType);
             methodSchema.parameters = tsMethod.getParameters().map(tsParam => convertParameter(tsParam));
-            const body = tsMethod.getBody();
-            console.log(tsMethod);
+            methodSchema.body = convertBlock(<ts.BlockLike> tsMethod.getBody().compilerNode);
         }
 
         const constructors = tsClass.getConstructors();
         if (constructors.length > 0)
-            classSchema.constructor = { parameters: constructors[0].getParameters()
-                .map(tsParam => convertParameter(tsParam)) };
+            classSchema.constructor = { 
+                parameters: constructors[0].getParameters().map(tsParam => convertParameter(tsParam)),
+                body: convertBlock(<ts.BlockLike> constructors[0].getBody().compilerNode),
+            };
     }
     return schema;
 }
 
-
-// // const sourceFile = program.getSourceFile(filename);
-// // const diagnostics = program.getSemanticDiagnostics(sourceFile);
-// // const schema = createSchemaFromTSFile(sourceFile);
-// const tsTypeInfo = TsTypeInfo.getInfoFromFiles(["input/Test.ts"]);
-
-// const schema = createSchemaFromTSTypeInfo(tsTypeInfo.files[0]);
 const schema = createSchemaFromTSTypeInfo(sourceFile);
 const schemaJson = JSON.stringify(schema, function (k,v) {
     if (["enums", "classes", "items", "methods", "fields"].indexOf(k) !== -1 && Object.keys(v).length === 0) return undefined;
     return v;
 }, 4);
-console.log(schemaJson);
+//console.log(schemaJson);
+
+const methods = {};
+for (let clsName of Object.keys(schema.classes)) {
+    const cls = schema.classes[clsName];
+    methods[`${clsName}::constructor`] = cls.constructor.body;
+
+    for (let methodName of Object.keys(cls.methods))
+        methods[`${clsName}::${methodName}`] = cls.methods[methodName].body;
+}
+
+const astJson = JSON.stringify(methods, null, 4);
+console.log(astJson);
+
+fs.writeFileSync("ast.json", astJson);
 
 debugger;
 

@@ -51,11 +51,123 @@ export namespace KSLangSchema {
 
     export interface Constructor {
         parameters: MethodParameter[];
+        body: Block;
     }
 
     export interface Method {
         name?: string;
         parameters: MethodParameter[];
         returns: Type;
+        body: Block;
+    }
+
+    export enum StatementType { 
+        If = "If",
+        Return = "Return",
+        Expression = "Expression",
+        Variable = "Variable",
+        While = "While",
+        Throw = "Throw",
+    }
+
+    export interface Statement {
+        type: StatementType;
+    }
+
+    export enum ExpressionType {
+        Call = "Call",
+        Binary = "Binary",
+        PropertyAccess = "PropertyAccess",
+        Identifier = "Identifier",
+        New = "New",
+        Conditional = "Conditional",
+        StringLiteral = "StringLiteral",
+        Parenthesized = "Parenthesized",
+        PostfixUnary = "PostfixUnary",
+        PrefixUnary = "PrefixUnary",
+    }
+
+    export interface Expression {
+        type: ExpressionType;
+    }
+
+    export interface CallExpression extends Expression {
+        method: Expression;
+        arguments: Expression[];
+    }
+
+    export interface Identifier extends Expression {
+        text: string;
+    }
+
+    export interface StringLiteral extends Expression {
+        value: string;
+    }
+
+    export interface NewExpression extends Expression {
+        class: Expression;
+        arguments: Expression[];
+    }
+
+    export interface BinaryExpression extends Expression {
+        left: Expression;
+        operator: string;
+        right: Expression;
+    }
+
+    export interface PostfixUnaryExpression extends Expression {
+        operator: "++" | "--";
+        operand: Expression;
+    }
+
+    export interface PrefixUnaryExpression extends Expression {
+        operator: "++" | "--" | "+" | "-" | "~" | "!";
+        operand: Expression;
+    }
+
+    export interface ParenthesizedExpression extends Expression {
+        expression: Expression;
+    }
+
+    export interface ConditionalExpression extends Expression {
+        condition: Expression;
+        whenTrue: Expression;
+        whenFalse: Expression;
+    }
+
+    export interface PropertyAccessExpression extends Expression {
+        object: Expression;
+        propertyName: Expression;
+    }
+
+    export interface IfStatement extends Statement {
+        condition: Expression;
+        then: Block;
+        else: Block;
+    }
+
+    export interface ReturnStatement extends Statement {
+        expression: Expression;
+    }
+
+    export interface ThrowStatement extends Statement {
+        expression: Expression;
+    }
+
+    export interface ExpressionStatement extends Statement {
+        expression: Expression;
+    }
+
+    export interface VariableStatement extends Statement {
+        expression: Expression;
+    }
+
+    export interface WhileStatement extends Statement {
+        condition: Expression;
+        body: Block;
+    }
+
+    export interface Block {
+        statements: Statement[];
     }
 }
