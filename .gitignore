@@ -4,3 +4,4 @@ node_modules
 typings
 *.js
 *.js.map
+ast\.json
