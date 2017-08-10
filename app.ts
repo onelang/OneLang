@@ -84,6 +84,13 @@ function convertExpression(tsExpr: ts.Expression): ks.Expression {
             object: convertExpression(propAccessExpr.expression),
             propertyName: convertExpression(propAccessExpr.name)
         };
+    } else if (tsExpr.kind === ts.SyntaxKind.ElementAccessExpression) {
+        const elementAccessExpr = <ts.ElementAccessExpression> tsExpr;
+        return <ks.PropertyAccessExpression> {
+            type: ks.ExpressionType.PropertyAccess,
+            object: convertExpression(elementAccessExpr.expression),
+            propertyName: convertExpression(elementAccessExpr.argumentExpression)
+        };
     } else if (tsExpr.kind === ts.SyntaxKind.Identifier) {
         const identifier = <ts.Identifier> tsExpr;
         return <ks.Identifier> { 
@@ -104,11 +111,6 @@ function convertExpression(tsExpr: ts.Expression): ks.Expression {
             condition: convertExpression(condExpr.condition),
             whenTrue: convertExpression(condExpr.whenTrue),
             whenFalse: convertExpression(condExpr.whenFalse),
-        };
-    } else if (tsExpr.kind === ts.SyntaxKind.ThisKeyword) {
-        return <ks.Identifier> { 
-            type: ks.ExpressionType.Identifier,
-            text: "this"
         };
     } else if (tsExpr.kind === ts.SyntaxKind.StringLiteral) {
         const stringLiteralExpr = <ts.StringLiteral> tsExpr;
@@ -144,22 +146,31 @@ function convertExpression(tsExpr: ts.Expression): ks.Expression {
                 prefixUnaryExpr.operator === ts.SyntaxKind.ExclamationToken ? "!" : null,
             operand: convertExpression(prefixUnaryExpr.operand)
         };
-    } else if (tsExpr.kind === ts.SyntaxKind.SuperKeyword) {
-        return <ks.Identifier> { 
-            type: ks.ExpressionType.Identifier,
-            text: "super"
-        };
-    } else
-        logNodeError(`Unexpected expression kind "${ts.SyntaxKind[tsExpr.kind]}".`); 
-    return null;
+    } else {
+        const kindName = ts.SyntaxKind[tsExpr.kind];
+        const knownKeywords = ["this", "super", "true", "false"];
+        const keyword = knownKeywords.find(x => kindName.toLowerCase() === `${x}keyword`);
+        if (keyword) {
+            return <ks.Identifier> {
+                type: ks.ExpressionType.Identifier,
+                text: keyword
+            };
+        } else {
+            logNodeError(`Unexpected expression kind "${ts.SyntaxKind[tsExpr.kind]}".`); 
+            return null;
+        }
+    }
 }
 
-function convertStatement(tsStatement: ts.Statement): ks.Statement {
+function convertStatement(tsStatement: ts.Statement): ks.Statement[] {
     if (typeof tsStatement === "undefined") return undefined;
+
+    let ksStmt: ks.Statement = null;
+    let ksStmts: ks.Statement[] = null;
 
     if (tsStatement.kind === ts.SyntaxKind.IfStatement) {
         const ifStatement = <ts.IfStatement> tsStatement;
-        return <ks.IfStatement> {
+        ksStmt = <ks.IfStatement> {
             type: ks.StatementType.If,
             condition: convertExpression(ifStatement.expression),
             then: convertBlock(ifStatement.thenStatement),
@@ -167,46 +178,55 @@ function convertStatement(tsStatement: ts.Statement): ks.Statement {
         };
     } else if (tsStatement.kind === ts.SyntaxKind.ReturnStatement) {
         const returnStatement = <ts.ReturnStatement> tsStatement;
-        return <ks.ReturnStatement> {
+        ksStmt = <ks.ReturnStatement> {
             type: ks.StatementType.Return,
             expression: convertExpression(returnStatement.expression),
         };
     } else if (tsStatement.kind === ts.SyntaxKind.ThrowStatement) {
         const throwStatement = <ts.ReturnStatement> tsStatement;
-        return <ks.ThrowStatement> {
+        ksStmt = <ks.ThrowStatement> {
             type: ks.StatementType.Throw,
             expression: convertExpression(throwStatement.expression),
         };
     } else if (tsStatement.kind === ts.SyntaxKind.ExpressionStatement) {
         const expressionStatement = <ts.ExpressionStatement> tsStatement;
-        return <ks.ExpressionStatement> {
+        ksStmt = <ks.ExpressionStatement> {
             type: ks.StatementType.Expression,
             expression: convertExpression(expressionStatement.expression),
         };
     } else if (tsStatement.kind === ts.SyntaxKind.VariableStatement) {
-        const variableStatement = <ts.ExpressionStatement> tsStatement;
-        return <ks.ExpressionStatement> {
-            type: ks.StatementType.Variable,
-            expression: convertExpression(variableStatement.expression),
-        };
+        const variableStatement = <ts.VariableStatement> tsStatement;
+        ksStmts = variableStatement.declarationList.declarations.map(varDecl => {
+            return <ks.VariableStatement> {
+                type: ks.StatementType.Variable,
+                variableName: varDecl.name.getText(),
+                initializer: convertExpression(varDecl.initializer)
+            };
+        });
     } else if (tsStatement.kind === ts.SyntaxKind.WhileStatement) {
         const whileStatement = <ts.WhileStatement> tsStatement;
-        return <ks.WhileStatement> {
+        ksStmt = <ks.WhileStatement> {
             type: ks.StatementType.While,
             condition: convertExpression(whileStatement.expression),
             body: convertBlock(<ts.Block>whileStatement.statement),
         };
     } else
-        logNodeError(`Unexpected statement kind "${ts.SyntaxKind[tsStatement.kind]}".`); 
+        logNodeError(`Unexpected statement kind "${ts.SyntaxKind[tsStatement.kind]}".`);
+
+    return ksStmts || [ksStmt];
+}
+
+function flattenArray<T>(arrays: T[][]): T[] {
+    return [].concat.apply([], arrays);
 }
 
 function convertBlock(tsBlock: ts.BlockLike|ts.Statement): ks.Block {
     if (typeof tsBlock === "undefined") return undefined;
 
     if ("statements" in tsBlock)
-        return { statements: (<ts.BlockLike>tsBlock).statements.map(x => convertStatement(x)) };
+        return { statements: flattenArray((<ts.BlockLike>tsBlock).statements.map(x => convertStatement(x))) };
     else
-        return { statements: [convertStatement(<ts.Statement>tsBlock)] };
+        return { statements: convertStatement(<ts.Statement>tsBlock) };
 }
 
 function createSchemaFromTSTypeInfo(typeInfo: SimpleAst.SourceFile): ks.SchemaFile {

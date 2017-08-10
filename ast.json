@@ -79,7 +79,9 @@
                 }
             },
             {
-                "type": "Variable"
+                "type": "Variable",
+                "variableName": "c",
+                "initializer": null
             },
             {
                 "type": "Return",
@@ -305,7 +307,9 @@
     "tokenizer::tokenize": {
         "statements": [
             {
-                "type": "Variable"
+                "type": "Variable",
+                "variableName": "result",
+                "initializer": null
             },
             {
                 "type": "While",
@@ -345,7 +349,23 @@
                 "body": {
                     "statements": [
                         {
-                            "type": "Variable"
+                            "type": "Variable",
+                            "variableName": "charType",
+                            "initializer": {
+                                "type": "Call",
+                                "method": {
+                                    "type": "PropertyAccess",
+                                    "object": {
+                                        "type": "Identifier",
+                                        "text": "this"
+                                    },
+                                    "propertyName": {
+                                        "type": "Identifier",
+                                        "text": "getType"
+                                    }
+                                },
+                                "arguments": []
+                            }
                         },
                         {
                             "type": "If",
@@ -453,7 +473,19 @@
                                         "then": {
                                             "statements": [
                                                 {
-                                                    "type": "Variable"
+                                                    "type": "Variable",
+                                                    "variableName": "startOffset",
+                                                    "initializer": {
+                                                        "type": "PropertyAccess",
+                                                        "object": {
+                                                            "type": "Identifier",
+                                                            "text": "this"
+                                                        },
+                                                        "propertyName": {
+                                                            "type": "Identifier",
+                                                            "text": "offset"
+                                                        }
+                                                    }
                                                 },
                                                 {
                                                     "type": "While",
@@ -511,7 +543,46 @@
                                                     }
                                                 },
                                                 {
-                                                    "type": "Variable"
+                                                    "type": "Variable",
+                                                    "variableName": "identifier",
+                                                    "initializer": {
+                                                        "type": "Call",
+                                                        "method": {
+                                                            "type": "PropertyAccess",
+                                                            "object": {
+                                                                "type": "PropertyAccess",
+                                                                "object": {
+                                                                    "type": "Identifier",
+                                                                    "text": "this"
+                                                                },
+                                                                "propertyName": {
+                                                                    "type": "Identifier",
+                                                                    "text": "text"
+                                                                }
+                                                            },
+                                                            "propertyName": {
+                                                                "type": "Identifier",
+                                                                "text": "substring"
+                                                            }
+                                                        },
+                                                        "arguments": [
+                                                            {
+                                                                "type": "Identifier",
+                                                                "text": "startOffset"
+                                                            },
+                                                            {
+                                                                "type": "PropertyAccess",
+                                                                "object": {
+                                                                    "type": "Identifier",
+                                                                    "text": "this"
+                                                                },
+                                                                "propertyName": {
+                                                                    "type": "Identifier",
+                                                                    "text": "offset"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
                                                 },
                                                 {
                                                     "type": "Expression",
@@ -540,7 +611,10 @@
                                                                         "type": "Identifier",
                                                                         "text": "identifier"
                                                                     },
-                                                                    null
+                                                                    {
+                                                                        "type": "Identifier",
+                                                                        "text": "false"
+                                                                    }
                                                                 ]
                                                             }
                                                         ]
@@ -551,7 +625,32 @@
                                         "else": {
                                             "statements": [
                                                 {
-                                                    "type": "Variable"
+                                                    "type": "Variable",
+                                                    "variableName": "op",
+                                                    "initializer": {
+                                                        "type": "Call",
+                                                        "method": {
+                                                            "type": "PropertyAccess",
+                                                            "object": {
+                                                                "type": "PropertyAccess",
+                                                                "object": {
+                                                                    "type": "Identifier",
+                                                                    "text": "this"
+                                                                },
+                                                                "propertyName": {
+                                                                    "type": "Identifier",
+                                                                    "text": "operators"
+                                                                }
+                                                            },
+                                                            "propertyName": {
+                                                                "type": "Identifier",
+                                                                "text": "find"
+                                                            }
+                                                        },
+                                                        "arguments": [
+                                                            null
+                                                        ]
+                                                    }
                                                 },
                                                 {
                                                     "type": "If",
@@ -682,7 +781,10 @@
                                                                         "type": "Identifier",
                                                                         "text": "op"
                                                                     },
-                                                                    null
+                                                                    {
+                                                                        "type": "Identifier",
+                                                                        "text": "true"
+                                                                    }
                                                                 ]
                                                             }
                                                         ]

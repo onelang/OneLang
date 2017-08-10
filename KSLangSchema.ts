@@ -159,7 +159,8 @@ export namespace KSLangSchema {
     }
 
     export interface VariableStatement extends Statement {
-        expression: Expression;
+        variableName: string;
+        initializer: Expression;
     }
 
     export interface WhileStatement extends Statement {
