@@ -1,0 +1,34 @@
+functions:
+  stdlib.console.print:
+    arguments:
+      - name: str
+    template: |
+      print {{str}}
+
+templates:
+  testGenerator: |
+    {{class}}().{{method}}()
+
+  main: |
+    {{for inc in includes}}
+      import {{inc}};
+    {{/for}}
+
+    {{for class in classes}}
+      class {{class.name}}:
+        {{for method in methods}}
+          def {{method.name}}({{genArgs(method)}}):
+            {{genBody(method.body)}}
+        {{/for}}
+    {{/for}}
+
+  genBody:
+    args:
+      - name: body
+    template: |
+      {{for statement in body.statements}}
+        {{statement}}
+      {{/for}}
+      {{if !body.statements}}
+        pass
+      {{/if}}

@@ -1,0 +1,49 @@
+functions:
+  stdlib.console.print:
+    arguments:
+      - name: str
+    includes:
+      - iostream
+    template: |
+      std::cout << {{str}};
+
+templates:
+  testGenerator: |
+    int main()
+    {
+        {{class}} c;
+        c.{{method}}();
+        return 0;
+    }
+
+  main: |
+    {{for inc in absoluteIncludes}}
+      #include <{{inc}}>
+    {{/for}}
+
+    {{for class in classes}}
+      class {{class.name}} {
+        public: {{lineif hasPublicMembers}}
+          {{genMethods(publicMethods)}}
+        private: {{lineif hasPrivateMembers}}
+          {{genMethods(privateMethods)}}
+      };
+    {{/for}}
+
+  genMethods:
+    args:
+      - name: methods
+    template: |
+      {{for method in methods}}
+        {{method.returnType}} {{method.name}}({{genArgs(method)}}) {
+          {{genBody(method.body)}}
+        }
+      {{/for}}
+
+  genBody:
+    args:
+      - name: body
+    template: |
+      {{for statement in body.statements}}
+        {{statement}}
+      {{/for}}

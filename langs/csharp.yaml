@@ -1,0 +1,42 @@
+functions:
+  stdlib.console.print:
+    arguments:
+      - name: str
+    includes:
+      - System
+    template: |
+      Console.WriteLine({{str}});
+
+templates:
+  testGenerator: |
+    public class Program
+    {
+        static public void Main()
+        {
+            new {{class}}().{{method}}();
+        }
+    }
+
+  main: |
+    {{for inc in includes}}
+      using {{inc}};
+    {{/for}}
+
+    {{for class in classes}}
+      public class {{class.name}} {
+        {{for method in methods}}
+          {{method.visibility}} {{method.returnType}} {{method.name}}({{genArgs(method)}})
+          {
+            {{genBody(method.body)}}
+          }
+        {{/for}}
+      }
+    {{/for}}
+
+  genBody:
+    args:
+      - name: body
+    template: |
+      {{for statement in body.statements}}
+        {{statement}}
+      {{/for}}

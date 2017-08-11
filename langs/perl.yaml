@@ -1,0 +1,41 @@
+functions:
+  stdlib.console.print:
+    arguments:
+      - name: str
+    template: |
+      print {{str}};
+
+templates:
+  testGenerator: |
+    package Program;
+    my $c = new {{class}}();
+    $c->{{method}}()
+
+  main: |
+    use strict;
+    use warnings;
+
+    {{for class in classes}}
+      package {{class.name}}
+      sub new
+      {
+        my $class = shift;
+        my $self = {};
+        bless $self, $class;
+        return $self;
+      }
+
+      {{for method in methods}}
+        sub {{method.name}} {
+          {{genBody(method.body)}}
+        }
+      {{/for}}
+    {{/for}}
+
+  genBody:
+    args:
+      - name: body
+    template: |
+      {{for statement in body.statements}}
+        {{statement}}
+      {{/for}}

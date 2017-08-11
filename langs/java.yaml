@@ -1,0 +1,38 @@
+functions:
+  stdlib.console.print:
+    arguments:
+      - name: str
+    template: |
+      System.out.println({{str}});
+
+templates:
+  testGenerator: |
+    class {{fileName}} {
+      static public void main(String args[]) {
+        new {{class}}().{{method}}();
+      }
+    }
+
+  main: |
+    {{for inc in includes}}
+      using {{inc}};
+    {{/for}}
+
+    {{for class in classes}}
+      public class {{class.name}} {
+        {{for method in methods}}
+          {{method.visibility}} {{method.returnType}} {{method.name}}({{genArgs(method)}})
+          {
+            {{genBody(method.body)}}
+          }
+        {{/for}}
+      }
+    {{/for}}
+
+  genBody:
+    args:
+      - name: body
+    template: |
+      {{for statement in body.statements}}
+        {{statement}}
+      {{/for}}

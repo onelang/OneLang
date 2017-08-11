@@ -1,0 +1,40 @@
+functions:
+  stdlib.console.print:
+    arguments:
+      - name: str
+    includes:
+      - fmt
+    template: |
+      fmt.Println({{str}})
+
+templates:
+  testGenerator: |
+    func main() {
+        c := ({{class}}{})
+        c.{{method}}()
+    }
+
+  main: |
+    package main
+
+    {{for inc in includes}}
+      import "{{inc}}"
+    {{/for}}
+
+    {{for class in classes}}
+      type {{class.name}} struct { }
+
+      {{for method in methods}}
+        func (this *{{class.name}}) {{method.name}}({{genArgs(method)}}) {{method.returnType}} {
+          {{genBody(method.body)}}
+        }
+      {{/for}}
+    {{/for}}
+
+  genBody:
+    args:
+      - name: body
+    template: |
+      {{for statement in body.statements}}
+        {{statement}}
+      {{/for}}
