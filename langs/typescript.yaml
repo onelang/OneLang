@@ -4,7 +4,10 @@ functions:
       - name: str
     template: |
       console.log({{str}});
-
+extension: ts
+casing:
+  class: pascal_case
+  method: camel_case
 templates:
   testGenerator: |
     new {{class}}().{{method}}();

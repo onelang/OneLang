@@ -4,7 +4,10 @@ functions:
       - name: str
     template: |
       System.out.println({{str}});
-
+extension: java
+casing:
+  class: pascal_case
+  method: camel_case
 templates:
   testGenerator: |
     class {{fileName}} {

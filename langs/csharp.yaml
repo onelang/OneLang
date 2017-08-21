@@ -6,7 +6,10 @@ functions:
       - System
     template: |
       Console.WriteLine({{str}});
-
+extension: cs
+casing:
+  class: pascal_case
+  method: pascal_case
 templates:
   testGenerator: |
     public class Program

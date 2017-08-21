@@ -4,7 +4,10 @@ functions:
       - name: str
     template: |
       print {{str}};
-
+extension: pl
+casing:
+  class: pascal_case
+  method: camel_case
 templates:
   testGenerator: |
     package Program;

@@ -6,7 +6,10 @@ functions:
       - iostream
     template: |
       std::cout << {{str}};
-
+extension: cpp
+casing:
+  class: pascal_case
+  method: camel_case
 templates:
   testGenerator: |
     int main()
@@ -23,10 +26,10 @@ templates:
 
     {{for class in classes}}
       class {{class.name}} {
-        public: {{lineif hasPublicMembers}}
-          {{genMethods(publicMethods)}}
-        private: {{lineif hasPrivateMembers}}
-          {{genMethods(privateMethods)}}
+        public:
+          {{genMethods(class.publicMethods)}}
+        private:
+          {{genMethods(class.privateMethods)}}
       };
     {{/for}}
 

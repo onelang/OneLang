@@ -4,7 +4,10 @@ functions:
       - name: str
     template: |
       print {{str}}
-
+extension: py
+casing:
+  class: pascal_case
+  method: snake_case
 templates:
   testGenerator: |
     {{class}}().{{method}}()
@@ -29,6 +32,6 @@ templates:
       {{for statement in body.statements}}
         {{statement}}
       {{/for}}
-      {{if !body.statements}}
+      {{if body.statements.length == 0}}
         pass
       {{/if}}

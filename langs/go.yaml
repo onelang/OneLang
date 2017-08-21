@@ -6,7 +6,10 @@ functions:
       - fmt
     template: |
       fmt.Println({{str}})
-
+extension: go
+casing:
+  class: camel_case
+  method: camel_case
 templates:
   testGenerator: |
     func main() {
