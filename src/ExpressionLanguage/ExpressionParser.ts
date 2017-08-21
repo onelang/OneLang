@@ -5,6 +5,7 @@ const operators = [
     new OperatorData("<<", 5),
     new OperatorData(">>", 5),
     new OperatorData("++"),
+    new OperatorData("!"),
     new OperatorData("--"),
     new OperatorData("==", -3),
     new OperatorData("<"),
@@ -32,32 +33,26 @@ const operators = [
 const operatorDict = operators.toDict(x => x.text);
 
 export class ExpressionParser {
-    static exprToAst(code: string): AstNode
-    {
+    static exprToAst(code: string): AstNode {
         var parsedTokens = Tokenizer.tokenize(code, operators.map(x => x.text));
 
         var tokens = [];
         for (let ptoken of parsedTokens)
         {
-            if (ptoken.value == "[")
-            {
+            if (ptoken.value === "[") {
                 tokens.push(new Token(TokenType.Operator, new OperatorData(".")));
                 tokens.push(new Token(TokenType.Identifier, null, "index"));
                 tokens.push(new Token(TokenType.Operator, new OperatorData(null, null, OperatorType.LeftParenthesis)));
-            }
-            else if (ptoken.value == "]")
-            {
+            } else if (ptoken.value === "]") {
                 tokens.push(new Token(TokenType.Operator, new OperatorData(null, null, OperatorType.RightParenthesis)));
-            }
-            else
-            {
+            } else {
                 var token: Token;
-                    
+
                 if(ptoken.isOperator)
                     token = new Token(TokenType.Operator, operatorDict[ptoken.value]);
                 else
                     token = new Token(TokenType.Identifier, null, ptoken.value);
-                    
+
                 tokens.push(token);
             }
         }

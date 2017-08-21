@@ -2,10 +2,9 @@
     "compilerOptions": {
         "target": "es2017",
         "module": "commonjs",
-        "sourceMap": true
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "outDir": "js"
     },
-    "exclude": [
-        "input/*",
-        "node_modules"
-    ]
+    "include": ["src/**/*"]
 }

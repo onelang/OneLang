@@ -20,7 +20,8 @@ cmds = {
 }
 
 prgName = sys.argv[1]
-langsToRun = sys.argv[2].split(',') if len(sys.argv) > 2 else cmds.keys()
+#langsToRun = sys.argv[2].split(',') if len(sys.argv) > 2 else cmds.keys()
+langsToRun = cmds.keys()
 
 os.chdir(prgName)
 
@@ -49,8 +50,10 @@ def runSequentially():
         execLang(lang, cmds[lang])
 
 gstart = time.time()
-#runSequentially()
-runMultithreaded()
+if "--single" in sys.argv:
+    runSequentially()
+else:
+    runMultithreaded()
 gelapsedMs = (time.time() - gstart) * 1000
 
 print "elapsed: %dms" % gelapsedMs

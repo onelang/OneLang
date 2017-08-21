@@ -14,7 +14,7 @@ export class TypeScriptParser {
         this.ast = new SimpleAst.default();
     }
 
-    static parseFile(sourceCode: string, filePath?: string) {
+    static parseFile(sourceCode: string, filePath?: string): ks.SchemaFile {
         const parser = new TypeScriptParser();
         parser.ast.addSourceFileFromText(filePath || "main.ts", sourceCode);
         const sourceFile = parser.ast.getSourceFiles()[0];

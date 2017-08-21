@@ -1,5 +1,6 @@
+
 class TestClass {
-    static testMethod() {
-        return 42;
+    testMethod() {
+        StdLib.Console.print("Hello world!");
     }
 }
