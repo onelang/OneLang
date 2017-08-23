@@ -58,12 +58,26 @@ export class Template {
 
     constructor(public template: string, public args: string[] = []) {
         this.treeRoot = this.generateTree();
+        this.fixIndent(this.treeRoot);
     }
 
     convertIdentifier(name: string, vars: string[], type: "variable"|"field"|"declaration") { return name; }
 
+    fixIndent(node: TemplateNode, level = 0) {
+        if (node.value && node.value.type === "text")
+            node.value.textValue = node.value.textValue.replace(new RegExp(`\n {${level*2}}`,"g"), "\n");
+
+        const deindentType = node.value && ["for", "if"].includes(node.value.type);
+        for (const item of node.children)
+            this.fixIndent(item, level + (deindentType ? 1 : 0));
+    }
+
     generateTree() {
         const parts = this.template.split(/\{\{(.*?)\}\}/).map((x,i) => new TemplatePart(x, i % 2 === 0));
+        for (let i = 0; i < parts.length - 1; i++)
+            if (parts[i].type === "text" && ["for", "if", "closeNode"].includes(parts[i + 1].type))
+                parts[i].textValue = parts[i].textValue.replace(/\n\s*$/, "");
+
         const root = new TemplateNode(null, null);
 
         let current = root;
