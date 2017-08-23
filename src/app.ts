@@ -46,6 +46,13 @@ namespace KsLangSchema {
         functions: { [name: string]: Function };
         extension: string;
         casing: CasingOptions;
+        primitiveTypes: {
+            void: string;
+            boolean: string;
+            string: string;
+            int32: string;
+        };
+        array: string;
         templates: Templates;
     }
 }
@@ -58,17 +65,17 @@ console.log(schemaJson);
 fs.writeFileSync("schema.json", schemaJson);
 
 namespace CodeGeneratorSchema {
-    export interface Statement {
-    }
-
-    export interface MethodBody {
-        statements: Statement[];
+    export interface MethodParameter {
+        idx: number;
+        name: string;
+        type: string;
     }
 
     export interface Method {
+        parameters: MethodParameter[];
         name: string;
         returnType: string;
-        body: MethodBody;
+        visibility: "public"|"protected"|"private";
     }
 
     export interface Class {
@@ -80,23 +87,77 @@ namespace CodeGeneratorSchema {
     export interface Root {
         absoluteIncludes: string[];
         classes: Class[];
+        main?: () => string;
     }
 }
 
 class CodeGenerator {
     constructor(public schema: ks.SchemaFile, public lang: KsLangSchema.LangFile) { }
 
+    getName(name: string, type: "class"|"method"|"enum") {
+        const casing = this.lang.casing[type === "enum" ? "class" : type];
+        const parts = name.split("_").map(x => x.toLowerCase());
+        if (casing === KsLangSchema.Casing.CamelCase)
+            return parts[0] + parts.splice(1).map(x => x.ucFirst()).join("");
+        else if (casing === KsLangSchema.Casing.PascalCase)
+            return parts.map(x => x.ucFirst()).join("");
+        else if (casing === KsLangSchema.Casing.SnakeCase)
+            return parts.join("_");
+        else
+            throw new Error(`Unknown casing: ${casing}`);
+    }
+
+    getTypeName(type: ks.Type) {
+        if (type.type === ks.PrimitiveType.Array)
+            return (this.lang.array || "{{type}}[]").replace("{{type}}", this.getTypeName(type.typeArguments[0]));
+        else if (type.type === ks.PrimitiveType.Class)
+            return this.getName(type.className, "class");
+        else
+            return this.lang.primitiveTypes ? this.lang.primitiveTypes[type.type] : type.type;
+    }
+
     generate() {
+        const schema = <ks.SchemaFile>JSON.parse(JSON.stringify(this.schema));
+        for (const enumName of Object.keys(schema.enums))
+            schema.enums[enumName].name = this.getName(enumName, "enum");
+
+        for (const className of Object.keys(schema.classes)) {
+            const cls = schema.classes[className];
+            cls.name = this.getName(className, "class");
+
+            for (const methodName of Object.keys(cls.methods)) {
+                const method = cls.methods[methodName];
+                method.name = this.getName(methodName, "method");
+            }
+        }
+
         const vm = <CodeGeneratorSchema.Root> {
             absoluteIncludes: [],
-            classes: Object.keys(this.schema.classes).map(className => {
+            classes: Object.keys(schema.classes).map(className => {
+                const cls = schema.classes[className];
+                const methods = Object.keys(cls.methods).map(methodName => {
+                    const method = cls.methods[methodName];
+                    return <CodeGeneratorSchema.Method> {
+                        name: this.getName(methodName, "method"),
+                        returnType: this.getTypeName(method.returns),
+                        body: method.body,
+                        parameters: method.parameters.map((param, idx) => {
+                            return <CodeGeneratorSchema.MethodParameter> {
+                                idx,
+                                name: param.name,
+                                type: this.getTypeName(param.type),
+                            };
+                        }),
+                        visibility: "public" // TODO
+                    };
+                });
                 return <CodeGeneratorSchema.Class> {
-                    name: className,
-                    publicMethods: [],
+                    name: this.getName(className, "class"),
+                    methods: methods,
+                    publicMethods: methods,
                     privateMethods: []
                 };
             }),
-            main: () => { return ""; }
         };
 
         for (const tmplName of Object.keys(this.lang.templates)) {
@@ -106,7 +167,6 @@ class CodeGenerator {
                 tmplObj.args = [{ name: "cls" }, { name: "method" }];
             const tmpl = new Template(tmplObj.template, tmplObj.args.map(x => x.name));
             tmpl.convertIdentifier = (origName, vars, mode) => {
-                console.log(origName, vars, mode);
                 const name = origName === "class" ? "cls" : origName;
                 const isLocalVar = vars.includes(name);
                 return `${isLocalVar || mode === "declaration" || mode === "field" ? "" : "this."}${name}`;
@@ -135,6 +195,3 @@ for (const langFn of fs.readdirSync("langs")) {
     const generatedCode = codeGenerator.generate();
     Utils.writeFile(`SamplePrograms/${prgName}/${prgName}.${langSchema.extension}`, generatedCode);
 }
-
-debugger;
-
