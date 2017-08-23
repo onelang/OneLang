@@ -5,3 +5,5 @@ typings
 *.js
 *.js.map
 ast\.json
+SamplePrograms/Test
+schema\.json
