@@ -19,7 +19,7 @@ templates:
 
     {{for class in classes}}
       class {{class.name}}:
-        {{for method in methods}}
+        {{for method in class.methods}}
           def {{method.name}}({{genArgs(method)}}):
             {{genBody(method.body)}}
         {{/for}}
@@ -35,3 +35,12 @@ templates:
       {{if body.statements.length == 0}}
         pass
       {{/if}}
+
+  genArgs:
+    args:
+      - name: method
+    template: |-
+      {{for param in method.parameters}}
+        {{if param.idx != 0}},{{/if}}
+        {{param.type}} {{param.name}}
+      {{/for}}

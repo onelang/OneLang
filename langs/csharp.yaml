@@ -10,6 +10,12 @@ extension: cs
 casing:
   class: pascal_case
   method: pascal_case
+primitiveTypes:
+  void: void
+  boolean: bool
+  string: string
+  int32: int
+array: '{{type}}[]'
 templates:
   testGenerator: |
     public class Program
@@ -27,7 +33,7 @@ templates:
 
     {{for class in classes}}
       public class {{class.name}} {
-        {{for method in methods}}
+        {{for method in class.methods}}
           {{method.visibility}} {{method.returnType}} {{method.name}}({{genArgs(method)}})
           {
             {{genBody(method.body)}}
@@ -42,4 +48,13 @@ templates:
     template: |
       {{for statement in body.statements}}
         {{statement}}
+      {{/for}}
+
+  genArgs:
+    args:
+      - name: method
+    template: |-
+      {{for param in method.parameters}}
+        {{if param.idx != 0}},{{/if}}
+        {{param.type}} {{param.name}}
       {{/for}}
