@@ -32,13 +32,14 @@ templates:
     {{/for}}
 
     {{for class in classes}}
-      public class {{class.name}} {
-        {{for method in class.methods}}
-          {{method.visibility}} {{method.returnType}} {{method.name}}({{genArgs(method)}})
-          {
-            {{genBody(method.body)}}
-          }
-        {{/for}}
+      public class {{class.name}}
+      {
+          {{for method in class.methods}}
+            {{method.visibility}} {{method.returnType}} {{method.name}}({{genArgs(method)}})
+            {
+              {{genBody(method.body)}}
+            }
+          {{/for}}
       }
     {{/for}}
 
@@ -47,7 +48,7 @@ templates:
       - name: body
     template: |
       {{for statement in body.statements}}
-        {{statement}}
+        {{gen(statement)}}
       {{/for}}
 
   genArgs:
@@ -58,3 +59,17 @@ templates:
         {{if param.idx != 0}},{{/if}}
         {{param.type}} {{param.name}}
       {{/for}}
+expressions:
+  call: |-
+    {{gen(expr.method)}}(
+      {{for arg in expr.arguments}}
+        {{if arg.idx != 0}},{{/if}}
+        {{gen(arg)}}
+      {{/for}}
+    )
+  propertyAccess: |-
+    {{gen(expr.object)}}.{{gen(expr.propertyName)}}
+  identifier: |-
+    {{expr.text}}
+  stringLiteral: |-
+    "{{expr.value}}"
