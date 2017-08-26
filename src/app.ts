@@ -257,7 +257,6 @@ class CodeGenerator {
             const newName = name.includes(".") ? `"${name}"` : name;
             return tmpl`
                 ${newName}(${args.join(", ")}) {
-                    debugger;
                     ${this.genTemplate(template, args)}
                 },`;
         }
@@ -287,6 +286,7 @@ class CodeGenerator {
 
 
         console.log(generatedTemplates);
+        fs.writeFileSync("generatedTemplates.js", generatedTemplates);
         const generatedTemplatesObj = eval(generatedTemplates);
         vm = Object.assign(vm, generatedTemplatesObj);
 

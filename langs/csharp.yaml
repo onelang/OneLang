@@ -34,7 +34,7 @@ templates:
     {{for class in classes}}
       public class {{class.name}}
       {
-          {{for method in class.methods}}
+          {{for method in class.methods|sep=\n\n}}
             {{method.visibility}} {{method.returnType}} {{method.name}}({{genArgs(method)}})
             {
                 {{genBody(method.body)}}
@@ -56,15 +56,13 @@ templates:
     args:
       - name: method
     template: |-
-      {{for param in method.parameters}}
-        {{if param.idx != 0}},{{/if}}
+      {{for param in method.parameters|sep=", "}}
         {{param.type}} {{param.name}}
       {{/for}}
 expressions:
   call: |-
     {{gen(expr.method)}}(
-      {{for arg in expr.arguments}}
-        {{if arg.idx != 0}},{{/if}}
+      {{for arg in expr.arguments|sep=", " inline}}
         {{gen(arg)}}
       {{/for}}
     )

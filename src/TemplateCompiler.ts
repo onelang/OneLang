@@ -15,8 +15,51 @@ class TemplateNode {
     }
 }
 
+class ParamParser {
+    pos = 0;
+    params: { [name: string]: string|boolean } = { };
+
+    constructor(public str: string) { }
+
+    readToken(...tokens: string[]) {
+        for (const token of tokens)
+            if (this.str.startsWith(token, this.pos)) {
+                this.pos += token.length;
+                return token;
+            }
+        return null;
+    }
+
+    readUntil(...tokens: string[]) {
+        const startPos = this.pos;
+        let token = null;
+        for (; this.pos < this.str.length; this.pos++)
+            if (token = this.readToken(...tokens))
+                break;
+
+        const value = this.str.substring(startPos, this.pos - (token||"").length);
+        return { value, token };
+    }
+
+    parse() {
+        while (this.pos < this.str.length) {
+            const key = this.readUntil("=", " ");
+            if(key.token !== "=")
+                this.params[key.value] = true;
+            else {
+                const quote = this.readToken("'", "\"");
+                const value = this.readUntil(quote || " ").value;
+                this.params[key.value] = value;
+            }
+        }
+
+        return this.params;
+    }
+}
+
 class TemplatePart {
     type: "text"|"template"|"for"|"if"|"closeNode";
+    params: { [name: string]: string|boolean } = {};
 
     textValue: string;
     for: { itemName: string, array: AstNode };
@@ -26,25 +69,27 @@ class TemplatePart {
 
     constructor(public value: string, isText: boolean) {
         let match;
-        if(isText) {
+        if (isText) {
             this.type = "text";
             this.textValue = value;
-        }
-        else if (match = /^for ([a-zA-Z]+) in (.*)/.exec(value)) {
-            this.type = "for";
-            this.for = { itemName: match[1], array: ExpressionParser.parse(match[2]) };
-        } else if (match = /^if (.*)/.exec(value)) {
-            this.type = "if";
-            this.if = { condition: ExpressionParser.parse(match[1]) };
-        } else if (match = /^\/(for|if)/.exec(value)) {
-            this.type = "closeNode";
-            this.closeNode = { tag: <"for"|"if">match[1] };
         } else {
-            this.type = "template";
             const paramsOffs = value.lastIndexOf("|");
-            const expr = paramsOffs === -1 ? value : value.substr(0, paramsOffs);
-            const params = paramsOffs === -1 ? "" : value.substr(paramsOffs + 1);
-            this.template = { expr: ExpressionParser.parse(expr) };
+            const valueWoParams = paramsOffs === -1 ? value : value.substr(0, paramsOffs).trim();
+            this.params = paramsOffs === -1 ? {} : new ParamParser(value.substr(paramsOffs + 1).trim()).parse();
+
+            if (match = /^for ([a-zA-Z]+) in (.*)/.exec(valueWoParams)) {
+                this.type = "for";
+                this.for = { itemName: match[1], array: ExpressionParser.parse(match[2]) };
+            } else if (match = /^if (.*)/.exec(valueWoParams)) {
+                this.type = "if";
+                this.if = { condition: ExpressionParser.parse(match[1]) };
+            } else if (match = /^\/(for|if)/.exec(valueWoParams)) {
+                this.type = "closeNode";
+                this.closeNode = { tag: <"for"|"if">match[1] };
+            } else {
+                this.type = "template";
+                this.template = { expr: ExpressionParser.parse(valueWoParams) };
+            }
         }
     }
 
@@ -75,7 +120,7 @@ export class Template {
     generateTree() {
         const parts = this.template.split(/\{\{(.*?)\}\}/).map((x,i) => new TemplatePart(x, i % 2 === 0));
         for (let i = 0; i < parts.length - 1; i++)
-            if (parts[i].type === "text" && ["for", "if", "closeNode"].includes(parts[i + 1].type))
+            if (parts[i].type === "text" && ["closeNode"].includes(parts[i + 1].type))
                 parts[i].textValue = parts[i].textValue.replace(/\n\s*$/, "");
 
         const root = new TemplateNode(null, null);
@@ -123,8 +168,15 @@ export class Template {
         let result = padding;
 
         const getChildren = (newVars: string[] = []) => {
-            return node.children && node.children.length > 0 ?
-                node.children.map(x => this.templateToJS(x, vars.concat(newVars))).join("") : "";
+            const allVars = vars.concat(newVars);
+            const childTexts = (node.children||[]).map(child => this.templateToJS(child, allVars));
+            for (let i = 0; i < childTexts.length; i++)
+                if (node.children[i].value.params.inline === true) {
+                    childTexts[i - 1] = childTexts[i - 1].replace(/(\s|\n)*$/, ""); // trim end
+                    childTexts[i] = childTexts[i].trim(); // trim start and end
+                    childTexts[i + 1] = childTexts[i + 1].replace(/^(\s|\n)*/, ""); // trim start
+                }
+            return childTexts.join("");
         };
 
         if (node.value) {
@@ -132,9 +184,12 @@ export class Template {
                 result += node.value.textValue;
             } else if (node.value.type === "for") {
                 const varName = this.convertIdentifier(node.value.for.itemName, vars, "declaration");
-                result += `\${(${this.exprToJS(node.value.for.array, vars, false)}||[]).map(${varName} => \`${getChildren([varName])}\`).join("")}`;
+                const forArray = this.exprToJS(node.value.for.array, vars, false);
+                const sep = node.value.params.sep||"";
+                const childrenText = getChildren([varName]);
+                result += `\${(${forArray}||[]).map(${varName} => tmpl\`${childrenText}\`).join("${sep}")}`;
             } else if (node.value.type === "if") {
-                result += `\${${this.exprToJS(node.value.if.condition, vars, false)} ? \`${getChildren()}\` : ""}`;
+                result += `\${${this.exprToJS(node.value.if.condition, vars, false)} ? tmpl\`${getChildren()}\` : ""}`;
             } else if (node.value.type === "template") {
                 result += `\${${this.exprToJS(node.value.template.expr, vars, false)}}`;
             } else {
