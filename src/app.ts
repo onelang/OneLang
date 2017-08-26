@@ -92,6 +92,33 @@ namespace CodeGeneratorSchema {
     }
 }
 
+function deindent(str: string) {
+    function getPadLen(line: string) {
+        for (let i = 0; i < line.length; i++)
+            if (line[i] !== ' ')
+                return i;
+        return -1; // whitespace line => pad === 0
+    }
+
+    const lines = str.split("\n");
+    if (getPadLen(lines[0]) === -1)
+        lines.shift();
+
+    const minPadLen = Math.min.apply(null, lines.map(getPadLen).filter(x => x !== -1));
+    const newStr = lines.map(x => x.length !== 0 ? x.substr(minPadLen) : x).join("\n");
+    return newStr;
+}
+
+function tmpl(parts: TemplateStringsArray, ...values: any[]) {
+    let result = parts[0];
+    for (let i = 0; i < values.length; i++) {
+        const prevLastLineIdx = result.lastIndexOf("\n");
+        const extraPad = result.length - (prevLastLineIdx === -1 ? 0 : prevLastLineIdx + 1);
+        result += values[i].toString().replace(/\n/g, "\n" + " ".repeat(extraPad)) + parts[i + 1];
+    }
+    return deindent(result);
+}
+
 class CodeGenerator {
     constructor(public schema: ks.SchemaFile, public lang: KsLangSchema.LangFile) { }
 
@@ -145,6 +172,12 @@ class CodeGenerator {
         return funcName;
     }
 
+    genTemplate(template: string, args: string[]) {
+        const tmpl = new Template(template, args);
+        tmpl.convertIdentifier = this.convertIdentifier;
+        return `return tmpl\`${tmpl.templateToJS(tmpl.treeRoot, args)}\`;`;
+    }
+
     generate() {
         const schema = <ks.SchemaFile>JSON.parse(JSON.stringify(this.schema));
         for (const enumName of Object.keys(schema.enums))
@@ -161,7 +194,7 @@ class CodeGenerator {
         }
 
         const self = this;
-        const vm = { // <CodeGeneratorSchema.Root> 
+        let vm = { // <CodeGeneratorSchema.Root> 
             absoluteIncludes: [],
             classes: Object.keys(schema.classes).map(className => {
                 const cls = schema.classes[className];
@@ -213,39 +246,49 @@ class CodeGenerator {
                     throw new Error(`Expression template not found: ${obj.type}!`);
                 const result = genFunc.call(this, obj);
 
-                console.log("generate statement", obj, result);
+                //console.log("generate statement", obj, result);
 
                 return result;
             },
             main: <() => string> null,
         };
 
-        for (const exprName of Object.keys(this.lang.expressions)) {
-            const exprTmpl = this.lang.expressions[exprName];
-            const tmpl = new Template(exprTmpl, ["expr"]);
-            tmpl.convertIdentifier = this.convertIdentifier;
-            const genFunc = tmpl.getGeneratorFunction();
-            vm.expressionGenerators[exprName.ucFirst()] = genFunc;
+        const genTemplateMethodCode = (name: string, args: string[], template: string) => {
+            const newName = name.includes(".") ? `"${name}"` : name;
+            return tmpl`
+                ${newName}(${args.join(", ")}) {
+                    debugger;
+                    ${this.genTemplate(template, args)}
+                },`;
         }
 
-        for (const funcPath of Object.keys(this.lang.functions)) {
-            const funcInfo = this.lang.functions[funcPath];
-            const tmpl = new Template(funcInfo.template, funcInfo.arguments.map(x => x.name));
-            tmpl.convertIdentifier = this.convertIdentifier;
-            const genFunc = tmpl.getGeneratorFunction();
-            vm.internalMethodGenerators[funcPath] = genFunc;
-        }
+        const generatedTemplates = tmpl`
+            ({
+                expressionGenerators: {
+                    ${Object.keys(this.lang.expressions).map(name => 
+                        genTemplateMethodCode(name.ucFirst(), ["expr"], this.lang.expressions[name])).join("\n\n")}
+                },
 
-        for (const tmplName of Object.keys(this.lang.templates)) {
-            const tmplOrig = this.lang.templates[tmplName];
-            const tmplObj = typeof tmplOrig === "string" ? <KsLangSchema.TemplateObj>{ template: tmplOrig, args: [] } : tmplOrig;
-            if (tmplName === "testGenerator")
-                tmplObj.args = [{ name: "cls" }, { name: "method" }];
-            const tmpl = new Template(tmplObj.template, tmplObj.args.map(x => x.name));
-            tmpl.convertIdentifier = this.convertIdentifier;
-            const genFunc = tmpl.getGeneratorFunction();
-            vm[tmplName] = genFunc;
-        }
+                internalMethodGenerators: {
+                    ${Object.keys(this.lang.functions).map(funcPath => {
+                        const funcInfo = this.lang.functions[funcPath];
+                        return genTemplateMethodCode(funcPath, funcInfo.arguments.map(x => x.name), funcInfo.template);
+                    }).join("\n\n")}
+                },
+
+                ${Object.keys(this.lang.templates).map(tmplName => {
+                    const tmplOrig = this.lang.templates[tmplName];
+                    const tmplObj = typeof tmplOrig === "string" ? <KsLangSchema.TemplateObj>{ template: tmplOrig, args: [] } : tmplOrig;
+                    if (tmplName === "testGenerator")
+                        tmplObj.args = [{ name: "cls" }, { name: "method" }];
+                    return genTemplateMethodCode(tmplName, tmplObj.args.map(x => x.name), tmplObj.template);
+                }).join("\n\n")}
+            })`;
+
+
+        console.log(generatedTemplates);
+        const generatedTemplatesObj = eval(generatedTemplates);
+        vm = Object.assign(vm, generatedTemplatesObj);
 
         const code = vm.main();
 
