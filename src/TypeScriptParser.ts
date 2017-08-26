@@ -31,7 +31,7 @@ export class TypeScriptParser {
         for (let c of name) {
             if ("A" <= c && c <= "Z")
                 result += (result === "" ? "" : "_") + c.toLowerCase();
-            else if("a" <= c && c <= "z" || c === "_")
+            else if("a" <= c && c <= "z" || c === "_" || "0" <= c && c <= "9")
                 result += c;
             else
                 this.logNodeError(`Invalid character ('${c}') in name: ${name}.`, node);
