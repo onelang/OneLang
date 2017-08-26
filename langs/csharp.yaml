@@ -4,7 +4,7 @@ functions:
       - name: str
     includes:
       - System
-    template: |
+    template: |-
       Console.WriteLine({{str}});
 extension: cs
 casing:
@@ -37,8 +37,9 @@ templates:
           {{for method in class.methods}}
             {{method.visibility}} {{method.returnType}} {{method.name}}({{genArgs(method)}})
             {
-              {{genBody(method.body)}}
+                {{genBody(method.body)}}
             }
+
           {{/for}}
       }
     {{/for}}
@@ -46,7 +47,7 @@ templates:
   genBody:
     args:
       - name: body
-    template: |
+    template: |-
       {{for statement in body.statements}}
         {{gen(statement)}}
       {{/for}}
@@ -67,9 +68,10 @@ expressions:
         {{gen(arg)}}
       {{/for}}
     )
-  propertyAccess: |-
-    {{gen(expr.object)}}.{{gen(expr.propertyName)}}
-  identifier: |-
-    {{expr.text}}
-  stringLiteral: |-
-    "{{expr.value}}"
+  propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
+  identifier: "{{expr.text}}"
+  stringLiteral: "\"{{expr.value}}\""
+  return: "return {{gen(expr.expression)}};"
+  binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
+  parenthesized: "({{gen(expr.expression)}})"
+  numericLiteral: "{{expr.value}}"

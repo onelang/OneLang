@@ -133,6 +133,12 @@ export class TypeScriptParser {
                 type: ks.ExpressionType.StringLiteral,
                 value: stringLiteralExpr.text
             };
+        } else if (tsExpr.kind === ts.SyntaxKind.NumericLiteral) {
+            const stringLiteralExpr = <ts.NumericLiteral> tsExpr;
+            return <ks.NumericLiteral> { 
+                type: ks.ExpressionType.NumericLiteral,
+                value: stringLiteralExpr.text
+            };
         } else if (tsExpr.kind === ts.SyntaxKind.ParenthesizedExpression) {
             const parenExpr = <ts.ParenthesizedExpression> tsExpr;
             return <ks.ParenthesizedExpression> { 

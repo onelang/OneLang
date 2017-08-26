@@ -82,6 +82,7 @@ export namespace KSLangSchema {
         New = "New",
         Conditional = "Conditional",
         StringLiteral = "StringLiteral",
+        NumericLiteral = "NumericLiteral",
         Parenthesized = "Parenthesized",
         PostfixUnary = "PostfixUnary",
         PrefixUnary = "PrefixUnary",
@@ -101,6 +102,10 @@ export namespace KSLangSchema {
     }
 
     export interface StringLiteral extends Expression {
+        value: string;
+    }
+
+    export interface NumericLiteral extends Expression {
         value: string;
     }
 
