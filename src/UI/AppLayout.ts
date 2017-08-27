@@ -4,8 +4,12 @@ import * as ace from "ace/ace";
 export class Layout {
     manager: LayoutManager;
 
-    langComponents: { [lang: string]: Component } = {};
-    langEditors: { [lang: string]: AceAjax.Editor } = {};
+    langs: { [lang: string]: { 
+        component: Component,
+        editor: AceAjax.Editor,
+        changeHandler: EditorChangeHandler 
+    } } = {};
+
     errors: ClosableComponent;
 
     constructor() {
@@ -36,9 +40,61 @@ export class Layout {
         this.manager.root.init();
     }
 
-    initLang(c: Component, name: string, aceLang: string = null) {
-        this.langComponents[name] = c;
-        this.langEditors[name] = LayoutHelper.setupEditor(c, aceLang || name);
+    onEditorChange(lang: string, newContent: string) { }
+
+    initLang(component: Component, name: string, aceLang: string = null) {
+        const editor = LayoutHelper.setupEditor(component, aceLang || name);
+        const changeHandler = new EditorChangeHandler(editor, 200, (newContent, userChange) => {
+            if (userChange)
+                this.onEditorChange(name, newContent);
+        });
+
+        this.langs[name] = { component, editor, changeHandler };
+    }
+}
+
+export class EditorChangeHandler {
+    editDelay: Delayed;
+    internalChange: boolean;
+
+    constructor(public editor: AceAjax.Editor, delay: number, public changeCallback: (newContent: string, userChange: boolean) => void) {
+        this.editDelay = new Delayed(delay);
+
+        if (this.editor)
+            this.editor.on("change", () => {
+                const wasInternalChange = this.internalChange;
+                this.editDelay.do(() => this.changeCallback(this.editor.getValue(), !wasInternalChange))
+            });
+    }
+
+    setContent(newContent: string) {
+        if (!this.editor) return;
+
+        if (this.editor.getValue() !== newContent) {
+            this.internalChange = true;
+            this.editor.setValue(newContent, -1);
+            this.internalChange = false;
+        }
+    }
+
+    getContent() {
+        return this.editor ? this.editor.getValue() : "";
+    }
+}
+
+export class Delayed {
+    private timeout: number;
+
+    constructor(public delay: number) { }
+
+    public do(func: () => void) {
+        if (this.timeout)
+            clearTimeout(this.timeout);
+
+        this.timeout = <any>setTimeout(function () {
+            this.timeout = null;
+            func();
+        }, this.delay);
     }
 }
 

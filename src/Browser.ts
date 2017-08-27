@@ -232,4 +232,9 @@ async function runLangTests() {
 //runLangTests();
 
 const layout = new Layout();
-console.log(layout);
+layout.onEditorChange = (lang: string, newContent: string) => {
+    console.log("editor change", lang, newContent);
+    for (const langName of Object.keys(layout.langs))
+        if (langName !== lang)
+            layout.langs[langName].changeHandler.setContent(newContent);
+};
