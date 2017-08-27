@@ -1,24 +1,52 @@
 <html>
 <head>
     <script>
-        async function start() {
-            const response = await fetch('http://localhost:8001/compile', {
-                method: 'post',
-                mode: 'cors',
-                body: JSON.stringify({
+        const langConfigs = {
+            java: {
+                port: 8001,
+                request: {
                     code: `
                         public class TestClass {
                             public String testMethod() {
-                                return "Hello World!";
+                                return "Hello World! - 3";
                             }
                         }`,
                     className: 'TestClass',
                     methodName: 'testMethod'
-                })
+                }
+            },
+            javascript: {
+                port: 8002,
+                request: {
+                    code: `
+                        class TestClass {
+                            testMethod() {
+                                return "Hello World! - 3";
+                            }
+                        }
+                        
+                        new TestClass().testMethod()`,
+                }
+            }
+        };
+
+        async function runLang(name) {
+            const langConfig = langConfigs[name];
+            const response = await fetch(`http://127.0.0.1:${langConfig.port}/compile`, {
+                method: 'post',
+                mode: 'cors',
+                body: JSON.stringify(langConfig.request)
             });
+
             const responseJson = await response.json();
-            console.log(responseJson);
-            console.log(responseJson.exceptionText);
+            console.log(name, responseJson);
+            if (responseJson.exceptionText)
+                console.log(name, "Exception", responseJson.exceptionText);
+        }
+
+        async function start() {
+            runLang("java");
+            runLang("javascript");
         }
         start();
     </script>
