@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Java",
+            "type": "java",
+            "request": "launch",
+            "jdkPath": "${env:JAVA_HOME}/bin",
+            "cwd": "${fileDirname}",
+            "preLaunchTask": "build",
+            "startupClass": "fastjavacompile.${fileBasenameNoExtension}",
+            "classpath": [
+                ".",
+                "${workspaceRoot}/target/classes",
+                "~/.m2/repository",
+                "${workspaceRoot}/lib/*",
+                "${fileDirname}"
+            ]
+        }
+    ]
+}
