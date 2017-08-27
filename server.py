@@ -1,8 +1,15 @@
+#!/usr/bin/env python
 import subprocess
 import os
 import json
 import urllib2
 import time
+
+import SimpleHTTPServer
+from SocketServer import ThreadingMixIn
+from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+
+PORT = 8000
 
 def log(text):
     print "[Compile] %s" % text
@@ -47,7 +54,7 @@ for langName in langs:
 
     log("Starting %s compiler..." % langName)
 
-    cwd = "%s/%s" % (os.getcwd(), langName)
+    cwd = "%s/FastCompile/%s" % (os.getcwd(), langName)
     args = lang["cmd"].replace("{port}", str(lang["port"])).split(" ")
     lang["subp"] = subprocess.Popen(args, cwd=cwd, stdin=subprocess.PIPE)
 
@@ -70,8 +77,37 @@ for langName in langs:
     else:
         log("%s compiler is ready!" % langName)
 
-log("Press ENTER to exit.")
-raw_input()
+class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+    def resp(self, statusCode, result):
+        self.send_response(statusCode)
+        self.end_headers()
+        self.wfile.write(json.dumps(result))
+
+    def do_GET(self):
+        return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+
+    def do_POST(self):
+        if self.path == '/check':
+            try:
+                self.resp(200, {'status': 'ok', 'check_res': "result"});
+            except Exception as e:
+                print e
+                self.resp(400, {'status': 'exception'});
+        else:
+            return SimpleHTTPServer.SimpleHTTPRequestHandler.do_POST(self) 
+
+log("Starting HTTP server... Please use 127.0.0.1:%d on Windows (using 'localhost' makes 1sec delay)" % PORT)
+
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
+    """Handle requests in a separate thread."""
+
+log("Press Ctrl+C to exit.")
+
+try:
+    ThreadedHTTPServer(("", PORT), HTTPHandler).serve_forever()
+except KeyboardInterrupt:
+    pass
 
 for langName in langs:
     lang = langs[langName]
