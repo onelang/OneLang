@@ -1,0 +1,28 @@
+<html>
+<head>
+    <script>
+        async function start() {
+            const response = await fetch('http://localhost:8001/compile', {
+                method: 'post',
+                mode: 'cors',
+                body: JSON.stringify({
+                    code: `
+                        public class TestClass {
+                            public String testMethod() {
+                                return "Hello World!";
+                            }
+                        }`,
+                    className: 'TestClass',
+                    methodName: 'testMethod'
+                })
+            });
+            const responseJson = await response.json();
+            console.log(responseJson);
+            console.log(responseJson.exceptionText);
+        }
+        start();
+    </script>
+</head>
+<body>
+</body>
+</html>
