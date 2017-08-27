@@ -128,6 +128,10 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(json.dumps(result))
 
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-cache, no-store")
+        SimpleHTTPServer.SimpleHTTPRequestHandler.end_headers(self)
+
     def do_GET(self):
         return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 

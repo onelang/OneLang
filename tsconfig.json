@@ -1,10 +1,10 @@
 {
     "compilerOptions": {
         "target": "es2017",
-        "module": "commonjs",
+        "module": "umd",
         "moduleResolution": "node",
         "sourceMap": true,
         "outDir": "js"
     },
-    "include": ["src/**/*"]
+    "include": ["src/**/*", "lib/**/*"]
 }
