@@ -4,20 +4,24 @@ import os
 import json
 import urllib2
 import time
+import datetime
 
 import SimpleHTTPServer
 from SocketServer import ThreadingMixIn
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 PORT = 8000
+TEST_SERVERS = False
 
 def log(text):
     print "[Compile] %s" % text
 
 langs = {
     "Java": {
+        "ext": "java",
+        "cmd": "javac {name}.java && java {name} && rm {name}.class",
+        "serverCmd": "java -cp target/classes:lib/* fastjavacompile.App {port}",
         "port": 8001,
-        "cmd": "java -cp target/classes:lib/* fastjavacompile.App {port}",
         "testRequest": {
             "code": '''
                 public class TestClass {
@@ -30,8 +34,10 @@ langs = {
         }
     },
     "JavaScript": {
+        "ext": "js",
+        "cmd": "node {name}.js",
+        "serverCmd": "node index.js {port}",
         "port": 8002,
-        "cmd": "node index.js {port}",
         "testRequest": {
             "code": '''
                 class TestClass {
@@ -42,7 +48,43 @@ langs = {
                 
                 new TestClass().testMethod()''',
         }
-    }
+    },
+    "Python": {
+        "ext": "py",
+        "cmd": "python {name}.py"
+    },
+    "PHP": {
+        "ext": "php",
+        "cmd": "php {name}.php"
+    },
+    "Ruby": {
+        "ext": "rb",
+        "cmd": "ruby {name}.rb"
+    },
+    "CPP": {
+        "ext": "cpp",
+        "cmd": "g++ {name}.cpp -o {name} && ./{name} && rm {name}"
+    },
+    "Go": {
+        "ext": "go",
+        "cmd": "go run {name}.go"
+    },
+    "CSharp": {
+        "ext": "cs",
+        "cmd": "mcs {name}.cs && mono {name}.exe && rm {name}.exe"
+    },
+    "Perl": {
+        "ext": "pl",
+        "cmd": "perl {name}.pl"
+    },
+    "Swift": {
+        "ext": "swift",
+        "cmd": "swift {name}.swift"
+    },
+    "TypeScript": {
+        "ext": "ts",
+        "cmd": "tsc {name}.ts --outFile {name}.ts.js && node {name}.ts.js && rm {name}.ts.js"
+    },
 }
 
 def postRequest(url, request):
@@ -51,35 +93,38 @@ def postRequest(url, request):
 testText = "Works!"
 for langName in langs:
     lang = langs[langName]
+    if not "serverCmd" in lang: continue
 
     log("Starting %s compiler..." % langName)
 
     cwd = "%s/FastCompile/%s" % (os.getcwd(), langName)
-    args = lang["cmd"].replace("{port}", str(lang["port"])).split(" ")
+    args = lang["serverCmd"].replace("{port}", str(lang["port"])).split(" ")
     lang["subp"] = subprocess.Popen(args, cwd=cwd, stdin=subprocess.PIPE)
 
-    requestJson = json.dumps(lang["testRequest"], indent=4).replace("{testText}", testText)
+    if TEST_SERVERS:
+        requestJson = json.dumps(lang["testRequest"], indent=4).replace("{testText}", testText)
 
-    maxTries = 10
-    for i in xrange(maxTries):
-        try:
-            time.sleep(0.1 * (i + 1))
-            log("  Checking %s compiler's status (%d / %d)..." % (langName, i + 1, maxTries))
-            responseJson = postRequest("http://127.0.0.1:%d/compile" % lang["port"], requestJson)
-            break
-        except:
-            pass
+        maxTries = 10
+        for i in xrange(maxTries):
+            try:
+                time.sleep(0.1 * (i + 1))
+                log("  Checking %s compiler's status (%d / %d)..." % (langName, i + 1, maxTries))
+                responseJson = postRequest("http://127.0.0.1:%d/compile" % lang["port"], requestJson)
+                break
+            except:
+                pass
 
-    response = json.loads(responseJson)
-    log("  %s compiler's test response: %s" % (langName, response))
-    if response["result"] != testText:
-        log("Invalid response. Compiler will be disabled.")
-    else:
-        log("%s compiler is ready!" % langName)
+        response = json.loads(responseJson)
+        log("  %s compiler's test response: %s" % (langName, response))
+        if response["result"] != testText:
+            log("Invalid response. Compiler will be disabled.")
+        else:
+            log("%s compiler is ready!" % langName)
 
 class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def resp(self, statusCode, result):
         self.send_response(statusCode)
+        self.send_header("Access-Control-Allow-Origin", "http://localhost:8000")
         self.end_headers()
         self.wfile.write(json.dumps(result))
 
@@ -87,12 +132,26 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
     def do_POST(self):
-        if self.path == '/check':
+        if self.path == '/compile':
+            fn = None
             try:
-                self.resp(200, {'status': 'ok', 'check_res': "result"});
+                request = json.loads(self.rfile.read(int(self.headers.getheader('content-length'))))
+                lang = langs[request["lang"]]
+
+                name = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                fn = "tmp/%s.%s" % (name, lang["ext"])
+                with open(fn, "wt") as f: f.write(request["code"])
+                
+                start = time.time()
+                result = subprocess.check_output(lang["cmd"].format(name=name), shell=True, cwd="tmp/")
+                elapsedMs = int((time.time() - start) * 1000)
+
+                os.remove(fn)
+
+                self.resp(200, { 'result': result, "elapsedMs": elapsedMs })
             except Exception as e:
-                print e
-                self.resp(400, {'status': 'exception'});
+                log(repr(e))
+                self.resp(400, { 'exceptionText': repr(e) })
         else:
             return SimpleHTTPServer.SimpleHTTPRequestHandler.do_POST(self) 
 
@@ -111,6 +170,7 @@ except KeyboardInterrupt:
 
 for langName in langs:
     lang = langs[langName]
+    if not "subp" in lang: continue
 
     log("Send stop signal to %s compiler" % langName)
     lang["subp"].communicate("\n")
