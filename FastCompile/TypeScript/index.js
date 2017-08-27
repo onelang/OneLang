@@ -1,6 +1,7 @@
 const process = require("process");
 const http = require("http");
 const vm = require("vm");
+const ts = require("typescript");
 
 function readRequestBody(request) {
     return new Promise((resolve, reject) => {
@@ -15,7 +16,7 @@ function readRequestBody(request) {
 }
 
 function log(...args) {
-    console.log('[JavaScript]', ...args);
+    console.log('[TypeScript]', ...args);
 }
 
 const server = http.createServer(async (request, response) => {
@@ -25,10 +26,16 @@ const server = http.createServer(async (request, response) => {
         const requestJson = JSON.parse(requestText);
         log(request.url, requestJson);
         
+        let code = requestJson.code;
+        if (requestJson.lang === "TypeScript")
+            code = ts.transpileModule(code, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+
+        log("code", code);
+
         const startTime = process.hrtime();
         
         const script = new vm.Script(requestJson.code);
-        const context = new vm.createContext();
+        const context = new vm.createContext({ console });
         const result = script.runInContext(context);
 
         const elapsedTime = process.hrtime(startTime);
@@ -36,7 +43,7 @@ const server = http.createServer(async (request, response) => {
 
         response.end(JSON.stringify({ result, elapsedMs }));
     } catch(e) {
-        response.end(JSON.stringify({ exceptionText: e.toString() }));
+        response.end(JSON.stringify({ exceptionText: `${e}` }));
     }
 });
 

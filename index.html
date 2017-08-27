@@ -197,13 +197,13 @@
                 }
             },
             typescript: {
-                port: 8000,
+                port: 8002,
                 request: {
                     lang: "TypeScript",
                     code: deindent(`
                         class TestClass {
-                            testMethod():void {
-                                console.log("Hello World!");
+                            testMethod() {
+                                return "Hello World!";
                             }
                         }
                         

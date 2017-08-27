@@ -36,18 +36,6 @@ langs = {
     "JavaScript": {
         "ext": "js",
         "cmd": "node {name}.js",
-        "serverCmd": "node index.js {port}",
-        "port": 8002,
-        "testRequest": {
-            "code": '''
-                class TestClass {
-                    testMethod() {
-                        return "{testText}";
-                    }
-                }
-                
-                new TestClass().testMethod()''',
-        }
     },
     "Python": {
         "ext": "py",
@@ -83,7 +71,19 @@ langs = {
     },
     "TypeScript": {
         "ext": "ts",
-        "cmd": "tsc {name}.ts --outFile {name}.ts.js && node {name}.ts.js && rm {name}.ts.js"
+        "cmd": "tsc {name}.ts --outFile {name}.ts.js && node {name}.ts.js && rm {name}.ts.js",
+        "serverCmd": "node index.js {port}",
+        "port": 8002,
+        "testRequest": {
+            "code": '''
+                class TestClass {
+                    testMethod(): void {
+                        return "{testText}";
+                    }
+                }
+                
+                new TestClass().testMethod()''',
+        }
     },
 }
 
