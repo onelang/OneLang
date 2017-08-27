@@ -14,12 +14,16 @@ function readRequestBody(request) {
     });
 }
 
+function log(...args) {
+    console.log('[JavaScript]', ...args);
+}
+
 const server = http.createServer(async (request, response) => {
     response.setHeader("Access-Control-Allow-Origin", "http://localhost:8000");
     try {
         const requestText = (await readRequestBody(request)).toString();
         const requestJson = JSON.parse(requestText);
-        console.log(request.url, requestJson);
+        log(request.url, requestJson);
         
         const startTime = process.hrtime();
         
@@ -39,7 +43,13 @@ const server = http.createServer(async (request, response) => {
 const port = process.argv.length > 2 ? parseInt(process.argv[2]) : 8002;
 server.listen(port, (err) => {
     if (err)
-        console.log('something bad happened', err);
+        log('something bad happened', err);
     else
-        console.log(`server is listening on ${port}`);
-})
+        log(`server is listening on ${port}`);
+});
+
+var stdin = process.openStdin();
+stdin.addListener("data", function(data) {
+    log(`Stopping after user input...`);
+    process.exit();
+});

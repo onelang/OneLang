@@ -21,6 +21,20 @@ langs = {
             "className": 'TestClass',
             "methodName": 'testMethod'
         }
+    },
+    "JavaScript": {
+        "port": 8002,
+        "cmd": "node index.js {port}",
+        "testRequest": {
+            "code": '''
+                class TestClass {
+                    testMethod() {
+                        return "{testText}";
+                    }
+                }
+                
+                new TestClass().testMethod()''',
+        }
     }
 }
 
@@ -42,7 +56,7 @@ for langName in langs:
     maxTries = 10
     for i in xrange(maxTries):
         try:
-            time.sleep(0.1)
+            time.sleep(0.1 * (i + 1))
             log("  Checking %s compiler's status (%d / %d)..." % (langName, i + 1, maxTries))
             responseJson = postRequest("http://127.0.0.1:%d/compile" % lang["port"], requestJson)
             break
