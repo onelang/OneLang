@@ -11,12 +11,13 @@ export class TypeScriptParser {
     ast: TsSimpleAst;
 
     constructor() {
-        this.ast = new SimpleAst.default();
+        this.ast = new SimpleAst.TsSimpleAst();
     }
 
     static parseFile(sourceCode: string, filePath?: string): ks.SchemaFile {
         const parser = new TypeScriptParser();
         parser.ast.addSourceFileFromText(filePath || "main.ts", sourceCode);
+        parser.ast.addSourceFileFromText("/node_modules/typescript/lib/lib.d.ts", "");
         const sourceFile = parser.ast.getSourceFiles()[0];
         const schema = parser.createSchemaFromSourceFile(sourceFile);
         return schema;

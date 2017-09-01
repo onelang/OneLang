@@ -1,215 +1,14 @@
 import { Layout } from "./UI/AppLayout";
+import { CodeGenerator, deindent, KsLangSchema } from "./CodeGenerator";
+import { langConfigs } from "./langConfigs";
+import { TypeScriptParser } from "./TypeScriptParser";
 
-function deindent(str) {
-    function getPadLen(line) {
-        for (let i = 0; i < line.length; i++)
-            if (line[i] !== ' ')
-                return i;
-        return -1; // whitespace line => pad === 0
-    }
+declare var YAML: any;
 
-    const lines = str.split("\n");
-    if (getPadLen(lines[0]) === -1)
-        lines.shift();
-
-    const minPadLen = Math.min.apply(null, lines.map(getPadLen).filter(x => x !== -1));
-    const newStr = lines.map(x => x.length !== 0 ? x.substr(minPadLen) : x).join("\n");
-    return newStr;
+async function getLangTemplate(langName: string) {
+    const response = await (await fetch(`langs/${langName}.yaml`)).text();
+    return <KsLangSchema.LangFile> YAML.parse(response);
 }
-
-const langConfigs = {
-    cpp: {
-        port: 8000,
-        request: {
-            lang: "CPP",
-            code: deindent(`
-                #include <iostream>
-                    
-                class TestClass {
-                    public:
-                    void testMethod() {
-                        std::cout << "Hello World!\\n";
-                    }
-                };
-                
-                int main()
-                {
-                    TestClass c;
-                    c.testMethod();
-                    return 0;
-                }`)
-        }
-    },
-    csharp: {
-        port: 8000,
-        request: {
-            lang: "CSharp",
-            code: deindent(`
-                using System;
-                
-                public class TestClass
-                {
-                    public void TestMethod()
-                    {
-                        Console.WriteLine("Hello World!");
-                    }
-                }
-                
-                public class HelloWorld
-                {
-                    static public void Main()
-                    {
-                        new TestClass().TestMethod();
-                    }
-                }`)
-        }
-    },
-    go: {
-        port: 8000,
-        request: {
-            lang: "Go",
-            code: deindent(`
-                package main
-                
-                import "fmt"
-                
-                type testClass struct {
-                }
-                
-                func (this *testClass) testMethod() {
-                    fmt.Println("Hello World!")
-                }
-                
-                func main() {
-                    c := (testClass{})
-                    c.testMethod()
-                }`)
-        }
-    },
-    java: {
-        port: 8001,
-        request: {
-            code: deindent(`
-                public class TestClass {
-                    public String testMethod() {
-                        return "Hello World!";
-                    }
-                }`),
-            className: 'TestClass',
-            methodName: 'testMethod'
-        }
-    },
-    javascript: {
-        port: 8002,
-        request: {
-            code: deindent(`
-                class TestClass {
-                    testMethod() {
-                        return "Hello World!";
-                    }
-                }
-                
-                new TestClass().testMethod()`),
-        }
-    },
-    php: {
-        port: 8000,
-        request: {
-            lang: "PHP",
-            code: deindent(`
-                <?php
-                
-                class TestClass {
-                    function testMethod() {
-                        print("Hello World!\\n");
-                    }
-                }
-                
-                $c = new TestClass();
-                $c->testMethod();`)
-        }
-    },
-    perl: {
-        port: 8000,
-        request: {
-            lang: "Perl",
-            code: deindent(`
-                use strict;
-                use warnings;
-                
-                package TestClass;
-                sub new
-                {
-                    my $class = shift;
-                    my $self = {};
-                    bless $self, $class;
-                    return $self;
-                }
-                
-                sub testMethod {
-                    print "Hello World!\\n";
-                }
-                
-                package Program;
-                my $c = new TestClass();
-                $c->testMethod()`)
-        }
-    },
-    python: {
-        port: 8000,
-        request: {
-            lang: "Python",
-            code: deindent(`
-                class TestClass:
-                    def test_method(self):
-                        print "Hello World!"
-
-                TestClass().test_method()`)
-        }
-    },
-    ruby: {
-        port: 8000,
-        request: {
-            lang: "Ruby",
-            code: deindent(`
-                class TestClass
-                    def test_method
-                        puts "Hello World!"
-                    end
-                end
-                
-                TestClass.new().test_method()`)
-        }
-    },
-    swift: {
-        port: 8000,
-        request: {
-            lang: "Swift",
-            code: deindent(`
-                class TestClass {
-                    func testMethod() {
-                        print("Hello World!")
-                    }
-                }
-                
-                TestClass().testMethod()`)
-        }
-    },
-    typescript: {
-        port: 8002,
-        request: {
-            lang: "TypeScript",
-            code: deindent(`
-                class TestClass {
-                    testMethod() {
-                        return "Hello World!";
-                    }
-                }
-                
-                new TestClass().testMethod()`)
-        }
-    },
-};
 
 async function runLangTest(name) {
     const langConfig = langConfigs[name];
@@ -226,15 +25,53 @@ async function runLangTest(name) {
 }
 
 async function runLangTests() {
-    for (const lang of Object.keys(langConfigs))
+    let langsToRun = Object.keys(langConfigs);
+    //langsToRun = ["java", "javascript", "typescript", "ruby", "php", "perl"];
+    for (const lang of langsToRun)
         runLangTest(lang);
 }
-//runLangTests();
 
-const layout = new Layout();
-layout.onEditorChange = (lang: string, newContent: string) => {
-    console.log("editor change", lang, newContent);
-    for (const langName of Object.keys(layout.langs))
-        if (langName !== lang)
-            layout.langs[langName].changeHandler.setContent(newContent);
-};
+function initLayout() {
+    const layout = new Layout();
+    layout.onEditorChange = (lang: string, newContent: string) => {
+        console.log("editor change", lang, newContent);
+        //new CodeGenerator(
+        for (const langName of Object.keys(layout.langs))
+            if (langName !== lang)
+                layout.langs[langName].changeHandler.setContent(newContent);
+    };
+}
+
+//runLangTests();
+//initLayout();
+
+async function main() {
+    const sourceCode = `
+        class TestClass {
+            calc() {
+                return (1 + 2) * 3;
+            }
+        
+            methodWithArgs(arg1: number, arg2: number, arg3: number) {
+                return arg1 + arg2 + arg3 * this.calc();
+            }
+        
+            testMethod() {
+                StdLib.Console.print("Hello world!");
+            }
+        }`;
+
+    const langSchema = await getLangTemplate("csharp");
+    console.log(langSchema);
+    
+    const schema = TypeScriptParser.parseFile(sourceCode);
+    const schemaJson = JSON.stringify(schema, null, 4);
+    console.log(schemaJson);
+    
+    const codeGenerator = new CodeGenerator(schema, langSchema);
+    const generatedCode = codeGenerator.generate();
+    console.log(generatedCode.generatedTemplates);
+    console.log(generatedCode.code);
+}
+
+main();

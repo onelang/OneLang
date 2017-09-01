@@ -4,6 +4,7 @@
     <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/golden-layout/1.5.9/css/goldenlayout-dark-theme.css" />
 
     <script src="js/extensions.js"></script>
+    <script src="node_modules/yamljs/dist/yaml.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.min.js"></script>
     <script>
         requirejs.config({
@@ -12,10 +13,15 @@
                 "jquery": "//code.jquery.com/jquery-3.2.1.min",
                 "goldenlayout": "//cdnjs.cloudflare.com/ajax/libs/golden-layout/1.5.9/goldenlayout.min",
                 "ace/ace": "//cdnjs.cloudflare.com/ajax/libs/ace/1.2.8/ace",
+                "typescript": "/lib/typescript",
+                "ts-simple-ast": "/lib/TsSimpleAst",
             }
         });
 
-        require(["Browser"]);
+        require(["typescript"], ts => {
+            console.log("ts", ts);
+            require(["Browser"]);
+        });
     </script>
 </head>
 <body>

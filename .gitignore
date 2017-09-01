@@ -8,3 +8,5 @@ ast\.json
 SamplePrograms/Test
 schema\.json
 vmCode.js
+lib/typescript.js
+lib/TsSimpleAst.js
