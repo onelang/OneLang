@@ -2,7 +2,7 @@ functions:
   stdlib.console.print:
     arguments:
       - name: str
-    template: |
+    template: |-
       System.out.println({{str}});
 extension: java
 casing:
@@ -15,7 +15,7 @@ primitiveTypes:
   int32: int
 array: '{{type}}[]'
 templates:
-  testGenerator: |
+  testGenerator: |-
     class {{fileName}} {
       static public void main(String args[]) {
         new {{class}}().{{method}}();
@@ -29,28 +29,41 @@ templates:
 
     {{for class in classes}}
       public class {{class.name}} {
-        {{for method in class.methods}}
-          {{method.visibility}} {{method.returnType}} {{method.name}}({{genArgs(method)}})
-          {
-            {{genBody(method.body)}}
-          }
-        {{/for}}
+          {{for method in class.methods|sep=\n\n}}
+              {{method.visibility}} {{method.returnType}} {{method.name}}({{genArgs(method)}})
+              {
+                  {{genBody(method.body)}}
+              }
+          {{/for}}
       }
     {{/for}}
 
   genBody:
     args:
       - name: body
-    template: |
+    template: |-
       {{for statement in body.statements}}
-        {{statement}}
+        {{gen(statement)}}
       {{/for}}
 
   genArgs:
     args:
       - name: method
     template: |-
-      {{for param in method.parameters}}
-        {{if param.idx != 0}},{{/if}}
+      {{for param in method.parameters|sep=", "}}
         {{param.type}} {{param.name}}
       {{/for}}
+expressions:
+  call: |-
+    {{gen(expr.method)}}(
+      {{for arg in expr.arguments|sep=", " inline}}
+        {{gen(arg)}}
+      {{/for}}
+    )
+  propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
+  identifier: "{{expr.text}}"
+  stringLiteral: "\"{{expr.value}}\""
+  return: "return {{gen(expr.expression)}};"
+  binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
+  parenthesized: "({{gen(expr.expression)}})"
+  numericLiteral: "{{expr.value}}"

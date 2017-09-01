@@ -4,7 +4,7 @@ functions:
       - name: str
     includes:
       - fmt
-    template: |
+    template: |-
       fmt.Println({{str}})
 extension: go
 casing:
@@ -17,13 +17,13 @@ primitiveTypes:
   int32: int
 array: '[]{{type}}'
 templates:
-  testGenerator: |
+  testGenerator: |-
     func main() {
         c := ({{class}}{})
         c.{{method}}()
     }
 
-  main: |
+  main: |-
     package main
 
     {{for inc in includes}}
@@ -33,26 +33,40 @@ templates:
     {{for class in classes}}
       type {{class.name}} struct { }
 
-      {{for method in class.methods}}
+      {{for method in class.methods|sep=\n\n}}
         func (this *{{class.name}}) {{method.name}}({{genArgs(method)}}) {{method.returnType}} {
-          {{genBody(method.body)}}
+            {{genBody(method.body)}}
         }
+
       {{/for}}
     {{/for}}
 
   genBody:
     args:
       - name: body
-    template: |
+    template: |-
       {{for statement in body.statements}}
-        {{statement}}
+        {{gen(statement)}}
       {{/for}}
 
   genArgs:
     args:
       - name: method
     template: |-
-      {{for param in method.parameters}}
-        {{if param.idx != 0}},{{/if}}
-        {{param.type}} {{param.name}}
+      {{for param in method.parameters|sep=", "}}
+        {{param.name}} {{param.type}}
       {{/for}}
+expressions:
+  call: |-
+    {{gen(expr.method)}}(
+      {{for arg in expr.arguments|sep=", " inline}}
+        {{gen(arg)}}
+      {{/for}}
+    )
+  propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
+  identifier: "{{expr.text}}"
+  stringLiteral: "\"{{expr.value}}\""
+  return: "return {{gen(expr.expression)}};"
+  binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
+  parenthesized: "({{gen(expr.expression)}})"
+  numericLiteral: "{{expr.value}}"

@@ -2,19 +2,19 @@ functions:
   stdlib.console.print:
     arguments:
       - name: str
-    template: |
+    template: |-
       print {{str}};
 extension: pl
 casing:
   class: pascal_case
   method: camel_case
 templates:
-  testGenerator: |
+  testGenerator: |-
     package Program;
     my $c = new {{class}}();
     $c->{{method}}()
 
-  main: |
+  main: |-
     use strict;
     use warnings;
 
@@ -22,15 +22,15 @@ templates:
       package {{class.name}}
       sub new
       {
-        my $class = shift;
-        my $self = {};
-        bless $self, $class;
-        return $self;
+          my $class = shift;
+          my $self = {};
+          bless $self, $class;
+          return $self;
       }
 
-      {{for method in class.methods}}
+      {{for method in class.methods|sep=\n\n}}
         sub {{method.name}} {
-          {{genBody(method.body)}}
+            {{genBody(method.body)}}
         }
       {{/for}}
     {{/for}}
@@ -38,16 +38,29 @@ templates:
   genBody:
     args:
       - name: body
-    template: |
+    template: |-
       {{for statement in body.statements}}
-        {{statement}}
+        {{gen(statement)}}
       {{/for}}
 
   genArgs:
     args:
       - name: method
     template: |-
-      {{for param in method.parameters}}
-        {{if param.idx != 0}},{{/if}}
+      {{for param in method.parameters|sep=", "}}
         {{param.type}} {{param.name}}
       {{/for}}
+expressions:
+  call: |-
+    {{gen(expr.method)}}(
+      {{for arg in expr.arguments|sep=", " inline}}
+        {{gen(arg)}}
+      {{/for}}
+    )
+  propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
+  identifier: "{{expr.text}}"
+  stringLiteral: "\"{{expr.value}}\""
+  return: "return {{gen(expr.expression)}};"
+  binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
+  parenthesized: "({{gen(expr.expression)}})"
+  numericLiteral: "{{expr.value}}"

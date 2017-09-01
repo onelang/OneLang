@@ -4,7 +4,7 @@ functions:
       - name: str
     includes:
       - iostream
-    template: |
+    template: |-
       std::cout << {{str}};
 extension: cpp
 casing:
@@ -17,7 +17,7 @@ primitiveTypes:
   int32: int
 array: '{{type}}[]'
 templates:
-  testGenerator: |
+  testGenerator: |-
     int main()
     {
         {{class}} c;
@@ -25,7 +25,7 @@ templates:
         return 0;
     }
 
-  main: |
+  main: |-
     {{for inc in absoluteIncludes}}
       #include <{{inc}}>
     {{/for}}
@@ -34,6 +34,7 @@ templates:
       class {{class.name}} {
         public:
           {{genMethods(class.publicMethods)}}
+
         private:
           {{genMethods(class.privateMethods)}}
       };
@@ -42,26 +43,39 @@ templates:
   genMethods:
     args:
       - name: methods
-    template: |
-      {{for method in methods}}
+    template: |-
+      {{for method in methods|sep=\n\n}}
         {{method.returnType}} {{method.name}}({{genArgs(method)}}) {
-          {{genBody(method.body)}}
+            {{genBody(method.body)}}
         }
       {{/for}}
 
   genBody:
     args:
       - name: body
-    template: |
+    template: |-
       {{for statement in body.statements}}
-        {{statement}}
+        {{gen(statement)}}
       {{/for}}
 
   genArgs:
     args:
       - name: method
     template: |-
-      {{for param in method.parameters}}
-        {{if param.idx != 0}},{{/if}}
+      {{for param in method.parameters|sep=", "}}
         {{param.type}} {{param.name}}
       {{/for}}
+expressions:
+  call: |-
+    {{gen(expr.method)}}(
+      {{for arg in expr.arguments|sep=", " inline}}
+        {{gen(arg)}}
+      {{/for}}
+    )
+  propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
+  identifier: "{{expr.text}}"
+  stringLiteral: "\"{{expr.value}}\""
+  return: "return {{gen(expr.expression)}};"
+  binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
+  parenthesized: "({{gen(expr.expression)}})"
+  numericLiteral: "{{expr.value}}"

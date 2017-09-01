@@ -2,14 +2,14 @@ functions:
   stdlib.console.print:
     arguments:
       - name: str
-    template: |
+    template: |-
       puts {{str}}
 extension: rb
 casing:
   class: pascal_case
   method: snake_case
 templates:
-  testGenerator: |
+  testGenerator: |-
     {{class}}.new().{{method}}()
 
   main: |
@@ -19,10 +19,10 @@ templates:
 
     {{for class in classes}}
       class {{class.name}} {
-        {{for method in class.methods}}
-          def {{method.name}}({{genArgs(method)}})
-            {{genBody(method.body)}}
-          end
+        {{for method in class.methods|sep=\n\n}}
+            def {{method.name}}({{genArgs(method)}})
+                {{genBody(method.body)}}
+            end
         {{/for}}
       end
     {{/for}}
@@ -30,16 +30,29 @@ templates:
   genBody:
     args:
       - name: body
-    template: |
+    template: |-
       {{for statement in body.statements}}
-        {{statement}}
+        {{gen(statement)}}
       {{/for}}
 
   genArgs:
     args:
       - name: method
     template: |-
-      {{for param in method.parameters}}
-        {{if param.idx != 0}},{{/if}}
-        {{param.type}} {{param.name}}
+      {{for param in method.parameters|sep=", "}}
+        {{param.name}}
       {{/for}}
+expressions:
+  call: |-
+    {{gen(expr.method)}}(
+      {{for arg in expr.arguments|sep=", " inline}}
+        {{gen(arg)}}
+      {{/for}}
+    )
+  propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
+  identifier: "{{expr.text}}"
+  stringLiteral: "\"{{expr.value}}\""
+  return: "return {{gen(expr.expression)}};"
+  binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
+  parenthesized: "({{gen(expr.expression)}})"
+  numericLiteral: "{{expr.value}}"

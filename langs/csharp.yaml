@@ -17,7 +17,7 @@ primitiveTypes:
   int32: int
 array: '{{type}}[]'
 templates:
-  testGenerator: |
+  testGenerator: |-
     public class Program
     {
         static public void Main()
@@ -26,7 +26,7 @@ templates:
         }
     }
 
-  main: |
+  main: |-
     {{for inc in includes}}
       using {{inc}};
     {{/for}}
