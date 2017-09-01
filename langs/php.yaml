@@ -22,11 +22,11 @@ templates:
 
     {{for class in classes}}
       class {{class.name}} {
-        {{for method in class.methods|sep=\n\n}}
-            function {{method.name}}({{genArgs(method)}}) {
-                {{genBody(method.body)}}
-            }
-        {{/for}}
+          {{for method in class.methods|sep=\n\n}}
+              function {{method.name}}({{genArgs(method)}}) {
+                  {{genBody(method.body)}}
+              }
+          {{/for}}
       }
     {{/for}}
 

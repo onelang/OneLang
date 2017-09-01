@@ -29,6 +29,7 @@ templates:
 
     {{for class in classes}}
       public class {{class.name}} {
+
           {{for method in class.methods|sep=\n\n}}
               {{method.visibility}} {{method.returnType}} {{method.name}}({{genArgs(method)}})
               {

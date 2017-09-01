@@ -20,6 +20,7 @@ templates:
 
     {{for class in classes}}
       package {{class.name}}
+
       sub new
       {
           my $class = shift;
@@ -30,6 +31,7 @@ templates:
 
       {{for method in class.methods|sep=\n\n}}
         sub {{method.name}} {
+            my { $self{{for param in method.parameters}}, ${{param.name}}{{/for}} } = @_;
             {{genBody(method.body)}}
         }
       {{/for}}

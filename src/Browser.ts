@@ -53,7 +53,7 @@ function initLayout() {
                 console.log(generatedCode.generatedTemplates);
                 //console.log(generatedCode.code);
     
-                changeHandler.setContent(generatedCode.code);
+                changeHandler.setContent(generatedCode.code.replace(/\n\n+/g, "\n\n").trim());
             } catch(e) {
                 changeHandler.setContent(`${e}`);
             }
