@@ -147,12 +147,15 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 with open(fn, "wt") as f: f.write(request["code"])
                 
                 start = time.time()
-                result = subprocess.check_output(lang["cmd"].format(name=name), shell=True, cwd="tmp/")
-                elapsedMs = int((time.time() - start) * 1000)
+                pipes = subprocess.Popen(lang["cmd"].format(name=name), shell=True, cwd="tmp/", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                stdout, stderr = pipes.communicate()
 
-                os.remove(fn)
-
-                self.resp(200, { 'result': result, "elapsedMs": elapsedMs })
+                if pipes.returncode != 0 or len(stderr) > 0:
+                    self.resp(400, { 'exceptionText': stderr })
+                else:
+                    elapsedMs = int((time.time() - start) * 1000)
+                    os.remove(fn)
+                    self.resp(200, { 'result': stdout, "elapsedMs": elapsedMs })
             except Exception as e:
                 log(repr(e))
                 self.resp(400, { 'exceptionText': repr(e) })

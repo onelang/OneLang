@@ -30,6 +30,8 @@ def execLang(lang, cmd):
     start = time.time()
     try:
         response = subprocess.check_output(cmd.format(name=prgName), shell=True).replace("\n", "\\n")
+    except subprocess.CalledProcessError as e:
+        response = "Error: %s" % e.output
     except Exception as e:
         response = "Error: %r" % e
     elapsedMs = (time.time() - start) * 1000

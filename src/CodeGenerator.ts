@@ -182,6 +182,7 @@ export class CodeGenerator {
 
         const self = this;
         let vm = { // <CodeGeneratorSchema.Root> 
+            includes: <string[]> [],
             absoluteIncludes: [],
             classes: Object.keys(schema.classes).map(className => {
                 const cls = schema.classes[className];
@@ -238,7 +239,12 @@ export class CodeGenerator {
                 return result;
             },
             main: <() => string> null,
+            testGenerator: <(cls: string, method: string) => string> null,
         };
+        
+        for (const func of Object.values(this.lang.functions))
+            for (const include of func.includes || [])
+                vm.includes.push(include);
 
         const genTemplateMethodCode = (name: string, args: string[], template: string) => {
             const newName = name.includes(".") ? `"${name}"` : name;
@@ -275,7 +281,8 @@ export class CodeGenerator {
         const generatedTemplatesObj = eval(generatedTemplates);
         vm = Object.assign(vm, generatedTemplatesObj);
 
-        const code = vm.main();
+        const code = vm.main() + "\n\n" + vm.testGenerator(
+            this.getName("test_class", "class"), this.getName("test_method", "method"));
 
         return { code, generatedTemplates };
     }

@@ -18,7 +18,7 @@ templates:
     {{/for}}
 
     {{for class in classes}}
-      class {{class.name}} {
+      class {{class.name}}
         {{for method in class.methods|sep=\n\n}}
             def {{method.name}}({{genArgs(method)}})
                 {{genBody(method.body)}}

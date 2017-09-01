@@ -40,8 +40,9 @@ templates:
     args:
       - name: method
     template: |-
-      {{for param in method.parameters|sep=", "}}
-        {{param.name}}
+      self
+      {{for param in method.parameters|inline}}
+        , {{param.name}}
       {{/for}}
 expressions:
   call: |-

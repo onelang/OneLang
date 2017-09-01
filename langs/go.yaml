@@ -11,7 +11,7 @@ casing:
   class: camel_case
   method: camel_case
 primitiveTypes:
-  void: void
+  void: ""
   boolean: bool
   string: string
   int32: int

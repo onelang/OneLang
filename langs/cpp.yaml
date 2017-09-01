@@ -5,7 +5,7 @@ functions:
     includes:
       - iostream
     template: |-
-      std::cout << {{str}};
+      std::cout << {{str}} << std::endl;
 extension: cpp
 casing:
   class: pascal_case
@@ -26,7 +26,7 @@ templates:
     }
 
   main: |-
-    {{for inc in absoluteIncludes}}
+    {{for inc in includes}}
       #include <{{inc}}>
     {{/for}}
 
@@ -72,7 +72,7 @@ expressions:
         {{gen(arg)}}
       {{/for}}
     )
-  propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
+  propertyAccess: "{{gen(expr.object)}}->{{gen(expr.propertyName)}}"
   identifier: "{{expr.text}}"
   stringLiteral: "\"{{expr.value}}\""
   return: "return {{gen(expr.expression)}};"

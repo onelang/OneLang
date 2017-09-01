@@ -10,8 +10,10 @@ async function getLangTemplate(langName: string) {
     return <KsLangSchema.LangFile> YAML.parse(response);
 }
 
-async function runLangTest(name) {
+async function runLang(name: string, code?: string) {
     const langConfig = langConfigs[name];
+    if (code)
+        langConfig.request.code = code;
     const response = await fetch(`http://127.0.0.1:${langConfig.port}/compile`, {
         method: 'post',
         mode: 'cors',
@@ -22,13 +24,14 @@ async function runLangTest(name) {
     console.log(name, responseJson);
     if (responseJson.exceptionText)
         console.log(name, "Exception", responseJson.exceptionText);
+    return responseJson;
 }
 
 async function runLangTests() {
     let langsToRun = Object.keys(langConfigs);
     //langsToRun = ["java", "javascript", "typescript", "ruby", "php", "perl"];
     for (const lang of langsToRun)
-        runLangTest(lang);
+        runLang(lang);
 }
 
 const layout = new Layout();
@@ -45,15 +48,17 @@ function initLayout() {
             const changeHandler = layout.langs[langName].changeHandler;
             try {
                 const langSchema = langConfigs[langName]["schema"];
-                console.log("langSchema", langSchema);
+                //console.log("langSchema", langSchema);
 
                 const schema = TypeScriptParser.parseFile(newContent);
                 const codeGenerator = new CodeGenerator(schema, langSchema);
                 const generatedCode = codeGenerator.generate();
-                console.log(generatedCode.generatedTemplates);
+                //console.log(generatedCode.generatedTemplates);
                 //console.log(generatedCode.code);
     
-                changeHandler.setContent(generatedCode.code.replace(/\n\n+/g, "\n\n").trim());
+                const code = generatedCode.code.replace(/\n\n+/g, "\n\n").trim();
+                changeHandler.setContent(code);
+                runLang(langName, code);
             } catch(e) {
                 changeHandler.setContent(`${e}`);
             }

@@ -15,13 +15,7 @@ primitiveTypes:
   int32: int
 array: '{{type}}[]'
 templates:
-  testGenerator: |-
-    class {{fileName}} {
-      static public void main(String args[]) {
-        new {{class}}().{{method}}();
-      }
-    }
-
+  testGenerator: ""
   main: |
     {{for inc in includes}}
       using {{inc}};

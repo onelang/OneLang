@@ -19,7 +19,7 @@ templates:
     use warnings;
 
     {{for class in classes}}
-      package {{class.name}}
+      package {{class.name}};
 
       sub new
       {
@@ -31,7 +31,7 @@ templates:
 
       {{for method in class.methods|sep=\n\n}}
         sub {{method.name}} {
-            my { $self{{for param in method.parameters}}, ${{param.name}}{{/for}} } = @_;
+            my ( $self{{for param in method.parameters}}, ${{param.name}}{{/for}} ) = @_;
             {{genBody(method.body)}}
         }
       {{/for}}
@@ -60,7 +60,7 @@ expressions:
       {{/for}}
     )
   propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
-  identifier: "{{expr.text}}"
+  identifier: "${{expr.text}}"
   stringLiteral: "\"{{expr.value}}\""
   return: "return {{gen(expr.expression)}};"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"

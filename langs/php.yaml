@@ -3,7 +3,7 @@ functions:
     arguments:
       - name: str
     template: |-
-      print({{str}});
+      print({{str}} . "\\n");
 extension: php
 casing:
   class: pascal_case
