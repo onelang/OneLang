@@ -13,6 +13,9 @@ export class Layout {
     errors: ClosableComponent;
 
     constructor() {
+    }
+
+    init() {
         this.manager = new LayoutManager();
         this.initLangComponents();
     }
@@ -67,11 +70,11 @@ export class EditorChangeHandler {
             });
     }
 
-    setContent(newContent: string) {
+    setContent(newContent: string, isUserChange = false) {
         if (!this.editor) return;
 
         if (this.editor.getValue() !== newContent) {
-            this.internalChange = true;
+            this.internalChange = !isUserChange;
             this.editor.setValue(newContent, -1);
             this.internalChange = false;
         }

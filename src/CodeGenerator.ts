@@ -162,7 +162,7 @@ export class CodeGenerator {
     genTemplate(template: string, args: string[]) {
         const tmpl = new Template(template, args);
         tmpl.convertIdentifier = this.convertIdentifier;
-        return `return tmpl\`${tmpl.templateToJS(tmpl.treeRoot, args)}\`;`;
+        return `return tmpl\`\n${tmpl.templateToJS(tmpl.treeRoot, args)}\`;`;
     }
 
     generate() {

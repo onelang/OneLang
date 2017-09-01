@@ -31,22 +31,45 @@ async function runLangTests() {
         runLangTest(lang);
 }
 
+const layout = new Layout();
+
 function initLayout() {
-    const layout = new Layout();
+    layout.init();
     layout.onEditorChange = (lang: string, newContent: string) => {
-        console.log("editor change", lang, newContent);
+        //console.log("editor change", lang, newContent);
         //new CodeGenerator(
-        for (const langName of Object.keys(layout.langs))
-            if (langName !== lang)
-                layout.langs[langName].changeHandler.setContent(newContent);
+        for (const langName of Object.keys(layout.langs)) {
+            if (langName === lang) continue;
+            //if (langName !== "go") continue;
+
+            const changeHandler = layout.langs[langName].changeHandler;
+            try {
+                const langSchema = langConfigs[langName]["schema"];
+                console.log("langSchema", langSchema);
+
+                const schema = TypeScriptParser.parseFile(newContent);
+                const codeGenerator = new CodeGenerator(schema, langSchema);
+                const generatedCode = codeGenerator.generate();
+                console.log(generatedCode.generatedTemplates);
+                //console.log(generatedCode.code);
+    
+                changeHandler.setContent(generatedCode.code);
+            } catch(e) {
+                changeHandler.setContent(`${e}`);
+            }
+        }
     };
 }
 
 //runLangTests();
-//initLayout();
 
 async function main() {
-    const sourceCode = `
+    for (const langName of Object.keys(langConfigs))
+        langConfigs[langName].schema = await getLangTemplate(langName);
+
+    initLayout();
+
+    layout.langs["typescript"].changeHandler.setContent(deindent(`
         class TestClass {
             calc() {
                 return (1 + 2) * 3;
@@ -59,19 +82,8 @@ async function main() {
             testMethod() {
                 StdLib.Console.print("Hello world!");
             }
-        }`;
-
-    const langSchema = await getLangTemplate("csharp");
-    console.log(langSchema);
-    
-    const schema = TypeScriptParser.parseFile(sourceCode);
-    const schemaJson = JSON.stringify(schema, null, 4);
-    console.log(schemaJson);
-    
-    const codeGenerator = new CodeGenerator(schema, langSchema);
-    const generatedCode = codeGenerator.generate();
-    console.log(generatedCode.generatedTemplates);
-    console.log(generatedCode.code);
+        }`), true);
+    //console.log(JSON.stringify(schema, null, 4));
 }
 
 main();
