@@ -34,7 +34,7 @@ const server = http.createServer(async (request, response) => {
 
         const startTime = process.hrtime();
         
-        const script = new vm.Script(requestJson.code);
+        const script = new vm.Script(code);
         const context = new vm.createContext({ console });
         const result = script.runInContext(context);
 
@@ -43,6 +43,7 @@ const server = http.createServer(async (request, response) => {
 
         response.end(JSON.stringify({ result, elapsedMs }));
     } catch(e) {
+        console.error(e);
         response.end(JSON.stringify({ exceptionText: `${e}` }));
     }
 });
