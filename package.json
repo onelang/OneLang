@@ -5,14 +5,16 @@
   "main": "app.js",
   "dependencies": {
     "mkdirp": "^0.5.1",
+    "node": "^8.3.0",
     "serializer.ts": "0.0.12",
     "ts-simple-ast": "^0.48.2",
     "ts-type-info": "^7.0.1",
-    "typescript": "^2.4.2",
+    "typescript": "^2.5.2",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
-    "@types/node": "^8.0.24"
+    "@types/node": "^8.0.28",
+    "browserify": "^14.4.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

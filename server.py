@@ -5,6 +5,7 @@ import json
 import urllib2
 import time
 import datetime
+import traceback
 
 import SimpleHTTPServer
 from SocketServer import ThreadingMixIn
@@ -72,7 +73,7 @@ langs = {
     "TypeScript": {
         "ext": "ts",
         "cmd": "tsc {name}.ts --outFile {name}.ts.js && node {name}.ts.js && rm {name}.ts.js",
-        "serverCmd": "node index.js {port}",
+        "serverCmd": "../../node_modules/node/bin/node index.js {port}",
         "port": 8002,
         "testRequest": {
             "code": '''
@@ -89,6 +90,9 @@ langs = {
 
 def postRequest(url, request):
     return urllib2.urlopen(urllib2.Request(url, request)).read()
+
+if not os.path.isdir("tmp"):
+    os.mkdir("tmp")
 
 testText = "Works!"
 for langName in langs:
@@ -123,10 +127,13 @@ for langName in langs:
 
 class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def resp(self, statusCode, result):
+        responseBody = json.dumps(result)
         self.send_response(statusCode)
-        self.send_header("Access-Control-Allow-Origin", "http://localhost:8000")
+        self.send_header("Access-Control-Allow-Origin", "http://127.0.0.1:8000")
+        self.send_header("Content-Length", "%d" % len(responseBody))
         self.end_headers()
-        self.wfile.write(json.dumps(result))
+        self.wfile.write(responseBody)
+        self.wfile.close()
 
     def end_headers(self):
         self.send_header("Cache-Control", "no-cache, no-store")
@@ -158,7 +165,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                     self.resp(200, { 'result': stdout, "elapsedMs": elapsedMs })
             except Exception as e:
                 log(repr(e))
-                self.resp(400, { 'exceptionText': repr(e) })
+                self.resp(400, { 'exceptionText': traceback.format_exc() })
         else:
             return SimpleHTTPServer.SimpleHTTPRequestHandler.do_POST(self) 
 

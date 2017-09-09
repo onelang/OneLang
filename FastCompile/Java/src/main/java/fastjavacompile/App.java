@@ -53,7 +53,7 @@ public class App
         }
 
         public void sendTextResponse(HttpExchange t, int statusCode, String data) throws IOException {
-            t.getResponseHeaders().add("Access-Control-Allow-Origin", "http://localhost:8000");
+            t.getResponseHeaders().add("Access-Control-Allow-Origin", "http://127.0.0.1:8000");
             byte[] responseBytes = data.getBytes();
             t.sendResponseHeaders(200, responseBytes.length);
             OutputStream os = t.getResponseBody();

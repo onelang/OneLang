@@ -73,8 +73,8 @@ function initLayout() {
                 runLang(langConfig, code).then(respJson => {
                     if (respJson.exceptionText)
                         html`<b>E:</b> ${respJson.exceptionText}}`(langUi.statusBar);
-                    else if (respJson.result)
-                        html`<b>R:</b> ${respJson.result}`(langUi.statusBar);
+                    else
+                        html`<b>R:</b> ${respJson.result || "<no result>"}`(langUi.statusBar);
                 });
             } catch(e) {
                 langUi.changeHandler.setContent(`${e}`);
