@@ -40,11 +40,15 @@ langs = {
     },
     "Python": {
         "ext": "py",
-        "cmd": "python {name}.py"
+        "cmd": "python {name}.py",
+        "serverCmd": "python server.py",
+        "port": 8004,
     },
     "PHP": {
         "ext": "php",
-        "cmd": "php {name}.php"
+        "cmd": "php {name}.php",
+        "serverCmd": "php -S 127.0.0.1:8003 server.php",
+        "port": 8003,
     },
     "Ruby": {
         "ext": "rb",

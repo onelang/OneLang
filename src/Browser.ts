@@ -89,7 +89,7 @@ function initLayout() {
                         langUi.statusBar.attr("title", respJson.exceptionText);
                         html`<span class="label error">error</span>${respJson.exceptionText}`(langUi.statusBar);
                     } else {
-                        let result = respJson.result;
+                        let result = respJson.result.toString();
                         if (result.endsWith("\n"))
                             result = result.substr(0, result.length - 1);
 

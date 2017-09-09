@@ -30,7 +30,7 @@ const server = http.createServer(async (request, response) => {
         if (requestJson.lang === "TypeScript")
             code = ts.transpileModule(code, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
 
-        log("code", code);
+        //log("code", code);
 
         const startTime = process.hrtime();
         

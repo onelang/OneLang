@@ -152,9 +152,11 @@ export const langConfigs: { [name: string]: LangConfig } = {
         }
     },
     python: {
-        port: 8000,
+        port: 8004,
         request: {
             lang: "Python",
+            className: 'TestClass',
+            methodName: 'test_method',
             code: deindent(`
                 class TestClass:
                     def test_method(self):
