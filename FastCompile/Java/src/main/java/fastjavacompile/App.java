@@ -14,13 +14,19 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.ToolProvider;
+import java.util.Arrays;
+
 /**
- * Hello world!
- *
+ * Created by trung on 5/3/15.
  */
 public class App
 {
-    public static String exceptionToString(Exception e) {
+    static JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
+
+    public static String exceptionToString(Throwable e) {
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
         String result = sw.toString();
@@ -81,14 +87,25 @@ public class App
                 Request request = getRequest(t);
 
                 long startTime = System.nanoTime();
-                Class<?> helloClass = InMemoryJavaCompiler.compile(request.className, request.code);
-                response.elapsedMs = (System.nanoTime() - startTime) / 1000 / 1000;
 
-                Constructor<?> ctor = helloClass.getConstructor();
-                Object instance = ctor.newInstance();
-                Method testMethod = helloClass.getMethod(request.methodName);
-                response.result = testMethod.invoke(instance);
-            } catch(Exception e) {
+                SourceCode sourceCode = new SourceCode(request.className, request.code);
+                CompiledCode compiledCode = new CompiledCode(request.className);
+                Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(sourceCode);
+                DynamicClassLoader cl = new DynamicClassLoader(ClassLoader.getSystemClassLoader());
+                ExtendedStandardJavaFileManager fileManager = new ExtendedStandardJavaFileManager(javac.getStandardFileManager(null, null, null), compiledCode, cl);
+                StringWriter writer = new StringWriter();
+                JavaCompiler.CompilationTask task = javac.getTask(writer, fileManager, null, null, null, compilationUnits);
+                if (!task.call()) {
+                    response.exceptionText = writer.toString();
+                } else {
+                    Class<?> testClass = cl.loadClass(request.className);
+                    Constructor<?> ctor = testClass.getConstructor();
+                    Object instance = ctor.newInstance();
+                    Method testMethod = testClass.getMethod(request.methodName);
+                    response.result = testMethod.invoke(instance);
+                    response.elapsedMs = (System.nanoTime() - startTime) / 1000 / 1000;
+                }
+            } catch(Throwable e) {
                 response.exceptionText = exceptionToString(e);
                 Log("Exception (handle): " + response.exceptionText);
             }

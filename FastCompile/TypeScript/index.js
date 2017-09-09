@@ -24,7 +24,7 @@ const server = http.createServer(async (request, response) => {
     try {
         const requestText = (await readRequestBody(request)).toString();
         const requestJson = JSON.parse(requestText);
-        log(request.url, requestJson);
+        //log(request.url, requestJson);
         
         let code = requestJson.code;
         if (requestJson.lang === "TypeScript")
@@ -43,8 +43,8 @@ const server = http.createServer(async (request, response) => {
 
         response.end(JSON.stringify({ result, elapsedMs }));
     } catch(e) {
-        console.error(e);
-        response.end(JSON.stringify({ exceptionText: `${e}` }));
+        //console.error(e);
+        response.end(JSON.stringify({ exceptionText: `${e}\n\n${e.stack}` }));
     }
 });
 

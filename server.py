@@ -52,7 +52,9 @@ langs = {
     },
     "Ruby": {
         "ext": "rb",
-        "cmd": "ruby {name}.rb"
+        "cmd": "ruby {name}.rb",
+        "serverCmd": "ruby server.rb",
+        "port": 8005,
     },
     "CPP": {
         "ext": "cpp",
@@ -130,6 +132,9 @@ for langName in langs:
             log("%s compiler is ready!" % langName)
 
 class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+    def log_message(self, format, *args):
+        pass
+
     def resp(self, statusCode, result):
         responseBody = json.dumps(result)
         self.send_response(statusCode)

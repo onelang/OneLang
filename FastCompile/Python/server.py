@@ -13,6 +13,9 @@ def log(text):
     print "[Python] %s" % text
 
 class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+    def log_message(self, format, *args):
+        pass
+
     def resp(self, statusCode, result):
         responseBody = json.dumps(result)
         self.send_response(statusCode)
@@ -43,7 +46,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 elapsedMs = int((time.time() - start) * 1000)
                 self.resp(200, { 'result': result, "elapsedMs": elapsedMs })
             except Exception as e:
-                log(repr(e))
+                #log(repr(e))
                 self.resp(400, { 'exceptionText': traceback.format_exc() })
         else:
             return SimpleHTTPServer.SimpleHTTPRequestHandler.do_POST(self) 

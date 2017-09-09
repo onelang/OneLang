@@ -89,7 +89,8 @@ function initLayout() {
                         langUi.statusBar.attr("title", respJson.exceptionText);
                         html`<span class="label error">error</span>${respJson.exceptionText}`(langUi.statusBar);
                     } else {
-                        let result = respJson.result.toString();
+                        let result = respJson.result;
+                        result = result === null ? "<null>" : result.toString();
                         if (result.endsWith("\n"))
                             result = result.substr(0, result.length - 1);
 
@@ -135,10 +136,11 @@ async function main() {
         langConfigs[langName].schema = await getLangTemplate(langName);
     }
 
-    //runLang(langConfigs.php);
+    //runLangTests();
+    //runLang(langConfigs.ruby);
+
     initLayout();
     setupTestProgram();
-    //console.log(JSON.stringify(schema, null, 4));
 }
 
 main();
