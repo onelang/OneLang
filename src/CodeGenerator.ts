@@ -165,7 +165,7 @@ export class CodeGenerator {
         return `return tmpl\`\n${tmpl.templateToJS(tmpl.treeRoot, args)}\`;`;
     }
 
-    generate() {
+    generate(callTestMethod: boolean) {
         const schema = <ks.SchemaFile>JSON.parse(JSON.stringify(this.schema));
         for (const enumName of Object.keys(schema.enums))
             schema.enums[enumName].name = this.getName(enumName, "enum");
@@ -281,8 +281,9 @@ export class CodeGenerator {
         const generatedTemplatesObj = eval(generatedTemplates);
         vm = Object.assign(vm, generatedTemplatesObj);
 
-        const code = vm.main() + "\n\n" + vm.testGenerator(
-            this.getName("test_class", "class"), this.getName("test_method", "method"));
+        let code = vm.main();
+        if (callTestMethod)
+            code += "\n\n" + vm.testGenerator(this.getName("test_class", "class"), this.getName("test_method", "method"));
 
         return { code, generatedTemplates };
     }

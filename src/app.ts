@@ -27,7 +27,7 @@ for (const langFn of langs) {
     const langName = langFn.replace(".yaml", "");
     const langSchema = <KsLangSchema.LangFile> YAML.parse(fs.readFileSync(`langs/${langFn}`, "utf8"));
     const codeGenerator = new CodeGenerator(schema, langSchema);
-    const generatedCode = codeGenerator.generate();
+    const generatedCode = codeGenerator.generate(true);
     Utils.writeFile(`SamplePrograms/${prgName}/${prgName}.${langSchema.extension}`, generatedCode);
     console.log(generatedCode.generatedTemplates);
     console.log(generatedCode.code);

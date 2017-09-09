@@ -76,7 +76,7 @@ function initLayout() {
 
                 const schema = TypeScriptParser.parseFile(newContent);
                 const codeGenerator = new CodeGenerator(schema, langConfig.schema);
-                const generatedCode = codeGenerator.generate();
+                const generatedCode = codeGenerator.generate(!langConfig.request.className);
                 const code = generatedCode.code.replace(/\n\n+/g, "\n\n").trim();
                 const isSourceLang = langName === lang;
                 if (!isSourceLang)
@@ -135,6 +135,7 @@ async function main() {
         langConfigs[langName].schema = await getLangTemplate(langName);
     }
 
+    //runLang(langConfigs.php);
     initLayout();
     setupTestProgram();
     //console.log(JSON.stringify(schema, null, 4));

@@ -34,10 +34,9 @@ const server = http.createServer(async (request, response) => {
 
         const startTime = process.hrtime();
         
-        const script = new vm.Script(code);
-        let result;
-        const context = new vm.createContext({ console: { log: x => result = x }});
-        script.runInContext(context);
+        const script = new vm.Script(code + `\n new ${requestJson.className}().${requestJson.methodName}()`);
+        const context = new vm.createContext({ });
+        const result = script.runInContext(context);
 
         const elapsedTime = process.hrtime(startTime);
         const elapsedMs = elapsedTime[0] * 1000 + Math.round(elapsedTime[1] / 1e6);

@@ -105,10 +105,12 @@ export const langConfigs: { [name: string]: LangConfig } = {
                 }
                 
                 new TestClass().testMethod()`),
-        }
+            className: 'TestClass',
+            methodName: 'testMethod'
+        },
     },
     php: {
-        port: 8000,
+        port: 8003,
         request: {
             lang: "PHP",
             code: deindent(`
@@ -116,12 +118,11 @@ export const langConfigs: { [name: string]: LangConfig } = {
                 
                 class TestClass {
                     function testMethod() {
-                        print("Hello World!\\n");
+                        return "Hello World!";
                     }
-                }
-                
-                $c = new TestClass();
-                $c->testMethod();`)
+                }`),
+            className: 'TestClass',
+            methodName: 'testMethod'
         }
     },
     perl: {
@@ -203,7 +204,7 @@ export const langConfigs: { [name: string]: LangConfig } = {
                     }
                 }
                 
-                new TestClass().testMethod()`)
-        }
+                new TestClass().testMethod()`),
+        },
     },
 };
