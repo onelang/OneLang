@@ -160,23 +160,21 @@ export const langConfigs: { [name: string]: LangConfig } = {
             code: deindent(`
                 class TestClass:
                     def test_method(self):
-                        print "Hello World!"
-
-                TestClass().test_method()`)
+                        return  "Hello World!"`)
         }
     },
     ruby: {
-        port: 8000,
+        port: 8005,
         request: {
             lang: "Ruby",
+            className: 'TestClass',
+            methodName: 'test_method',
             code: deindent(`
                 class TestClass
                     def test_method
-                        puts "Hello World!"
+                        return "Hello World!"
                     end
-                end
-                
-                TestClass.new().test_method()`)
+                end`)
         }
     },
     swift: {
