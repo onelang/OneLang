@@ -1,6 +1,6 @@
 import * as ts from "typescript";
 import * as SimpleAst from "ts-simple-ast";
-import TsSimpleAst from "ts-simple-ast";
+import { TsSimpleAst } from "ts-simple-ast";
 import { KSLangSchema as ks } from "./KSLangSchema";
 
 function flattenArray<T>(arrays: T[][]): T[] {

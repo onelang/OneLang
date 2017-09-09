@@ -2,6 +2,7 @@ import { Layout, LangUi } from "./UI/AppLayout";
 import { CodeGenerator, deindent, KsLangSchema } from "./CodeGenerator";
 import { langConfigs, LangConfig } from "./langConfigs";
 import { TypeScriptParser } from "./TypeScriptParser";
+import { ExposedPromise } from "./ExposedPromise";
 
 declare var YAML: any;
 
@@ -42,22 +43,34 @@ async function runLangTests() {
 
 const layout = new Layout();
 
-function html(parts: TemplateStringsArray, ...args: any[]) {
+function escapeHtml(unsafe) {
+    return unsafe.toString()
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+ }
+ 
+ function html(parts: TemplateStringsArray, ...args: any[]) {
     return function(obj: JQuery) {
-        obj.html(parts[0]);
+        let html = parts[0];
         for (let i = 0; i < args.length; i++)
-            obj.append(document.createTextNode(args[i]), parts[i + 1]);
+            html += escapeHtml(args[i]) + parts[i + 1];
+        obj.html(html);
+        return obj;
     };
 }
 
 function initLayout() {
     layout.init();
-    layout.onEditorChange = (lang: string, newContent: string) => {
+    layout.onEditorChange = async (lang: string, newContent: string) => {
         //console.log("editor change", lang, newContent);
         //new CodeGenerator(
-        for (const langName of Object.keys(layout.langs)) {
+        const sourceLangPromise = new ExposedPromise<string>();
+        await Promise.all(Object.keys(layout.langs).map(async langName => {
             const langUi = layout.langs[langName];
-            langUi.statusBar.html("loading...");
+            langUi.statusBar.text("loading...");
             try {
                 const langConfig = langConfigs[langName];
 
@@ -65,21 +78,35 @@ function initLayout() {
                 const codeGenerator = new CodeGenerator(schema, langConfig.schema);
                 const generatedCode = codeGenerator.generate();
                 const code = generatedCode.code.replace(/\n\n+/g, "\n\n").trim();
-                if (langName !== lang)
+                const isSourceLang = langName === lang;
+                if (!isSourceLang)
                     langUi.changeHandler.setContent(code);
                 //console.log(generatedCode.generatedTemplates);
                 //console.log(generatedCode.code);
     
-                runLang(langConfig, code).then(respJson => {
-                    if (respJson.exceptionText)
-                        html`<b>E:</b> ${respJson.exceptionText}}`(langUi.statusBar);
-                    else
-                        html`<b>R</b> [${respJson.elapsedMs}ms]: ${respJson.result || "<no result>"}`(langUi.statusBar);
+                runLang(langConfig, code).then(async respJson => {
+                    if (respJson.exceptionText) {
+                        langUi.statusBar.attr("title", respJson.exceptionText);
+                        html`<span class="label error">error</span>${respJson.exceptionText}`(langUi.statusBar);
+                    } else {
+                        let result = respJson.result;
+                        if (result.endsWith("\n"))
+                            result = result.substr(0, result.length - 1);
+
+                        langUi.statusBar.attr("title", "");
+                        html`<span class="label waiting">${respJson.elapsedMs}ms</span><span class="result">${result || "<no result>"}</span>`(langUi.statusBar);
+                        if (isSourceLang)
+                            sourceLangPromise.resolve(result);
+
+                        const sourceLangResult = await sourceLangPromise;
+                        const isMatch = result === sourceLangResult;
+                        langUi.statusBar.find(".label").addClass(isMatch ? "success" : "error").removeClass("waiting");
+                    }
                 });
             } catch(e) {
                 langUi.changeHandler.setContent(`${e}`);
             }
-        }
+        }));
     };
 }
 

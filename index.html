@@ -10,6 +10,11 @@
         .editorDiv { height:100%; display: flex; min-height: 100%; flex-direction: column; }
         .editorDiv .aceEditor { flex: 1; }
         .editorDiv .statusBar { color: white; height: 17px; margin: 2px 4px 0px 4px; font-family: arial; font-size: 13px; }
+        span.label { padding: 1px 4px; border-radius: 5px; font-size: 11px; font-weight: bold; margin-right:3px; }
+        span.label.success { background: #0a0; }
+        span.label.error { background: #f00; }
+        span.label.waiting { background: #aaa; }
+        span.result { position: relative; top: 1px; }
     </style>
     <script>
         requirejs.config({
