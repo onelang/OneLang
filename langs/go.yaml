@@ -20,7 +20,7 @@ templates:
   testGenerator: |-
     func main() {
         c := ({{class}}{})
-        c.{{method}}()
+        fmt.Println(c.{{method}}())
     }
 
   main: |-

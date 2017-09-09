@@ -22,7 +22,7 @@ templates:
     {
         static public void Main()
         {
-            new {{class}}().{{method}}();
+            Console.WriteLine(new {{class}}().{{method}}());
         }
     }
 

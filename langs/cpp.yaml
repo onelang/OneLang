@@ -21,7 +21,7 @@ templates:
     int main()
     {
         {{class}} c;
-        c.{{method}}();
+        std::cout << c.{{method}}() << std::endl;
         return 0;
     }
 

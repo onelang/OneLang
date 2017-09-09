@@ -11,7 +11,7 @@ casing:
 primitiveTypes:
   void: void
   boolean: bool
-  string: string
+  string: String
   int32: int
 array: '{{type}}[]'
 templates:

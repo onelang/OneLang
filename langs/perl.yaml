@@ -12,7 +12,7 @@ templates:
   testGenerator: |-
     package Program;
     my $c = new {{class}}();
-    $c->{{method}}()
+    print $c->{{method}}();
 
   main: |-
     use strict;

@@ -11,7 +11,7 @@ casing:
 templates:
   testGenerator: |-
     $c = new {{class}}();
-    $c->{{method}}();
+    print($c->{{method}}() . "\\n");
 
   main: |-
     <?php

@@ -63,7 +63,7 @@ function initLayout() {
 
                 const schema = TypeScriptParser.parseFile(newContent);
                 const codeGenerator = new CodeGenerator(schema, langConfig.schema);
-                const generatedCode = codeGenerator.generate();
+                const generatedCode = codeGenerator.generate(!!langConfig.request.className);
                 const code = generatedCode.code.replace(/\n\n+/g, "\n\n").trim();
                 if (langName !== lang)
                     langUi.changeHandler.setContent(code);
@@ -74,7 +74,7 @@ function initLayout() {
                     if (respJson.exceptionText)
                         html`<b>E:</b> ${respJson.exceptionText}}`(langUi.statusBar);
                     else
-                        html`<b>R:</b> ${respJson.result || "<no result>"}`(langUi.statusBar);
+                        html`<b>R</b> [${respJson.elapsedMs}ms]: ${respJson.result || "<no result>"}`(langUi.statusBar);
                 });
             } catch(e) {
                 langUi.changeHandler.setContent(`${e}`);
@@ -97,7 +97,7 @@ function setupTestProgram() {
         }
     
         testMethod() {
-            StdLib.Console.print("Hello world!");
+            return "Hello world!";
         }
     }`), true);
 }

@@ -15,7 +15,7 @@ primitiveTypes:
   int32: number
 templates:
   testGenerator: |-
-    new {{class}}().{{method}}();
+    console.log(new {{class}}().{{method}}());
 
   main: |-
     {{for class in classes}}

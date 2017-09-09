@@ -10,7 +10,7 @@ casing:
   method: camel_case
 templates:
   testGenerator: |-
-    {{class}}().{{method}}()
+    print({{class}}().{{method}}());
 
   main: |
     {{for inc in includes}}

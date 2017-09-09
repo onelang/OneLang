@@ -194,6 +194,8 @@ export const langConfigs: { [name: string]: LangConfig } = {
         port: 8002,
         request: {
             lang: "TypeScript",
+            className: 'TestClass',
+            methodName: 'testMethod',
             code: deindent(`
                 class TestClass {
                     testMethod() {

@@ -10,7 +10,7 @@ casing:
   method: camel_case
 templates:
   testGenerator: |-
-    new {{class}}().{{method}}();
+    console.log(new {{class}}().{{method}}());
 
   main: |-
     {{for class in classes}}
