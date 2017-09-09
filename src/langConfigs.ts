@@ -1,6 +1,18 @@
-import { deindent } from "./CodeGenerator";
+import { deindent, KsLangSchema } from "./CodeGenerator";
 
-export const langConfigs = {
+export interface LangConfig {
+    name?: string;
+    port: number;
+    request: {
+        lang?: string;
+        code: string;
+        className?: string;
+        methodName?: string;
+    };
+    schema?: KsLangSchema.LangFile;
+}
+
+export const langConfigs: { [name: string]: LangConfig } = {
     cpp: {
         port: 8000,
         request: {

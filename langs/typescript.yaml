@@ -8,6 +8,11 @@ extension: ts
 casing:
   class: pascal_case
   method: camel_case
+primitiveTypes:
+  void: void
+  boolean: boolean
+  string: string
+  int32: number
 templates:
   testGenerator: |-
     new {{class}}().{{method}}();

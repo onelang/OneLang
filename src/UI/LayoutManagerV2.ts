@@ -9,7 +9,7 @@ export class LayoutItem {
 export class Component extends LayoutItem {
     get component() { return <GoldenLayout.Component>(this.contentItem.isComponent ? this.contentItem : this.contentItem.contentItems[0]); }
     get container() { return this.component.container; }
-    get element() { return this.container.getElement().get(0); }
+    get element(): HTMLElement { return this.container.getElement().get(0); }
 
     get title() { return this.component.config.title; }
     set title(newTitle: string) { this.component.setTitle(newTitle); }

@@ -1,14 +1,17 @@
 import { LayoutManager, Container, Component, ClosableComponent } from "./LayoutManagerV2";
 import * as ace from "ace/ace";
 
+export interface LangUi {
+    component: Component,
+    editor: AceAjax.Editor,
+    changeHandler: EditorChangeHandler,
+    statusBar: JQuery
+}
+
 export class Layout {
     manager: LayoutManager;
 
-    langs: { [lang: string]: { 
-        component: Component,
-        editor: AceAjax.Editor,
-        changeHandler: EditorChangeHandler 
-    } } = {};
+    langs: { [lang: string]: LangUi } = {};
 
     errors: ClosableComponent;
 
@@ -46,13 +49,20 @@ export class Layout {
     onEditorChange(lang: string, newContent: string) { }
 
     initLang(component: Component, name: string, aceLang: string = null) {
-        const editor = LayoutHelper.setupEditor(component, aceLang || name);
+        const parent = $(`
+            <div class="editorDiv">
+                <div class="aceEditor" />
+                <div class="statusBar">status</div>
+            </div>
+            `).appendTo(component.element);
+        const statusBar = parent.find('.statusBar');
+        const editor = LayoutHelper.setupEditor(component, aceLang || name, parent.find('.aceEditor').get(0));
         const changeHandler = new EditorChangeHandler(editor, 200, (newContent, userChange) => {
             if (userChange)
                 this.onEditorChange(name, newContent);
         });
 
-        this.langs[name] = { component, editor, changeHandler };
+        this.langs[name] = { component, editor, changeHandler, statusBar };
     }
 }
 
@@ -102,12 +112,12 @@ export class Delayed {
 }
 
 export class LayoutHelper {
-    static setupEditor(parent: Component, lang: string) {
-        var editor = ace.edit(parent.element);
+    static setupEditor(container: Component, lang: string, element?: HTMLElement) {
+        var editor = ace.edit(element || container.element);
         editor.setTheme("ace/theme/monokai");
         editor.getSession().setMode(`ace/mode/${lang}`);
         editor.$blockScrolling = Infinity; // TODO: remove this line after they fix ACE not to throw warning to the console
-        parent.container.on("resize", () => editor.resize());
+        container.container.on("resize", () => editor.resize());
         return editor;
     }
 }

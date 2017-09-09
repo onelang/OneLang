@@ -1,6 +1,6 @@
-import { Layout } from "./UI/AppLayout";
+import { Layout, LangUi } from "./UI/AppLayout";
 import { CodeGenerator, deindent, KsLangSchema } from "./CodeGenerator";
-import { langConfigs } from "./langConfigs";
+import { langConfigs, LangConfig } from "./langConfigs";
 import { TypeScriptParser } from "./TypeScriptParser";
 
 declare var YAML: any;
@@ -10,25 +10,31 @@ async function getLangTemplate(langName: string) {
     return <KsLangSchema.LangFile> YAML.parse(response);
 }
 
-async function runLang(name: string, code?: string) {
-    const langConfig = langConfigs[name];
+interface CompileResult {
+    result?: string;
+    elapsedMs?: number;
+    exceptionText?: string;
+}
+
+async function runLang(langConfig: LangConfig, code?: string) {
     if (code)
         langConfig.request.code = code;
+
     const response = await fetch(`http://127.0.0.1:${langConfig.port}/compile`, {
         method: 'post',
         mode: 'cors',
         body: JSON.stringify(langConfig.request)
     });
 
-    const responseJson = await response.json();
-    console.log(name, responseJson);
+    const responseJson = <CompileResult>await response.json();
+    console.log(langConfig.name, responseJson);
     if (responseJson.exceptionText)
-        console.log(name, "Exception", responseJson.exceptionText);
+        console.log(langConfig.name, "Exception", responseJson.exceptionText);
     return responseJson;
 }
 
 async function runLangTests() {
-    let langsToRun = Object.keys(langConfigs);
+    let langsToRun = Object.values(langConfigs);
     //langsToRun = ["java", "javascript", "typescript", "ruby", "php", "perl"];
     for (const lang of langsToRun)
         runLang(lang);
@@ -36,31 +42,42 @@ async function runLangTests() {
 
 const layout = new Layout();
 
+function html(parts: TemplateStringsArray, ...args: any[]) {
+    return function(obj: JQuery) {
+        obj.html(parts[0]);
+        for (let i = 0; i < args.length; i++)
+            obj.append(document.createTextNode(args[i]), parts[i + 1]);
+    };
+}
+
 function initLayout() {
     layout.init();
     layout.onEditorChange = (lang: string, newContent: string) => {
         //console.log("editor change", lang, newContent);
         //new CodeGenerator(
         for (const langName of Object.keys(layout.langs)) {
-            if (langName === lang) continue;
-            //if (langName !== "go") continue;
-
-            const changeHandler = layout.langs[langName].changeHandler;
+            const langUi = layout.langs[langName];
+            langUi.statusBar.html("loading...");
             try {
-                const langSchema = langConfigs[langName]["schema"];
-                //console.log("langSchema", langSchema);
+                const langConfig = langConfigs[langName];
 
                 const schema = TypeScriptParser.parseFile(newContent);
-                const codeGenerator = new CodeGenerator(schema, langSchema);
+                const codeGenerator = new CodeGenerator(schema, langConfig.schema);
                 const generatedCode = codeGenerator.generate();
+                const code = generatedCode.code.replace(/\n\n+/g, "\n\n").trim();
+                if (langName !== lang)
+                    langUi.changeHandler.setContent(code);
                 //console.log(generatedCode.generatedTemplates);
                 //console.log(generatedCode.code);
     
-                const code = generatedCode.code.replace(/\n\n+/g, "\n\n").trim();
-                changeHandler.setContent(code);
-                runLang(langName, code);
+                runLang(langConfig, code).then(respJson => {
+                    if (respJson.exceptionText)
+                        html`<b>E:</b> ${respJson.exceptionText}}`(langUi.statusBar);
+                    else if (respJson.result)
+                        html`<b>R:</b> ${respJson.result}`(langUi.statusBar);
+                });
             } catch(e) {
-                changeHandler.setContent(`${e}`);
+                langUi.changeHandler.setContent(`${e}`);
             }
         }
     };
@@ -68,26 +85,31 @@ function initLayout() {
 
 //runLangTests();
 
+function setupTestProgram() {
+    layout.langs["typescript"].changeHandler.setContent(deindent(`
+    class TestClass {
+        calc() {
+            return (1 + 2) * 3;
+        }
+    
+        methodWithArgs(arg1: number, arg2: number, arg3: number) {
+            return arg1 + arg2 + arg3 * this.calc();
+        }
+    
+        testMethod() {
+            StdLib.Console.print("Hello world!");
+        }
+    }`), true);
+}
+
 async function main() {
-    for (const langName of Object.keys(langConfigs))
+    for (const langName of Object.keys(langConfigs)) {
+        langConfigs[langName].name = langName;
         langConfigs[langName].schema = await getLangTemplate(langName);
+    }
 
     initLayout();
-
-    layout.langs["typescript"].changeHandler.setContent(deindent(`
-        class TestClass {
-            calc() {
-                return (1 + 2) * 3;
-            }
-        
-            methodWithArgs(arg1: number, arg2: number, arg3: number) {
-                return arg1 + arg2 + arg3 * this.calc();
-            }
-        
-            testMethod() {
-                StdLib.Console.print("Hello world!");
-            }
-        }`), true);
+    setupTestProgram();
     //console.log(JSON.stringify(schema, null, 4));
 }
 
