@@ -1,5 +1,13 @@
 
 class TestClass {
+    arrayTest() {
+        let arr = [];
+        arr.push(1);
+        arr.push(2);
+        for (const item of arr)
+            console.log(item);
+    }
+
     calc() {
         return (1 + 2) * 3;
     }

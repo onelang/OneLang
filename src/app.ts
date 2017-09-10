@@ -29,8 +29,8 @@ for (const langFn of langs) {
 
     const codeGenerator = new CodeGenerator(schema, langSchema);
 
-    const generatedCode = codeGenerator.generate(true);
-    Utils.writeFile(`SamplePrograms/${prgName}/${prgName}.${langSchema.extension}`, generatedCode);
+    //const generatedCode = codeGenerator.generate(true);
+    //Utils.writeFile(`SamplePrograms/${prgName}/${prgName}.${langSchema.extension}`, generatedCode);
 
     const overview = codeGenerator.generateOverview();
     console.log(overview);

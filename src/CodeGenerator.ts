@@ -444,9 +444,11 @@ class KsLangOverviewGenerator {
     printBlock(block: ks.Block) {
         this.indent(1);
 
-        this.add("- ");
         for (const statement of block.statements) {
-            if (statement.type === ks.StatementType.Return) {
+            this.add("- ");
+            if (statement === null) {
+                this.addLine("<null>");
+            } else if (statement.type === ks.StatementType.Return) {
                 const stmt = <ks.ReturnStatement> statement;
                 this.addLine(`Return`);
                 this.printExpression(stmt.expression);
@@ -485,7 +487,9 @@ class KsLangOverviewGenerator {
         this.indent(1);
         
         this.add("- ");
-        if (expression.type === ks.ExpressionType.Binary) {
+        if (expression === null) {
+            this.addLine("<null>");
+        } else if (expression.type === ks.ExpressionType.Binary) {
             const expr = <ks.BinaryExpression> expression;
             this.addLine(`Binary: ${expr.operator}`);
             this.printExpression(expr.left);
