@@ -1,6 +1,7 @@
 class TestClass {
     arrayTest() {
         let arr = [1,2,"alma",null,false,2*3+4];
+        let arr2 = [1,2];
         arr.push(3);
         arr.push(4);
 
@@ -11,7 +12,7 @@ class TestClass {
         for (const itemIdx in arr)
             console.log(itemIdx);
 
-        for (const i = 0; i < arr.length; i++)
+        for (let i = 0; i < arr.length; i++)
             console.log(arr[i]);
     }
 

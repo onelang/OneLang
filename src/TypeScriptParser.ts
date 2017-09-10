@@ -41,21 +41,21 @@ export class TypeScriptParser {
     }
 
     convertTsType(tsType: ts.Type) {
-        const result = <ks.Type> { };
+        const result = new ks.Type();
 
         const typeText = (<any>tsType).intrinsicName || tsType.symbol.name;
         if (typeText === "number")
-            result.type = ks.PrimitiveType.Int32;
+            result.typeKind = ks.TypeKind.Number;
         else if (typeText === "string")
-            result.type = ks.PrimitiveType.String;
+            result.typeKind = ks.TypeKind.String;
         else if (typeText === "boolean")
-            result.type = ks.PrimitiveType.Boolean;
+            result.typeKind = ks.TypeKind.Boolean;
         else if (typeText === "void")
-            result.type = ks.PrimitiveType.Void;
+            result.typeKind = ks.TypeKind.Void;
         else {
             const isArray = typeText === "Array";
-            result.type = isArray ? ks.PrimitiveType.Array : 
-                ks.PrimitiveType.Class;
+            result.typeKind = isArray ? ks.TypeKind.Array : 
+                ks.TypeKind.Class;
             
             if(!isArray)
                 result.className = this.nameToKS(typeText);
@@ -81,14 +81,14 @@ export class TypeScriptParser {
         if (tsExpr.kind === ts.SyntaxKind.CallExpression) {
             const callExpr = <ts.CallExpression> tsExpr;
             return <ks.CallExpression> {
-                type: ks.ExpressionType.Call,
+                exprKind: ks.ExpressionKind.Call,
                 method: this.convertExpression(callExpr.expression),
                 arguments: callExpr.arguments.map(arg => this.convertExpression(arg))
             };
         } else if (tsExpr.kind === ts.SyntaxKind.BinaryExpression) {
             const binaryExpr = <ts.BinaryExpression> tsExpr;
             return <ks.BinaryExpression> {
-                type: ks.ExpressionType.Binary,
+                exprKind: ks.ExpressionKind.Binary,
                 left: this.convertExpression(binaryExpr.left),
                 right: this.convertExpression(binaryExpr.right),
                 operator: binaryExpr.operatorToken.getText()
@@ -96,34 +96,34 @@ export class TypeScriptParser {
         } else if (tsExpr.kind === ts.SyntaxKind.PropertyAccessExpression) {
             const propAccessExpr = <ts.PropertyAccessExpression> tsExpr;
             return <ks.PropertyAccessExpression> {
-                type: ks.ExpressionType.PropertyAccess,
+                exprKind: ks.ExpressionKind.PropertyAccess,
                 object: this.convertExpression(propAccessExpr.expression),
-                propertyName: this.convertExpression(propAccessExpr.name)
+                propertyName: propAccessExpr.name.text,
             };
         } else if (tsExpr.kind === ts.SyntaxKind.ElementAccessExpression) {
             const elementAccessExpr = <ts.ElementAccessExpression> tsExpr;
-            return <ks.PropertyAccessExpression> {
-                type: ks.ExpressionType.PropertyAccess,
+            return <ks.ElementAccessExpression> {
+                exprKind: ks.ExpressionKind.ElementAccess,
                 object: this.convertExpression(elementAccessExpr.expression),
-                propertyName: this.convertExpression(elementAccessExpr.argumentExpression)
+                elementExpr: this.convertExpression(elementAccessExpr.argumentExpression)
             };
         } else if (tsExpr.kind === ts.SyntaxKind.Identifier) {
             const identifier = <ts.Identifier> tsExpr;
             return <ks.Identifier> { 
-                type: ks.ExpressionType.Identifier,
+                exprKind: ks.ExpressionKind.Identifier,
                 text: identifier.text
             };
         } else if (tsExpr.kind === ts.SyntaxKind.NewExpression) {
             const newExpr = <ts.NewExpression> tsExpr;
             return <ks.NewExpression> { 
-                type: ks.ExpressionType.New,
+                exprKind: ks.ExpressionKind.New,
                 class: this.convertExpression(newExpr.expression),
                 arguments: newExpr.arguments.map(arg => this.convertExpression(arg))
             };
         } else if (tsExpr.kind === ts.SyntaxKind.ConditionalExpression) {
             const condExpr = <ts.ConditionalExpression> tsExpr;
             return <ks.ConditionalExpression> { 
-                type: ks.ExpressionType.Conditional,
+                exprKind: ks.ExpressionKind.Conditional,
                 condition: this.convertExpression(condExpr.condition),
                 whenTrue: this.convertExpression(condExpr.whenTrue),
                 whenFalse: this.convertExpression(condExpr.whenFalse),
@@ -131,39 +131,39 @@ export class TypeScriptParser {
         } else if (tsExpr.kind === ts.SyntaxKind.StringLiteral) {
             const literalExpr = <ts.StringLiteral> tsExpr;
             return <ks.Literal> {
-                type: ks.ExpressionType.Literal,
+                exprKind: ks.ExpressionKind.Literal,
                 literalType: "string",
                 value: literalExpr.text
             };
         } else if (tsExpr.kind === ts.SyntaxKind.NumericLiteral) {
             const literalExpr = <ts.NumericLiteral> tsExpr;
             return <ks.Literal> {
-                type: ks.ExpressionType.Literal,
+                exprKind: ks.ExpressionKind.Literal,
                 literalType: "numeric",
                 value: literalExpr.text
             };
         } else if (tsExpr.kind === ts.SyntaxKind.FalseKeyword || tsExpr.kind === ts.SyntaxKind.TrueKeyword) {
             return <ks.Literal> { 
-                type: ks.ExpressionType.Literal,
+                exprKind: ks.ExpressionKind.Literal,
                 literalType: "boolean",
                 value: tsExpr.getText()
             };
         } else if (tsExpr.kind === ts.SyntaxKind.NullKeyword) {
             return <ks.Literal> { 
-                type: ks.ExpressionType.Literal,
+                exprKind: ks.ExpressionKind.Literal,
                 literalType: "null",
                 value: "null"
             };
         } else if (tsExpr.kind === ts.SyntaxKind.ParenthesizedExpression) {
             const parenExpr = <ts.ParenthesizedExpression> tsExpr;
             return <ks.ParenthesizedExpression> { 
-                type: ks.ExpressionType.Parenthesized,
+                exprKind: ks.ExpressionKind.Parenthesized,
                 expression: this.convertExpression(parenExpr.expression)
             };
         } else if (tsExpr.kind === ts.SyntaxKind.PostfixUnaryExpression) {
             const unaryExpr = <ts.PostfixUnaryExpression> tsExpr;
             return <ks.UnaryExpression> { 
-                type: ks.ExpressionType.Unary,
+                exprKind: ks.ExpressionKind.Unary,
                 unaryType: "postfix",
                 operator: 
                     unaryExpr.operator === ts.SyntaxKind.PlusPlusToken ? "++" : 
@@ -173,7 +173,7 @@ export class TypeScriptParser {
         } else if (tsExpr.kind === ts.SyntaxKind.PrefixUnaryExpression) {
             const unaryExpr = <ts.PrefixUnaryExpression> tsExpr;
             return <ks.UnaryExpression> { 
-                type: ks.ExpressionType.Unary,
+                exprKind: ks.ExpressionKind.Unary,
                 unaryType: "prefix",
                 operator: 
                     unaryExpr.operator === ts.SyntaxKind.PlusPlusToken ? "++" : 
@@ -187,7 +187,7 @@ export class TypeScriptParser {
         } else if (tsExpr.kind === ts.SyntaxKind.ArrayLiteralExpression) {
             const expr = <ts.ArrayLiteralExpression> tsExpr;
             return <ks.ArrayLiteralExpression> { 
-                type: ks.ExpressionType.ArrayLiteral,
+                exprKind: ks.ExpressionKind.ArrayLiteral,
                 items: expr.elements.map(x => this.convertExpression(x))
             };
         } else {
@@ -196,7 +196,7 @@ export class TypeScriptParser {
             const keyword = knownKeywords.find(x => kindName.toLowerCase() === `${x}keyword`);
             if (keyword) {
                 return <ks.Identifier> {
-                    type: ks.ExpressionType.Identifier,
+                    exprKind: ks.ExpressionKind.Identifier,
                     text: keyword
                 };
             } else {
@@ -208,7 +208,7 @@ export class TypeScriptParser {
 
     convertVariableDeclaration(varDecl: ts.VariableDeclaration): ks.VariableDeclaration {
         return <ks.VariableDeclaration> {
-            type: ks.StatementType.Variable,
+            stmtType: ks.StatementType.Variable,
             variableName: varDecl.name.getText(),
             initializer: this.convertExpression(varDecl.initializer)
         };
@@ -236,7 +236,7 @@ export class TypeScriptParser {
         if (tsStatement.kind === ts.SyntaxKind.IfStatement) {
             const ifStatement = <ts.IfStatement> tsStatement;
             ksStmt = <ks.IfStatement> {
-                type: ks.StatementType.If,
+                stmtType: ks.StatementType.If,
                 condition: this.convertExpression(ifStatement.expression),
                 then: this.convertBlock(ifStatement.thenStatement),
                 else: this.convertBlock(ifStatement.elseStatement),
@@ -244,19 +244,19 @@ export class TypeScriptParser {
         } else if (tsStatement.kind === ts.SyntaxKind.ReturnStatement) {
             const returnStatement = <ts.ReturnStatement> tsStatement;
             ksStmt = <ks.ReturnStatement> {
-                type: ks.StatementType.Return,
+                stmtType: ks.StatementType.Return,
                 expression: this.convertExpression(returnStatement.expression),
             };
         } else if (tsStatement.kind === ts.SyntaxKind.ThrowStatement) {
             const throwStatement = <ts.ReturnStatement> tsStatement;
             ksStmt = <ks.ThrowStatement> {
-                type: ks.StatementType.Throw,
+                stmtType: ks.StatementType.Throw,
                 expression: this.convertExpression(throwStatement.expression),
             };
         } else if (tsStatement.kind === ts.SyntaxKind.ExpressionStatement) {
             const expressionStatement = <ts.ExpressionStatement> tsStatement;
             ksStmt = <ks.ExpressionStatement> {
-                type: ks.StatementType.Expression,
+                stmtType: ks.StatementType.Expression,
                 expression: this.convertExpression(expressionStatement.expression),
             };
         } else if (tsStatement.kind === ts.SyntaxKind.VariableStatement) {
@@ -265,22 +265,22 @@ export class TypeScriptParser {
         } else if (tsStatement.kind === ts.SyntaxKind.WhileStatement) {
             const whileStatement = <ts.WhileStatement> tsStatement;
             ksStmt = <ks.WhileStatement> {
-                type: ks.StatementType.While,
+                stmtType: ks.StatementType.While,
                 condition: this.convertExpression(whileStatement.expression),
                 body: this.convertBlock(<ts.Block>whileStatement.statement),
             };
         } else if (tsStatement.kind === ts.SyntaxKind.ForOfStatement) {
             const stmt = <ts.ForOfStatement> tsStatement;
             ksStmt = <ks.ForeachStatement> {
-                type: ks.StatementType.Foreach,
+                stmtType: ks.StatementType.Foreach,
                 itemVariable: this.convertInitializer(stmt.initializer),
                 items: this.convertExpression(stmt.expression),
                 body: this.convertBlock(stmt.statement)
             };
-    } else if (tsStatement.kind === ts.SyntaxKind.ForStatement) {
+        } else if (tsStatement.kind === ts.SyntaxKind.ForStatement) {
             const stmt = <ts.ForStatement> tsStatement;
             ksStmt = <ks.ForStatement> {
-                type: ks.StatementType.For,
+                stmtType: ks.StatementType.For,
                 itemVariable: this.convertInitializer(stmt.initializer),
                 condition: this.convertExpression(stmt.condition),
                 incrementor: this.convertExpression(stmt.incrementor),
@@ -289,7 +289,7 @@ export class TypeScriptParser {
         } else
             this.logNodeError(`Unexpected statement kind "${ts.SyntaxKind[tsStatement.kind]}".`);
 
-        return ksStmts || [ksStmt];
+        return ksStmts || (ksStmt ? [ksStmt] : []);
     }
 
     convertBlock(tsBlock: ts.BlockLike|ts.Statement): ks.Block {

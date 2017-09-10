@@ -12,7 +12,7 @@ primitiveTypes:
   void: void
   boolean: boolean
   string: string
-  int32: number
+  number: number
 templates:
   testGenerator: |-
     console.log(new {{class}}().{{method}}());

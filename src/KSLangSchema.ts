@@ -24,19 +24,64 @@ export namespace KSLangSchema {
 
     export enum Visibility { Public = "public", Protected = "protected", Private = "private" }
     
-    export enum PrimitiveType { 
+    export enum TypeKind { 
         Void = "void",
         Boolean = "boolean",
-        Array = "array",
         String = "string",
-        Int32 = "int32",
-        Class = "class"
+        Number = "number",
+        Null = "null",
+        Any = "any",
+        Array = "array",
+        Class = "class",
     }
 
-    export interface Type {
-        type: PrimitiveType;
-        className: string;
-        typeArguments: Type[];
+    export class Type {
+        static PrimitiveTypeKinds = [TypeKind.Void, TypeKind.Boolean, TypeKind.String, TypeKind.Number, TypeKind.Null, TypeKind.Any];
+        
+        static Void = new Type(TypeKind.Void);
+        static Boolean = new Type(TypeKind.Boolean);
+        static String = new Type(TypeKind.String);
+        static Number = new Type(TypeKind.Number);
+        static Null = new Type(TypeKind.Null);
+        static Any = new Type(TypeKind.Any);
+        static Array(itemType: Type) { return new Type(TypeKind.Array, null, [itemType]); }
+        static Class(className: string, generics: Type[]) { return new Type(TypeKind.Array, className, generics); }
+
+        get isPrimitiveType() { return Type.PrimitiveTypeKinds.includes(this.typeKind); }
+        get isArray() { return this.typeKind === TypeKind.Array; }
+        get isClass() { return this.typeKind === TypeKind.Class; }
+
+        constructor(public typeKind: TypeKind = null, public className: string = null, public typeArguments: Type[] = null) { }
+
+        equals(other: Type) {
+            if (this.typeKind !== other.typeKind)
+                return false;
+
+            if (this.isPrimitiveType)
+                return true;
+
+            const typeArgsMatch = this.typeArguments.length === other.typeArguments.length
+                && this.typeArguments.every((thisArg, i) => thisArg.equals(other.typeArguments[i]));
+
+            if (this.typeKind === TypeKind.Array)
+                return typeArgsMatch;
+            else if (this.typeKind === TypeKind.Class)
+                return this.className === other.className && typeArgsMatch;
+            else
+                throw new Error(`Type.equals: Unknown typeKind: ${this.typeKind}`);
+        }
+
+        repr() {
+            const argsRepr = () => this.typeArguments.map(x => x.repr()).join(", ");
+            if (this.isPrimitiveType)
+                return this.typeKind.toString();
+            else if (this.isArray)
+                return `array<${argsRepr()}>`;
+            else if (this.isClass)
+                return `${this.className}<${argsRepr()}>`;
+            else
+                return "?";
+        }
     }
 
     export interface VariableBase {
@@ -66,10 +111,11 @@ export namespace KSLangSchema {
 
     // ======================= EXPRESSIONS ======================
 
-    export enum ExpressionType {
+    export enum ExpressionKind {
         Call = "Call",
         Binary = "Binary",
         PropertyAccess = "PropertyAccess",
+        ElementAccess = "ElementAccess",
         Identifier = "Identifier",
         New = "New",
         Conditional = "Conditional",
@@ -80,7 +126,8 @@ export namespace KSLangSchema {
     }
 
     export interface Expression {
-        type: ExpressionType;
+        exprKind: ExpressionKind;
+        valueType: Type;
     }
 
     export interface CallExpression extends Expression {
@@ -130,7 +177,12 @@ export namespace KSLangSchema {
 
     export interface PropertyAccessExpression extends Expression {
         object: Expression;
-        propertyName: Expression;
+        propertyName: string;
+    }
+
+    export interface ElementAccessExpression extends Expression {
+        object: Expression;
+        elementExpr: Expression;
     }
 
     // ======================= STATEMENTS ======================
@@ -147,7 +199,7 @@ export namespace KSLangSchema {
     }
 
     export interface Statement {
-        type: StatementType;
+        stmtType: StatementType;
     }
 
     export interface IfStatement extends Statement {

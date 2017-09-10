@@ -14,7 +14,7 @@ primitiveTypes:
   void: ""
   boolean: bool
   string: string
-  int32: int
+  number: int
 array: '[]{{type}}'
 templates:
   testGenerator: |-
