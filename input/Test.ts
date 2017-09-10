@@ -1,11 +1,18 @@
-
 class TestClass {
     arrayTest() {
-        let arr = [];
-        arr.push(1);
-        arr.push(2);
-        for (const item of arr)
+        let arr = [1,2,"alma",null,false,2*3+4];
+        arr.push(3);
+        arr.push(4);
+
+        for (const item of arr) {
             console.log(item);
+        }
+
+        for (const itemIdx in arr)
+            console.log(itemIdx);
+
+        for (const i = 0; i < arr.length; i++)
+            console.log(arr[i]);
     }
 
     calc() {

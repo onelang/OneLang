@@ -76,6 +76,7 @@ export namespace KSLangSchema {
         Literal = "Literal",
         Parenthesized = "Parenthesized",
         Unary = "Unary",
+        ArrayLiteral = "ArrayLiteral",
     }
 
     export interface Expression {
@@ -92,8 +93,12 @@ export namespace KSLangSchema {
     }
 
     export interface Literal extends Expression {
-        literalType: "numeric"|"string";
+        literalType: "numeric"|"string"|"boolean"|"null";
         value: string;
+    }
+
+    export interface ArrayLiteralExpression extends Expression {
+        items: Expression[];
     }
 
     export interface NewExpression extends Expression {
@@ -137,6 +142,8 @@ export namespace KSLangSchema {
         Variable = "Variable",
         While = "While",
         Throw = "Throw",
+        Foreach = "Foreach",
+        For = "For",
     }
 
     export interface Statement {
@@ -161,13 +168,26 @@ export namespace KSLangSchema {
         expression: Expression;
     }
 
-    export interface VariableStatement extends Statement {
+    export interface VariableDeclaration extends Statement {
         variableName: string;
         initializer: Expression;
     }
 
     export interface WhileStatement extends Statement {
         condition: Expression;
+        body: Block;
+    }
+
+    export interface ForeachStatement extends Statement {
+        itemVariable: VariableDeclaration;
+        items: Expression;
+        body: Block;
+    }
+
+    export interface ForStatement extends Statement {
+        itemVariable: VariableDeclaration;
+        condition: Expression;
+        incrementor: Expression;
         body: Block;
     }
 

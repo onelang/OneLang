@@ -11,7 +11,7 @@ export class TypeScriptParser {
     ast: TsSimpleAst;
 
     constructor() {
-        this.ast = new (SimpleAst.TsSimpleAst || SimpleAst.default)();
+        this.ast = new (SimpleAst.TsSimpleAst || SimpleAst["default"])();
     }
 
     static parseFile(sourceCode: string, filePath?: string): ks.SchemaFile {
@@ -142,6 +142,18 @@ export class TypeScriptParser {
                 literalType: "numeric",
                 value: literalExpr.text
             };
+        } else if (tsExpr.kind === ts.SyntaxKind.FalseKeyword || tsExpr.kind === ts.SyntaxKind.TrueKeyword) {
+            return <ks.Literal> { 
+                type: ks.ExpressionType.Literal,
+                literalType: "boolean",
+                value: tsExpr.getText()
+            };
+        } else if (tsExpr.kind === ts.SyntaxKind.NullKeyword) {
+            return <ks.Literal> { 
+                type: ks.ExpressionType.Literal,
+                literalType: "null",
+                value: "null"
+            };
         } else if (tsExpr.kind === ts.SyntaxKind.ParenthesizedExpression) {
             const parenExpr = <ts.ParenthesizedExpression> tsExpr;
             return <ks.ParenthesizedExpression> { 
@@ -172,9 +184,15 @@ export class TypeScriptParser {
                     unaryExpr.operator === ts.SyntaxKind.ExclamationToken ? "!" : null,
                 operand: this.convertExpression(unaryExpr.operand)
             };
+        } else if (tsExpr.kind === ts.SyntaxKind.ArrayLiteralExpression) {
+            const expr = <ts.ArrayLiteralExpression> tsExpr;
+            return <ks.ArrayLiteralExpression> { 
+                type: ks.ExpressionType.ArrayLiteral,
+                items: expr.elements.map(x => this.convertExpression(x))
+            };
         } else {
             const kindName = ts.SyntaxKind[tsExpr.kind];
-            const knownKeywords = ["this", "super", "true", "false"];
+            const knownKeywords = ["this", "super"];
             const keyword = knownKeywords.find(x => kindName.toLowerCase() === `${x}keyword`);
             if (keyword) {
                 return <ks.Identifier> {
@@ -186,6 +204,27 @@ export class TypeScriptParser {
                 return null;
             }
         }
+    }
+
+    convertVariableDeclaration(varDecl: ts.VariableDeclaration): ks.VariableDeclaration {
+        return <ks.VariableDeclaration> {
+            type: ks.StatementType.Variable,
+            variableName: varDecl.name.getText(),
+            initializer: this.convertExpression(varDecl.initializer)
+        };
+    }
+
+    convertInitializer(initializer: ts.ForInitializer): ks.VariableDeclaration {
+        let itemVariable;
+        if (initializer.kind === ts.SyntaxKind.VariableDeclarationList) {
+            const varDeclList = <ts.VariableDeclarationList> initializer;
+            if (varDeclList.declarations.length !== 1)
+                this.logNodeError(`Multiple declarations are not supported as for of initializers.`);
+            itemVariable = this.convertVariableDeclaration(varDeclList.declarations[0]);
+        } else
+            this.logNodeError(`${ts.SyntaxKind[initializer.kind]} is not supported yet as for of initializer.`);
+
+        return itemVariable;
     }
 
     convertStatement(tsStatement: ts.Statement): ks.Statement[] {
@@ -222,19 +261,30 @@ export class TypeScriptParser {
             };
         } else if (tsStatement.kind === ts.SyntaxKind.VariableStatement) {
             const variableStatement = <ts.VariableStatement> tsStatement;
-            ksStmts = variableStatement.declarationList.declarations.map(varDecl => {
-                return <ks.VariableStatement> {
-                    type: ks.StatementType.Variable,
-                    variableName: varDecl.name.getText(),
-                    initializer: this.convertExpression(varDecl.initializer)
-                };
-            });
+            ksStmts = variableStatement.declarationList.declarations.map(x => this.convertVariableDeclaration(x));
         } else if (tsStatement.kind === ts.SyntaxKind.WhileStatement) {
             const whileStatement = <ts.WhileStatement> tsStatement;
             ksStmt = <ks.WhileStatement> {
                 type: ks.StatementType.While,
                 condition: this.convertExpression(whileStatement.expression),
                 body: this.convertBlock(<ts.Block>whileStatement.statement),
+            };
+        } else if (tsStatement.kind === ts.SyntaxKind.ForOfStatement) {
+            const stmt = <ts.ForOfStatement> tsStatement;
+            ksStmt = <ks.ForeachStatement> {
+                type: ks.StatementType.Foreach,
+                itemVariable: this.convertInitializer(stmt.initializer),
+                items: this.convertExpression(stmt.expression),
+                body: this.convertBlock(stmt.statement)
+            };
+    } else if (tsStatement.kind === ts.SyntaxKind.ForStatement) {
+            const stmt = <ts.ForStatement> tsStatement;
+            ksStmt = <ks.ForStatement> {
+                type: ks.StatementType.For,
+                itemVariable: this.convertInitializer(stmt.initializer),
+                condition: this.convertExpression(stmt.condition),
+                incrementor: this.convertExpression(stmt.incrementor),
+                body: this.convertBlock(stmt.statement)                
             };
         } else
             this.logNodeError(`Unexpected statement kind "${ts.SyntaxKind[tsStatement.kind]}".`);

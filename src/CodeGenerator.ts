@@ -355,7 +355,7 @@ class KsLangTypeInterferer {
                 const stmt = <ks.ThrowStatement> statement;
                 this.processExpression(stmt.expression);
             } else if (statement.type === ks.StatementType.Variable) {
-                const stmt = <ks.VariableStatement> statement;
+                const stmt = <ks.VariableDeclaration> statement;
                 this.processExpression(stmt.initializer);
             } else if (statement.type === ks.StatementType.While) {
                 const stmt = <ks.WhileStatement> statement;
@@ -468,7 +468,7 @@ class KsLangOverviewGenerator {
                 const stmt = <ks.ThrowStatement> statement;
                 this.printExpression(stmt.expression);
             } else if (statement.type === ks.StatementType.Variable) {
-                const stmt = <ks.VariableStatement> statement;
+                const stmt = <ks.VariableDeclaration> statement;
                 this.addLine(`Variable: ${stmt.variableName}`);
                 this.printExpression(stmt.initializer);
             } else if (statement.type === ks.StatementType.While) {
@@ -477,6 +477,25 @@ class KsLangOverviewGenerator {
                 this.printExpression(stmt.condition);
                 this.addLine(`Body`);
                 this.printBlock(stmt.body);
+            } else if (statement.type === ks.StatementType.Foreach) {
+                const stmt = <ks.ForeachStatement> statement;
+                this.addLine(`Foreach ${stmt.itemVariable.variableName}: ${stmt.itemVariable.type}`);
+                this.addLine(`Items`);
+                this.printExpression(stmt.items);
+                this.addLine(`Body`);
+                this.printBlock(stmt.body);
+            } else if (statement.type === ks.StatementType.For) {
+                const stmt = <ks.ForStatement> statement;
+                this.addLine(`For ("${stmt.itemVariable.variableName}")`);
+                this.addLine(`Condition`);
+                this.printExpression(stmt.condition);
+                this.addLine(`Incrementor`);
+                this.printExpression(stmt.incrementor);
+                this.addLine(`Body`);
+                this.printBlock(stmt.body);
+            } else {
+                console.log(`Unknown statement type: ${statement.type}`);
+                this.addLine(`${statement.type} (unknown!)`);
             }
         }
 
@@ -532,6 +551,14 @@ class KsLangOverviewGenerator {
             this.addLine(`PropertyAccess`);
             this.printExpression(expr.object);
             this.printExpression(expr.propertyName);
+        } else if (expression.type === ks.ExpressionType.ArrayLiteral) {
+            const expr = <ks.ArrayLiteralExpression> expression;
+            this.addLine(`ArrayLiteral`);
+            for (const item of expr.items)
+                this.printExpression(item);
+        } else {
+            console.log(`Unknown expression type: ${expression.type}`);
+            this.addLine(`${expression.type} (unknown!)`);
         }
 
         this.indent(-1);

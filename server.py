@@ -9,7 +9,7 @@ import traceback
 
 import SimpleHTTPServer
 from SocketServer import ThreadingMixIn
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from BaseHTTPServer import HTTPServer
 
 PORT = 8000
 TEST_SERVERS = False

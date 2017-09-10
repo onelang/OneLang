@@ -77,7 +77,7 @@ function initLayout() {
                 const schema = TypeScriptParser.parseFile(newContent);
                 const codeGenerator = new CodeGenerator(schema, langConfig.schema);
                 const generatedCode = codeGenerator.generate(!langConfig.request.className);
-                const code = generatedCode.code.replace(/\n\n+/g, "\n\n").trim();
+                const code = generatedCode.replace(/\n\n+/g, "\n\n").trim();
                 const isSourceLang = langName === lang;
                 if (!isSourceLang)
                     langUi.changeHandler.setContent(code);
