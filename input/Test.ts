@@ -9,6 +9,6 @@ class TestClass {
     }
 
     testMethod() {
-        StdLib.Console.print("Hello world!");
+        return "Hello world!";
     }
 }

@@ -60,14 +60,18 @@ namespace CodeGeneratorSchema {
     }
 
     export interface Method {
-        parameters: MethodParameter[];
-        name: string;
-        returnType: string;
         visibility: "public"|"protected"|"private";
+        name: string;
+        origName: string;
+        parameters: MethodParameter[];
+        returnType: string;
+        body: ks.Block;
     }
 
     export interface Class {
         name: string;
+        origName: string;
+        methods: Method[];
         publicMethods: Method[];
         privateMethods: Method[];
     }
@@ -106,8 +110,66 @@ function tmpl(parts: TemplateStringsArray, ...values: any[]) {
     return deindent(result);
 }
 
+class CodeGeneratorModel {
+    includes: string[] = [];
+    absoluteIncludes: string[] = [];
+    classes: CodeGeneratorSchema.Class[] = [];
+    expressionGenerators: { [name: string]: (expr: any) => string } = {};
+    internalMethodGenerators: { [name: string]: (expr: any) => string } = {};
+
+    constructor(public generator: CodeGenerator) { }
+    
+    gen(obj: ks.Statement|ks.Expression) {
+        if (obj.type === ks.StatementType.Expression)
+            obj = (<ks.ExpressionStatement>obj).expression;
+
+        if (obj.type === ks.ExpressionType.Call) {
+            const callExpr = <ks.CallExpression> obj;
+            const methodPath = this.generator.getMethodPath(callExpr.method);
+            const method = methodPath && this.generator.lang.functions[methodPath];
+            if (method) {
+                if (method.arguments.length !== callExpr.arguments.length)
+                    throw new Error(`Invalid argument count for '${methodPath}': expected: ${method.arguments.length}, actual: ${callExpr.arguments.length}.`);
+
+                const args = callExpr.arguments.map(x => this.gen(x));
+                const code = this.internalMethodGenerators[methodPath].apply(this, args);
+                return code;
+            }
+        }
+
+        let genName = obj.type.toString();
+        if (genName === ks.ExpressionType.Literal) {
+            const literalExpr = <ks.Literal> obj;
+            genName = `${literalExpr.literalType.ucFirst()}Literal`;
+        }
+
+        const genFunc = this.expressionGenerators[genName];
+        if (!genFunc)
+            throw new Error(`Expression template not found: ${genName}!`);
+        const result = genFunc.call(this, obj);
+
+        //console.log("generate statement", obj, result);
+
+        return result;
+    }
+
+    main(): string { return null; }
+    testGenerator(cls: string, method: string): string { return null; }
+}
+
 export class CodeGenerator {
-    constructor(public schema: ks.SchemaFile, public lang: KsLangSchema.LangFile) { }
+    schema: ks.SchemaFile;
+    model = new CodeGeneratorModel(this);
+    templateObjectCode: string;
+    templateObject;
+
+    constructor(schema: ks.SchemaFile, public lang: KsLangSchema.LangFile) {
+        this.schema = JSON.parse(JSON.stringify(schema)); // clone
+        this.setupNames();
+        this.setupClasses();
+        this.setupIncludes();
+        this.compileTemplates();
+    }
 
     getName(name: string, type: "class"|"method"|"enum") {
         const casing = this.lang.casing[type === "enum" ? "class" : type];
@@ -165,106 +227,82 @@ export class CodeGenerator {
         return `return tmpl\`\n${tmpl.templateToJS(tmpl.treeRoot, args)}\`;`;
     }
 
-    generate(callTestMethod: boolean) {
-        const schema = <ks.SchemaFile>JSON.parse(JSON.stringify(this.schema));
-        for (const enumName of Object.keys(schema.enums))
-            schema.enums[enumName].name = this.getName(enumName, "enum");
+    setupNames() {
+        for (const enumName of Object.keys(this.schema.enums)) {
+            const enumObj = this.schema.enums[enumName];
+            enumObj.origName = enumName;
+            enumObj.name = this.getName(enumName, "enum");
+        }
 
-        for (const className of Object.keys(schema.classes)) {
-            const cls = schema.classes[className];
+        for (const className of Object.keys(this.schema.classes)) {
+            const cls = this.schema.classes[className];
+            cls.origName = className;
             cls.name = this.getName(className, "class");
 
             for (const methodName of Object.keys(cls.methods)) {
                 const method = cls.methods[methodName];
+                method.origName = methodName;
                 method.name = this.getName(methodName, "method");
             }
         }
+    }
 
-        const self = this;
-        let vm = { // <CodeGeneratorSchema.Root> 
-            includes: <string[]> [],
-            absoluteIncludes: [],
-            classes: Object.keys(schema.classes).map(className => {
-                const cls = schema.classes[className];
-                const methods = Object.keys(cls.methods).map(methodName => {
-                    const method = cls.methods[methodName];
-                    return <CodeGeneratorSchema.Method> {
-                        name: this.getName(methodName, "method"),
-                        returnType: this.getTypeName(method.returns),
-                        body: method.body,
-                        parameters: method.parameters.map((param, idx) => {
-                            return <CodeGeneratorSchema.MethodParameter> {
-                                idx,
-                                name: param.name,
-                                type: this.getTypeName(param.type),
-                            };
-                        }),
-                        visibility: "public" // TODO
-                    };
-                });
-                return <CodeGeneratorSchema.Class> {
-                    name: this.getName(className, "class"),
-                    methods: methods,
-                    publicMethods: methods,
-                    privateMethods: []
+    setupClasses() {
+        this.model.classes = Object.keys(this.schema.classes).map(className => {
+            const cls = this.schema.classes[className];
+            const methods = Object.keys(cls.methods).map(methodName => {
+                const method = cls.methods[methodName];
+                return <CodeGeneratorSchema.Method> {
+                    name: method.name,
+                    origName: method.origName,
+                    returnType: this.getTypeName(method.returns),
+                    body: method.body,
+                    parameters: method.parameters.map((param, idx) => {
+                        return <CodeGeneratorSchema.MethodParameter> {
+                            idx,
+                            name: param.name,
+                            type: this.getTypeName(param.type),
+                        };
+                    }),
+                    visibility: "public" // TODO
                 };
-            }),
-            expressionGenerators: <{ [name: string]: (expr: any) => string }> {},
-            internalMethodGenerators: <{ [name: string]: (expr: any) => string }> {},
-            gen: function (obj: ks.Statement|ks.Expression) {
-                if (obj.type === ks.StatementType.Expression)
-                    obj = (<ks.ExpressionStatement>obj).expression;
+            });
+            return <CodeGeneratorSchema.Class> {
+                name: cls.name,
+                origName: cls.origName,
+                methods: methods,
+                publicMethods: methods,
+                privateMethods: []
+            };
+        });
+    }
 
-                if (obj.type === ks.ExpressionType.Call) {
-                    const callExpr = <ks.CallExpression> obj;
-                    const methodPath = self.getMethodPath(callExpr.method);
-                    const method = methodPath && self.lang.functions[methodPath];
-                    if (method) {
-                        if (method.arguments.length !== callExpr.arguments.length)
-                            throw new Error(`Invalid argument count for '${methodPath}': expected: ${method.arguments.length}, actual: ${callExpr.arguments.length}.`);
-
-                        const args = callExpr.arguments.map(x => this.gen(x));
-                        const code = this.internalMethodGenerators[methodPath].apply(this, args);
-                        return code;
-                    }
-                }
-
-                const genFunc = this.expressionGenerators[obj.type];
-                if (!genFunc)
-                    throw new Error(`Expression template not found: ${obj.type}!`);
-                const result = genFunc.call(this, obj);
-
-                //console.log("generate statement", obj, result);
-
-                return result;
-            },
-            main: <() => string> null,
-            testGenerator: <(cls: string, method: string) => string> null,
-        };
-        
+    setupIncludes() {
         for (const func of Object.values(this.lang.functions))
             for (const include of func.includes || [])
-                vm.includes.push(include);
+                this.model.includes.push(include);
+    }
 
-        const genTemplateMethodCode = (name: string, args: string[], template: string) => {
-            const newName = name.includes(".") ? `"${name}"` : name;
-            return tmpl`
-                ${newName}(${args.join(", ")}) {
-                    ${this.genTemplate(template, args)}
-                },`;
-        }
+    genTemplateMethodCode(name: string, args: string[], template: string) {
+        const newName = name.includes(".") ? `"${name}"` : name;
+        return tmpl`
+            ${newName}(${args.join(", ")}) {
+                ${this.genTemplate(template, args)}
+            },`;
+    }
 
-        const generatedTemplates = tmpl`
+    compileTemplates() {
+        this.templateObjectCode = tmpl`
             ({
                 expressionGenerators: {
                     ${Object.keys(this.lang.expressions).map(name => 
-                        genTemplateMethodCode(name.ucFirst(), ["expr"], this.lang.expressions[name])).join("\n\n")}
+                        this.genTemplateMethodCode(name.ucFirst(), ["expr"], this.lang.expressions[name])).join("\n\n")}
                 },
 
                 internalMethodGenerators: {
                     ${Object.keys(this.lang.functions).map(funcPath => {
                         const funcInfo = this.lang.functions[funcPath];
-                        return genTemplateMethodCode(funcPath, funcInfo.arguments.map(x => x.name), funcInfo.template);
+                        return this.genTemplateMethodCode(funcPath, funcInfo.arguments.map(x => x.name), funcInfo.template);
                     }).join("\n\n")}
                 },
 
@@ -273,19 +311,236 @@ export class CodeGenerator {
                     const tmplObj = typeof tmplOrig === "string" ? <KsLangSchema.TemplateObj>{ template: tmplOrig, args: [] } : tmplOrig;
                     if (tmplName === "testGenerator")
                         tmplObj.args = [{ name: "cls" }, { name: "method" }];
-                    return genTemplateMethodCode(tmplName, tmplObj.args.map(x => x.name), tmplObj.template);
+                    return this.genTemplateMethodCode(tmplName, tmplObj.args.map(x => x.name), tmplObj.template);
                 }).join("\n\n")}
             })`;
 
+        this.templateObject = eval(this.templateObjectCode);
+    }
 
-        const generatedTemplatesObj = eval(generatedTemplates);
-        vm = Object.assign(vm, generatedTemplatesObj);
+    generate(callTestMethod: boolean) {
+        const model = Object.assign(this.model, this.templateObject);
 
-        let code = vm.main();
+        let code = this.model.main();
         if (callTestMethod)
-            code += "\n\n" + vm.testGenerator(this.getName("test_class", "class"), this.getName("test_method", "method"));
+            code += "\n\n" + this.model.testGenerator(this.getName("test_class", "class"), this.getName("test_method", "method"));
 
-        return { code, generatedTemplates };
+        return code;
+    }
+
+    generateOverview() {
+        return new KsLangOverviewGenerator(this).result;
     }
 }
 
+class KsLangTypeInterferer {
+    constructor(public codeGen: CodeGenerator) {
+        this.process();
+    }
+
+    processBlock(block: ks.Block) {
+        for (const statement of block.statements) {
+            if (statement.type === ks.StatementType.Return) {
+                const stmt = <ks.ReturnStatement> statement;
+                this.processExpression(stmt.expression);
+            } else if (statement.type === ks.StatementType.Expression) {
+                const stmt = <ks.ExpressionStatement> statement;
+                this.processExpression(stmt.expression);
+            } else if (statement.type === ks.StatementType.If) {
+                const stmt = <ks.IfStatement> statement;
+                this.processExpression(stmt.condition);
+                this.processBlock(stmt.then);
+                this.processBlock(stmt.else);
+            } else if (statement.type === ks.StatementType.Throw) {
+                const stmt = <ks.ThrowStatement> statement;
+                this.processExpression(stmt.expression);
+            } else if (statement.type === ks.StatementType.Variable) {
+                const stmt = <ks.VariableStatement> statement;
+                this.processExpression(stmt.initializer);
+            } else if (statement.type === ks.StatementType.While) {
+                const stmt = <ks.WhileStatement> statement;
+                this.processExpression(stmt.condition);
+                this.processBlock(stmt.body);
+            }
+        }
+    }
+
+    processExpression(expression: ks.Expression) {
+        if (expression.type === ks.ExpressionType.Binary) {
+            const expr = <ks.BinaryExpression> expression;
+            this.processExpression(expr.left);
+            this.processExpression(expr.right);
+        } else if (expression.type === ks.ExpressionType.Call) {
+            const expr = <ks.CallExpression> expression;
+            this.processExpression(expr.method);
+            for (const arg of expr.arguments)
+                this.processExpression(arg);
+        } else if (expression.type === ks.ExpressionType.Conditional) {
+            const expr = <ks.ConditionalExpression> expression;
+            this.processExpression(expr.condition);
+            this.processExpression(expr.whenTrue);
+            this.processExpression(expr.whenFalse);
+        } else if (expression.type === ks.ExpressionType.Identifier) {
+            const expr = <ks.Identifier> expression;
+        } else if (expression.type === ks.ExpressionType.New) {
+            const expr = <ks.NewExpression> expression;
+            this.processExpression(expr.class);
+            for (const arg of expr.arguments)
+                this.processExpression(arg);
+        } else if (expression.type === ks.ExpressionType.Literal) {
+            const expr = <ks.Literal> expression;
+        } else if (expression.type === ks.ExpressionType.Parenthesized) {
+            const expr = <ks.ParenthesizedExpression> expression;
+            this.processExpression(expr.expression);
+        } else if (expression.type === ks.ExpressionType.Unary) {
+            const expr = <ks.UnaryExpression> expression;
+            this.processExpression(expr.operand);
+        } else if (expression.type === ks.ExpressionType.PropertyAccess) {
+            const expr = <ks.PropertyAccessExpression> expression;
+            this.processExpression(expr.object);
+            this.processExpression(expr.propertyName);
+        }
+    }
+
+    process() {
+        for (const cls of this.codeGen.model.classes) {
+            for (const method of cls.methods) {
+                this.processBlock(method.body);
+            }
+        }
+    }
+}
+
+class KsLangOverviewGenerator {
+    result = "";
+    pad = "";
+    padWasAdded = false;
+
+    constructor(public codeGen: CodeGenerator) {
+        this.generate();
+    }
+
+    addLine(line: string) {
+        this.add(`${line}\n`);
+        this.padWasAdded = false;
+    }
+
+    add(data: string) {
+        if (!this.padWasAdded) {
+            this.result += this.pad;
+            this.padWasAdded = true;
+        }
+
+        this.result += data;
+    }
+
+    indent(num: -1|1) {
+        if (num === 1)
+            this.pad += "  ";
+        else
+            this.pad = this.pad.substr(0, this.pad.length - 2);
+    }
+
+    printBlock(block: ks.Block) {
+        this.indent(1);
+
+        this.add("- ");
+        for (const statement of block.statements) {
+            if (statement.type === ks.StatementType.Return) {
+                const stmt = <ks.ReturnStatement> statement;
+                this.addLine(`Return`);
+                this.printExpression(stmt.expression);
+            } else if (statement.type === ks.StatementType.Expression) {
+                const stmt = <ks.ExpressionStatement> statement;
+                this.addLine(`Expression`);
+                this.printExpression(stmt.expression);
+            } else if (statement.type === ks.StatementType.If) {
+                const stmt = <ks.IfStatement> statement;
+                this.addLine(`If`);
+                this.printExpression(stmt.condition);
+                this.addLine(`Then`);
+                this.printBlock(stmt.then);
+                this.addLine(`Else`);
+                this.printBlock(stmt.else);
+            } else if (statement.type === ks.StatementType.Throw) {
+                const stmt = <ks.ThrowStatement> statement;
+                this.printExpression(stmt.expression);
+            } else if (statement.type === ks.StatementType.Variable) {
+                const stmt = <ks.VariableStatement> statement;
+                this.addLine(`Variable: ${stmt.variableName}`);
+                this.printExpression(stmt.initializer);
+            } else if (statement.type === ks.StatementType.While) {
+                const stmt = <ks.WhileStatement> statement;
+                this.addLine(`While`);
+                this.printExpression(stmt.condition);
+                this.addLine(`Body`);
+                this.printBlock(stmt.body);
+            }
+        }
+
+        this.indent(-1);
+    }
+
+    printExpression(expression: ks.Expression) {
+        this.indent(1);
+        
+        this.add("- ");
+        if (expression.type === ks.ExpressionType.Binary) {
+            const expr = <ks.BinaryExpression> expression;
+            this.addLine(`Binary: ${expr.operator}`);
+            this.printExpression(expr.left);
+            this.printExpression(expr.right);
+        } else if (expression.type === ks.ExpressionType.Call) {
+            const expr = <ks.CallExpression> expression;
+            this.addLine(`Call`);
+            this.printExpression(expr.method);
+            for (const arg of expr.arguments)
+                this.printExpression(arg);
+        } else if (expression.type === ks.ExpressionType.Conditional) {
+            const expr = <ks.ConditionalExpression> expression;
+            this.addLine(`Conditional`);
+            this.printExpression(expr.condition);
+            this.printExpression(expr.whenTrue);
+            this.printExpression(expr.whenFalse);
+        } else if (expression.type === ks.ExpressionType.Identifier) {
+            const expr = <ks.Identifier> expression;
+            this.addLine(`Identifier: ${expr.text}`);
+        } else if (expression.type === ks.ExpressionType.New) {
+            const expr = <ks.NewExpression> expression;
+            this.addLine(`New`);
+            this.printExpression(expr.class);
+            for (const arg of expr.arguments)
+                this.printExpression(arg);
+        } else if (expression.type === ks.ExpressionType.Literal) {
+            const expr = <ks.Literal> expression;
+            const value = expr.literalType === "string" ? `"${expr.value}"` : expr.value;
+            this.addLine(`Literal (${expr.literalType}): ${value}`);
+        } else if (expression.type === ks.ExpressionType.Parenthesized) {
+            const expr = <ks.ParenthesizedExpression> expression;
+            this.addLine(`Parenthesized`);
+            this.printExpression(expr.expression);
+        } else if (expression.type === ks.ExpressionType.Unary) {
+            const expr = <ks.UnaryExpression> expression;
+            this.addLine(`Unary (${expr.unaryType}): ${expr.operator}`);
+            this.printExpression(expr.operand);
+        } else if (expression.type === ks.ExpressionType.PropertyAccess) {
+            const expr = <ks.PropertyAccessExpression> expression;
+            this.addLine(`PropertyAccess`);
+            this.printExpression(expr.object);
+            this.printExpression(expr.propertyName);
+        }
+
+        this.indent(-1);
+    }
+
+    generate() {
+        for (const cls of this.codeGen.model.classes) {
+            for (const method of cls.methods) {
+                const argList = method.parameters.map(arg => `${arg.name}: ${arg.type}`).join(", ");
+                this.addLine(`${cls.origName}::${method.origName}(${argList}): ${method.returnType}`);
+                this.printBlock(method.body);
+                this.addLine("");
+            }
+        }
+    }
+}

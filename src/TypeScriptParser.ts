@@ -11,7 +11,7 @@ export class TypeScriptParser {
     ast: TsSimpleAst;
 
     constructor() {
-        this.ast = new SimpleAst.TsSimpleAst();
+        this.ast = new (SimpleAst.TsSimpleAst || SimpleAst.default)();
     }
 
     static parseFile(sourceCode: string, filePath?: string): ks.SchemaFile {
@@ -129,16 +129,18 @@ export class TypeScriptParser {
                 whenFalse: this.convertExpression(condExpr.whenFalse),
             };
         } else if (tsExpr.kind === ts.SyntaxKind.StringLiteral) {
-            const stringLiteralExpr = <ts.StringLiteral> tsExpr;
-            return <ks.StringLiteral> { 
-                type: ks.ExpressionType.StringLiteral,
-                value: stringLiteralExpr.text
+            const literalExpr = <ts.StringLiteral> tsExpr;
+            return <ks.Literal> {
+                type: ks.ExpressionType.Literal,
+                literalType: "string",
+                value: literalExpr.text
             };
         } else if (tsExpr.kind === ts.SyntaxKind.NumericLiteral) {
-            const stringLiteralExpr = <ts.NumericLiteral> tsExpr;
-            return <ks.NumericLiteral> { 
-                type: ks.ExpressionType.NumericLiteral,
-                value: stringLiteralExpr.text
+            const literalExpr = <ts.NumericLiteral> tsExpr;
+            return <ks.Literal> {
+                type: ks.ExpressionType.Literal,
+                literalType: "numeric",
+                value: literalExpr.text
             };
         } else if (tsExpr.kind === ts.SyntaxKind.ParenthesizedExpression) {
             const parenExpr = <ts.ParenthesizedExpression> tsExpr;
@@ -147,26 +149,28 @@ export class TypeScriptParser {
                 expression: this.convertExpression(parenExpr.expression)
             };
         } else if (tsExpr.kind === ts.SyntaxKind.PostfixUnaryExpression) {
-            const postfixUnaryExpr = <ts.PostfixUnaryExpression> tsExpr;
-            return <ks.PostfixUnaryExpression> { 
-                type: ks.ExpressionType.PostfixUnary,
+            const unaryExpr = <ts.PostfixUnaryExpression> tsExpr;
+            return <ks.UnaryExpression> { 
+                type: ks.ExpressionType.Unary,
+                unaryType: "postfix",
                 operator: 
-                    postfixUnaryExpr.operator === ts.SyntaxKind.PlusPlusToken ? "++" : 
-                    postfixUnaryExpr.operator === ts.SyntaxKind.MinusMinusToken ? "--" : null,
-                operand: this.convertExpression(postfixUnaryExpr.operand)
+                    unaryExpr.operator === ts.SyntaxKind.PlusPlusToken ? "++" : 
+                    unaryExpr.operator === ts.SyntaxKind.MinusMinusToken ? "--" : null,
+                operand: this.convertExpression(unaryExpr.operand)
             };
         } else if (tsExpr.kind === ts.SyntaxKind.PrefixUnaryExpression) {
-            const prefixUnaryExpr = <ts.PrefixUnaryExpression> tsExpr;
-            return <ks.PrefixUnaryExpression> { 
-                type: ks.ExpressionType.PrefixUnary,
+            const unaryExpr = <ts.PrefixUnaryExpression> tsExpr;
+            return <ks.UnaryExpression> { 
+                type: ks.ExpressionType.Unary,
+                unaryType: "prefix",
                 operator: 
-                    prefixUnaryExpr.operator === ts.SyntaxKind.PlusPlusToken ? "++" : 
-                    prefixUnaryExpr.operator === ts.SyntaxKind.MinusMinusToken ? "--" : 
-                    prefixUnaryExpr.operator === ts.SyntaxKind.PlusToken ? "+" : 
-                    prefixUnaryExpr.operator === ts.SyntaxKind.MinusToken ? "-" : 
-                    prefixUnaryExpr.operator === ts.SyntaxKind.TildeToken ? "~" : 
-                    prefixUnaryExpr.operator === ts.SyntaxKind.ExclamationToken ? "!" : null,
-                operand: this.convertExpression(prefixUnaryExpr.operand)
+                    unaryExpr.operator === ts.SyntaxKind.PlusPlusToken ? "++" : 
+                    unaryExpr.operator === ts.SyntaxKind.MinusMinusToken ? "--" : 
+                    unaryExpr.operator === ts.SyntaxKind.PlusToken ? "+" : 
+                    unaryExpr.operator === ts.SyntaxKind.MinusToken ? "-" : 
+                    unaryExpr.operator === ts.SyntaxKind.TildeToken ? "~" : 
+                    unaryExpr.operator === ts.SyntaxKind.ExclamationToken ? "!" : null,
+                operand: this.convertExpression(unaryExpr.operand)
             };
         } else {
             const kindName = ts.SyntaxKind[tsExpr.kind];

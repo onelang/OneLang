@@ -6,6 +6,7 @@ export namespace KSLangSchema {
 
     export interface Enum {
         name?: string;
+        origName?: string;
         values: EnumMember[];
     }
 
@@ -15,6 +16,7 @@ export namespace KSLangSchema {
 
     export interface Class {
         name?: string;
+        origName?: string;
         fields: { [name: string]: Field };
         constructor: Constructor;
         methods: { [name: string]: Method };
@@ -55,24 +57,14 @@ export namespace KSLangSchema {
     }
 
     export interface Method {
+        origName?: string;
         name?: string;
         parameters: MethodParameter[];
         returns: Type;
         body: Block;
     }
 
-    export enum StatementType { 
-        If = "If",
-        Return = "Return",
-        Expression = "Expression",
-        Variable = "Variable",
-        While = "While",
-        Throw = "Throw",
-    }
-
-    export interface Statement {
-        type: StatementType;
-    }
+    // ======================= EXPRESSIONS ======================
 
     export enum ExpressionType {
         Call = "Call",
@@ -81,11 +73,9 @@ export namespace KSLangSchema {
         Identifier = "Identifier",
         New = "New",
         Conditional = "Conditional",
-        StringLiteral = "StringLiteral",
-        NumericLiteral = "NumericLiteral",
+        Literal = "Literal",
         Parenthesized = "Parenthesized",
-        PostfixUnary = "PostfixUnary",
-        PrefixUnary = "PrefixUnary",
+        Unary = "Unary",
     }
 
     export interface Expression {
@@ -101,11 +91,8 @@ export namespace KSLangSchema {
         text: string;
     }
 
-    export interface StringLiteral extends Expression {
-        value: string;
-    }
-
-    export interface NumericLiteral extends Expression {
+    export interface Literal extends Expression {
+        literalType: "numeric"|"string";
         value: string;
     }
 
@@ -120,12 +107,8 @@ export namespace KSLangSchema {
         right: Expression;
     }
 
-    export interface PostfixUnaryExpression extends Expression {
-        operator: "++" | "--";
-        operand: Expression;
-    }
-
-    export interface PrefixUnaryExpression extends Expression {
+    export interface UnaryExpression extends Expression {
+        unaryType: "postfix"|"prefix";
         operator: "++" | "--" | "+" | "-" | "~" | "!";
         operand: Expression;
     }
@@ -143,6 +126,21 @@ export namespace KSLangSchema {
     export interface PropertyAccessExpression extends Expression {
         object: Expression;
         propertyName: Expression;
+    }
+
+    // ======================= STATEMENTS ======================
+
+    export enum StatementType { 
+        If = "If",
+        Return = "Return",
+        Expression = "Expression",
+        Variable = "Variable",
+        While = "While",
+        Throw = "Throw",
+    }
+
+    export interface Statement {
+        type: StatementType;
     }
 
     export interface IfStatement extends Statement {
