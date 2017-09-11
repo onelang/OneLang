@@ -33,6 +33,6 @@ for (const langFn of langs) {
     //Utils.writeFile(`SamplePrograms/${prgName}/${prgName}.${langSchema.extension}`, generatedCode);
 
     const overview = codeGenerator.generateOverview();
-    console.log(overview);
-    debugger;
+    fs.writeFileSync("out/overview.txt", overview);
+    //console.log(overview);
 }

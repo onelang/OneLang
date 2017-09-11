@@ -273,7 +273,7 @@ export class TypeScriptParser {
             const stmt = <ts.ForOfStatement> tsStatement;
             ksStmt = <ks.ForeachStatement> {
                 stmtType: ks.StatementType.Foreach,
-                itemVariable: this.convertInitializer(stmt.initializer),
+                varName: this.convertInitializer(stmt.initializer).variableName,
                 items: this.convertExpression(stmt.expression),
                 body: this.convertBlock(stmt.statement)
             };

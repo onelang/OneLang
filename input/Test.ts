@@ -1,9 +1,9 @@
 class TestClass {
     arrayTest() {
-        let arr = [1,2,"alma",null,false,2*3+4];
-        let arr2 = [1,2];
+        let arr = [1, 2];
         arr.push(3);
         arr.push(4);
+        let arr2 = [1 + 2, false];
 
         for (const item of arr) {
             console.log(item);
