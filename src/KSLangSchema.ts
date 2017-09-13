@@ -186,7 +186,7 @@ export namespace KSLangSchema {
         value: string;
     }
 
-    export interface ArrayLiteralExpression extends Expression {
+    export interface ArrayLiteral extends Expression {
         items: Expression[];
     }
 

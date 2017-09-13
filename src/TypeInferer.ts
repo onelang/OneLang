@@ -1,5 +1,6 @@
 import { KSLangSchema as ks } from "./KSLangSchema";
 import { CodeGenerator } from "./CodeGenerator";
+import { KsModelVisitor } from "./ModelVisitor";
 
 export enum ReferenceType { Class, Method, MethodVariable, ClassVariable }
 
@@ -71,7 +72,7 @@ export class ClassRepository {
     getClass(name: string) {
         const cls = this.classes[name];
         if (!cls)
-            console.log(`Class not found: ${name}.`);
+            console.log(`[ClassRepository] Class not found: ${name}.`);
         return cls;
     }
 }
@@ -103,160 +104,119 @@ export class VariableContext {
     }
 }
 
-export class TypeInferer {
-    constructor(public codeGen: CodeGenerator) { }
+export class TypeInferer extends KsModelVisitor<Context> {
+    constructor(public codeGen: CodeGenerator) { super(); }
 
     log(data: string) {
         console.log(`[TypeInferer] ${data}`);
     }
 
-    processIdentifier(id: ks.Identifier, context: Context) {
+    protected visitIdentifier(id: ks.Identifier, context: Context) {
         id.valueType = context.variables.getType(id.text);
         //console.log(`Getting identifier: ${id.text} [${id.valueType.repr()}]`);
     }
 
-    processBlock(block: ks.Block, context: Context) {
-        for (const statement of block.statements) {
-            if (statement.stmtType === ks.StatementType.Return) {
-                const stmt = <ks.ReturnStatement> statement;
-                this.processExpression(stmt.expression, context);
-            } else if (statement.stmtType === ks.StatementType.Expression) {
-                const stmt = <ks.ExpressionStatement> statement;
-                this.processExpression(stmt.expression, context);
-            } else if (statement.stmtType === ks.StatementType.If) {
-                const stmt = <ks.IfStatement> statement;
-                this.processExpression(stmt.condition, context);
-                this.processBlock(stmt.then, context);
-                this.processBlock(stmt.else, context);
-            } else if (statement.stmtType === ks.StatementType.Throw) {
-                const stmt = <ks.ThrowStatement> statement;
-                this.processExpression(stmt.expression, context);
-            } else if (statement.stmtType === ks.StatementType.Variable) {
-                const stmt = <ks.VariableDeclaration> statement;
-                this.processExpression(stmt.initializer, context);
-                context.variables.add(stmt.variableName, stmt.initializer.valueType);
-            } else if (statement.stmtType === ks.StatementType.While) {
-                const stmt = <ks.WhileStatement> statement;
-                this.processExpression(stmt.condition, context);
-                this.processBlock(stmt.body, context);
-            } else if (statement.stmtType === ks.StatementType.For) {
-                const stmt = <ks.ForStatement> statement;
+    protected visitVariableDeclaration(stmt: ks.VariableDeclaration, context: Context) {
+        super.visitVariableDeclaration(stmt, context);
+        context.variables.add(stmt.variableName, stmt.initializer.valueType);
+    }
 
-                this.processExpression(stmt.itemVariable.initializer, context);
-                const newContext = context.inherit();
-                newContext.variables.add(stmt.itemVariable.variableName,
-                    stmt.itemVariable.initializer.valueType);
+    protected visitForStatement(stmt: ks.ForStatement, context: Context) {
+        this.visitExpression(stmt.itemVariable.initializer, context);
+        
+        const newContext = context.inherit();
+        newContext.variables.add(stmt.itemVariable.variableName,
+            stmt.itemVariable.initializer.valueType);
 
-                this.processExpression(stmt.condition, newContext);
-                this.processExpression(stmt.incrementor, newContext);
-                this.processBlock(stmt.body, newContext);
-            } else if (statement.stmtType === ks.StatementType.Foreach) {
-                const stmt = <ks.ForeachStatement> statement;
-                this.processExpression(stmt.items, context);
-                
-                const itemsType = stmt.items.valueType;
-                if (!itemsType.isArray) {
-                    console.log(`Tried to use foreach on a non-array type: ${itemsType.repr()}!`);
-                    stmt.varType = ks.Type.Any;
-                } else {
-                    stmt.varType = itemsType.typeArguments[0];
-                }
+        this.visitExpression(stmt.condition, newContext);
+        this.visitExpression(stmt.incrementor, newContext);
+        this.visitBlock(stmt.body, newContext);
+    }
 
-                const newContext = context.inherit();
-                newContext.variables.add(stmt.varName, stmt.varType);
-                this.processBlock(stmt.body, newContext);
-            } else {
-                this.log(`Unknown statement type: ${statement.stmtType}`);
-            }
+    protected visitForeachStatement(stmt: ks.ForeachStatement, context: Context) {
+        this.visitExpression(stmt.items, context);
+        
+        const itemsType = stmt.items.valueType;
+        if (!itemsType.isArray) {
+            console.log(`Tried to use foreach on a non-array type: ${itemsType.repr()}!`);
+            stmt.varType = ks.Type.Any;
+        } else {
+            stmt.varType = itemsType.typeArguments[0];
+        }
+
+        const newContext = context.inherit();
+        newContext.variables.add(stmt.varName, stmt.varType);
+
+        this.visitBlock(stmt.body, newContext);
+    }
+
+    protected visitBinaryExpression(expr: ks.BinaryExpression, context: Context) {
+        super.visitBinaryExpression(expr, context);
+
+        if (expr.left.valueType.typeKind === ks.TypeKind.Number && 
+                expr.right.valueType.typeKind === ks.TypeKind.Number)
+            expr.valueType.typeKind = ks.TypeKind.Number;
+    }
+
+    protected visitCallExpression(expr: ks.CallExpression, context: Context) {
+        super.visitCallExpression(expr, context);
+
+        if (expr.method.valueType.isMethod) {
+            const cls = context.classes.getClass(expr.method.valueType.classType.className);
+            const method = cls.getMethod(expr.method.valueType.methodName);
+            expr.valueType = method.getReturnType();
+        } else {
+            this.log(`Tried to call a non-method type '${expr.method.valueType.repr()}'.`);
+        }
+}
+
+    protected visitLiteral(expr: ks.Literal, context: Context) {
+        if (expr.literalType === "numeric")
+            expr.valueType.typeKind = ks.TypeKind.Number;
+        else if (expr.literalType === "string")
+            expr.valueType.typeKind = ks.TypeKind.String;
+        else if (expr.literalType === "boolean")
+            expr.valueType.typeKind = ks.TypeKind.Boolean;
+        else if (expr.literalType === "null")
+            expr.valueType.typeKind = ks.TypeKind.Null;
+        else
+            this.log(`Could not inter literal type: ${expr.literalType}`);
+    }
+
+    protected visitParenthesizedExpression(expr: ks.ParenthesizedExpression, context: Context) {
+        super.visitParenthesizedExpression(expr, context);
+        expr.valueType = expr.expression.valueType;
+    }
+
+    protected visitPropertyAccessExpression(expr: ks.PropertyAccessExpression, context: Context) {
+        super.visitPropertyAccessExpression(expr, context);
+
+        const objType = expr.object.valueType;
+        if (objType.isClass) {
+            const cls = context.classes.getClass(objType.className);
+            const method = cls && cls.getMethod(expr.propertyName);
+            if (method)
+                expr.valueType = ks.Type.Method(objType, expr.propertyName);
+        } else {
+            this.log(`Cannot access property '${expr.propertyName}' on object type '${expr.object.valueType.repr()}'.`);
         }
     }
 
-    processExpression(expression: ks.Expression, context: Context) {
+    protected visitArrayLiteral(expr: ks.ArrayLiteral, context: Context) {
+        super.visitArrayLiteral(expr, context);
+
+        let itemType = expr.items.length > 0 ? expr.items[0].valueType : ks.Type.Any;
+        if (expr.items.some(x => !x.valueType.equals(itemType)))
+            itemType = ks.Type.Any;
+
+        expr.valueType = ks.Type.Array(itemType);
+    }
+
+    protected visitExpression(expression: ks.Expression, context: Context) {
         expression.valueType = new ks.Type();
         expression.valueType.typeKind = ks.TypeKind.Any;
 
-        if (expression.exprKind === ks.ExpressionKind.Binary) {
-            const expr = <ks.BinaryExpression> expression;
-            this.processExpression(expr.left, context);
-            this.processExpression(expr.right, context);
-
-            if (expr.left.valueType.typeKind === ks.TypeKind.Number && expr.right.valueType.typeKind === ks.TypeKind.Number)
-                expr.valueType.typeKind = ks.TypeKind.Number;
-        } else if (expression.exprKind === ks.ExpressionKind.Call) {
-            const expr = <ks.CallExpression> expression;
-            this.processExpression(expr.method, context);
-            for (const arg of expr.arguments)
-                this.processExpression(arg, context);
-
-            if (expr.method.valueType.isMethod) {
-                const cls = context.classes.getClass(expr.method.valueType.classType.className);
-                const method = cls.getMethod(expr.method.valueType.methodName);
-                expr.valueType = method.getReturnType();
-            } else {
-                console.log(`Tried to call a non-method type '${expr.method.valueType.repr()}'.`);
-            }
-        } else if (expression.exprKind === ks.ExpressionKind.Conditional) {
-            const expr = <ks.ConditionalExpression> expression;
-            this.processExpression(expr.condition, context);
-            this.processExpression(expr.whenTrue, context);
-            this.processExpression(expr.whenFalse, context);
-        } else if (expression.exprKind === ks.ExpressionKind.Identifier) {
-            const expr = <ks.Identifier> expression;
-            this.processIdentifier(expr, context);
-        } else if (expression.exprKind === ks.ExpressionKind.New) {
-            const expr = <ks.NewExpression> expression;
-            this.processExpression(expr.class, context);
-            for (const arg of expr.arguments)
-                this.processExpression(arg, context);
-        } else if (expression.exprKind === ks.ExpressionKind.Literal) {
-            const expr = <ks.Literal> expression;
-            if (expr.literalType === "numeric")
-                expr.valueType.typeKind = ks.TypeKind.Number;
-            else if (expr.literalType === "string")
-                expr.valueType.typeKind = ks.TypeKind.String;
-            else if (expr.literalType === "boolean")
-                expr.valueType.typeKind = ks.TypeKind.Boolean;
-            else if (expr.literalType === "null")
-                expr.valueType.typeKind = ks.TypeKind.Null;
-            else
-                this.log(`Could not inter literal type: ${expr.literalType}`);
-        } else if (expression.exprKind === ks.ExpressionKind.Parenthesized) {
-            const expr = <ks.ParenthesizedExpression> expression;
-            this.processExpression(expr.expression, context);
-            expr.valueType = expr.expression.valueType;
-        } else if (expression.exprKind === ks.ExpressionKind.Unary) {
-            const expr = <ks.UnaryExpression> expression;
-            this.processExpression(expr.operand, context);
-        } else if (expression.exprKind === ks.ExpressionKind.PropertyAccess) {
-            const expr = <ks.PropertyAccessExpression> expression;
-            this.processExpression(expr.object, context);
-
-            const objType = expr.object.valueType;
-            if (objType.isClass) {
-                const cls = context.classes.getClass(objType.className);
-                const method = cls && cls.getMethod(expr.propertyName);
-                if (method)
-                    expr.valueType = ks.Type.Method(objType, expr.propertyName);
-            } else {
-                console.log(`Cannot access property '${expr.propertyName}' on object type '${expr.object.valueType.repr()}'.`);
-            }
-        } else if (expression.exprKind === ks.ExpressionKind.ElementAccess) {
-            const expr = <ks.ElementAccessExpression> expression;
-            this.processExpression(expr.object, context);
-            this.processExpression(expr.elementExpr, context);
-        } else if (expression.exprKind === ks.ExpressionKind.ArrayLiteral) {
-            const expr = <ks.ArrayLiteralExpression> expression;
-            for (const item of expr.items)
-                this.processExpression(item, context);
-
-            let itemType = expr.items.length > 0 ? expr.items[0].valueType : ks.Type.Any;
-            if (expr.items.some(x => !x.valueType.equals(itemType)))
-                itemType = ks.Type.Any;
-
-            expr.valueType = ks.Type.Array(itemType);
-        } else {
-            this.log(`Unknown expression type: ${expression.exprKind}`);
-        }
+        super.visitExpression(expression, context);
     }
 
     getTypeFromString(typeStr: string) {
@@ -290,7 +250,7 @@ export class TypeInferer {
                 const methodContext = classContext.inherit();
                 for (const param of method.parameters)
                     methodContext.variables.add(param.name, ks.Type.Load(param.type));
-                this.processBlock(method.body, methodContext);
+                this.visitBlock(method.body, methodContext);
             }
         }
     }

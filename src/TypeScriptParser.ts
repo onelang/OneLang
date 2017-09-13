@@ -24,7 +24,7 @@ export class TypeScriptParser {
     }
 
     logNodeError(message: string, node?: Node) {
-        console.warn(message, node);
+        console.warn(`[TypeScriptParser] ${message}`, node || "");
     }
 
     nameToKS(name: string, node?: Node) {
@@ -186,7 +186,7 @@ export class TypeScriptParser {
             };
         } else if (tsExpr.kind === ts.SyntaxKind.ArrayLiteralExpression) {
             const expr = <ts.ArrayLiteralExpression> tsExpr;
-            return <ks.ArrayLiteralExpression> { 
+            return <ks.ArrayLiteral> { 
                 exprKind: ks.ExpressionKind.ArrayLiteral,
                 items: expr.elements.map(x => this.convertExpression(x))
             };

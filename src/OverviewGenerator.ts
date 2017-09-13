@@ -1,13 +1,19 @@
 import { KSLangSchema as ks } from "./KSLangSchema";
 import { CodeGenerator } from "./CodeGenerator";
+import { KsModelVisitor } from "./ModelVisitor";
 
-export class OverviewGenerator {
+export class OverviewGenerator extends KsModelVisitor<void> {
     result = "";
     pad = "";
     padWasAdded = false;
 
     constructor(public codeGen: CodeGenerator) {
+        super();
         this.generate();
+    }
+
+    log(data: string) {
+        console.log(`[OverviewGenerator] ${data}`);
     }
 
     addLine(line: string) {
@@ -31,74 +37,71 @@ export class OverviewGenerator {
             this.pad = this.pad.substr(0, this.pad.length - 2);
     }
 
-    printBlock(block: ks.Block) {
+    visitStatement(statement: ks.Statement) {
+        if (statement === null) {
+            this.addLine("<null>");
+        } else if (statement.stmtType === ks.StatementType.If) {
+            const stmt = <ks.IfStatement> statement;
+            this.addLine(`If`);
+            this.visitExpression(stmt.condition);
+            this.addLine(`Then`);
+            this.visitBlock(stmt.then);
+            this.addLine(`Else`);
+            this.visitBlock(stmt.else);
+        } else if (statement.stmtType === ks.StatementType.Variable) {
+            const stmt = <ks.VariableDeclaration> statement;
+            this.addLine(`Variable: ${stmt.variableName}`);
+            this.visitExpression(stmt.initializer);
+        } else if (statement.stmtType === ks.StatementType.While) {
+            const stmt = <ks.WhileStatement> statement;
+            this.addLine(`While`);
+            this.indent(1);
+            this.visitExpression(stmt.condition);
+            this.addLine(`Body`);
+            this.visitBlock(stmt.body);
+            this.indent(-1);
+        } else if (statement.stmtType === ks.StatementType.Foreach) {
+            const stmt = <ks.ForeachStatement> statement;
+            this.addLine(`Foreach ${stmt.varName}: ${stmt.varType.repr()}`);
+            this.indent(1);
+            this.addLine(`Items`);
+            this.visitExpression(stmt.items);
+            this.addLine(`Body`);
+            this.visitBlock(stmt.body);
+            this.indent(-1);
+        } else if (statement.stmtType === ks.StatementType.For) {
+            const stmt = <ks.ForStatement> statement;
+            this.addLine(`For ("${stmt.itemVariable.variableName}")`);
+            this.indent(1);
+            this.addLine(`Condition`);
+            this.visitExpression(stmt.condition);
+            this.addLine(`Incrementor`);
+            this.visitExpression(stmt.incrementor);
+            this.addLine(`Body`);
+            this.visitBlock(stmt.body);
+            this.indent(-1);
+        } else {
+            this.addLine(`${statement.stmtType}`);
+            super.visitStatement(statement, null);
+        }
+    }
+
+    visitBlock(block: ks.Block) {
         this.indent(1);
 
         for (const statement of block.statements) {
             this.add("- ");
-            if (statement === null) {
-                this.addLine("<null>");
-            } else if (statement.stmtType === ks.StatementType.Return) {
-                const stmt = <ks.ReturnStatement> statement;
-                this.addLine(`Return`);
-                this.printExpression(stmt.expression);
-            } else if (statement.stmtType === ks.StatementType.Expression) {
-                const stmt = <ks.ExpressionStatement> statement;
-                this.addLine(`Expression`);
-                this.printExpression(stmt.expression);
-            } else if (statement.stmtType === ks.StatementType.If) {
-                const stmt = <ks.IfStatement> statement;
-                this.addLine(`If`);
-                this.printExpression(stmt.condition);
-                this.addLine(`Then`);
-                this.printBlock(stmt.then);
-                this.addLine(`Else`);
-                this.printBlock(stmt.else);
-            } else if (statement.stmtType === ks.StatementType.Throw) {
-                const stmt = <ks.ThrowStatement> statement;
-                this.printExpression(stmt.expression);
-            } else if (statement.stmtType === ks.StatementType.Variable) {
-                const stmt = <ks.VariableDeclaration> statement;
-                this.addLine(`Variable: ${stmt.variableName}`);
-                this.printExpression(stmt.initializer);
-            } else if (statement.stmtType === ks.StatementType.While) {
-                const stmt = <ks.WhileStatement> statement;
-                this.addLine(`While`);
-                this.indent(1);
-                this.printExpression(stmt.condition);
-                this.addLine(`Body`);
-                this.printBlock(stmt.body);
-                this.indent(-1);
-            } else if (statement.stmtType === ks.StatementType.Foreach) {
-                const stmt = <ks.ForeachStatement> statement;
-                this.addLine(`Foreach ${stmt.varName}: ${stmt.varType.repr()}`);
-                this.indent(1);
-                this.addLine(`Items`);
-                this.printExpression(stmt.items);
-                this.addLine(`Body`);
-                this.printBlock(stmt.body);
-                this.indent(-1);
-            } else if (statement.stmtType === ks.StatementType.For) {
-                const stmt = <ks.ForStatement> statement;
-                this.addLine(`For ("${stmt.itemVariable.variableName}")`);
-                this.indent(1);
-                this.addLine(`Condition`);
-                this.printExpression(stmt.condition);
-                this.addLine(`Incrementor`);
-                this.printExpression(stmt.incrementor);
-                this.addLine(`Body`);
-                this.printBlock(stmt.body);
-                this.indent(-1);
-            } else {
-                console.log(`Unknown statement type: ${statement.stmtType}`);
-                this.addLine(`${statement.stmtType} (unknown!)`);
-            }
+            this.visitStatement(statement);
         }
 
         this.indent(-1);
     }
 
-    printExpression(expression: ks.Expression) {
+    visitUnknownExpression(expression: ks.Expression) {
+        this.addLine(`${expression.exprKind} (unknown!)`);
+    }
+
+    visitExpression(expression: ks.Expression) {
         this.indent(1);
         
         this.add("- ");
@@ -112,58 +115,25 @@ export class OverviewGenerator {
         } else if (expression.exprKind === ks.ExpressionKind.Binary) {
             const expr = <ks.BinaryExpression> expression;
             addHdr(`Binary: ${expr.operator}`);
-            this.printExpression(expr.left);
-            this.printExpression(expr.right);
-        } else if (expression.exprKind === ks.ExpressionKind.Call) {
-            const expr = <ks.CallExpression> expression;
-            addHdr(`Call`);
-            this.printExpression(expr.method);
-            for (const arg of expr.arguments)
-                this.printExpression(arg);
-        } else if (expression.exprKind === ks.ExpressionKind.Conditional) {
-            const expr = <ks.ConditionalExpression> expression;
-            addHdr(`Conditional`);
-            this.printExpression(expr.condition);
-            this.printExpression(expr.whenTrue);
-            this.printExpression(expr.whenFalse);
+            super.visitExpression(expression, null);
         } else if (expression.exprKind === ks.ExpressionKind.Identifier) {
             const expr = <ks.Identifier> expression;
             addHdr(`Identifier: ${expr.text}`);
-        } else if (expression.exprKind === ks.ExpressionKind.New) {
-            const expr = <ks.NewExpression> expression;
-            addHdr(`New`);
-            this.printExpression(expr.class);
-            for (const arg of expr.arguments)
-                this.printExpression(arg);
         } else if (expression.exprKind === ks.ExpressionKind.Literal) {
             const expr = <ks.Literal> expression;
             const value = expr.literalType === "string" ? `"${expr.value}"` : expr.value;
             addHdr(`Literal (${expr.literalType}): ${value}`);
-        } else if (expression.exprKind === ks.ExpressionKind.Parenthesized) {
-            const expr = <ks.ParenthesizedExpression> expression;
-            addHdr(`Parenthesized`);
-            this.printExpression(expr.expression);
         } else if (expression.exprKind === ks.ExpressionKind.Unary) {
             const expr = <ks.UnaryExpression> expression;
             addHdr(`Unary (${expr.unaryType}): ${expr.operator}`);
-            this.printExpression(expr.operand);
+            super.visitExpression(expression, null);
         } else if (expression.exprKind === ks.ExpressionKind.PropertyAccess) {
             const expr = <ks.PropertyAccessExpression> expression;
             addHdr(`PropertyAccess (.${expr.propertyName})`);
-            this.printExpression(expr.object);
-        } else if (expression.exprKind === ks.ExpressionKind.ElementAccess) {
-            const expr = <ks.ElementAccessExpression> expression;
-            addHdr(`ElementAccess`);
-            this.printExpression(expr.object);
-            this.printExpression(expr.elementExpr);
-        } else if (expression.exprKind === ks.ExpressionKind.ArrayLiteral) {
-            const expr = <ks.ArrayLiteralExpression> expression;
-            addHdr(`ArrayLiteral`);
-            for (const item of expr.items)
-                this.printExpression(item);
+            super.visitExpression(expression, null);
         } else {
-            console.log(`Unknown expression type: ${expression.exprKind}`);
-            this.addLine(`${expression.exprKind} (unknown!)`);
+            addHdr(expression.exprKind);
+            super.visitExpression(expression, null);
         }
 
         this.indent(-1);
@@ -174,7 +144,7 @@ export class OverviewGenerator {
             for (const method of cls.methods) {
                 const argList = method.parameters.map(arg => `${arg.name}: ${arg.type}`).join(", ");
                 this.addLine(`${cls.origName}::${method.origName}(${argList}): ${method.returnType}`);
-                this.printBlock(method.body);
+                this.visitBlock(method.body);
                 this.addLine("");
             }
         }
