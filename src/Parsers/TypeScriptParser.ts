@@ -2,6 +2,7 @@ import * as ts from "typescript";
 import * as SimpleAst from "ts-simple-ast";
 import { TsSimpleAst } from "ts-simple-ast";
 import { OneAst as one } from "../One/Ast";
+import { AstHelper } from "../One/AstHelper";
 
 function flattenArray<T>(arrays: T[][]): T[] {
     return [].concat.apply([], arrays);
@@ -14,7 +15,7 @@ export class TypeScriptParser {
         this.ast = new (SimpleAst.TsSimpleAst || SimpleAst["default"])();
     }
 
-    static parseFile(sourceCode: string, filePath?: string): one.SchemaFile {
+    static parseFile(sourceCode: string, filePath?: string): one.Schema {
         const parser = new TypeScriptParser();
         parser.ast.addSourceFileFromText(filePath || "main.ts", sourceCode);
         parser.ast.addSourceFileFromText("/node_modules/typescript/lib/lib.d.ts", "");
@@ -288,8 +289,8 @@ export class TypeScriptParser {
             return { statements: this.convertStatement(<ts.Statement>tsBlock) };
     }
 
-    createSchemaFromSourceFile(typeInfo: SimpleAst.SourceFile): one.SchemaFile {
-        const schema = <one.SchemaFile> { enums: {}, classes: {} };
+    createSchemaFromSourceFile(typeInfo: SimpleAst.SourceFile): one.Schema {
+        const schema = <one.Schema> { enums: {}, classes: {} };
         
         for (const tsEnum of typeInfo.getEnums()) {
             schema.enums[tsEnum.getName()] = <one.Enum> { 
@@ -330,6 +331,8 @@ export class TypeScriptParser {
                     body: this.convertBlock(<ts.BlockLike> constructors[0].getBody().compilerNode),
                 };
         }
+
+        AstHelper.fillNames(schema);
         return schema;
     }
 }

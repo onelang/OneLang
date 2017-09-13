@@ -53,7 +53,7 @@ class OneClassWrapper implements ITiClass {
     getMethod(name: string): ITiMethod {
         const method = this.methods[name];
         if (!method) {
-            console.log(`Method '${name}' not found in class '${this.cls.origName}'.`);
+            console.log(`Method '${name}' not found in class '${this.cls.name}'.`);
             return null;
         }
 
@@ -104,7 +104,7 @@ export class VariableContext {
 }
 
 export class TypeInferer extends AstVisitor<Context> {
-    constructor(public schema: one.SchemaFile) { super(); }
+    constructor(public schema: one.Schema) { super(); }
 
     log(data: string) {
         console.log(`[TypeInferer] ${data}`);

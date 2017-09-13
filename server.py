@@ -13,6 +13,7 @@ from BaseHTTPServer import HTTPServer
 
 PORT = 8000
 TEST_SERVERS = False
+TMP_DIR = "tmp/FastCompile/"
 
 def log(text):
     print "[Compile] %s" % text
@@ -97,8 +98,8 @@ langs = {
 def postRequest(url, request):
     return urllib2.urlopen(urllib2.Request(url, request)).read()
 
-if not os.path.isdir("tmp"):
-    os.mkdir("tmp")
+if not os.path.isdir("tmp"): os.mkdir("tmp")
+if not os.path.isdir("tmp/FastCompile"): os.mkdir("tmp/FastCompile")
 
 testText = "Works!"
 for langName in langs:
@@ -159,11 +160,11 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 lang = langs[request["lang"]]
 
                 name = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                fn = "tmp/%s.%s" % (name, lang["ext"])
+                fn = "%s%s.%s" % (TMP_DIR, name, lang["ext"])
                 with open(fn, "wt") as f: f.write(request["code"])
                 
                 start = time.time()
-                pipes = subprocess.Popen(lang["cmd"].format(name=name), shell=True, cwd="tmp/", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                pipes = subprocess.Popen(lang["cmd"].format(name=name), shell=True, cwd=TMP_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 stdout, stderr = pipes.communicate()
 
                 if pipes.returncode != 0 or len(stderr) > 0:

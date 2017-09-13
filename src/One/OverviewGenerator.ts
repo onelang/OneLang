@@ -6,7 +6,7 @@ export class OverviewGenerator extends AstVisitor<void> {
     pad = "";
     padWasAdded = false;
 
-    constructor(public schema: one.SchemaFile) {
+    constructor(public schema: one.Schema) {
         super();
         this.generate();
     }
@@ -61,7 +61,7 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.indent(-1);
         } else if (statement.stmtType === one.StatementType.Foreach) {
             const stmt = <one.ForeachStatement> statement;
-            this.addLine(`Foreach ${stmt.varName}: ${stmt.varType.repr()}`);
+            this.addLine(`Foreach ${stmt.varName}: ${stmt.varType && stmt.varType.repr()}`);
             this.indent(1);
             this.addLine(`Items`);
             this.visitExpression(stmt.items);
@@ -141,11 +141,12 @@ export class OverviewGenerator extends AstVisitor<void> {
     generate() {
         for (const cls of Object.values(this.schema.classes)) {
             for (const method of Object.values(cls.methods)) {
-                const argList = method.parameters.map(arg => `${arg.name}: ${arg.type}`).join(", ");
-                this.addLine(`${cls.origName}::${method.origName}(${argList}): ${method.returns}`);
+                const argList = method.parameters.map(arg => `${arg.name}: ${arg.type.repr()}`).join(", ");
+                this.addLine(`${cls.name}::${method.name}(${argList}): ${method.returns.repr()}`);
                 this.visitBlock(method.body);
                 this.addLine("");
             }
         }
+        return this.result;
     }
 }

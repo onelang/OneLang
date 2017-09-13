@@ -42,7 +42,6 @@ namespace CodeGeneratorModel {
     export interface Method {
         visibility: "public"|"protected"|"private";
         name: string;
-        origName: string;
         parameters: MethodParameter[];
         returnType: string;
         body: one.Block;
@@ -50,7 +49,6 @@ namespace CodeGeneratorModel {
 
     export interface Class {
         name: string;
-        origName: string;
         methods: Method[];
         publicMethods: Method[];
         privateMethods: Method[];
@@ -106,12 +104,12 @@ class CodeGeneratorModel {
 }
 
 export class CodeGenerator {
-    schema: one.SchemaFile;
+    schema: one.Schema;
     model = new CodeGeneratorModel(this);
     templateObjectCode: string;
     templateObject;
 
-    constructor(schema: one.SchemaFile, public lang: LangFileSchema.LangFile) {
+    constructor(schema: one.Schema, public lang: LangFileSchema.LangFile) {
         this.schema = JSON.parse(JSON.stringify(schema)); // clone
         this.setupNames();
         this.setupClasses();
@@ -176,18 +174,15 @@ export class CodeGenerator {
     setupNames() {
         for (const enumName of Object.keys(this.schema.enums)) {
             const enumObj = this.schema.enums[enumName];
-            enumObj.origName = enumName;
             enumObj.name = this.getName(enumName, "enum");
         }
 
         for (const className of Object.keys(this.schema.classes)) {
             const cls = this.schema.classes[className];
-            cls.origName = className;
             cls.name = this.getName(className, "class");
 
             for (const methodName of Object.keys(cls.methods)) {
                 const method = cls.methods[methodName];
-                method.origName = methodName;
                 method.name = this.getName(methodName, "method");
             }
         }
@@ -200,7 +195,6 @@ export class CodeGenerator {
                 const method = cls.methods[methodName];
                 return <CodeGeneratorModel.Method> {
                     name: method.name,
-                    origName: method.origName,
                     returnType: this.getTypeName(method.returns),
                     body: method.body,
                     parameters: method.parameters.map((param, idx) => {
@@ -215,7 +209,6 @@ export class CodeGenerator {
             });
             return <CodeGeneratorModel.Class> {
                 name: cls.name,
-                origName: cls.origName,
                 methods: methods,
                 publicMethods: methods,
                 privateMethods: []

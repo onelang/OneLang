@@ -1,12 +1,11 @@
 export namespace OneAst {
-    export interface SchemaFile {
+    export interface Schema {
         enums: { [name: string]: Enum };
         classes: { [name: string]: Class };
     }
 
     export interface Enum {
         name?: string;
-        origName?: string;
         values: EnumMember[];
     }
 
@@ -16,7 +15,6 @@ export namespace OneAst {
 
     export interface Class {
         name?: string;
-        origName?: string;
         fields: { [name: string]: Field };
         constructor: Constructor;
         methods: { [name: string]: Method };
@@ -126,7 +124,7 @@ export namespace OneAst {
 
     export interface VariableBase {
         name?: string;
-        type: IType;
+        type: Type;
     }
 
     export interface Field extends VariableBase {
@@ -143,10 +141,9 @@ export namespace OneAst {
     }
 
     export interface Method {
-        origName?: string;
         name?: string;
         parameters: MethodParameter[];
-        returns: IType;
+        returns: Type;
         body: Block;
     }
 
