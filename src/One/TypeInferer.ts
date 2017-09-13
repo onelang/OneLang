@@ -1,5 +1,6 @@
 import { OneAst as one } from "./Ast";
 import { AstVisitor } from "./AstVisitor";
+import { VariableContext } from "./VariableContext";
 
 export enum ReferenceType { Class, Method, MethodVariable, ClassVariable }
 
@@ -11,11 +12,11 @@ export class Reference {
 }
 
 export class Context {
-    variables: VariableContext = null;
+    variables: VariableContext<one.Type> = null;
     classes: ClassRepository = null;
 
     constructor(parent: Context = null) {
-        this.variables = parent === null ? new VariableContext() : parent.variables.inherit();
+        this.variables = parent === null ? new VariableContext<one.Type>() : parent.variables.inherit();
         this.classes = parent === null ? new ClassRepository() : parent.classes;
     }
 
@@ -76,33 +77,6 @@ export class ClassRepository {
     }
 }
 
-export class VariableContext {
-    variables: { [name: string]: one.Type } = {};
-
-    constructor(public parentContext: VariableContext = null) { }
-
-    getType(name: string): one.Type {
-        let currContext = <VariableContext> this;
-        while (currContext !== null) {
-            const result = currContext.variables[name];
-            if (result)
-                return result;
-            currContext = currContext.parentContext;
-        }
-
-        console.log(`Variable not found: ${name}`);
-        return one.Type.Any;
-    }
-
-    inherit() {
-        return new VariableContext(this);
-    }
-
-    add(name: string, type: one.Type) {
-        this.variables[name] = type;
-    }
-}
-
 export class TypeInferer extends AstVisitor<Context> {
     constructor(public schema: one.Schema) { super(); }
 
@@ -111,7 +85,7 @@ export class TypeInferer extends AstVisitor<Context> {
     }
 
     protected visitIdentifier(id: one.Identifier, context: Context) {
-        id.valueType = context.variables.getType(id.text);
+        id.valueType = context.variables.get(id.text) || one.Type.Any;
         //console.log(`Getting identifier: ${id.text} [${id.valueType.repr()}]`);
     }
 
@@ -167,7 +141,7 @@ export class TypeInferer extends AstVisitor<Context> {
         } else {
             this.log(`Tried to call a non-method type '${expr.method.valueType.repr()}'.`);
         }
-}
+    }
 
     protected visitLiteral(expr: one.Literal, context: Context) {
         if (expr.literalType === "numeric")

@@ -1,5 +1,5 @@
-declare namespace StdLib {
+declare namespace one {
     class Console {
-        static print(str: string);
+        static print(str: any);
     }
 }

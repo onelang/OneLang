@@ -127,6 +127,12 @@ export abstract class AstVisitor<TContext> {
         this.log(`Unknown expression type: ${expr.exprKind}`);
     }
 
+    protected visitLocalMethodVariable(expr: one.LocalMethodVariable, context: TContext) { }
+
+    protected visitLocalMethodReference(expr: one.LocalMethodReference, context: TContext) { }
+
+    protected visitLocalClassVariable(expr: one.LocalClassVariable, context: TContext) { }
+
     protected visitExpression(expression: one.Expression, context: TContext) {
         if (expression.exprKind === one.ExpressionKind.Binary) {
             this.visitBinaryExpression(<one.BinaryExpression> expression, context);
@@ -150,8 +156,30 @@ export abstract class AstVisitor<TContext> {
             this.visitElementAccessExpression(<one.ElementAccessExpression> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.ArrayLiteral) {
             this.visitArrayLiteral(<one.ArrayLiteral> expression, context);
+        } else if (expression.exprKind === one.ExpressionKind.LocalMethodVariable) {
+            this.visitLocalMethodVariable(<one.LocalMethodVariable> expression, context);
+        } else if (expression.exprKind === one.ExpressionKind.LocalMethodReference) {
+            this.visitLocalMethodReference(<one.LocalMethodReference> expression, context);
+        } else if (expression.exprKind === one.ExpressionKind.LocalClassVariable) {
+            this.visitLocalClassVariable(<one.LocalClassVariable> expression, context);
         } else {
             this.visitUnknownExpression(expression, context);
         }
     }
+
+    protected visitMethod(method: one.Method, context: TContext) { 
+        method.body = this.visitBlock(method.body, context) || method.body; 
+    } 
+ 
+    protected visitClass(cls: one.Class, context: TContext) { 
+        for (const method of Object.values(cls.methods)) { 
+            this.visitMethod(method, context); 
+        } 
+    } 
+ 
+    protected visitSchema(schema: one.Schema, context: TContext) { 
+        for (const cls of Object.values(schema.classes)) { 
+            this.visitClass(cls, context); 
+        } 
+    } 
 }

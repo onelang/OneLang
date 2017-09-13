@@ -97,6 +97,7 @@ export class OverviewGenerator extends AstVisitor<void> {
     }
 
     visitUnknownExpression(expression: one.Expression) {
+        super.visitUnknownExpression(expression, null);
         this.addLine(`${expression.exprKind} (unknown!)`);
     }
 
@@ -130,6 +131,18 @@ export class OverviewGenerator extends AstVisitor<void> {
             const expr = <one.PropertyAccessExpression> expression;
             addHdr(`PropertyAccess (.${expr.propertyName})`);
             super.visitExpression(expression, null);
+        } else if (expression.exprKind === one.ExpressionKind.LocalClassVariable) {
+            const expr = <one.LocalClassVariable> expression;
+            addHdr(`LocalClassVariable: ${expr.varName}`);
+            super.visitExpression(expression, null);
+        } else if (expression.exprKind === one.ExpressionKind.LocalMethodVariable) {
+            const expr = <one.LocalMethodVariable> expression;
+            addHdr(`LocalMethodVariable: ${expr.varName}`);
+            super.visitExpression(expression, null);
+        } else if (expression.exprKind === one.ExpressionKind.LocalMethodReference) {
+            const expr = <one.LocalMethodReference> expression;
+            addHdr(`LocalMethodReference: ${expr.methodName}`);
+            super.visitExpression(expression, null);
         } else {
             addHdr(expression.exprKind);
             super.visitExpression(expression, null);
@@ -147,6 +160,7 @@ export class OverviewGenerator extends AstVisitor<void> {
                 this.addLine("");
             }
         }
+
         return this.result;
     }
 }

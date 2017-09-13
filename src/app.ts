@@ -8,6 +8,8 @@ import { TypeScriptParser } from "./Parsers/TypeScriptParser";
 import { CodeGenerator } from "./Generator/CodeGenerator";
 import { LangFileSchema } from "./Generator/LangFileSchema";
 import { OverviewGenerator } from "./One/OverviewGenerator";
+import { IdentifierResolver } from "./One/IdentifierResolver";
+import { TypeInferer } from "./One/TypeInferer";
 
 class Utils {
     static writeFile(fn: string, data: any) {
@@ -18,11 +20,22 @@ class Utils {
 
 const prgName = "Test";
 const sourceCode = fs.readFileSync(`input/${prgName}.ts`, "utf8");
-const tsOneSchema = TypeScriptParser.parseFile(sourceCode);
-const tsOneSchemaJson = JSON.stringify(tsOneSchema, null, 4);
-const tsOneSchemaOverview = new OverviewGenerator(tsOneSchema).generate();
-fs.writeFileSync("tmp/tsOneSchema.json", tsOneSchemaJson);
-fs.writeFileSync("tmp/tsOneSchema.txt", tsOneSchemaOverview);
+const schema = TypeScriptParser.parseFile(sourceCode);
+
+function saveSchemaState(name: string) {
+    const schemaJson = JSON.stringify(schema, null, 4);
+    const schemaOverview = new OverviewGenerator(schema).generate();
+    fs.writeFileSync(`tmp/${name}.json`, schemaJson);
+    fs.writeFileSync(`tmp/${name}.txt`, schemaOverview);
+}
+
+saveSchemaState("tsOneSchema");
+
+new TypeInferer(schema).process();
+//new IdentifierResolver(schema).process();
+
+saveSchemaState("tsOneResolvedSchema");
+
 //console.log(schemaJson);
 
 //let langs = fs.readdirSync("langs");

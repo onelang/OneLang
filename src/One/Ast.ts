@@ -161,11 +161,32 @@ export namespace OneAst {
         Parenthesized = "Parenthesized",
         Unary = "Unary",
         ArrayLiteral = "ArrayLiteral",
+        LocalMethodVariable = "LocalMethodVariable",
+        LocalClassVariable = "LocalClassVariable",
+        LocalMethodReference = "LocalMethodReference",
     }
 
     export interface Expression {
         exprKind: ExpressionKind;
-        valueType: Type;
+        valueType?: Type;
+    }
+
+    export class LocalMethodVariable implements Expression {
+        exprKind = ExpressionKind.LocalMethodVariable;
+
+        constructor(public varName?: string) { }
+    }
+
+    export class LocalClassVariable implements Expression {
+        exprKind = ExpressionKind.LocalClassVariable;
+
+        constructor(public varName?: string) { }
+    }
+
+    export class LocalMethodReference implements Expression {
+        exprKind = ExpressionKind.LocalMethodReference;
+
+        constructor(public methodName?: string) { }
     }
 
     export interface CallExpression extends Expression {

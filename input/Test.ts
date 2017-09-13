@@ -6,14 +6,14 @@ class TestClass {
         let arr2 = [1 + 2, false];
 
         for (const item of arr) {
-            console.log(item);
+            one.Console.print(item);
         }
 
         for (const itemIdx in arr)
-            console.log(itemIdx);
+            one.Console.print(itemIdx);
 
         for (let i = 0; i < arr.length; i++)
-            console.log(arr[i]);
+            one.Console.print(arr[i]);
     }
 
     calc() {
