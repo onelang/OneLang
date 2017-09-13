@@ -1,7 +1,7 @@
 import * as ts from "typescript";
 import * as SimpleAst from "ts-simple-ast";
 import { TsSimpleAst } from "ts-simple-ast";
-import { KSLangSchema as ks } from "./KSLangSchema";
+import { OneAst as one } from "../One/Ast";
 
 function flattenArray<T>(arrays: T[][]): T[] {
     return [].concat.apply([], arrays);
@@ -14,7 +14,7 @@ export class TypeScriptParser {
         this.ast = new (SimpleAst.TsSimpleAst || SimpleAst["default"])();
     }
 
-    static parseFile(sourceCode: string, filePath?: string): ks.SchemaFile {
+    static parseFile(sourceCode: string, filePath?: string): one.SchemaFile {
         const parser = new TypeScriptParser();
         parser.ast.addSourceFileFromText(filePath || "main.ts", sourceCode);
         parser.ast.addSourceFileFromText("/node_modules/typescript/lib/lib.d.ts", "");
@@ -27,38 +27,25 @@ export class TypeScriptParser {
         console.warn(`[TypeScriptParser] ${message}`, node || "");
     }
 
-    nameToKS(name: string, node?: Node) {
-        let result = "";
-        for (let c of name) {
-            if ("A" <= c && c <= "Z")
-                result += (result === "" ? "" : "_") + c.toLowerCase();
-            else if("a" <= c && c <= "z" || c === "_" || "0" <= c && c <= "9")
-                result += c;
-            else
-                this.logNodeError(`Invalid character ('${c}') in name: ${name}.`, node);
-        }
-        return result;
-    }
-
     convertTsType(tsType: ts.Type) {
-        const result = new ks.Type();
+        const result = new one.Type();
 
         const typeText = (<any>tsType).intrinsicName || tsType.symbol.name;
         if (typeText === "number")
-            result.typeKind = ks.TypeKind.Number;
+            result.typeKind = one.TypeKind.Number;
         else if (typeText === "string")
-            result.typeKind = ks.TypeKind.String;
+            result.typeKind = one.TypeKind.String;
         else if (typeText === "boolean")
-            result.typeKind = ks.TypeKind.Boolean;
+            result.typeKind = one.TypeKind.Boolean;
         else if (typeText === "void")
-            result.typeKind = ks.TypeKind.Void;
+            result.typeKind = one.TypeKind.Void;
         else {
             const isArray = typeText === "Array";
-            result.typeKind = isArray ? ks.TypeKind.Array : 
-                ks.TypeKind.Class;
+            result.typeKind = isArray ? one.TypeKind.Array : 
+                one.TypeKind.Class;
             
             if(!isArray)
-                result.className = this.nameToKS(typeText);
+                result.className = typeText;
 
             const typeArgs = <ts.Type[]>(<any>tsType).typeArguments;
             if (typeArgs)
@@ -69,101 +56,101 @@ export class TypeScriptParser {
     }
 
     convertParameter(tsParam: SimpleAst.ParameterDeclaration) {
-        return <ks.MethodParameter> {
-            name: this.nameToKS(tsParam.getName()),
+        return <one.MethodParameter> {
+            name: tsParam.getName(),
             type: this.convertTsType(tsParam.getType().compilerType)
         };
     }
 
-    convertExpression(tsExpr: ts.Expression): ks.Expression {
+    convertExpression(tsExpr: ts.Expression): one.Expression {
         if (typeof tsExpr === "undefined") return undefined;
 
         if (tsExpr.kind === ts.SyntaxKind.CallExpression) {
             const callExpr = <ts.CallExpression> tsExpr;
-            return <ks.CallExpression> {
-                exprKind: ks.ExpressionKind.Call,
+            return <one.CallExpression> {
+                exprKind: one.ExpressionKind.Call,
                 method: this.convertExpression(callExpr.expression),
                 arguments: callExpr.arguments.map(arg => this.convertExpression(arg))
             };
         } else if (tsExpr.kind === ts.SyntaxKind.BinaryExpression) {
             const binaryExpr = <ts.BinaryExpression> tsExpr;
-            return <ks.BinaryExpression> {
-                exprKind: ks.ExpressionKind.Binary,
+            return <one.BinaryExpression> {
+                exprKind: one.ExpressionKind.Binary,
                 left: this.convertExpression(binaryExpr.left),
                 right: this.convertExpression(binaryExpr.right),
                 operator: binaryExpr.operatorToken.getText()
             };
         } else if (tsExpr.kind === ts.SyntaxKind.PropertyAccessExpression) {
             const propAccessExpr = <ts.PropertyAccessExpression> tsExpr;
-            return <ks.PropertyAccessExpression> {
-                exprKind: ks.ExpressionKind.PropertyAccess,
+            return <one.PropertyAccessExpression> {
+                exprKind: one.ExpressionKind.PropertyAccess,
                 object: this.convertExpression(propAccessExpr.expression),
                 propertyName: propAccessExpr.name.text,
             };
         } else if (tsExpr.kind === ts.SyntaxKind.ElementAccessExpression) {
             const elementAccessExpr = <ts.ElementAccessExpression> tsExpr;
-            return <ks.ElementAccessExpression> {
-                exprKind: ks.ExpressionKind.ElementAccess,
+            return <one.ElementAccessExpression> {
+                exprKind: one.ExpressionKind.ElementAccess,
                 object: this.convertExpression(elementAccessExpr.expression),
                 elementExpr: this.convertExpression(elementAccessExpr.argumentExpression)
             };
         } else if (tsExpr.kind === ts.SyntaxKind.Identifier) {
             const identifier = <ts.Identifier> tsExpr;
-            return <ks.Identifier> { 
-                exprKind: ks.ExpressionKind.Identifier,
+            return <one.Identifier> { 
+                exprKind: one.ExpressionKind.Identifier,
                 text: identifier.text
             };
         } else if (tsExpr.kind === ts.SyntaxKind.NewExpression) {
             const newExpr = <ts.NewExpression> tsExpr;
-            return <ks.NewExpression> { 
-                exprKind: ks.ExpressionKind.New,
+            return <one.NewExpression> { 
+                exprKind: one.ExpressionKind.New,
                 class: this.convertExpression(newExpr.expression),
                 arguments: newExpr.arguments.map(arg => this.convertExpression(arg))
             };
         } else if (tsExpr.kind === ts.SyntaxKind.ConditionalExpression) {
             const condExpr = <ts.ConditionalExpression> tsExpr;
-            return <ks.ConditionalExpression> { 
-                exprKind: ks.ExpressionKind.Conditional,
+            return <one.ConditionalExpression> { 
+                exprKind: one.ExpressionKind.Conditional,
                 condition: this.convertExpression(condExpr.condition),
                 whenTrue: this.convertExpression(condExpr.whenTrue),
                 whenFalse: this.convertExpression(condExpr.whenFalse),
             };
         } else if (tsExpr.kind === ts.SyntaxKind.StringLiteral) {
             const literalExpr = <ts.StringLiteral> tsExpr;
-            return <ks.Literal> {
-                exprKind: ks.ExpressionKind.Literal,
+            return <one.Literal> {
+                exprKind: one.ExpressionKind.Literal,
                 literalType: "string",
                 value: literalExpr.text
             };
         } else if (tsExpr.kind === ts.SyntaxKind.NumericLiteral) {
             const literalExpr = <ts.NumericLiteral> tsExpr;
-            return <ks.Literal> {
-                exprKind: ks.ExpressionKind.Literal,
+            return <one.Literal> {
+                exprKind: one.ExpressionKind.Literal,
                 literalType: "numeric",
                 value: literalExpr.text
             };
         } else if (tsExpr.kind === ts.SyntaxKind.FalseKeyword || tsExpr.kind === ts.SyntaxKind.TrueKeyword) {
-            return <ks.Literal> { 
-                exprKind: ks.ExpressionKind.Literal,
+            return <one.Literal> { 
+                exprKind: one.ExpressionKind.Literal,
                 literalType: "boolean",
                 value: tsExpr.getText()
             };
         } else if (tsExpr.kind === ts.SyntaxKind.NullKeyword) {
-            return <ks.Literal> { 
-                exprKind: ks.ExpressionKind.Literal,
+            return <one.Literal> { 
+                exprKind: one.ExpressionKind.Literal,
                 literalType: "null",
                 value: "null"
             };
         } else if (tsExpr.kind === ts.SyntaxKind.ParenthesizedExpression) {
             const parenExpr = <ts.ParenthesizedExpression> tsExpr;
-            return <ks.ParenthesizedExpression> { 
-                exprKind: ks.ExpressionKind.Parenthesized,
+            return <one.ParenthesizedExpression> { 
+                exprKind: one.ExpressionKind.Parenthesized,
                 expression: this.convertExpression(parenExpr.expression)
             };
         } else if (tsExpr.kind === ts.SyntaxKind.PostfixUnaryExpression) {
             const unaryExpr = <ts.PostfixUnaryExpression> tsExpr;
-            return <ks.UnaryExpression> { 
-                exprKind: ks.ExpressionKind.Unary,
+            return <one.UnaryExpression> { 
+                exprKind: one.ExpressionKind.Unary,
                 unaryType: "postfix",
                 operator: 
                     unaryExpr.operator === ts.SyntaxKind.PlusPlusToken ? "++" : 
@@ -172,8 +159,8 @@ export class TypeScriptParser {
             };
         } else if (tsExpr.kind === ts.SyntaxKind.PrefixUnaryExpression) {
             const unaryExpr = <ts.PrefixUnaryExpression> tsExpr;
-            return <ks.UnaryExpression> { 
-                exprKind: ks.ExpressionKind.Unary,
+            return <one.UnaryExpression> { 
+                exprKind: one.ExpressionKind.Unary,
                 unaryType: "prefix",
                 operator: 
                     unaryExpr.operator === ts.SyntaxKind.PlusPlusToken ? "++" : 
@@ -186,8 +173,8 @@ export class TypeScriptParser {
             };
         } else if (tsExpr.kind === ts.SyntaxKind.ArrayLiteralExpression) {
             const expr = <ts.ArrayLiteralExpression> tsExpr;
-            return <ks.ArrayLiteral> { 
-                exprKind: ks.ExpressionKind.ArrayLiteral,
+            return <one.ArrayLiteral> { 
+                exprKind: one.ExpressionKind.ArrayLiteral,
                 items: expr.elements.map(x => this.convertExpression(x))
             };
         } else {
@@ -195,8 +182,8 @@ export class TypeScriptParser {
             const knownKeywords = ["this", "super"];
             const keyword = knownKeywords.find(x => kindName.toLowerCase() === `${x}keyword`);
             if (keyword) {
-                return <ks.Identifier> {
-                    exprKind: ks.ExpressionKind.Identifier,
+                return <one.Identifier> {
+                    exprKind: one.ExpressionKind.Identifier,
                     text: keyword
                 };
             } else {
@@ -206,15 +193,15 @@ export class TypeScriptParser {
         }
     }
 
-    convertVariableDeclaration(varDecl: ts.VariableDeclaration): ks.VariableDeclaration {
-        return <ks.VariableDeclaration> {
-            stmtType: ks.StatementType.Variable,
+    convertVariableDeclaration(varDecl: ts.VariableDeclaration): one.VariableDeclaration {
+        return <one.VariableDeclaration> {
+            stmtType: one.StatementType.Variable,
             variableName: varDecl.name.getText(),
             initializer: this.convertExpression(varDecl.initializer)
         };
     }
 
-    convertInitializer(initializer: ts.ForInitializer): ks.VariableDeclaration {
+    convertInitializer(initializer: ts.ForInitializer): one.VariableDeclaration {
         let itemVariable;
         if (initializer.kind === ts.SyntaxKind.VariableDeclarationList) {
             const varDeclList = <ts.VariableDeclarationList> initializer;
@@ -227,60 +214,60 @@ export class TypeScriptParser {
         return itemVariable;
     }
 
-    convertStatement(tsStatement: ts.Statement): ks.Statement[] {
+    convertStatement(tsStatement: ts.Statement): one.Statement[] {
         if (typeof tsStatement === "undefined") return undefined;
 
-        let ksStmt: ks.Statement = null;
-        let ksStmts: ks.Statement[] = null;
+        let oneStmt: one.Statement = null;
+        let oneStmts: one.Statement[] = null;
 
         if (tsStatement.kind === ts.SyntaxKind.IfStatement) {
             const ifStatement = <ts.IfStatement> tsStatement;
-            ksStmt = <ks.IfStatement> {
-                stmtType: ks.StatementType.If,
+            oneStmt = <one.IfStatement> {
+                stmtType: one.StatementType.If,
                 condition: this.convertExpression(ifStatement.expression),
                 then: this.convertBlock(ifStatement.thenStatement),
                 else: this.convertBlock(ifStatement.elseStatement),
             };
         } else if (tsStatement.kind === ts.SyntaxKind.ReturnStatement) {
             const returnStatement = <ts.ReturnStatement> tsStatement;
-            ksStmt = <ks.ReturnStatement> {
-                stmtType: ks.StatementType.Return,
+            oneStmt = <one.ReturnStatement> {
+                stmtType: one.StatementType.Return,
                 expression: this.convertExpression(returnStatement.expression),
             };
         } else if (tsStatement.kind === ts.SyntaxKind.ThrowStatement) {
             const throwStatement = <ts.ReturnStatement> tsStatement;
-            ksStmt = <ks.ThrowStatement> {
-                stmtType: ks.StatementType.Throw,
+            oneStmt = <one.ThrowStatement> {
+                stmtType: one.StatementType.Throw,
                 expression: this.convertExpression(throwStatement.expression),
             };
         } else if (tsStatement.kind === ts.SyntaxKind.ExpressionStatement) {
             const expressionStatement = <ts.ExpressionStatement> tsStatement;
-            ksStmt = <ks.ExpressionStatement> {
-                stmtType: ks.StatementType.Expression,
+            oneStmt = <one.ExpressionStatement> {
+                stmtType: one.StatementType.Expression,
                 expression: this.convertExpression(expressionStatement.expression),
             };
         } else if (tsStatement.kind === ts.SyntaxKind.VariableStatement) {
             const variableStatement = <ts.VariableStatement> tsStatement;
-            ksStmts = variableStatement.declarationList.declarations.map(x => this.convertVariableDeclaration(x));
+            oneStmts = variableStatement.declarationList.declarations.map(x => this.convertVariableDeclaration(x));
         } else if (tsStatement.kind === ts.SyntaxKind.WhileStatement) {
             const whileStatement = <ts.WhileStatement> tsStatement;
-            ksStmt = <ks.WhileStatement> {
-                stmtType: ks.StatementType.While,
+            oneStmt = <one.WhileStatement> {
+                stmtType: one.StatementType.While,
                 condition: this.convertExpression(whileStatement.expression),
                 body: this.convertBlock(<ts.Block>whileStatement.statement),
             };
         } else if (tsStatement.kind === ts.SyntaxKind.ForOfStatement) {
             const stmt = <ts.ForOfStatement> tsStatement;
-            ksStmt = <ks.ForeachStatement> {
-                stmtType: ks.StatementType.Foreach,
+            oneStmt = <one.ForeachStatement> {
+                stmtType: one.StatementType.Foreach,
                 varName: this.convertInitializer(stmt.initializer).variableName,
                 items: this.convertExpression(stmt.expression),
                 body: this.convertBlock(stmt.statement)
             };
         } else if (tsStatement.kind === ts.SyntaxKind.ForStatement) {
             const stmt = <ts.ForStatement> tsStatement;
-            ksStmt = <ks.ForStatement> {
-                stmtType: ks.StatementType.For,
+            oneStmt = <one.ForStatement> {
+                stmtType: one.StatementType.For,
                 itemVariable: this.convertInitializer(stmt.initializer),
                 condition: this.convertExpression(stmt.condition),
                 incrementor: this.convertExpression(stmt.incrementor),
@@ -289,10 +276,10 @@ export class TypeScriptParser {
         } else
             this.logNodeError(`Unexpected statement kind "${ts.SyntaxKind[tsStatement.kind]}".`);
 
-        return ksStmts || (ksStmt ? [ksStmt] : []);
+        return oneStmts || (oneStmt ? [oneStmt] : []);
     }
 
-    convertBlock(tsBlock: ts.BlockLike|ts.Statement): ks.Block {
+    convertBlock(tsBlock: ts.BlockLike|ts.Statement): one.Block {
         if (typeof tsBlock === "undefined") return undefined;
 
         if ("statements" in tsBlock)
@@ -301,27 +288,27 @@ export class TypeScriptParser {
             return { statements: this.convertStatement(<ts.Statement>tsBlock) };
     }
 
-    createSchemaFromSourceFile(typeInfo: SimpleAst.SourceFile): ks.SchemaFile {
-        const schema = <ks.SchemaFile> { enums: {}, classes: {} };
+    createSchemaFromSourceFile(typeInfo: SimpleAst.SourceFile): one.SchemaFile {
+        const schema = <one.SchemaFile> { enums: {}, classes: {} };
         
         for (const tsEnum of typeInfo.getEnums()) {
-            schema.enums[this.nameToKS(tsEnum.getName())] = <ks.Enum> { 
-                values: tsEnum.getMembers().map(tsEnumMember => ({ name: this.nameToKS(tsEnumMember.getName()) }))
+            schema.enums[tsEnum.getName()] = <one.Enum> { 
+                values: tsEnum.getMembers().map(tsEnumMember => ({ name: tsEnumMember.getName() }))
             };
         }
 
         for (const tsClass of typeInfo.getClasses()) {
-            const classSchema = schema.classes[this.nameToKS(tsClass.getName())] = <ks.Class> { fields: { }, methods: { } };
+            const classSchema = schema.classes[tsClass.getName()] = <one.Class> { fields: { }, methods: { } };
             
             for (const tsProp of tsClass.getInstanceProperties()) {
                 if (!(tsProp instanceof SimpleAst.PropertyDeclaration) && !(tsProp instanceof SimpleAst.ParameterDeclaration))
                     continue;
 
-                const fieldSchema = classSchema.fields[this.nameToKS(tsProp.getName())] = <ks.Field> { 
+                const fieldSchema = classSchema.fields[tsProp.getName()] = <one.Field> { 
                     type: this.convertTsType(tsProp.getType().compilerType),
-                    visibility: tsProp.getScope() === "public" ? ks.Visibility.Public : 
-                        tsProp.getScope() === "protected" ? ks.Visibility.Protected : 
-                        ks.Visibility.Private,
+                    visibility: tsProp.getScope() === "public" ? one.Visibility.Public : 
+                        tsProp.getScope() === "protected" ? one.Visibility.Protected : 
+                        one.Visibility.Private,
                 };
 
                 const initializer = tsProp.getInitializer();
@@ -330,7 +317,7 @@ export class TypeScriptParser {
             }
 
             for (const tsMethod of tsClass.getInstanceMethods()) {
-                const methodSchema = classSchema.methods[this.nameToKS(tsMethod.getName())] = <ks.Method> { };
+                const methodSchema = classSchema.methods[tsMethod.getName()] = <one.Method> { };
                 methodSchema.returns = this.convertTsType(tsMethod.getReturnType().compilerType);
                 methodSchema.parameters = tsMethod.getParameters().map(tsParam => this.convertParameter(tsParam));
                 methodSchema.body = this.convertBlock(<ts.BlockLike> tsMethod.getBody().compilerNode);

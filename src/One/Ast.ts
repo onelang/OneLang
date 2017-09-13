@@ -1,4 +1,4 @@
-export namespace KSLangSchema {
+export namespace OneAst {
     export interface SchemaFile {
         enums: { [name: string]: Enum };
         classes: { [name: string]: Class };
@@ -42,16 +42,15 @@ export namespace KSLangSchema {
         typeArguments: Type[];
         classType: Type;
         methodName: string;
-
     }
 
     export class Type implements IType {
         constructor(public typeKind: TypeKind = null) { }
         
-        public className: string = null;
-        public typeArguments: Type[] = null;
-        public classType: Type = null;
-        public methodName: string = null;
+        public className: string;
+        public typeArguments: Type[];
+        public classType: Type;
+        public methodName: string;
 
         get isPrimitiveType() { return Type.PrimitiveTypeKinds.includes(this.typeKind); }
         get isArray() { return this.typeKind === TypeKind.Array; }

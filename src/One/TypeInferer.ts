@@ -1,6 +1,5 @@
-import { KSLangSchema as ks } from "./KSLangSchema";
-import { CodeGenerator } from "./CodeGenerator";
-import { KsModelVisitor } from "./ModelVisitor";
+import { OneAst as one } from "./Ast";
+import { AstVisitor } from "./AstVisitor";
 
 export enum ReferenceType { Class, Method, MethodVariable, ClassVariable }
 
@@ -30,26 +29,26 @@ export interface ITiClass {
 }
 
 export interface ITiMethod {
-    getReturnType(): ks.Type;
+    getReturnType(): one.Type;
 }
 
-class KsMethodWrapper implements ITiMethod {
-    constructor(public method: ks.Method) { }
+class OneMethodWrapper implements ITiMethod {
+    constructor(public method: one.Method) { }
     
-    getReturnType(): ks.Type {
-        return ks.Type.Load(this.method.returns);
+    getReturnType(): one.Type {
+        return one.Type.Load(this.method.returns);
     }
 }
 
-class KsClassWrapper implements ITiClass {
-    constructor(public cls: ks.Class) {
+class OneClassWrapper implements ITiClass {
+    constructor(public cls: one.Class) {
         for (const methodName of Object.keys(this.cls.methods)) {
             const method = this.cls.methods[methodName];
-            this.methods[methodName] = new KsMethodWrapper(method);
+            this.methods[methodName] = new OneMethodWrapper(method);
         }
     }
 
-    methods: { [name: string]: KsMethodWrapper } = {};
+    methods: { [name: string]: OneMethodWrapper } = {};
 
     getMethod(name: string): ITiMethod {
         const method = this.methods[name];
@@ -65,8 +64,8 @@ class KsClassWrapper implements ITiClass {
 export class ClassRepository {
     classes: { [name: string]: ITiClass } = {};
 
-    addKsClass(cls: ks.Class) {
-        this.classes[cls.name] = new KsClassWrapper(cls);
+    addOneClass(cls: one.Class) {
+        this.classes[cls.name] = new OneClassWrapper(cls);
     }
 
     getClass(name: string) {
@@ -78,11 +77,11 @@ export class ClassRepository {
 }
 
 export class VariableContext {
-    variables: { [name: string]: ks.Type } = {};
+    variables: { [name: string]: one.Type } = {};
 
     constructor(public parentContext: VariableContext = null) { }
 
-    getType(name: string): ks.Type {
+    getType(name: string): one.Type {
         let currContext = <VariableContext> this;
         while (currContext !== null) {
             const result = currContext.variables[name];
@@ -92,36 +91,36 @@ export class VariableContext {
         }
 
         console.log(`Variable not found: ${name}`);
-        return ks.Type.Any;
+        return one.Type.Any;
     }
 
     inherit() {
         return new VariableContext(this);
     }
 
-    add(name: string, type: ks.Type) {
+    add(name: string, type: one.Type) {
         this.variables[name] = type;
     }
 }
 
-export class TypeInferer extends KsModelVisitor<Context> {
-    constructor(public codeGen: CodeGenerator) { super(); }
+export class TypeInferer extends AstVisitor<Context> {
+    constructor(public schema: one.SchemaFile) { super(); }
 
     log(data: string) {
         console.log(`[TypeInferer] ${data}`);
     }
 
-    protected visitIdentifier(id: ks.Identifier, context: Context) {
+    protected visitIdentifier(id: one.Identifier, context: Context) {
         id.valueType = context.variables.getType(id.text);
         //console.log(`Getting identifier: ${id.text} [${id.valueType.repr()}]`);
     }
 
-    protected visitVariableDeclaration(stmt: ks.VariableDeclaration, context: Context) {
+    protected visitVariableDeclaration(stmt: one.VariableDeclaration, context: Context) {
         super.visitVariableDeclaration(stmt, context);
         context.variables.add(stmt.variableName, stmt.initializer.valueType);
     }
 
-    protected visitForStatement(stmt: ks.ForStatement, context: Context) {
+    protected visitForStatement(stmt: one.ForStatement, context: Context) {
         this.visitExpression(stmt.itemVariable.initializer, context);
         
         const newContext = context.inherit();
@@ -133,13 +132,13 @@ export class TypeInferer extends KsModelVisitor<Context> {
         this.visitBlock(stmt.body, newContext);
     }
 
-    protected visitForeachStatement(stmt: ks.ForeachStatement, context: Context) {
+    protected visitForeachStatement(stmt: one.ForeachStatement, context: Context) {
         this.visitExpression(stmt.items, context);
         
         const itemsType = stmt.items.valueType;
         if (!itemsType.isArray) {
             console.log(`Tried to use foreach on a non-array type: ${itemsType.repr()}!`);
-            stmt.varType = ks.Type.Any;
+            stmt.varType = one.Type.Any;
         } else {
             stmt.varType = itemsType.typeArguments[0];
         }
@@ -150,15 +149,15 @@ export class TypeInferer extends KsModelVisitor<Context> {
         this.visitBlock(stmt.body, newContext);
     }
 
-    protected visitBinaryExpression(expr: ks.BinaryExpression, context: Context) {
+    protected visitBinaryExpression(expr: one.BinaryExpression, context: Context) {
         super.visitBinaryExpression(expr, context);
 
-        if (expr.left.valueType.typeKind === ks.TypeKind.Number && 
-                expr.right.valueType.typeKind === ks.TypeKind.Number)
-            expr.valueType.typeKind = ks.TypeKind.Number;
+        if (expr.left.valueType.typeKind === one.TypeKind.Number && 
+                expr.right.valueType.typeKind === one.TypeKind.Number)
+            expr.valueType.typeKind = one.TypeKind.Number;
     }
 
-    protected visitCallExpression(expr: ks.CallExpression, context: Context) {
+    protected visitCallExpression(expr: one.CallExpression, context: Context) {
         super.visitCallExpression(expr, context);
 
         if (expr.method.valueType.isMethod) {
@@ -170,25 +169,25 @@ export class TypeInferer extends KsModelVisitor<Context> {
         }
 }
 
-    protected visitLiteral(expr: ks.Literal, context: Context) {
+    protected visitLiteral(expr: one.Literal, context: Context) {
         if (expr.literalType === "numeric")
-            expr.valueType.typeKind = ks.TypeKind.Number;
+            expr.valueType.typeKind = one.TypeKind.Number;
         else if (expr.literalType === "string")
-            expr.valueType.typeKind = ks.TypeKind.String;
+            expr.valueType.typeKind = one.TypeKind.String;
         else if (expr.literalType === "boolean")
-            expr.valueType.typeKind = ks.TypeKind.Boolean;
+            expr.valueType.typeKind = one.TypeKind.Boolean;
         else if (expr.literalType === "null")
-            expr.valueType.typeKind = ks.TypeKind.Null;
+            expr.valueType.typeKind = one.TypeKind.Null;
         else
             this.log(`Could not inter literal type: ${expr.literalType}`);
     }
 
-    protected visitParenthesizedExpression(expr: ks.ParenthesizedExpression, context: Context) {
+    protected visitParenthesizedExpression(expr: one.ParenthesizedExpression, context: Context) {
         super.visitParenthesizedExpression(expr, context);
         expr.valueType = expr.expression.valueType;
     }
 
-    protected visitPropertyAccessExpression(expr: ks.PropertyAccessExpression, context: Context) {
+    protected visitPropertyAccessExpression(expr: one.PropertyAccessExpression, context: Context) {
         super.visitPropertyAccessExpression(expr, context);
 
         const objType = expr.object.valueType;
@@ -196,25 +195,25 @@ export class TypeInferer extends KsModelVisitor<Context> {
             const cls = context.classes.getClass(objType.className);
             const method = cls && cls.getMethod(expr.propertyName);
             if (method)
-                expr.valueType = ks.Type.Method(objType, expr.propertyName);
+                expr.valueType = one.Type.Method(objType, expr.propertyName);
         } else {
             this.log(`Cannot access property '${expr.propertyName}' on object type '${expr.object.valueType.repr()}'.`);
         }
     }
 
-    protected visitArrayLiteral(expr: ks.ArrayLiteral, context: Context) {
+    protected visitArrayLiteral(expr: one.ArrayLiteral, context: Context) {
         super.visitArrayLiteral(expr, context);
 
-        let itemType = expr.items.length > 0 ? expr.items[0].valueType : ks.Type.Any;
+        let itemType = expr.items.length > 0 ? expr.items[0].valueType : one.Type.Any;
         if (expr.items.some(x => !x.valueType.equals(itemType)))
-            itemType = ks.Type.Any;
+            itemType = one.Type.Any;
 
-        expr.valueType = ks.Type.Array(itemType);
+        expr.valueType = one.Type.Array(itemType);
     }
 
-    protected visitExpression(expression: ks.Expression, context: Context) {
-        expression.valueType = new ks.Type();
-        expression.valueType.typeKind = ks.TypeKind.Any;
+    protected visitExpression(expression: one.Expression, context: Context) {
+        expression.valueType = new one.Type();
+        expression.valueType.typeKind = one.TypeKind.Any;
 
         super.visitExpression(expression, context);
     }
@@ -222,34 +221,34 @@ export class TypeInferer extends KsModelVisitor<Context> {
     getTypeFromString(typeStr: string) {
         // TODO: serious hacks here
         if (typeStr === "int")
-            return ks.Type.Number;
+            return one.Type.Number;
         else {
             console.log(`getTypeFromString unknown type: ${typeStr}`);
-            return ks.Type.Any;
+            return one.Type.Any;
         }
     }
 
     getGlobalContext() {
         const context = new Context();
         //context.classes.add("Console");
-        context.variables.add("console", ks.Type.Class("Console"));
+        context.variables.add("console", one.Type.Class("Console"));
         return context;
     }
 
     process() {
         const globalContext = this.getGlobalContext();
 
-        const classes = Object.values(this.codeGen.schema.classes);
+        const classes = Object.values(this.schema.classes);
         for (const cls of classes)
-            globalContext.classes.addKsClass(cls);
+            globalContext.classes.addOneClass(cls);
 
         for (const cls of classes) {
             const classContext = globalContext.inherit();
-            classContext.variables.add("this", ks.Type.Class(cls.name));
+            classContext.variables.add("this", one.Type.Class(cls.name));
             for (const method of Object.values(cls.methods)) {
                 const methodContext = classContext.inherit();
                 for (const param of method.parameters)
-                    methodContext.variables.add(param.name, ks.Type.Load(param.type));
+                    methodContext.variables.add(param.name, one.Type.Load(param.type));
                 this.visitBlock(method.body, methodContext);
             }
         }

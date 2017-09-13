@@ -4,8 +4,9 @@ import YAML = require('yamljs');
 import mkdirp = require('mkdirp');
 import path = require('path');
 import util = require('util');
-import { TypeScriptParser } from "./TypeScriptParser";
-import { KsLangSchema, CodeGenerator } from "./CodeGenerator";
+import { TypeScriptParser } from "./Parsers/TypeScriptParser";
+import { CodeGenerator } from "./Generator/CodeGenerator";
+import { LangFileSchema } from "./Generator/LangFileSchema";
 
 class Utils {
     static writeFile(fn: string, data: any) {
@@ -25,7 +26,7 @@ let langs = fs.readdirSync("langs");
 langs = ["csharp.yaml"];
 for (const langFn of langs) {
     const langName = langFn.replace(".yaml", "");
-    const langSchema = <KsLangSchema.LangFile> YAML.parse(fs.readFileSync(`langs/${langFn}`, "utf8"));
+    const langSchema = <LangFileSchema.LangFile> YAML.parse(fs.readFileSync(`langs/${langFn}`, "utf8"));
 
     const codeGenerator = new CodeGenerator(schema, langSchema);
 

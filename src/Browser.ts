@@ -1,14 +1,15 @@
 import { Layout, LangUi } from "./UI/AppLayout";
-import { CodeGenerator, deindent, KsLangSchema } from "./CodeGenerator";
-import { langConfigs, LangConfig } from "./langConfigs";
-import { TypeScriptParser } from "./TypeScriptParser";
-import { ExposedPromise } from "./ExposedPromise";
+import { CodeGenerator, deindent } from "./Generator/CodeGenerator";
+import { langConfigs, LangConfig } from "./Generator/LangConfigs";
+import { TypeScriptParser } from "./Parsers/TypeScriptParser";
+import { ExposedPromise } from "./Utils/ExposedPromise";
+import { LangFileSchema } from "./Generator/LangFileSchema";
 
 declare var YAML: any;
 
 async function getLangTemplate(langName: string) {
     const response = await (await fetch(`langs/${langName}.yaml`)).text();
-    return <KsLangSchema.LangFile> YAML.parse(response);
+    return <LangFileSchema.LangFile> YAML.parse(response);
 }
 
 interface CompileResult {

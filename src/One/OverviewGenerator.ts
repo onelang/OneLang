@@ -1,13 +1,12 @@
-import { KSLangSchema as ks } from "./KSLangSchema";
-import { CodeGenerator } from "./CodeGenerator";
-import { KsModelVisitor } from "./ModelVisitor";
+import { OneAst as one } from "./Ast";
+import { AstVisitor } from "./AstVisitor";
 
-export class OverviewGenerator extends KsModelVisitor<void> {
+export class OverviewGenerator extends AstVisitor<void> {
     result = "";
     pad = "";
     padWasAdded = false;
 
-    constructor(public codeGen: CodeGenerator) {
+    constructor(public schema: one.SchemaFile) {
         super();
         this.generate();
     }
@@ -37,31 +36,31 @@ export class OverviewGenerator extends KsModelVisitor<void> {
             this.pad = this.pad.substr(0, this.pad.length - 2);
     }
 
-    visitStatement(statement: ks.Statement) {
+    visitStatement(statement: one.Statement) {
         if (statement === null) {
             this.addLine("<null>");
-        } else if (statement.stmtType === ks.StatementType.If) {
-            const stmt = <ks.IfStatement> statement;
+        } else if (statement.stmtType === one.StatementType.If) {
+            const stmt = <one.IfStatement> statement;
             this.addLine(`If`);
             this.visitExpression(stmt.condition);
             this.addLine(`Then`);
             this.visitBlock(stmt.then);
             this.addLine(`Else`);
             this.visitBlock(stmt.else);
-        } else if (statement.stmtType === ks.StatementType.Variable) {
-            const stmt = <ks.VariableDeclaration> statement;
+        } else if (statement.stmtType === one.StatementType.Variable) {
+            const stmt = <one.VariableDeclaration> statement;
             this.addLine(`Variable: ${stmt.variableName}`);
             this.visitExpression(stmt.initializer);
-        } else if (statement.stmtType === ks.StatementType.While) {
-            const stmt = <ks.WhileStatement> statement;
+        } else if (statement.stmtType === one.StatementType.While) {
+            const stmt = <one.WhileStatement> statement;
             this.addLine(`While`);
             this.indent(1);
             this.visitExpression(stmt.condition);
             this.addLine(`Body`);
             this.visitBlock(stmt.body);
             this.indent(-1);
-        } else if (statement.stmtType === ks.StatementType.Foreach) {
-            const stmt = <ks.ForeachStatement> statement;
+        } else if (statement.stmtType === one.StatementType.Foreach) {
+            const stmt = <one.ForeachStatement> statement;
             this.addLine(`Foreach ${stmt.varName}: ${stmt.varType.repr()}`);
             this.indent(1);
             this.addLine(`Items`);
@@ -69,8 +68,8 @@ export class OverviewGenerator extends KsModelVisitor<void> {
             this.addLine(`Body`);
             this.visitBlock(stmt.body);
             this.indent(-1);
-        } else if (statement.stmtType === ks.StatementType.For) {
-            const stmt = <ks.ForStatement> statement;
+        } else if (statement.stmtType === one.StatementType.For) {
+            const stmt = <one.ForStatement> statement;
             this.addLine(`For ("${stmt.itemVariable.variableName}")`);
             this.indent(1);
             this.addLine(`Condition`);
@@ -86,7 +85,7 @@ export class OverviewGenerator extends KsModelVisitor<void> {
         }
     }
 
-    visitBlock(block: ks.Block) {
+    visitBlock(block: one.Block) {
         this.indent(1);
 
         for (const statement of block.statements) {
@@ -97,11 +96,11 @@ export class OverviewGenerator extends KsModelVisitor<void> {
         this.indent(-1);
     }
 
-    visitUnknownExpression(expression: ks.Expression) {
+    visitUnknownExpression(expression: one.Expression) {
         this.addLine(`${expression.exprKind} (unknown!)`);
     }
 
-    visitExpression(expression: ks.Expression) {
+    visitExpression(expression: one.Expression) {
         this.indent(1);
         
         this.add("- ");
@@ -112,23 +111,23 @@ export class OverviewGenerator extends KsModelVisitor<void> {
 
         if (expression === null) {
             addHdr("<null>");
-        } else if (expression.exprKind === ks.ExpressionKind.Binary) {
-            const expr = <ks.BinaryExpression> expression;
+        } else if (expression.exprKind === one.ExpressionKind.Binary) {
+            const expr = <one.BinaryExpression> expression;
             addHdr(`Binary: ${expr.operator}`);
             super.visitExpression(expression, null);
-        } else if (expression.exprKind === ks.ExpressionKind.Identifier) {
-            const expr = <ks.Identifier> expression;
+        } else if (expression.exprKind === one.ExpressionKind.Identifier) {
+            const expr = <one.Identifier> expression;
             addHdr(`Identifier: ${expr.text}`);
-        } else if (expression.exprKind === ks.ExpressionKind.Literal) {
-            const expr = <ks.Literal> expression;
+        } else if (expression.exprKind === one.ExpressionKind.Literal) {
+            const expr = <one.Literal> expression;
             const value = expr.literalType === "string" ? `"${expr.value}"` : expr.value;
             addHdr(`Literal (${expr.literalType}): ${value}`);
-        } else if (expression.exprKind === ks.ExpressionKind.Unary) {
-            const expr = <ks.UnaryExpression> expression;
+        } else if (expression.exprKind === one.ExpressionKind.Unary) {
+            const expr = <one.UnaryExpression> expression;
             addHdr(`Unary (${expr.unaryType}): ${expr.operator}`);
             super.visitExpression(expression, null);
-        } else if (expression.exprKind === ks.ExpressionKind.PropertyAccess) {
-            const expr = <ks.PropertyAccessExpression> expression;
+        } else if (expression.exprKind === one.ExpressionKind.PropertyAccess) {
+            const expr = <one.PropertyAccessExpression> expression;
             addHdr(`PropertyAccess (.${expr.propertyName})`);
             super.visitExpression(expression, null);
         } else {
@@ -140,10 +139,10 @@ export class OverviewGenerator extends KsModelVisitor<void> {
     }
 
     generate() {
-        for (const cls of this.codeGen.model.classes) {
-            for (const method of cls.methods) {
+        for (const cls of Object.values(this.schema.classes)) {
+            for (const method of Object.values(cls.methods)) {
                 const argList = method.parameters.map(arg => `${arg.name}: ${arg.type}`).join(", ");
-                this.addLine(`${cls.origName}::${method.origName}(${argList}): ${method.returnType}`);
+                this.addLine(`${cls.origName}::${method.origName}(${argList}): ${method.returns}`);
                 this.visitBlock(method.body);
                 this.addLine("");
             }

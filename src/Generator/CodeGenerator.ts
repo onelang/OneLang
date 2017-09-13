@@ -1,89 +1,9 @@
-import { KSLangSchema as ks } from "./KSLangSchema";
-import { TypeScriptParser } from "./TypeScriptParser";
+import { OneAst as one } from "../One/Ast";
 import { Template } from "./TemplateCompiler";
 import { ExpressionParser } from "./ExpressionLanguage/ExpressionParser";
-import { OverviewGenerator } from "./OverviewGenerator";
-import { TypeInferer } from "./TypeInferer";
-
-export namespace KsLangSchema {
-    export interface FunctionArgument {
-        name: string;
-    }
-
-    export interface Function {
-        arguments: FunctionArgument[];
-        includes: string[];
-        template: string;
-    }
-
-    export enum Casing {
-        PascalCase = "pascal_case",
-        CamelCase = "camel_case",
-        SnakeCase = "snake_case",
-    }
-
-    export interface CasingOptions {
-        class?: Casing;
-        method?: Casing;
-    }
-
-    export interface TemplateObj {
-        args: FunctionArgument[];
-        template: string;
-    }
-
-    export interface Templates {
-        testGenerator: string;
-        main: string;
-        [name: string]: string|TemplateObj;
-    }
-
-    export interface LangFile {
-        functions: { [name: string]: Function };
-        extension: string;
-        casing: CasingOptions;
-        primitiveTypes: {
-            void: string;
-            boolean: string;
-            string: string;
-            int32: string;
-        };
-        array: string;
-        templates: Templates;
-        expressions: string;
-    }
-}
-
-namespace CodeGeneratorSchema {
-    export interface MethodParameter {
-        idx: number;
-        name: string;
-        type: string;
-    }
-
-    export interface Method {
-        visibility: "public"|"protected"|"private";
-        name: string;
-        origName: string;
-        parameters: MethodParameter[];
-        returnType: string;
-        body: ks.Block;
-    }
-
-    export interface Class {
-        name: string;
-        origName: string;
-        methods: Method[];
-        publicMethods: Method[];
-        privateMethods: Method[];
-    }
-
-    export interface Root {
-        absoluteIncludes: string[];
-        classes: Class[];
-        main?: () => string;
-    }
-}
+import { TypeInferer } from "../One/TypeInferer";
+import { OverviewGenerator } from "../One/OverviewGenerator";
+import { LangFileSchema } from "./LangFileSchema";
 
 export function deindent(str: string) {
     function getPadLen(line: string) {
@@ -112,22 +32,47 @@ function tmpl(parts: TemplateStringsArray, ...values: any[]) {
     return deindent(result);
 }
 
+namespace CodeGeneratorModel {
+    export interface MethodParameter {
+        idx: number;
+        name: string;
+        type: string;
+    }
+
+    export interface Method {
+        visibility: "public"|"protected"|"private";
+        name: string;
+        origName: string;
+        parameters: MethodParameter[];
+        returnType: string;
+        body: one.Block;
+    }
+
+    export interface Class {
+        name: string;
+        origName: string;
+        methods: Method[];
+        publicMethods: Method[];
+        privateMethods: Method[];
+    }
+}
+
 class CodeGeneratorModel {
     includes: string[] = [];
     absoluteIncludes: string[] = [];
-    classes: CodeGeneratorSchema.Class[] = [];
+    classes: CodeGeneratorModel.Class[] = [];
     expressionGenerators: { [name: string]: (expr: any) => string } = {};
     internalMethodGenerators: { [name: string]: (expr: any) => string } = {};
 
     constructor(public generator: CodeGenerator) { }
     
-    gen(obj: ks.Statement|ks.Expression) {
-        const type = (<ks.Statement>obj).stmtType || (<ks.Expression>obj).exprKind;
-        if (type === ks.StatementType.Expression)
-            obj = (<ks.ExpressionStatement>obj).expression;
+    gen(obj: one.Statement|one.Expression) {
+        const type = (<one.Statement>obj).stmtType || (<one.Expression>obj).exprKind;
+        if (type === one.StatementType.Expression)
+            obj = (<one.ExpressionStatement>obj).expression;
 
-        if (type === ks.ExpressionKind.Call) {
-            const callExpr = <ks.CallExpression> obj;
+        if (type === one.ExpressionKind.Call) {
+            const callExpr = <one.CallExpression> obj;
             const methodPath = this.generator.getMethodPath(callExpr.method);
             const method = methodPath && this.generator.lang.functions[methodPath];
             if (method) {
@@ -141,8 +86,8 @@ class CodeGeneratorModel {
         }
 
         let genName = type.toString();
-        if (genName === ks.ExpressionKind.Literal) {
-            const literalExpr = <ks.Literal> obj;
+        if (genName === one.ExpressionKind.Literal) {
+            const literalExpr = <one.Literal> obj;
             genName = `${literalExpr.literalType.ucFirst()}Literal`;
         }
 
@@ -161,12 +106,12 @@ class CodeGeneratorModel {
 }
 
 export class CodeGenerator {
-    schema: ks.SchemaFile;
+    schema: one.SchemaFile;
     model = new CodeGeneratorModel(this);
     templateObjectCode: string;
     templateObject;
 
-    constructor(schema: ks.SchemaFile, public lang: KsLangSchema.LangFile) {
+    constructor(schema: one.SchemaFile, public lang: LangFileSchema.LangFile) {
         this.schema = JSON.parse(JSON.stringify(schema)); // clone
         this.setupNames();
         this.setupClasses();
@@ -178,20 +123,20 @@ export class CodeGenerator {
     getName(name: string, type: "class"|"method"|"enum") {
         const casing = this.lang.casing[type === "enum" ? "class" : type];
         const parts = name.split("_").map(x => x.toLowerCase());
-        if (casing === KsLangSchema.Casing.CamelCase)
+        if (casing === LangFileSchema.Casing.CamelCase)
             return parts[0] + parts.splice(1).map(x => x.ucFirst()).join("");
-        else if (casing === KsLangSchema.Casing.PascalCase)
+        else if (casing === LangFileSchema.Casing.PascalCase)
             return parts.map(x => x.ucFirst()).join("");
-        else if (casing === KsLangSchema.Casing.SnakeCase)
+        else if (casing === LangFileSchema.Casing.SnakeCase)
             return parts.join("_");
         else
             throw new Error(`Unknown casing: ${casing}`);
     }
 
-    getTypeName(type: ks.IType) {
-        if (type.typeKind === ks.TypeKind.Array)
+    getTypeName(type: one.IType) {
+        if (type.typeKind === one.TypeKind.Array)
             return (this.lang.array || "{{type}}[]").replace("{{type}}", this.getTypeName(type.typeArguments[0]));
-        else if (type.typeKind === ks.TypeKind.Class)
+        else if (type.typeKind === one.TypeKind.Class)
             return this.getName(type.className, "class");
         else
             return this.lang.primitiveTypes ? this.lang.primitiveTypes[type.typeKind] : type.typeKind;
@@ -203,16 +148,16 @@ export class CodeGenerator {
         return `${isLocalVar || mode === "declaration" || mode === "field" ? "" : "this."}${name}`;
     }
 
-    getMethodPath(method: ks.Expression) {
+    getMethodPath(method: one.Expression) {
         let parts = [];
         let currExpr = method;
         while (true) {
-            if (currExpr.exprKind === ks.ExpressionKind.PropertyAccess) {
-                const propAcc = <ks.PropertyAccessExpression> currExpr;
+            if (currExpr.exprKind === one.ExpressionKind.PropertyAccess) {
+                const propAcc = <one.PropertyAccessExpression> currExpr;
                 parts.push(propAcc.propertyName);
                 currExpr = propAcc.object;
-            } else if (currExpr.exprKind === ks.ExpressionKind.Identifier) {
-                parts.push((<ks.Identifier> currExpr).text);
+            } else if (currExpr.exprKind === one.ExpressionKind.Identifier) {
+                parts.push((<one.Identifier> currExpr).text);
                 break;
             } else
                 return null;
@@ -253,13 +198,13 @@ export class CodeGenerator {
             const cls = this.schema.classes[className];
             const methods = Object.keys(cls.methods).map(methodName => {
                 const method = cls.methods[methodName];
-                return <CodeGeneratorSchema.Method> {
+                return <CodeGeneratorModel.Method> {
                     name: method.name,
                     origName: method.origName,
                     returnType: this.getTypeName(method.returns),
                     body: method.body,
                     parameters: method.parameters.map((param, idx) => {
-                        return <CodeGeneratorSchema.MethodParameter> {
+                        return <CodeGeneratorModel.MethodParameter> {
                             idx,
                             name: param.name,
                             type: this.getTypeName(param.type),
@@ -268,7 +213,7 @@ export class CodeGenerator {
                     visibility: "public" // TODO
                 };
             });
-            return <CodeGeneratorSchema.Class> {
+            return <CodeGeneratorModel.Class> {
                 name: cls.name,
                 origName: cls.origName,
                 methods: methods,
@@ -309,7 +254,7 @@ export class CodeGenerator {
 
                 ${Object.keys(this.lang.templates).map(tmplName => {
                     const tmplOrig = this.lang.templates[tmplName];
-                    const tmplObj = typeof tmplOrig === "string" ? <KsLangSchema.TemplateObj>{ template: tmplOrig, args: [] } : tmplOrig;
+                    const tmplObj = typeof tmplOrig === "string" ? <LangFileSchema.TemplateObj>{ template: tmplOrig, args: [] } : tmplOrig;
                     if (tmplName === "testGenerator")
                         tmplObj.args = [{ name: "cls" }, { name: "method" }];
                     return this.genTemplateMethodCode(tmplName, tmplObj.args.map(x => x.name), tmplObj.template);
@@ -330,11 +275,11 @@ export class CodeGenerator {
     }
 
     interTypes() {
-        new TypeInferer(this).process();
+        new TypeInferer(this.schema).process();
     }
 
     generateOverview() {
-        return new OverviewGenerator(this).result;
+        return new OverviewGenerator(this.schema).result;
     }
 }
 

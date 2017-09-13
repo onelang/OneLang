@@ -1,1 +1,1 @@
-kslang
+onelang
