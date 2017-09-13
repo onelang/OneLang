@@ -1,4 +1,4 @@
-require("./extensions.js");
+require("./Utils/Extensions.js");
 import fs = require("fs");
 import YAML = require('yamljs');
 import mkdirp = require('mkdirp');
