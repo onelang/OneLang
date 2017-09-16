@@ -3,11 +3,18 @@ export class VariableContext<T> {
 
     constructor(public parentContext: VariableContext<T> = null) { }
 
+    log(data: string) {
+        console.log(`[VariableContext] ${data}`);
+    }
+
     inherit() {
         return new VariableContext<T>(this);
     }
 
     add(name: string, type: T) {
+        if (name in this.variables)
+            this.log(`Variable shadowing detected: ${name}`);
+
         this.variables[name] = type;
     }
 
@@ -20,7 +27,6 @@ export class VariableContext<T> {
             currContext = currContext.parentContext;
         }
 
-        console.log(`[VariableContext] Variable not found: ${name}`);
         return null;
     }
 }

@@ -41,12 +41,7 @@ export class TypeScriptParser {
         else if (typeText === "void")
             result.typeKind = one.TypeKind.Void;
         else {
-            const isArray = typeText === "Array";
-            result.typeKind = isArray ? one.TypeKind.Array : 
-                one.TypeKind.Class;
-            
-            if(!isArray)
-                result.className = typeText;
+            result.className = typeText;
 
             const typeArgs = <ts.Type[]>(<any>tsType).typeArguments;
             if (typeArgs)

@@ -132,9 +132,7 @@ export class CodeGenerator {
     }
 
     getTypeName(type: one.IType) {
-        if (type.typeKind === one.TypeKind.Array)
-            return (this.lang.array || "{{type}}[]").replace("{{type}}", this.getTypeName(type.typeArguments[0]));
-        else if (type.typeKind === one.TypeKind.Class)
+        if (type.typeKind === one.TypeKind.Class)
             return this.getName(type.className, "class");
         else
             return this.lang.primitiveTypes ? this.lang.primitiveTypes[type.typeKind] : type.typeKind;

@@ -29,7 +29,6 @@ export namespace OneAst {
         Number = "number",
         Null = "null",
         Any = "any",
-        Array = "array",
         Class = "class",
         Method = "method",
     }
@@ -51,7 +50,6 @@ export namespace OneAst {
         public methodName: string;
 
         get isPrimitiveType() { return Type.PrimitiveTypeKinds.includes(this.typeKind); }
-        get isArray() { return this.typeKind === TypeKind.Array; }
         get isClass() { return this.typeKind === TypeKind.Class; }
         get isMethod() { return this.typeKind === TypeKind.Method; }
 
@@ -65,9 +63,7 @@ export namespace OneAst {
             const typeArgsMatch = this.typeArguments.length === other.typeArguments.length
                 && this.typeArguments.every((thisArg, i) => thisArg.equals(other.typeArguments[i]));
 
-            if (this.typeKind === TypeKind.Array)
-                return typeArgsMatch;
-            else if (this.typeKind === TypeKind.Class)
+            if (this.typeKind === TypeKind.Class)
                 return this.className === other.className && typeArgsMatch;
             else
                 throw new Error(`Type.equals: Unknown typeKind: ${this.typeKind}`);
@@ -76,8 +72,6 @@ export namespace OneAst {
         repr() {
             if (this.isPrimitiveType) {
                 return this.typeKind.toString();
-            } else if (this.isArray) {
-                return `array<${this.typeArguments[0].repr()}>`;
             } else if (this.isClass) {
                 return this.className + (this.typeArguments.length === 0 ? "" : 
                     `<${this.typeArguments.map(x => x.repr()).join(", ")}>`);
@@ -98,7 +92,8 @@ export namespace OneAst {
         static Any = new Type(TypeKind.Any);
         
         static Array(itemType: Type) { 
-            const result = new Type(TypeKind.Array);
+            const result = new Type(TypeKind.Class);
+            result.className = "OneArray";
             result.typeArguments = [itemType];
             return result;
         }

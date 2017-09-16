@@ -26,6 +26,7 @@ export class Context {
 }
 
 export interface ITiClass {
+    iteratable: boolean;
     getMethod(name: string): ITiMethod;
 }
 
@@ -49,6 +50,7 @@ class OneClassWrapper implements ITiClass {
         }
     }
 
+    iteratable = false;
     methods: { [name: string]: OneMethodWrapper } = {};
 
     getMethod(name: string): ITiMethod {
@@ -85,7 +87,17 @@ export class TypeInferer extends AstVisitor<Context> {
     }
 
     protected visitIdentifier(id: one.Identifier, context: Context) {
-        id.valueType = context.variables.get(id.text) || one.Type.Any;
+        id.valueType = context.variables.get(id.text);
+        if (!id.valueType) {
+            const cls = context.classes.getClass(id.text);
+            if (cls)
+                id.valueType = one.Type.Class(id.text);
+        }
+
+        if (!id.valueType) {
+            this.log(`Could not find identifier: ${id.text}`);
+            id.valueType = one.Type.Any;
+        }
         //console.log(`Getting identifier: ${id.text} [${id.valueType.repr()}]`);
     }
 
@@ -110,7 +122,9 @@ export class TypeInferer extends AstVisitor<Context> {
         this.visitExpression(stmt.items, context);
         
         const itemsType = stmt.items.valueType;
-        if (!itemsType.isArray) {
+        const itemsClass = context.classes.getClass(itemsType.className);
+        
+        if (!itemsClass || !itemsClass.iteratable || itemsType.typeArguments.length === 0) {
             console.log(`Tried to use foreach on a non-array type: ${itemsType.repr()}!`);
             stmt.varType = one.Type.Any;
         } else {
@@ -215,6 +229,11 @@ export class TypeInferer extends AstVisitor<Context> {
         const classes = Object.values(this.schema.classes);
         for (const cls of classes)
             globalContext.classes.addOneClass(cls);
+        
+        // hack!
+        const oneArray = globalContext.classes.getClass("OneArray");
+        if (oneArray)
+            oneArray.iteratable = true;
 
         for (const cls of classes) {
             const classContext = globalContext.inherit();
