@@ -44,10 +44,6 @@ export class ClassRepository {
 export class TypeInferer extends AstVisitor<Context> {
     constructor(public schemaCtx: SchemaContext, public overlayCtx: SchemaContext = null) { super(); }
 
-    log(data: string) {
-        console.log(`[TypeInferer] ${data}`);
-    }
-
     protected visitIdentifier(id: one.Identifier, context: Context) {
         id.valueType = context.variables.get(id.text);
         if (!id.valueType) {
@@ -207,8 +203,8 @@ export class TypeInferer extends AstVisitor<Context> {
     }
 
     process() {
-        this.schemaCtx.ensureTransformed("fillNames");
-        this.overlayCtx.ensureTransformed("fillNames");
+        this.schemaCtx.ensureTransforms("fillName");
+        this.overlayCtx.ensureTransforms("fillName");
 
         const globalContext = this.getGlobalContext();
 

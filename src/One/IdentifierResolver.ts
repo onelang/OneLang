@@ -7,10 +7,6 @@ type Context = VariableContext<one.Expression>;
 export class IdentifierResolver extends AstVisitor<Context> {
     constructor(public schema: one.Schema) { super(); }
 
-    log(data: string) {
-        console.log(`[IdentifierResolver] ${data}`);
-    }
-
     addLocalVar(context: Context, name: string) {
         context.add(name, new one.LocalMethodVariable(name));
     }

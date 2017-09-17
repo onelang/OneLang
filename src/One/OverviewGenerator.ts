@@ -11,10 +11,6 @@ export class OverviewGenerator extends AstVisitor<void> {
         super();
     }
 
-    log(data: string) {
-        console.log(`[OverviewGenerator] ${data}`);
-    }
-
     addLine(line: string) {
         this.add(`${line}\n`);
         this.padWasAdded = false;
@@ -154,7 +150,7 @@ export class OverviewGenerator extends AstVisitor<void> {
     generate() {
         if (this.result) return this.result;
 
-        this.schemaCtx.ensureTransformed("fillNames");
+        this.schemaCtx.ensureTransforms("fillName");
 
         for (const glob of Object.values(this.schemaCtx.schema.globals))
             this.addLine(`global ${glob.variableName}: ${glob.variableType.repr()}`);

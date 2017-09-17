@@ -1,7 +1,10 @@
 import { OneAst as one } from "./Ast";
 
 export abstract class AstVisitor<TContext> {
-    protected abstract log(data: string);
+    protected log(data: string) {
+        const thisClassName = (<any>this).constructor.name;
+        console.log(`[${thisClassName}] ${data}`);
+    }
     
     protected visitIdentifier(id: one.Identifier, context: TContext) { }
 

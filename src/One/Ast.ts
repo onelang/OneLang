@@ -16,6 +16,7 @@ export namespace OneAst {
     }
 
     export interface Class {
+        parent?: Schema;
         name?: string;
         fields: { [name: string]: Field };
         properties: { [name: string]: Property };
@@ -140,12 +141,15 @@ export namespace OneAst {
     }
 
     export interface Method {
+        parent?: Class;
         name?: string;
         static: boolean;
         parameters: MethodParameter[];
         returns: Type;
         body: Block;
     }
+
+    export type MethodLike = Method | Constructor;
 
     // ======================= EXPRESSIONS ======================
 
@@ -168,6 +172,7 @@ export namespace OneAst {
 
     export interface Expression {
         exprKind: ExpressionKind;
+        parent?: Expression|Statement;
         valueType?: Type;
     }
 
@@ -258,6 +263,7 @@ export namespace OneAst {
     }
 
     export interface Statement {
+        parent?: Block;
         stmtType: StatementType;
     }
 
@@ -305,6 +311,7 @@ export namespace OneAst {
     }
 
     export interface Block {
+        parent?: Statement|MethodLike;
         statements: Statement[];
     }
 }

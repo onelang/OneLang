@@ -1,7 +1,10 @@
-import { OneAst as one } from "./Ast";
+import { ISchemaTransform } from "./../SchemaTransformHandler";
+import { OneAst as one } from "./../Ast";
 
-export class AstHelper {
-    static fillNames(schema: one.Schema) {
+export class FillNameTransform implements ISchemaTransform {
+    name = "fillName";
+
+    transform(schema: one.Schema) {
         for (const globName of Object.keys(schema.globals))
             schema.globals[globName].variableName = globName;
 

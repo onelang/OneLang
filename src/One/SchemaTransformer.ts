@@ -1,15 +1,15 @@
 import { OneAst as one } from "./Ast";
 
-export interface ISchemaTransformer {
+export interface ISchemaTransform {
     name: string;
     transform(schema: one.Schema);
     revert?(schema: one.Schema);
 }
 
-export class SchemaTransformHandler {
-    static instance = new SchemaTransformHandler();
+export class SchemaTransformer {
+    static instance = new SchemaTransformer();
 
-    transformers: { [name: string]: ISchemaTransformer } = {};
+    transformers: { [name: string]: ISchemaTransform } = {};
 
     constructor() { }
 
@@ -17,7 +17,7 @@ export class SchemaTransformHandler {
         console.log(`[SchemaTransformHandler] ${data}`);
     }
 
-    addTransformer(trans: ISchemaTransformer) {
+    addTransform(trans: ISchemaTransform) {
         this.transformers[trans.name] = trans;
     }
 

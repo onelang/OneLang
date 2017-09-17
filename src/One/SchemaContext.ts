@@ -1,14 +1,14 @@
-import { SchemaTransformHandler } from "./SchemaTransformHandler";
+import { SchemaTransformer } from "./SchemaTransformer";
 import { OneAst as one } from "./Ast";
 
 export class SchemaContext {
-    transformHandler: SchemaTransformHandler;
+    transformer: SchemaTransformer;
 
     constructor(public schema: one.Schema) {
-        this.transformHandler = SchemaTransformHandler.instance;
+        this.transformer = SchemaTransformer.instance;
     }
 
-    ensureTransformed(...transformNames: string[]) {
-        this.transformHandler.ensure(this.schema, ...transformNames);
+    ensureTransforms(...transformNames: string[]) {
+        this.transformer.ensure(this.schema, ...transformNames);
     }
 }

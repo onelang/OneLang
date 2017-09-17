@@ -12,8 +12,9 @@ import { IdentifierResolver } from "./One/IdentifierResolver";
 import { TypeInferer } from "./One/TypeInferer";
 import { OneAst as one } from "./One/Ast";
 import { SchemaContext } from "./One/SchemaContext";
-import { FillNamesTransformer } from "./One/Transformers/FillNamesTransformer";
-import { SchemaTransformHandler } from "./One/SchemaTransformHandler";
+import { FillNameTransform } from "./One/Transformers/FillNameTransform";
+import { SchemaTransformer } from "./One/SchemaTransformHandler";
+import { FillParentTransform } from "./One/Transformers/FillParentTransform";
 
 class Utils {
     static writeFile(fn: string, data: any) {
@@ -33,15 +34,17 @@ const tsToOne = parseTs(`langs/NativeResolvers/typescript.ts`);
 const schema = parseTs(`input/${prgName}.ts`);
 
 function saveSchemaState(schemaCtx: SchemaContext, name: string) {
-    const schemaJson = JSON.stringify(schema, null, 4);
+    const schemaJson = JSON.stringify(schema, (k, v) => k === "parent" ? undefined : v, 4);
     const schemaOverview = new OverviewGenerator(schemaCtx).generate();
     fs.writeFileSync(`tmp/${name}.json`, schemaJson);
     fs.writeFileSync(`tmp/${name}.txt`, schemaOverview);
 }
 
-SchemaTransformHandler.instance.addTransformer(new FillNamesTransformer());
+SchemaTransformer.instance.addTransform(new FillNameTransform());
+SchemaTransformer.instance.addTransform(new FillParentTransform());
 
 const schemaCtx = new SchemaContext(schema);
+schemaCtx.ensureTransforms("fillParent");
 const tsToOneCtx = new SchemaContext(tsToOne);
 
 //new TypeInferer(tsToOne).process();
