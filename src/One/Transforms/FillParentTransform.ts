@@ -1,6 +1,7 @@
 import { AstVisitor } from "../AstVisitor";
 import { ISchemaTransform } from "../SchemaTransformer";
 import { OneAst as one } from "../Ast";
+import { SchemaContext } from "../SchemaContext";
 
 export class FillParentTransform extends AstVisitor<any> implements ISchemaTransform {
     name: string = "fillParent";
@@ -30,7 +31,8 @@ export class FillParentTransform extends AstVisitor<any> implements ISchemaTrans
         super.visitClass(cls, cls);
     }
     
-    transform(schema: one.Schema) {
+    transform(schemaCtx: SchemaContext) {
+        const schema = schemaCtx.schema;
         this.visitSchema(schema, schema);
     }
 }

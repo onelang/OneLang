@@ -1,25 +1,27 @@
-export class VariableContext<T> {
-    variables: { [name: string]: T } = {};
+import { OneAst as one } from "./Ast";
 
-    constructor(public parentContext: VariableContext<T> = null) { }
+export class VariableContext {
+    variables: { [name: string]: one.VariableBase } = {};
+
+    constructor(public parentContext: VariableContext = null) { }
 
     log(data: string) {
         console.log(`[VariableContext] ${data}`);
     }
 
     inherit() {
-        return new VariableContext<T>(this);
+        return new VariableContext(this);
     }
 
-    add(name: string, type: T) {
-        if (name in this.variables)
-            this.log(`Variable shadowing detected: ${name}`);
+    add(variable: one.VariableBase) {
+        if (variable.name in this.variables)
+            this.log(`Variable shadowing detected: ${variable.name}`);
 
-        this.variables[name] = type;
+        this.variables[variable.name] = variable;
     }
 
-    get(name: string): T {
-        let currContext = <VariableContext<T>> this;
+    get(name: string): one.VariableBase {
+        let currContext = <VariableContext> this;
         while (currContext !== null) {
             const result = currContext.variables[name];
             if (result)

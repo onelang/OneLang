@@ -1,6 +1,6 @@
 //// <reference path="../StdLibs/typescript.d.ts" />
 
-class Console {
+class console {
     static log(data: any) {
         one.Console.print(data);
     }

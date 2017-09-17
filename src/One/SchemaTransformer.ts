@@ -1,10 +1,11 @@
 import { OneAst as one } from "./Ast";
+import { SchemaContext } from "./SchemaContext";
 
 export interface ISchemaTransform {
     name: string;
     dependencies?: string[];
-    transform(schema: one.Schema);
-    revert?(schema: one.Schema);
+    transform(schema: SchemaContext);
+    revert?(schema: SchemaContext);
 }
 
 export class SchemaTransformer {
@@ -22,7 +23,8 @@ export class SchemaTransformer {
         this.transformers[trans.name] = trans;
     }
 
-    ensure(schema: one.Schema, ...transformNames: string[]) {
+    ensure(schemaCtx: SchemaContext, ...transformNames: string[]) {
+        const schema = schemaCtx.schema;
         if (!schema.meta) schema.meta = {};
         if (!schema.meta.transforms) schema.meta.transforms = {};
 
@@ -36,9 +38,9 @@ export class SchemaTransformer {
             }
 
             if (transformer.dependencies)
-                this.ensure(schema, ...transformer.dependencies);
+                this.ensure(schemaCtx, ...transformer.dependencies);
 
-            transformer.transform(schema);
+            transformer.transform(schemaCtx);
             schema.meta.transforms[transformName] = true;
         }
     }

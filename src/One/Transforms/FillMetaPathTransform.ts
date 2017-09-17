@@ -2,6 +2,7 @@ import { ISchemaTransform } from "./../SchemaTransformer";
 import { OneAst as one } from "./../Ast";
 import { AstVisitor } from "../AstVisitor";
 import { VariableContext } from "../VariableContext";
+import { SchemaContext } from "../SchemaContext";
 
 export class Context {
     names: { [name: string]: number } = {};
@@ -68,7 +69,7 @@ export class FillMetaPathTransform extends AstVisitor<Context> implements ISchem
         super.visitClass(cls, this.subContext(context, cls));
     }
     
-    transform(schema: one.Schema) {
-        this.visitSchema(schema, new Context());
+    transform(schemaCtx: SchemaContext) {
+        this.visitSchema(schemaCtx.schema, new Context());
     }
 }

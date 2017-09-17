@@ -8,14 +8,14 @@ import { TypeScriptParser } from "./Parsers/TypeScriptParser";
 import { CodeGenerator } from "./Generator/CodeGenerator";
 import { LangFileSchema } from "./Generator/LangFileSchema";
 import { OverviewGenerator } from "./One/OverviewGenerator";
-import { IdentifierResolver } from "./One/IdentifierResolver";
-import { TypeInferer } from "./One/TypeInferer";
+//import { IdentifierResolver } from "./One/IdentifierResolver";
+import { InferTypesTransform } from "./One/Transforms/InferTypesTransform";
 import { OneAst as one } from "./One/Ast";
 import { SchemaContext } from "./One/SchemaContext";
-import { FillNameTransform } from "./One/Transformers/FillNameTransform";
+import { FillNameTransform } from "./One/Transforms/FillNameTransform";
 import { SchemaTransformer } from "./One/SchemaTransformer";
-import { FillParentTransform } from "./One/Transformers/FillParentTransform";
-import { FillMetaPathTransform } from "./One/Transformers/FillMetaPathTransform";
+import { FillParentTransform } from "./One/Transforms/FillParentTransform";
+import { FillMetaPathTransform } from "./One/Transforms/FillMetaPathTransform";
 
 class Utils {
     static writeFile(fn: string, data: any) {
@@ -44,19 +44,23 @@ function saveSchemaState(schemaCtx: SchemaContext, name: string) {
 SchemaTransformer.instance.addTransform(new FillNameTransform());
 SchemaTransformer.instance.addTransform(new FillParentTransform());
 SchemaTransformer.instance.addTransform(new FillMetaPathTransform());
+SchemaTransformer.instance.addTransform(new InferTypesTransform());
+
+const tsToOneCtx = new SchemaContext(tsToOne);
+tsToOneCtx.ensureTransforms("fillName");
+tsToOne.classes["TsArray"].meta = { iterable: true };
 
 const schemaCtx = new SchemaContext(schema);
+schemaCtx.addOverlaySchema(tsToOne);
 schemaCtx.ensureTransforms("fillParent");
 schemaCtx.ensureTransforms("fillMetaPath");
-const tsToOneCtx = new SchemaContext(tsToOne);
+schemaCtx.ensureTransforms("inferTypes");
 
-//new TypeInferer(tsToOne).process();
 saveSchemaState(tsToOneCtx, "tsToOne");
 
 //saveSchemaState(schema, "tsOneSchema");
 
-tsToOne.classes["TsArray"].meta = { iteratable: true };
-new TypeInferer(schemaCtx, tsToOneCtx).process();
+//new TypeInferer(schemaCtx, tsToOneCtx).process();
 //new IdentifierResolver(schema).process();
 
 saveSchemaState(schemaCtx, "tsOneResolvedSchema");

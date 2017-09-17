@@ -9,6 +9,9 @@ class TestClass {
             console.log(item);
         }
 
+        for (const item of arr)
+            console.log(item);
+
         for (let i = 0; i < arr.length; i++)
             console.log(arr[i]);
     }

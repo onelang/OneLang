@@ -1,10 +1,13 @@
 import { ISchemaTransform } from "./../SchemaTransformer";
 import { OneAst as one } from "./../Ast";
+import { SchemaContext } from "../SchemaContext";
 
 export class FillNameTransform implements ISchemaTransform {
     name = "fillName";
 
-    transform(schema: one.Schema) {
+    transform(schemaCtx: SchemaContext) {
+        const schema = schemaCtx.schema;
+        
         for (const globName of Object.keys(schema.globals))
             schema.globals[globName].name = globName;
 

@@ -1,7 +1,6 @@
 import { OneAst as one } from "../One/Ast";
 import { Template } from "./TemplateCompiler";
 import { ExpressionParser } from "./ExpressionLanguage/ExpressionParser";
-import { TypeInferer } from "../One/TypeInferer";
 import { OverviewGenerator } from "../One/OverviewGenerator";
 import { LangFileSchema } from "./LangFileSchema";
 
