@@ -2,6 +2,7 @@ import { OneAst as one } from "./Ast";
 
 export interface ISchemaTransform {
     name: string;
+    dependencies?: string[];
     transform(schema: one.Schema);
     revert?(schema: one.Schema);
 }
@@ -29,8 +30,14 @@ export class SchemaTransformer {
             if(schema.meta.transforms[transformName]) continue;
             
             const transformer = this.transformers[transformName];
-            if (!transformer)
+            if (!transformer) {
                 this.log(`Transformer "${transformName}" not found!`);
+                continue;
+            }
+
+            if (transformer.dependencies)
+                this.ensure(schema, ...transformer.dependencies);
+
             transformer.transform(schema);
             schema.meta.transforms[transformName] = true;
         }

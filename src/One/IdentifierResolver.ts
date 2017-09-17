@@ -7,8 +7,8 @@ type Context = VariableContext<one.Expression>;
 export class IdentifierResolver extends AstVisitor<Context> {
     constructor(public schema: one.Schema) { super(); }
 
-    addLocalVar(context: Context, name: string) {
-        context.add(name, new one.LocalMethodVariable(name));
+    addLocalVar(context: Context, variable: one.VariableBase) {
+        context.add(variable.name, new one.LocalMethodVariable(variable.name));
     }
 
     static replaceProperties(dest, src)  {
@@ -27,14 +27,14 @@ export class IdentifierResolver extends AstVisitor<Context> {
     
     protected visitVariableDeclaration(stmt: one.VariableDeclaration, context: Context) {
         super.visitVariableDeclaration(stmt, context);
-        this.addLocalVar(context, stmt.variableName);
+        this.addLocalVar(context, stmt);
     }
 
     protected visitForStatement(stmt: one.ForStatement, context: Context) {
         this.visitExpression(stmt.itemVariable.initializer, context);
         
         const newContext = context.inherit();
-        this.addLocalVar(newContext, stmt.itemVariable.variableName);
+        this.addLocalVar(newContext, stmt.itemVariable);
 
         this.visitExpression(stmt.condition, newContext);
         this.visitExpression(stmt.incrementor, newContext);
@@ -45,7 +45,7 @@ export class IdentifierResolver extends AstVisitor<Context> {
         this.visitExpression(stmt.items, context);
         
         const newContext = context.inherit();
-        this.addLocalVar(newContext, stmt.varName);
+        this.addLocalVar(newContext, stmt.itemVariable);
 
         this.visitBlock(stmt.body, newContext);
     }
@@ -66,7 +66,7 @@ export class IdentifierResolver extends AstVisitor<Context> {
             for (const method of Object.values(cls.methods)) {
                 const methodContext = classContext.inherit();
                 for (const param of method.parameters)
-                    this.addLocalVar(methodContext, param.name);
+                    this.addLocalVar(methodContext, param);
 
                 this.visitBlock(method.body, methodContext);
             }

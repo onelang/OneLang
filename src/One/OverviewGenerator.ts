@@ -45,7 +45,7 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.visitBlock(stmt.else);
         } else if (statement.stmtType === one.StatementType.Variable) {
             const stmt = <one.VariableDeclaration> statement;
-            this.addLine(`Variable: ${stmt.variableName}`);
+            this.addLine(`Variable: ${stmt.name}`);
             this.visitExpression(stmt.initializer);
         } else if (statement.stmtType === one.StatementType.While) {
             const stmt = <one.WhileStatement> statement;
@@ -57,7 +57,7 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.indent(-1);
         } else if (statement.stmtType === one.StatementType.Foreach) {
             const stmt = <one.ForeachStatement> statement;
-            this.addLine(`Foreach ${stmt.varName}: ${stmt.varType && stmt.varType.repr()}`);
+            this.addLine(`Foreach ${stmt.itemVariable.name}: ${stmt.itemVariable.type && stmt.itemVariable.type.repr()}`);
             this.indent(1);
             this.addLine(`Items`);
             this.visitExpression(stmt.items);
@@ -66,7 +66,7 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.indent(-1);
         } else if (statement.stmtType === one.StatementType.For) {
             const stmt = <one.ForStatement> statement;
-            this.addLine(`For ("${stmt.itemVariable.variableName}")`);
+            this.addLine(`For ("${stmt.itemVariable.name}")`);
             this.indent(1);
             this.addLine(`Condition`);
             this.visitExpression(stmt.condition);
@@ -153,7 +153,7 @@ export class OverviewGenerator extends AstVisitor<void> {
         this.schemaCtx.ensureTransforms("fillName");
 
         for (const glob of Object.values(this.schemaCtx.schema.globals))
-            this.addLine(`global ${glob.variableName}: ${glob.variableType.repr()}`);
+            this.addLine(`global ${glob.name}: ${glob.type.repr()}`);
 
         for (const cls of Object.values(this.schemaCtx.schema.classes)) {
             for (const field of Object.values(cls.fields))

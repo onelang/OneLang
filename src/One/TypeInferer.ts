@@ -61,14 +61,14 @@ export class TypeInferer extends AstVisitor<Context> {
 
     protected visitVariableDeclaration(stmt: one.VariableDeclaration, context: Context) {
         super.visitVariableDeclaration(stmt, context);
-        context.variables.add(stmt.variableName, stmt.initializer.valueType);
+        context.variables.add(stmt.name, stmt.initializer.valueType);
     }
 
     protected visitForStatement(stmt: one.ForStatement, context: Context) {
         this.visitExpression(stmt.itemVariable.initializer, context);
         
         const newContext = context.inherit();
-        newContext.variables.add(stmt.itemVariable.variableName,
+        newContext.variables.add(stmt.itemVariable.name,
             stmt.itemVariable.initializer.valueType);
 
         this.visitExpression(stmt.condition, newContext);
@@ -84,13 +84,13 @@ export class TypeInferer extends AstVisitor<Context> {
         
         if (!itemsClass || !itemsClass.meta.iteratable || itemsType.typeArguments.length === 0) {
             console.log(`Tried to use foreach on a non-array type: ${itemsType.repr()}!`);
-            stmt.varType = one.Type.Any;
+            stmt.itemVariable.type = one.Type.Any;
         } else {
-            stmt.varType = itemsType.typeArguments[0];
+            stmt.itemVariable.type = itemsType.typeArguments[0];
         }
 
         const newContext = context.inherit();
-        newContext.variables.add(stmt.varName, stmt.varType);
+        newContext.variables.add(stmt.itemVariable.name, stmt.itemVariable.type);
 
         this.visitBlock(stmt.body, newContext);
     }
@@ -215,7 +215,7 @@ export class TypeInferer extends AstVisitor<Context> {
         
         if (this.overlayCtx) {
             for (const glob of Object.values(this.overlayCtx.schema.globals))
-                globalContext.variables.add(glob.variableName, glob.variableType);
+                globalContext.variables.add(glob.name, glob.type);
 
             for (const cls of Object.values(this.overlayCtx.schema.classes))
                 globalContext.classes.addClass(cls);

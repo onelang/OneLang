@@ -27,7 +27,8 @@ export abstract class AstVisitor<TContext> {
     }
 
     protected visitVariableDeclaration(stmt: one.VariableDeclaration, context: TContext) {
-        this.visitExpression(stmt.initializer, context);
+        if (stmt.initializer)
+            this.visitExpression(stmt.initializer, context);
     }
 
     protected visitWhileStatement(stmt: one.WhileStatement, context: TContext) {
@@ -36,6 +37,7 @@ export abstract class AstVisitor<TContext> {
     }
 
     protected visitForStatement(stmt: one.ForStatement, context: TContext) {
+        this.visitVariableDeclaration(stmt.itemVariable, context);
         this.visitExpression(stmt.itemVariable.initializer, context);
         this.visitExpression(stmt.condition, context);
         this.visitExpression(stmt.incrementor, context);
@@ -43,6 +45,7 @@ export abstract class AstVisitor<TContext> {
     }
 
     protected visitForeachStatement(stmt: one.ForeachStatement, context: TContext) {
+        this.visitVariableDeclaration(stmt.itemVariable, context);
         this.visitExpression(stmt.items, context);
         this.visitBlock(stmt.body, context);
     }

@@ -191,7 +191,7 @@ export class TypeScriptParser {
     convertVariableDeclaration(varDecl: ts.VariableDeclaration): one.VariableDeclaration {
         return <one.VariableDeclaration> {
             stmtType: one.StatementType.Variable,
-            variableName: varDecl.name.getText(),
+            name: varDecl.name.getText(),
             initializer: this.convertExpression(varDecl.initializer)
         };
     }
@@ -255,7 +255,7 @@ export class TypeScriptParser {
             const stmt = <ts.ForOfStatement> tsStatement;
             oneStmt = <one.ForeachStatement> {
                 stmtType: one.StatementType.Foreach,
-                varName: this.convertInitializer(stmt.initializer).variableName,
+                itemVariable: this.convertInitializer(stmt.initializer),
                 items: this.convertExpression(stmt.expression),
                 body: this.convertBlock(stmt.statement)
             };
@@ -300,7 +300,7 @@ export class TypeScriptParser {
         
         for (const varDecl of typeInfo.getVariableDeclarations()) {
             const oneVarDecl = this.convertVariableDeclaration(varDecl.compilerNode);
-            oneVarDecl.variableType = this.convertTsType(varDecl.getType().compilerType);
+            oneVarDecl.type = this.convertTsType(varDecl.getType().compilerType);
             schema.globals[varDecl.getName()] = oneVarDecl;
         }
 

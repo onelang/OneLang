@@ -6,7 +6,7 @@ export class FillNameTransform implements ISchemaTransform {
 
     transform(schema: one.Schema) {
         for (const globName of Object.keys(schema.globals))
-            schema.globals[globName].variableName = globName;
+            schema.globals[globName].name = globName;
 
         for (const enumName of Object.keys(schema.enums))
             schema.enums[enumName].name = enumName;

@@ -6,8 +6,12 @@ export namespace OneAst {
         classes: { [name: string]: Class };
     }
 
-    export interface Enum {
+    export interface NamedItem {
         name?: string;
+        metaPath?: string;
+    }
+
+    export interface Enum extends NamedItem {
         values: EnumMember[];
     }
 
@@ -15,9 +19,8 @@ export namespace OneAst {
         name: string;
     }
 
-    export interface Class {
+    export interface Class extends NamedItem {
         parent?: Schema;
-        name?: string;
         fields: { [name: string]: Field };
         properties: { [name: string]: Property };
         constructor: Constructor;
@@ -117,8 +120,7 @@ export namespace OneAst {
         }
     }
 
-    export interface VariableBase {
-        name?: string;
+    export interface VariableBase extends NamedItem {
         type: Type;
     }
 
@@ -140,9 +142,8 @@ export namespace OneAst {
         body: Block;
     }
 
-    export interface Method {
+    export interface Method extends NamedItem {
         parent?: Class;
-        name?: string;
         static: boolean;
         parameters: MethodParameter[];
         returns: Type;
@@ -267,7 +268,7 @@ export namespace OneAst {
         stmtType: StatementType;
     }
 
-    export interface IfStatement extends Statement {
+    export interface IfStatement extends Statement, NamedItem {
         condition: Expression;
         then: Block;
         else: Block;
@@ -285,32 +286,29 @@ export namespace OneAst {
         expression: Expression;
     }
 
-    export interface VariableDeclaration extends Statement {
-        variableType: Type;
-        variableName: string;
-        initializer: Expression;
+    export interface VariableDeclaration extends Statement, VariableBase {
+        initializer?: Expression;
     }
 
-    export interface WhileStatement extends Statement {
+    export interface WhileStatement extends Statement, NamedItem {
         condition: Expression;
         body: Block;
     }
 
-    export interface ForeachStatement extends Statement {
-        varName: string;
-        varType: Type;
+    export interface ForeachStatement extends Statement, NamedItem {
+        itemVariable: VariableDeclaration;
         items: Expression;
         body: Block;
     }
 
-    export interface ForStatement extends Statement {
+    export interface ForStatement extends Statement, NamedItem {
         itemVariable: VariableDeclaration;
         condition: Expression;
         incrementor: Expression;
         body: Block;
     }
 
-    export interface Block {
+    export interface Block extends NamedItem {
         parent?: Statement|MethodLike;
         statements: Statement[];
     }
