@@ -1,12 +1,3 @@
-class OneArray {
-    length: number;
-    push(){ }
-}
-
-class OneConsole {
-    print(value: any) { }
-}
-
 class TestClass {
     arrayTest() {
         let arr = [1, 2];
@@ -15,14 +6,11 @@ class TestClass {
         let arr2 = [1 + 2, false];
 
         for (const item of arr) {
-            OneConsole.print(item);
+            console.log(item);
         }
 
-        for (const itemIdx in arr)
-            OneConsole.print(itemIdx);
-
         for (let i = 0; i < arr.length; i++)
-            OneConsole.print(arr[i]);
+            console.log(arr[i]);
     }
 
     calc() {

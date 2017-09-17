@@ -10,6 +10,7 @@ import { LangFileSchema } from "./Generator/LangFileSchema";
 import { OverviewGenerator } from "./One/OverviewGenerator";
 import { IdentifierResolver } from "./One/IdentifierResolver";
 import { TypeInferer } from "./One/TypeInferer";
+import { OneAst as one } from "./One/Ast";
 
 class Utils {
     static writeFile(fn: string, data: any) {
@@ -18,23 +19,32 @@ class Utils {
     }
 }
 
-const prgName = "Test";
-const sourceCode = fs.readFileSync(`input/${prgName}.ts`, "utf8");
-const schema = TypeScriptParser.parseFile(sourceCode);
+function parseTs(fn: string): one.Schema {
+    const sourceCode = fs.readFileSync(fn, "utf8");
+    const ast = TypeScriptParser.parseFile(sourceCode);
+    return ast;
+}
 
-function saveSchemaState(name: string) {
+const prgName = "Test";
+const tsToOne = parseTs(`langs/NativeResolvers/typescript.ts`);
+const schema = parseTs(`input/${prgName}.ts`);
+
+function saveSchemaState(schema: one.Schema, name: string) {
     const schemaJson = JSON.stringify(schema, null, 4);
     const schemaOverview = new OverviewGenerator(schema).generate();
     fs.writeFileSync(`tmp/${name}.json`, schemaJson);
     fs.writeFileSync(`tmp/${name}.txt`, schemaOverview);
 }
 
-saveSchemaState("tsOneSchema");
+//new TypeInferer(tsToOne).process();
+saveSchemaState(tsToOne, "tsToOne");
+
+//saveSchemaState(schema, "tsOneSchema");
 
 new TypeInferer(schema).process();
 //new IdentifierResolver(schema).process();
 
-saveSchemaState("tsOneResolvedSchema");
+//saveSchemaState(schema, "tsOneResolvedSchema");
 
 //console.log(schemaJson);
 

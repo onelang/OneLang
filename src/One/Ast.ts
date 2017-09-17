@@ -1,5 +1,6 @@
 export namespace OneAst {
     export interface Schema {
+        fields: { [name: string]: VariableDeclaration };
         enums: { [name: string]: Enum };
         classes: { [name: string]: Class };
     }
@@ -90,13 +91,6 @@ export namespace OneAst {
         static Number = new Type(TypeKind.Number);
         static Null = new Type(TypeKind.Null);
         static Any = new Type(TypeKind.Any);
-        
-        static Array(itemType: Type) { 
-            const result = new Type(TypeKind.Class);
-            result.className = "OneArray";
-            result.typeArguments = [itemType];
-            return result;
-        }
         
         static Class(className: string, generics: Type[] = []) {
             const result = new Type(TypeKind.Class);
@@ -275,6 +269,7 @@ export namespace OneAst {
     }
 
     export interface VariableDeclaration extends Statement {
+        type: Type;
         variableName: string;
         initializer: Expression;
     }

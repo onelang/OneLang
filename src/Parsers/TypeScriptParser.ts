@@ -41,11 +41,11 @@ export class TypeScriptParser {
         else if (typeText === "void")
             result.typeKind = one.TypeKind.Void;
         else {
+            result.typeKind = one.TypeKind.Class;
             result.className = typeText;
 
-            const typeArgs = <ts.Type[]>(<any>tsType).typeArguments;
-            if (typeArgs)
-                result.typeArguments = typeArgs.map(x => this.convertTsType(x));
+            const typeArgs = <ts.Type[]>(<any>tsType).typeArguments || [];
+            result.typeArguments = typeArgs.map(x => this.convertTsType(x));
         }
 
         return result;
@@ -285,8 +285,14 @@ export class TypeScriptParser {
     }
 
     createSchemaFromSourceFile(typeInfo: SimpleAst.SourceFile): one.Schema {
-        const schema = <one.Schema> { enums: {}, classes: {} };
+        const schema = <one.Schema> { fields: {}, enums: {}, classes: {} };
         
+        for (const varDecl of typeInfo.getVariableDeclarations()) {
+            const oneVarDecl = this.convertVariableDeclaration(varDecl.compilerNode);
+            oneVarDecl.type = this.convertTsType(varDecl.getType().compilerType);
+            schema.fields[varDecl.getName()] = oneVarDecl;
+        }
+
         for (const tsEnum of typeInfo.getEnums()) {
             schema.enums[tsEnum.getName()] = <one.Enum> { 
                 values: tsEnum.getMembers().map(tsEnumMember => ({ name: tsEnumMember.getName() }))

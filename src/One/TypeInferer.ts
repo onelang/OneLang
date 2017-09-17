@@ -196,7 +196,7 @@ export class TypeInferer extends AstVisitor<Context> {
         if (expr.items.some(x => !x.valueType.equals(itemType)))
             itemType = one.Type.Any;
 
-        expr.valueType = one.Type.Array(itemType);
+        expr.valueType = one.Type.Class("TsArray", [itemType]);
     }
 
     protected visitExpression(expression: one.Expression, context: Context) {
@@ -230,11 +230,6 @@ export class TypeInferer extends AstVisitor<Context> {
         for (const cls of classes)
             globalContext.classes.addOneClass(cls);
         
-        // hack!
-        const oneArray = globalContext.classes.getClass("OneArray");
-        if (oneArray)
-            oneArray.iteratable = true;
-
         for (const cls of classes) {
             const classContext = globalContext.inherit();
             classContext.variables.add("this", one.Type.Class(cls.name));

@@ -8,7 +8,6 @@ export class OverviewGenerator extends AstVisitor<void> {
 
     constructor(public schema: one.Schema) {
         super();
-        this.generate();
     }
 
     log(data: string) {
@@ -152,6 +151,8 @@ export class OverviewGenerator extends AstVisitor<void> {
     }
 
     generate() {
+        if (this.result) return this.result;
+
         for (const cls of Object.values(this.schema.classes)) {
             for (const method of Object.values(cls.methods)) {
                 const argList = method.parameters.map(arg => `${arg.name}: ${arg.type.repr()}`).join(", ");

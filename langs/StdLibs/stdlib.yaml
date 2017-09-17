@@ -1,0 +1,7 @@
+classes:
+  one.Array:
+    methods:
+      push:
+        args:
+          - id: x
+            type: number
