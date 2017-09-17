@@ -153,10 +153,19 @@ export class OverviewGenerator extends AstVisitor<void> {
     generate() {
         if (this.result) return this.result;
 
+        for (const glob of Object.values(this.schema.globals))
+            this.addLine(`global ${glob.variableName}: ${glob.variableType.repr()}`);
+
         for (const cls of Object.values(this.schema.classes)) {
+            for (const field of Object.values(cls.fields))
+                this.addLine(`${cls.name}::${field.name}: ${field.type.repr()}`);
+
+            for (const prop of Object.values(cls.properties))
+                this.addLine(`${cls.name}::${prop.name}: ${prop.type.repr()}`);
+
             for (const method of Object.values(cls.methods)) {
                 const argList = method.parameters.map(arg => `${arg.name}: ${arg.type.repr()}`).join(", ");
-                this.addLine(`${cls.name}::${method.name}(${argList}): ${method.returns.repr()}`);
+                this.addLine(`${cls.name}::${method.name}(${argList}): ${method.returns.repr()}${method.static ? " [static]" : ""}`);
                 this.visitBlock(method.body);
                 this.addLine("");
             }

@@ -1,6 +1,6 @@
 export namespace OneAst {
     export interface Schema {
-        fields: { [name: string]: VariableDeclaration };
+        globals: { [name: string]: VariableDeclaration };
         enums: { [name: string]: Enum };
         classes: { [name: string]: Class };
     }
@@ -17,8 +17,12 @@ export namespace OneAst {
     export interface Class {
         name?: string;
         fields: { [name: string]: Field };
+        properties: { [name: string]: Property };
         constructor: Constructor;
         methods: { [name: string]: Method };
+        meta: {
+            iteratable: boolean;
+        }
     }
 
     export enum Visibility { Public = "public", Protected = "protected", Private = "private" }
@@ -118,8 +122,13 @@ export namespace OneAst {
 
     export interface Field extends VariableBase {
         visibility: Visibility;
-        type: Type;
         defaultValue?: any;
+    }
+
+    export interface Property extends VariableBase {
+        visibility: Visibility;
+        getter: Method;
+        setter: Method;
     }
 
     export interface MethodParameter extends VariableBase { }
@@ -131,6 +140,7 @@ export namespace OneAst {
 
     export interface Method {
         name?: string;
+        static: boolean;
         parameters: MethodParameter[];
         returns: Type;
         body: Block;
@@ -269,7 +279,7 @@ export namespace OneAst {
     }
 
     export interface VariableDeclaration extends Statement {
-        type: Type;
+        variableType: Type;
         variableName: string;
         initializer: Expression;
     }

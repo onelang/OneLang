@@ -41,10 +41,11 @@ saveSchemaState(tsToOne, "tsToOne");
 
 //saveSchemaState(schema, "tsOneSchema");
 
-new TypeInferer(schema).process();
+tsToOne.classes["TsArray"].meta = { iteratable: true };
+new TypeInferer(schema, tsToOne).process();
 //new IdentifierResolver(schema).process();
 
-//saveSchemaState(schema, "tsOneResolvedSchema");
+saveSchemaState(schema, "tsOneResolvedSchema");
 
 //console.log(schemaJson);
 

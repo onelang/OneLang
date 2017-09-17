@@ -25,50 +25,11 @@ export class Context {
     }
 }
 
-export interface ITiClass {
-    iteratable: boolean;
-    getMethod(name: string): ITiMethod;
-}
-
-export interface ITiMethod {
-    getReturnType(): one.Type;
-}
-
-class OneMethodWrapper implements ITiMethod {
-    constructor(public method: one.Method) { }
-    
-    getReturnType(): one.Type {
-        return one.Type.Load(this.method.returns);
-    }
-}
-
-class OneClassWrapper implements ITiClass {
-    constructor(public cls: one.Class) {
-        for (const methodName of Object.keys(this.cls.methods)) {
-            const method = this.cls.methods[methodName];
-            this.methods[methodName] = new OneMethodWrapper(method);
-        }
-    }
-
-    iteratable = false;
-    methods: { [name: string]: OneMethodWrapper } = {};
-
-    getMethod(name: string): ITiMethod {
-        const method = this.methods[name];
-        if (!method) {
-            console.log(`Method '${name}' not found in class '${this.cls.name}'.`);
-            return null;
-        }
-
-        return method;
-    }
-}
-
 export class ClassRepository {
-    classes: { [name: string]: ITiClass } = {};
+    classes: { [name: string]: one.Class } = {};
 
-    addOneClass(cls: one.Class) {
-        this.classes[cls.name] = new OneClassWrapper(cls);
+    addClass(cls: one.Class) {
+        this.classes[cls.name] = cls;
     }
 
     getClass(name: string) {
@@ -80,7 +41,7 @@ export class ClassRepository {
 }
 
 export class TypeInferer extends AstVisitor<Context> {
-    constructor(public schema: one.Schema) { super(); }
+    constructor(public schema: one.Schema, public overlaySchema: one.Schema = null) { super(); }
 
     log(data: string) {
         console.log(`[TypeInferer] ${data}`);
@@ -124,7 +85,7 @@ export class TypeInferer extends AstVisitor<Context> {
         const itemsType = stmt.items.valueType;
         const itemsClass = context.classes.getClass(itemsType.className);
         
-        if (!itemsClass || !itemsClass.iteratable || itemsType.typeArguments.length === 0) {
+        if (!itemsClass || !itemsClass.meta.iteratable || itemsType.typeArguments.length === 0) {
             console.log(`Tried to use foreach on a non-array type: ${itemsType.repr()}!`);
             stmt.varType = one.Type.Any;
         } else {
@@ -149,9 +110,14 @@ export class TypeInferer extends AstVisitor<Context> {
         super.visitCallExpression(expr, context);
 
         if (expr.method.valueType.isMethod) {
-            const cls = context.classes.getClass(expr.method.valueType.classType.className);
-            const method = cls.getMethod(expr.method.valueType.methodName);
-            expr.valueType = method.getReturnType();
+            const className = expr.method.valueType.classType.className;
+            const methodName = expr.method.valueType.methodName;
+            const cls = context.classes.getClass(className);
+            const method = cls.methods[methodName];
+            if (!method)
+                this.log(`Method not found: ${className}::${methodName}`);
+            else
+                expr.valueType = one.Type.Load(method.returns);
         } else {
             this.log(`Tried to call a non-method type '${expr.method.valueType.repr()}'.`);
         }
@@ -179,14 +145,30 @@ export class TypeInferer extends AstVisitor<Context> {
         super.visitPropertyAccessExpression(expr, context);
 
         const objType = expr.object.valueType;
-        if (objType.isClass) {
-            const cls = context.classes.getClass(objType.className);
-            const method = cls && cls.getMethod(expr.propertyName);
-            if (method)
-                expr.valueType = one.Type.Method(objType, expr.propertyName);
-        } else {
+        if (!objType.isClass) {
             this.log(`Cannot access property '${expr.propertyName}' on object type '${expr.object.valueType.repr()}'.`);
+            return;
         }
+
+        const cls = context.classes.getClass(objType.className);
+        if (!cls) {
+            this.log(`Class not found: ${objType.className}`);
+            return;
+        }
+
+        const method = cls.methods[expr.propertyName];
+        if (method) {
+            expr.valueType = one.Type.Method(objType, expr.propertyName);
+            return;
+        }
+
+        const fieldOrProp = cls.fields[expr.propertyName] || cls.properties[expr.propertyName];
+        if (fieldOrProp) {
+            expr.valueType = fieldOrProp.type;
+            return;
+        }
+
+        this.log(`Member not found: ${objType.className}::${expr.propertyName}`);
     }
 
     protected visitArrayLiteral(expr: one.ArrayLiteral, context: Context) {
@@ -227,9 +209,18 @@ export class TypeInferer extends AstVisitor<Context> {
         const globalContext = this.getGlobalContext();
 
         const classes = Object.values(this.schema.classes);
+
         for (const cls of classes)
-            globalContext.classes.addOneClass(cls);
+            globalContext.classes.addClass(cls);
         
+        if (this.overlaySchema) {
+            for (const glob of Object.values(this.overlaySchema.globals))
+                globalContext.variables.add(glob.variableName, glob.variableType);
+
+            for (const cls of Object.values(this.overlaySchema.classes))
+                globalContext.classes.addClass(cls);
+        }
+            
         for (const cls of classes) {
             const classContext = globalContext.inherit();
             classContext.variables.add("this", one.Type.Class(cls.name));

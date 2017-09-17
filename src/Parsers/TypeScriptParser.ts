@@ -24,8 +24,8 @@ export class TypeScriptParser {
         return schema;
     }
 
-    logNodeError(message: string, node?: Node) {
-        console.warn(`[TypeScriptParser] ${message}`, node || "");
+    logNodeError(message: string, node?: ts.Node) {
+        console.warn(`[TypeScriptParser] ${message}${node ? ` (nodeType: ${ts.SyntaxKind[node.kind]})` : ""}`, node || "");
     }
 
     convertTsType(tsType: ts.Type) {
@@ -183,7 +183,7 @@ export class TypeScriptParser {
                     text: keyword
                 };
             } else {
-                this.logNodeError(`Unexpected expression kind "${ts.SyntaxKind[tsExpr.kind]}".`); 
+                this.logNodeError(`Unexpected expression kind.`, tsExpr); 
                 return null;
             }
         }
@@ -202,7 +202,7 @@ export class TypeScriptParser {
         if (initializer.kind === ts.SyntaxKind.VariableDeclarationList) {
             const varDeclList = <ts.VariableDeclarationList> initializer;
             if (varDeclList.declarations.length !== 1)
-                this.logNodeError(`Multiple declarations are not supported as for of initializers.`);
+                this.logNodeError(`Multiple declarations are not supported as for of initializers.`, varDeclList);
             itemVariable = this.convertVariableDeclaration(varDeclList.declarations[0]);
         } else
             this.logNodeError(`${ts.SyntaxKind[initializer.kind]} is not supported yet as for of initializer.`);
@@ -270,7 +270,7 @@ export class TypeScriptParser {
                 body: this.convertBlock(stmt.statement)                
             };
         } else
-            this.logNodeError(`Unexpected statement kind "${ts.SyntaxKind[tsStatement.kind]}".`);
+            this.logNodeError(`Unexpected statement kind.`, tsStatement);
 
         return oneStmts || (oneStmt ? [oneStmt] : []);
     }
@@ -284,13 +284,25 @@ export class TypeScriptParser {
             return { statements: this.convertStatement(<ts.Statement>tsBlock) };
     }
 
+    convertVisibility(node: SimpleAst.Node & SimpleAst.ScopedNode) {
+        const scope = node.getScope();
+        const visibility = scope === "public" ? one.Visibility.Public : 
+            scope === "protected" ? one.Visibility.Protected : 
+            scope === "private" ? one.Visibility.Private : null;
+
+        if (!visibility)
+            this.logNodeError(`Unknown scope / visibility value: ${scope}`, node.compilerNode);
+
+        return visibility;
+    }
+
     createSchemaFromSourceFile(typeInfo: SimpleAst.SourceFile): one.Schema {
-        const schema = <one.Schema> { fields: {}, enums: {}, classes: {} };
+        const schema = <one.Schema> { globals: {}, enums: {}, classes: {} };
         
         for (const varDecl of typeInfo.getVariableDeclarations()) {
             const oneVarDecl = this.convertVariableDeclaration(varDecl.compilerNode);
-            oneVarDecl.type = this.convertTsType(varDecl.getType().compilerType);
-            schema.fields[varDecl.getName()] = oneVarDecl;
+            oneVarDecl.variableType = this.convertTsType(varDecl.getType().compilerType);
+            schema.globals[varDecl.getName()] = oneVarDecl;
         }
 
         for (const tsEnum of typeInfo.getEnums()) {
@@ -300,26 +312,32 @@ export class TypeScriptParser {
         }
 
         for (const tsClass of typeInfo.getClasses()) {
-            const classSchema = schema.classes[tsClass.getName()] = <one.Class> { fields: { }, methods: { } };
+            const classSchema = schema.classes[tsClass.getName()] = <one.Class> { fields: {}, methods: {}, properties: {} };
             
             for (const tsProp of tsClass.getInstanceProperties()) {
-                if (!(tsProp instanceof SimpleAst.PropertyDeclaration) && !(tsProp instanceof SimpleAst.ParameterDeclaration))
-                    continue;
-
-                const fieldSchema = classSchema.fields[tsProp.getName()] = <one.Field> { 
-                    type: this.convertTsType(tsProp.getType().compilerType),
-                    visibility: tsProp.getScope() === "public" ? one.Visibility.Public : 
-                        tsProp.getScope() === "protected" ? one.Visibility.Protected : 
-                        one.Visibility.Private,
-                };
-
-                const initializer = tsProp.getInitializer();
-                if (initializer)
-                    fieldSchema.defaultValue = initializer.getText();
+                if (tsProp instanceof SimpleAst.PropertyDeclaration || tsProp instanceof SimpleAst.ParameterDeclaration) {
+                    const fieldSchema = classSchema.fields[tsProp.getName()] = <one.Field> { 
+                        type: this.convertTsType(tsProp.getType().compilerType),
+                        visibility: this.convertVisibility(tsProp)
+                    };
+    
+                    const initializer = tsProp.getInitializer();
+                    if (initializer)
+                        fieldSchema.defaultValue = initializer.getText();
+                } else if (tsProp instanceof SimpleAst.GetAccessorDeclaration) {
+                    const propSchema = classSchema.properties[tsProp.getName()] = <one.Property> { 
+                        type: this.convertTsType(tsProp.getReturnType().compilerType),
+                        visibility: this.convertVisibility(tsProp)
+                    };
+                } else {
+                    this.logNodeError(`Unknown property type`, tsProp.compilerNode);
+                }
             }
 
-            for (const tsMethod of tsClass.getInstanceMethods()) {
-                const methodSchema = classSchema.methods[tsMethod.getName()] = <one.Method> { };
+            const tsMethods = <SimpleAst.MethodDeclaration[]> tsClass.getAllMembers().filter(x => x instanceof SimpleAst.MethodDeclaration);
+            for (const tsMethod of tsMethods) {
+                const methodSchema = classSchema.methods[tsMethod.getName()] = <one.Method>{};
+                methodSchema.static = tsMethod.isStatic();
                 methodSchema.returns = this.convertTsType(tsMethod.getReturnType().compilerType);
                 methodSchema.parameters = tsMethod.getParameters().map(tsParam => this.convertParameter(tsParam));
                 methodSchema.body = this.convertBlock(<ts.BlockLike> tsMethod.getBody().compilerNode);
