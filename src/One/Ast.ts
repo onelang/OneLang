@@ -194,19 +194,19 @@ export namespace OneAst {
     export class ClassFieldRef extends Reference {
         exprKind = ExpressionKind.ClassFieldRef;
 
-        constructor(public value?: VariableBase) { super(); }
+        constructor(public cls: Class, public value?: VariableBase, public thisExpr?: Expression) { super(); }
     }
 
     export class MethodReference extends Reference {
         exprKind = ExpressionKind.MethodReference;
 
-        constructor(public methodName?: string) { super(); }
+        constructor(public cls: Class, public method: Method, public thisExpr?: Expression) { super(); }
     }
 
     export class ClassReference extends Reference {
         exprKind = ExpressionKind.ClassReference;
         
-        constructor(public value: Class) { super(); }
+        constructor(public cls: Class) { super(); }
     }
 
     export class ThisReference extends Reference {

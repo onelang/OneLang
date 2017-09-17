@@ -133,11 +133,11 @@ export abstract class AstVisitor<TContext> {
         this.log(`Unknown expression type: ${expr.exprKind}`);
     }
 
-    protected visitLocalMethodVariable(expr: one.LocalVariableRef, context: TContext) { }
+    protected visitLocalVariableRef(expr: one.LocalVariableRef, context: TContext) { }
 
-    protected visitLocalMethodReference(expr: one.MethodReference, context: TContext) { }
+    protected visitMethodReference(expr: one.MethodReference, context: TContext) { }
 
-    protected visitLocalClassVariable(expr: one.ClassFieldRef, context: TContext) { }
+    protected visitClassFieldRef(expr: one.ClassFieldRef, context: TContext) { }
     
     protected visitClassReference(expr: one.ClassReference, context: TContext) { }
     
@@ -167,11 +167,11 @@ export abstract class AstVisitor<TContext> {
         } else if (expression.exprKind === one.ExpressionKind.ArrayLiteral) {
             this.visitArrayLiteral(<one.ArrayLiteral> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.LocalVariableRef) {
-            this.visitLocalMethodVariable(<one.LocalVariableRef> expression, context);
+            this.visitLocalVariableRef(<one.LocalVariableRef> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.MethodReference) {
-            this.visitLocalMethodReference(<one.MethodReference> expression, context);
+            this.visitMethodReference(<one.MethodReference> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.ClassFieldRef) {
-            this.visitLocalClassVariable(<one.ClassFieldRef> expression, context);
+            this.visitClassFieldRef(<one.ClassFieldRef> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.ClassReference) {
             this.visitClassReference(<one.ClassReference> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.ThisReference) {

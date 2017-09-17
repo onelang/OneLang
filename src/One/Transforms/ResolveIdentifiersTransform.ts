@@ -4,6 +4,7 @@ import { SchemaContext } from "../SchemaContext";
 import { ISchemaTransform } from "../SchemaTransformer";
 import { VariableContext } from "../VariableContext";
 import { ClassRepository } from "./InferTypesTransform";
+import { AstHelper } from "../AstHelper";
 
 export class Context {
     variables: VariableContext<one.Reference> = null;
@@ -27,21 +28,14 @@ export class ResolveIdentifiersTransform extends AstVisitor<Context> implements 
     name: string = "resolveIdentifiers";
     dependencies = ["fillName"];
 
-     static replaceProperties(dest, src)  {
-         for (var i in dest) 
-             delete dest[i];
-         for (var i in src) 
-             dest[i] = src[i];
-    }    
-    
     protected visitIdentifier(id: one.Identifier, context: Context) {
         const variable = context.variables.get(id.text);
         if (variable) {
-            ResolveIdentifiersTransform.replaceProperties(id, variable);
+            AstHelper.replaceProperties(id, variable);
         } else {
             const cls = context.classes.getClass(id.text);
             if (cls) {
-                ResolveIdentifiersTransform.replaceProperties(id, new one.ClassReference(cls));
+                AstHelper.replaceProperties(id, new one.ClassReference(cls));
             } else {
                 this.log(`Could not find identifier: ${id.text}`);
             }

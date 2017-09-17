@@ -3,6 +3,7 @@ import { AstVisitor } from "../AstVisitor";
 import { VariableContext } from "../VariableContext";
 import { SchemaContext } from "../SchemaContext";
 import { ISchemaTransform } from "../SchemaTransformer";
+import { AstHelper } from "../AstHelper";
 
 export enum ReferenceType { Class, Method, MethodVariable, ClassVariable }
 
@@ -134,15 +135,26 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
             return;
         }
 
+        const thisIsStatic = expr.object.exprKind === one.ExpressionKind.ClassReference;
+
         const method = cls.methods[expr.propertyName];
         if (method) {
-            expr.valueType = one.Type.Method(objType, expr.propertyName);
+            if (method.static && !thisIsStatic)
+                this.log("Tried to call static method via instance reference");
+            else if (!method.static && thisIsStatic)
+                this.log("Tried to call non-static method via static reference");
+
+            const newValue = new one.MethodReference(cls, method, thisIsStatic ? null : expr.object);
+            const newExpr = AstHelper.replaceProperties(expr, newValue);
+            newExpr.valueType = one.Type.Method(objType, method.name);
             return;
         }
 
         const fieldOrProp = cls.fields[expr.propertyName] || cls.properties[expr.propertyName];
         if (fieldOrProp) {
-            expr.valueType = fieldOrProp.type;
+            const newValue = new one.ClassFieldRef(cls, fieldOrProp, expr.object);
+            const newExpr = AstHelper.replaceProperties(expr, newValue);
+            newExpr.valueType = fieldOrProp.type;
             return;
         }
 
@@ -166,22 +178,22 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
     }
 
     protected visitClassReference(expr: one.ClassReference, context: Context) {
-        expr.valueType = one.Type.Class(expr.value.name);
+        expr.valueType = one.Type.Class(expr.cls.name);
     }
     
     protected visitThisReference(expr: one.ThisReference, context: Context) {
         expr.valueType = context.currClassType;
     }
 
-    protected visitLocalMethodVariable(expr: one.LocalVariableRef, context: Context) { 
+    protected visitLocalVariableRef(expr: one.LocalVariableRef, context: Context) { 
         expr.valueType = expr.value.type;
     }
     
-    protected visitLocalMethodReference(expr: one.MethodReference, context: Context) {
-        expr.valueType = one.Type.Method(context.currClassType, expr.methodName);
+    protected visitMethodReference(expr: one.MethodReference, context: Context) {
+        expr.valueType = one.Type.Method(one.Type.Class(expr.cls.name), expr.method.name);
     }
 
-    protected visitLocalClassVariable(expr: one.ClassFieldRef, context: Context) { 
+    protected visitClassFieldRef(expr: one.ClassFieldRef, context: Context) { 
         expr.valueType = expr.value.type;
     }
     

@@ -36,10 +36,11 @@ const tsToOne = parseTs(`langs/NativeResolvers/typescript.ts`);
 const schema = parseTs(`input/${prgName}.ts`);
 
 function saveSchemaState(schemaCtx: SchemaContext, name: string) {
-    const schemaJson = JSON.stringify(schema, (k, v) => k === "parent" ? undefined : v, 4);
     const schemaOverview = new OverviewGenerator(schemaCtx).generate();
-    fs.writeFileSync(`tmp/${name}.json`, schemaJson);
     fs.writeFileSync(`tmp/${name}.txt`, schemaOverview);
+    const schemaJson = JSON.stringify(schemaCtx.schema, (k, v) =>
+        k === "parent" || k === "cls" || k === "method" ? undefined : v, 4);
+    fs.writeFileSync(`tmp/${name}.json`, schemaJson);
 }
 
 SchemaTransformer.instance.addTransform(new FillNameTransform());

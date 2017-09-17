@@ -132,18 +132,22 @@ export class OverviewGenerator extends AstVisitor<void> {
         } else if (expression.exprKind === one.ExpressionKind.ClassFieldRef) {
             const expr = <one.ClassFieldRef> expression;
             addHdr(`ClassFieldRef: ${expr.value.name}`);
+            if (expr.thisExpr)
+                this.visitExpression(expr.thisExpr);
         } else if (expression.exprKind === one.ExpressionKind.ClassReference) {
             const expr = <one.ClassReference> expression;
-            addHdr(`ClassReference: ${expr.value.name}`);
+            addHdr(`ClassReference: ${expr.cls.name}`);
         } else if (expression.exprKind === one.ExpressionKind.LocalVariableRef) {
             const expr = <one.LocalVariableRef> expression;
             addHdr(`${expr.value.name}`, this.showRefs ? ` => ${expr.value.metaPath}` : "");
         } else if (expression.exprKind === one.ExpressionKind.MethodReference) {
             const expr = <one.MethodReference> expression;
-            addHdr(`MethodReference: ${expr.methodName}`);
+            addHdr(`MethodReference: ${expr.method.name}`);
+            if (expr.thisExpr)
+                this.visitExpression(expr.thisExpr);
         } else if (expression.exprKind === one.ExpressionKind.ThisReference) {
             const expr = <one.ThisReference> expression;
-            addHdr(`this`);
+            addHdr(`ThisRef`);
         } else {
             addHdr(expression.exprKind);
             super.visitExpression(expression, null);
