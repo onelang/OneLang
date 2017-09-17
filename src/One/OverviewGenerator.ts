@@ -8,7 +8,7 @@ export class OverviewGenerator extends AstVisitor<void> {
     padWasAdded = false;
     showRefs = false;
 
-    constructor(public schemaCtx: SchemaContext) {
+    constructor() {
         super();
     }
 
@@ -156,15 +156,15 @@ export class OverviewGenerator extends AstVisitor<void> {
         this.indent(-1);
     }
 
-    generate() {
+    generate(schemaCtx: SchemaContext) {
         if (this.result) return this.result;
 
-        this.schemaCtx.ensureTransforms("fillName");
+        schemaCtx.ensureTransforms("fillName");
 
-        for (const glob of Object.values(this.schemaCtx.schema.globals))
+        for (const glob of Object.values(schemaCtx.schema.globals))
             this.addLine(`global ${glob.name}: ${glob.type.repr()}`);
 
-        for (const cls of Object.values(this.schemaCtx.schema.classes)) {
+        for (const cls of Object.values(schemaCtx.schema.classes)) {
             for (const field of Object.values(cls.fields))
                 this.addLine(`${cls.name}::${field.name}: ${field.type.repr()}`);
 

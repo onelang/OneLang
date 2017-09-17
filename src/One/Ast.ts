@@ -25,8 +25,9 @@ export namespace OneAst {
         properties: { [name: string]: Property };
         constructor: Constructor;
         methods: { [name: string]: Method };
-        meta: {
-            iterable: boolean;
+        meta?: {
+            iterable?: boolean;
+            overlay?: boolean;
         }
     }
 

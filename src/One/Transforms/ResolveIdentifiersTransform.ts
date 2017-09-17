@@ -42,10 +42,6 @@ export class ResolveIdentifiersTransform extends AstVisitor<Context> implements 
         }
     }
 
-    protected visitPropertyAccessExpression(expr: one.PropertyAccessExpression, context: Context) {
-        this.visitExpression(expr.object, context);
-    }
-
     protected visitVariableDeclaration(stmt: one.VariableDeclaration, context: Context) { 
         super.visitVariableDeclaration(stmt, context); 
         context.addLocalVar(stmt); 
