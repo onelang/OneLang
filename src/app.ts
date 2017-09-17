@@ -13,7 +13,7 @@ import { TypeInferer } from "./One/TypeInferer";
 import { OneAst as one } from "./One/Ast";
 import { SchemaContext } from "./One/SchemaContext";
 import { FillNameTransform } from "./One/Transformers/FillNameTransform";
-import { SchemaTransformer } from "./One/SchemaTransformHandler";
+import { SchemaTransformer } from "./One/SchemaTransformer";
 import { FillParentTransform } from "./One/Transformers/FillParentTransform";
 
 class Utils {

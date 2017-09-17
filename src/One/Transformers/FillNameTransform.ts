@@ -1,4 +1,4 @@
-import { ISchemaTransform } from "./../SchemaTransformHandler";
+import { ISchemaTransform } from "./../SchemaTransformer";
 import { OneAst as one } from "./../Ast";
 
 export class FillNameTransform implements ISchemaTransform {

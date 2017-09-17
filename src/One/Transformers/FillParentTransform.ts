@@ -1,5 +1,5 @@
 import { AstVisitor } from "../AstVisitor";
-import { ISchemaTransform } from "../SchemaTransformHandler";
+import { ISchemaTransform } from "../SchemaTransformer";
 import { OneAst } from "../Ast";
 
 export class FillParentTransform extends AstVisitor<any> implements ISchemaTransform {
