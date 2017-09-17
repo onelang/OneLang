@@ -351,7 +351,6 @@ export class TypeScriptParser {
                 };
         }
 
-        AstHelper.fillNames(schema);
         return schema;
     }
 }

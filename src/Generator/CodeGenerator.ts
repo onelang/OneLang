@@ -114,7 +114,10 @@ export class CodeGenerator {
         this.setupNames();
         this.setupClasses();
         this.setupIncludes();
-        this.interTypes();
+
+        // TODO: use SchemaTransformer to infer types...
+        //this.inferTypes();
+
         this.compileTemplates();
     }
 
@@ -263,14 +266,6 @@ export class CodeGenerator {
             code += "\n\n" + this.model.testGenerator(this.getName("test_class", "class"), this.getName("test_method", "method"));
 
         return code;
-    }
-
-    interTypes() {
-        new TypeInferer(this.schema).process();
-    }
-
-    generateOverview() {
-        return new OverviewGenerator(this.schema).result;
     }
 }
 

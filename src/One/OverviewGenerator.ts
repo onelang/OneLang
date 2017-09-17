@@ -1,12 +1,13 @@
 import { OneAst as one } from "./Ast";
 import { AstVisitor } from "./AstVisitor";
+import { SchemaContext } from "./SchemaContext";
 
 export class OverviewGenerator extends AstVisitor<void> {
     result = "";
     pad = "";
     padWasAdded = false;
 
-    constructor(public schema: one.Schema) {
+    constructor(public schemaCtx: SchemaContext) {
         super();
     }
 
@@ -153,10 +154,12 @@ export class OverviewGenerator extends AstVisitor<void> {
     generate() {
         if (this.result) return this.result;
 
-        for (const glob of Object.values(this.schema.globals))
+        this.schemaCtx.ensureTransformed("fillNames");
+
+        for (const glob of Object.values(this.schemaCtx.schema.globals))
             this.addLine(`global ${glob.variableName}: ${glob.variableType.repr()}`);
 
-        for (const cls of Object.values(this.schema.classes)) {
+        for (const cls of Object.values(this.schemaCtx.schema.classes)) {
             for (const field of Object.values(cls.fields))
                 this.addLine(`${cls.name}::${field.name}: ${field.type.repr()}`);
 

@@ -11,6 +11,9 @@ import { OverviewGenerator } from "./One/OverviewGenerator";
 import { IdentifierResolver } from "./One/IdentifierResolver";
 import { TypeInferer } from "./One/TypeInferer";
 import { OneAst as one } from "./One/Ast";
+import { SchemaContext } from "./One/SchemaContext";
+import { FillNamesTransformer } from "./One/Transformers/FillNamesTransformer";
+import { SchemaTransformHandler } from "./One/SchemaTransformHandler";
 
 class Utils {
     static writeFile(fn: string, data: any) {
@@ -29,23 +32,28 @@ const prgName = "Test";
 const tsToOne = parseTs(`langs/NativeResolvers/typescript.ts`);
 const schema = parseTs(`input/${prgName}.ts`);
 
-function saveSchemaState(schema: one.Schema, name: string) {
+function saveSchemaState(schemaCtx: SchemaContext, name: string) {
     const schemaJson = JSON.stringify(schema, null, 4);
-    const schemaOverview = new OverviewGenerator(schema).generate();
+    const schemaOverview = new OverviewGenerator(schemaCtx).generate();
     fs.writeFileSync(`tmp/${name}.json`, schemaJson);
     fs.writeFileSync(`tmp/${name}.txt`, schemaOverview);
 }
 
+SchemaTransformHandler.instance.addTransformer(new FillNamesTransformer());
+
+const schemaCtx = new SchemaContext(schema);
+const tsToOneCtx = new SchemaContext(tsToOne);
+
 //new TypeInferer(tsToOne).process();
-saveSchemaState(tsToOne, "tsToOne");
+saveSchemaState(tsToOneCtx, "tsToOne");
 
 //saveSchemaState(schema, "tsOneSchema");
 
 tsToOne.classes["TsArray"].meta = { iteratable: true };
-new TypeInferer(schema, tsToOne).process();
+new TypeInferer(schemaCtx, tsToOneCtx).process();
 //new IdentifierResolver(schema).process();
 
-saveSchemaState(schema, "tsOneResolvedSchema");
+saveSchemaState(schemaCtx, "tsOneResolvedSchema");
 
 //console.log(schemaJson);
 

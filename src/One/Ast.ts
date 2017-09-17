@@ -1,5 +1,6 @@
 export namespace OneAst {
     export interface Schema {
+        meta: { transforms?: { [name: string]: boolean } };
         globals: { [name: string]: VariableDeclaration };
         enums: { [name: string]: Enum };
         classes: { [name: string]: Class };

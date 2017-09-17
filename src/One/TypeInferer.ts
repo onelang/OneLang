@@ -1,6 +1,7 @@
 import { OneAst as one } from "./Ast";
 import { AstVisitor } from "./AstVisitor";
 import { VariableContext } from "./VariableContext";
+import { SchemaContext } from "./SchemaContext";
 
 export enum ReferenceType { Class, Method, MethodVariable, ClassVariable }
 
@@ -41,7 +42,7 @@ export class ClassRepository {
 }
 
 export class TypeInferer extends AstVisitor<Context> {
-    constructor(public schema: one.Schema, public overlaySchema: one.Schema = null) { super(); }
+    constructor(public schemaCtx: SchemaContext, public overlayCtx: SchemaContext = null) { super(); }
 
     log(data: string) {
         console.log(`[TypeInferer] ${data}`);
@@ -206,18 +207,21 @@ export class TypeInferer extends AstVisitor<Context> {
     }
 
     process() {
+        this.schemaCtx.ensureTransformed("fillNames");
+        this.overlayCtx.ensureTransformed("fillNames");
+
         const globalContext = this.getGlobalContext();
 
-        const classes = Object.values(this.schema.classes);
+        const classes = Object.values(this.schemaCtx.schema.classes);
 
         for (const cls of classes)
             globalContext.classes.addClass(cls);
         
-        if (this.overlaySchema) {
-            for (const glob of Object.values(this.overlaySchema.globals))
+        if (this.overlayCtx) {
+            for (const glob of Object.values(this.overlayCtx.schema.globals))
                 globalContext.variables.add(glob.variableName, glob.variableType);
 
-            for (const cls of Object.values(this.overlaySchema.classes))
+            for (const cls of Object.values(this.overlayCtx.schema.classes))
                 globalContext.classes.addClass(cls);
         }
             
