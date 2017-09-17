@@ -1,6 +1,6 @@
 import { SchemaTransformer } from "./SchemaTransformer";
 import { OneAst as one } from "./Ast";
-import { TiContext } from "./TypeInferer";
+import { Context as TiContext } from "./Transforms/ResolveIdentifiersTransform";
 
 export class SchemaContext {
     transformer: SchemaTransformer;
@@ -16,7 +16,7 @@ export class SchemaContext {
 
     addOverlaySchema(schema: one.Schema) {
         for (const glob of Object.values(schema.globals))
-            this.tiContext.variables.add(glob);
+            this.tiContext.addLocalVar(glob);
         
         for (const cls of Object.values(schema.classes))
             this.tiContext.classes.addClass(cls);        

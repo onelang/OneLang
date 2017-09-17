@@ -135,7 +135,7 @@ export namespace OneAst {
         setter: Method;
     }
 
-    export interface MethodParameter extends VariableBase { }
+    export interface MethodParameter extends VariableDeclaration { }
 
     export interface Constructor {
         parameters: MethodParameter[];
@@ -166,9 +166,11 @@ export namespace OneAst {
         Parenthesized = "Parenthesized",
         Unary = "Unary",
         ArrayLiteral = "ArrayLiteral",
-        LocalMethodVariable = "LocalMethodVariable",
-        LocalClassVariable = "LocalClassVariable",
-        LocalMethodReference = "LocalMethodReference",
+        LocalVariableRef = "LocalVariableRef",
+        ClassFieldRef = "ClassFieldRef",
+        MethodReference = "MethodReference",
+        ThisReference = "ThisReference",
+        ClassReference = "ClassReference",
     }
 
     export interface Expression {
@@ -177,22 +179,40 @@ export namespace OneAst {
         valueType?: Type;
     }
 
-    export class LocalMethodVariable implements Expression {
-        exprKind = ExpressionKind.LocalMethodVariable;
-
-        constructor(public varName?: string) { }
+    export abstract class Reference implements Expression {
+        abstract exprKind: ExpressionKind;
+        parent?: Expression | Statement;
+        valueType?: Type;
     }
 
-    export class LocalClassVariable implements Expression {
-        exprKind = ExpressionKind.LocalClassVariable;
+    export class LocalVariableRef extends Reference {
+        exprKind = ExpressionKind.LocalVariableRef;
 
-        constructor(public varName?: string) { }
+        constructor(public value?: VariableBase, public isArgument = false) { super(); }
     }
 
-    export class LocalMethodReference implements Expression {
-        exprKind = ExpressionKind.LocalMethodReference;
+    export class ClassFieldRef extends Reference {
+        exprKind = ExpressionKind.ClassFieldRef;
 
-        constructor(public methodName?: string) { }
+        constructor(public value?: VariableBase) { super(); }
+    }
+
+    export class MethodReference extends Reference {
+        exprKind = ExpressionKind.MethodReference;
+
+        constructor(public methodName?: string) { super(); }
+    }
+
+    export class ClassReference extends Reference {
+        exprKind = ExpressionKind.ClassReference;
+        
+        constructor(public value: Class) { super(); }
+    }
+
+    export class ThisReference extends Reference {
+        exprKind = ExpressionKind.ThisReference;
+
+        static instance = new ThisReference();
     }
 
     export interface CallExpression extends Expression {

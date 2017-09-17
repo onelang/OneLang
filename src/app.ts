@@ -16,6 +16,7 @@ import { FillNameTransform } from "./One/Transforms/FillNameTransform";
 import { SchemaTransformer } from "./One/SchemaTransformer";
 import { FillParentTransform } from "./One/Transforms/FillParentTransform";
 import { FillMetaPathTransform } from "./One/Transforms/FillMetaPathTransform";
+import { ResolveIdentifiersTransform } from "./One/Transforms/ResolveIdentifiersTransform";
 
 class Utils {
     static writeFile(fn: string, data: any) {
@@ -44,6 +45,7 @@ function saveSchemaState(schemaCtx: SchemaContext, name: string) {
 SchemaTransformer.instance.addTransform(new FillNameTransform());
 SchemaTransformer.instance.addTransform(new FillParentTransform());
 SchemaTransformer.instance.addTransform(new FillMetaPathTransform());
+SchemaTransformer.instance.addTransform(new ResolveIdentifiersTransform());
 SchemaTransformer.instance.addTransform(new InferTypesTransform());
 
 const tsToOneCtx = new SchemaContext(tsToOne);

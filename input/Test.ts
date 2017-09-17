@@ -31,7 +31,8 @@ class TestClass {
     }
 
     methodWithArgs(arg1: number, arg2: number, arg3: number) {
-        return arg1 + arg2 + arg3 * this.calc();
+        const stuff = arg1 + arg2 + arg3 * this.calc();
+        return stuff;
     }
 
     testMethod() {

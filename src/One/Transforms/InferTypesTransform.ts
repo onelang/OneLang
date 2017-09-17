@@ -13,17 +13,16 @@ export class Reference {
     variableName: string;
 }
 
-export class TiContext {
-    variables: VariableContext = null;
+export class Context {
+    currClassType: one.Type;
     classes: ClassRepository = null;
 
-    constructor(parent: TiContext = null) {
-        this.variables = parent === null ? new VariableContext() : parent.variables.inherit();
+    constructor(parent: Context = null) {
         this.classes = parent === null ? new ClassRepository() : parent.classes;
     }
 
     inherit() {
-        return new TiContext(this);
+        return new Context(this);
     }
 }
 
@@ -42,48 +41,21 @@ export class ClassRepository {
     }
 }
 
-export class InferTypesTransform extends AstVisitor<TiContext> implements ISchemaTransform {
+export class InferTypesTransform extends AstVisitor<Context> implements ISchemaTransform {
     name: string = "inferTypes";
-    dependencies = ["fillName"];
+    dependencies = ["fillName", "resolveIdentifiers"];
 
-    protected visitIdentifier(id: one.Identifier, context: TiContext) {
-        const variable = context.variables.get(id.text);
-        if (variable) {
-            id.valueType = variable.type;
-            if (!id.valueType)
-                this.log(`Variable type is missing: ${variable.metaPath}`);
-        } else {
-            const cls = context.classes.getClass(id.text);
-            if (cls)
-                id.valueType = one.Type.Class(id.text);
-        }
-
-        if (!id.valueType) {
-            this.log(`Could not find identifier's type: ${id.text}`);
-            id.valueType = one.Type.Any;
-        }
-        //console.log(`Getting identifier: ${id.text} [${id.valueType.repr()}]`);
+    protected visitIdentifier(id: one.Identifier, context: Context) {
+        console.log(`No identifier should be here!`);
     }
 
-    protected visitVariableDeclaration(stmt: one.VariableDeclaration, context: TiContext) {
+    protected visitVariableDeclaration(stmt: one.VariableDeclaration, context: Context) {
         super.visitVariableDeclaration(stmt, context);
-        stmt.type = stmt.initializer.valueType;
-        context.variables.add(stmt);
+        if (stmt.initializer)
+            stmt.type = stmt.initializer.valueType;
     }
 
-    protected visitForStatement(stmt: one.ForStatement, context: TiContext) {
-        this.visitExpression(stmt.itemVariable.initializer, context);
-        stmt.itemVariable.type = stmt.itemVariable.initializer.valueType;
-        
-        const newContext = context.inherit();
-        newContext.variables.add(stmt.itemVariable);
-
-        this.visitExpression(stmt.condition, newContext);
-        this.visitExpression(stmt.incrementor, newContext);
-        this.visitBlock(stmt.body, newContext);
-    }
-
-    protected visitForeachStatement(stmt: one.ForeachStatement, context: TiContext) {
+    protected visitForeachStatement(stmt: one.ForeachStatement, context: Context) {
         this.visitExpression(stmt.items, context);
         
         const itemsType = stmt.items.valueType;
@@ -96,13 +68,10 @@ export class InferTypesTransform extends AstVisitor<TiContext> implements ISchem
             stmt.itemVariable.type = itemsType.typeArguments[0];
         }
 
-        const newContext = context.inherit();
-        newContext.variables.add(stmt.itemVariable);
-
-        this.visitBlock(stmt.body, newContext);
+        this.visitBlock(stmt.body, context);
     }
 
-    protected visitBinaryExpression(expr: one.BinaryExpression, context: TiContext) {
+    protected visitBinaryExpression(expr: one.BinaryExpression, context: Context) {
         super.visitBinaryExpression(expr, context);
 
         if (expr.left.valueType.typeKind === one.TypeKind.Number && 
@@ -110,7 +79,7 @@ export class InferTypesTransform extends AstVisitor<TiContext> implements ISchem
             expr.valueType = one.Type.Number;
     }
 
-    protected visitCallExpression(expr: one.CallExpression, context: TiContext) {
+    protected visitCallExpression(expr: one.CallExpression, context: Context) {
         super.visitCallExpression(expr, context);
 
         if (expr.method.valueType.isMethod) {
@@ -127,12 +96,12 @@ export class InferTypesTransform extends AstVisitor<TiContext> implements ISchem
         }
     }
 
-    protected visitNewExpression(expr: one.NewExpression, context: TiContext) {
+    protected visitNewExpression(expr: one.NewExpression, context: Context) {
         super.visitNewExpression(expr, context);
         expr.valueType = expr.class.valueType;
     }
 
-    protected visitLiteral(expr: one.Literal, context: TiContext) {
+    protected visitLiteral(expr: one.Literal, context: Context) {
         if (expr.literalType === "numeric")
             expr.valueType = one.Type.Number;
         else if (expr.literalType === "string")
@@ -145,12 +114,12 @@ export class InferTypesTransform extends AstVisitor<TiContext> implements ISchem
             this.log(`Could not inter literal type: ${expr.literalType}`);
     }
 
-    protected visitParenthesizedExpression(expr: one.ParenthesizedExpression, context: TiContext) {
+    protected visitParenthesizedExpression(expr: one.ParenthesizedExpression, context: Context) {
         super.visitParenthesizedExpression(expr, context);
         expr.valueType = expr.expression.valueType;
     }
 
-    protected visitPropertyAccessExpression(expr: one.PropertyAccessExpression, context: TiContext) {
+    protected visitPropertyAccessExpression(expr: one.PropertyAccessExpression, context: Context) {
         super.visitPropertyAccessExpression(expr, context);
 
         const objType = expr.object.valueType;
@@ -180,7 +149,7 @@ export class InferTypesTransform extends AstVisitor<TiContext> implements ISchem
         this.log(`Member not found: ${objType.className}::${expr.propertyName}`);
     }
 
-    protected visitArrayLiteral(expr: one.ArrayLiteral, context: TiContext) {
+    protected visitArrayLiteral(expr: one.ArrayLiteral, context: Context) {
         super.visitArrayLiteral(expr, context);
 
         let itemType = expr.items.length > 0 ? expr.items[0].valueType : one.Type.Any;
@@ -190,12 +159,32 @@ export class InferTypesTransform extends AstVisitor<TiContext> implements ISchem
         expr.valueType = one.Type.Class("TsArray", [itemType]);
     }
 
-    protected visitExpression(expression: one.Expression, context: TiContext) {
+    protected visitExpression(expression: one.Expression, context: Context) {
         super.visitExpression(expression, context);
         if(!expression.valueType)
             expression.valueType = one.Type.Any;
     }
 
+    protected visitClassReference(expr: one.ClassReference, context: Context) {
+        expr.valueType = one.Type.Class(expr.value.name);
+    }
+    
+    protected visitThisReference(expr: one.ThisReference, context: Context) {
+        expr.valueType = context.currClassType;
+    }
+
+    protected visitLocalMethodVariable(expr: one.LocalVariableRef, context: Context) { 
+        expr.valueType = expr.value.type;
+    }
+    
+    protected visitLocalMethodReference(expr: one.MethodReference, context: Context) {
+        expr.valueType = one.Type.Method(context.currClassType, expr.methodName);
+    }
+
+    protected visitLocalClassVariable(expr: one.ClassFieldRef, context: Context) { 
+        expr.valueType = expr.value.type;
+    }
+    
     getTypeFromString(typeStr: string) {
         // TODO: serious hacks here
         if (typeStr === "int")
@@ -207,22 +196,15 @@ export class InferTypesTransform extends AstVisitor<TiContext> implements ISchem
     }
 
     transform(schemaCtx: SchemaContext) {
-        const globalContext = schemaCtx.tiContext.inherit();
+        const context = new Context();
+        context.classes = schemaCtx.tiContext.classes;
 
-        const classes = Object.values(schemaCtx.schema.classes);
+        for (const cls of Object.values(schemaCtx.schema.classes))
+            context.classes.addClass(cls);
 
-        for (const cls of classes)
-            globalContext.classes.addClass(cls);
-        
-        for (const cls of classes) {
-            const classContext = globalContext.inherit();
-            classContext.variables.add(<one.VariableBase> { name: "this", type: one.Type.Class(cls.name) });
-            for (const method of Object.values(cls.methods)) {
-                const methodContext = classContext.inherit();
-                for (const param of method.parameters)
-                    methodContext.variables.add(param);
-                this.visitBlock(method.body, methodContext);
-            }
-        }
+        for (const cls of Object.values(schemaCtx.schema.classes)) { 
+            context.currClassType = one.Type.Class(cls.name);
+            this.visitClass(cls, context); 
+        }         
     }
 }

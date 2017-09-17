@@ -6,6 +6,7 @@ export class OverviewGenerator extends AstVisitor<void> {
     result = "";
     pad = "";
     padWasAdded = false;
+    showRefs = false;
 
     constructor(public schemaCtx: SchemaContext) {
         super();
@@ -102,8 +103,9 @@ export class OverviewGenerator extends AstVisitor<void> {
         
         this.add("- ");
 
-        const addHdr = (line: string) => {
-            this.addLine(`${line}` + (expression.valueType ? ` [${expression.valueType.repr()}]` : ""));
+        const addHdr = (line: string, postfix: string = "") => {
+            const typeText = expression.valueType ? ` [${expression.valueType.repr()}]` : "";
+            this.addLine(`${line}${typeText}${postfix}`);
         };
 
         if (expression === null) {
@@ -127,18 +129,21 @@ export class OverviewGenerator extends AstVisitor<void> {
             const expr = <one.PropertyAccessExpression> expression;
             addHdr(`PropertyAccess (.${expr.propertyName})`);
             super.visitExpression(expression, null);
-        } else if (expression.exprKind === one.ExpressionKind.LocalClassVariable) {
-            const expr = <one.LocalClassVariable> expression;
-            addHdr(`LocalClassVariable: ${expr.varName}`);
-            super.visitExpression(expression, null);
-        } else if (expression.exprKind === one.ExpressionKind.LocalMethodVariable) {
-            const expr = <one.LocalMethodVariable> expression;
-            addHdr(`LocalMethodVariable: ${expr.varName}`);
-            super.visitExpression(expression, null);
-        } else if (expression.exprKind === one.ExpressionKind.LocalMethodReference) {
-            const expr = <one.LocalMethodReference> expression;
-            addHdr(`LocalMethodReference: ${expr.methodName}`);
-            super.visitExpression(expression, null);
+        } else if (expression.exprKind === one.ExpressionKind.ClassFieldRef) {
+            const expr = <one.ClassFieldRef> expression;
+            addHdr(`ClassFieldRef: ${expr.value.name}`);
+        } else if (expression.exprKind === one.ExpressionKind.ClassReference) {
+            const expr = <one.ClassReference> expression;
+            addHdr(`ClassReference: ${expr.value.name}`);
+        } else if (expression.exprKind === one.ExpressionKind.LocalVariableRef) {
+            const expr = <one.LocalVariableRef> expression;
+            addHdr(`${expr.value.name}`, this.showRefs ? ` => ${expr.value.metaPath}` : "");
+        } else if (expression.exprKind === one.ExpressionKind.MethodReference) {
+            const expr = <one.MethodReference> expression;
+            addHdr(`MethodReference: ${expr.methodName}`);
+        } else if (expression.exprKind === one.ExpressionKind.ThisReference) {
+            const expr = <one.ThisReference> expression;
+            addHdr(`this`);
         } else {
             addHdr(expression.exprKind);
             super.visitExpression(expression, null);

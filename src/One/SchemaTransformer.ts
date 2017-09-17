@@ -4,8 +4,8 @@ import { SchemaContext } from "./SchemaContext";
 export interface ISchemaTransform {
     name: string;
     dependencies?: string[];
-    transform(schema: SchemaContext);
-    revert?(schema: SchemaContext);
+    transform(schemaCtx: SchemaContext);
+    revert?(schemaCtx: SchemaContext);
 }
 
 export class SchemaTransformer {

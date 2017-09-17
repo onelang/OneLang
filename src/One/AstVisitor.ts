@@ -133,11 +133,15 @@ export abstract class AstVisitor<TContext> {
         this.log(`Unknown expression type: ${expr.exprKind}`);
     }
 
-    protected visitLocalMethodVariable(expr: one.LocalMethodVariable, context: TContext) { }
+    protected visitLocalMethodVariable(expr: one.LocalVariableRef, context: TContext) { }
 
-    protected visitLocalMethodReference(expr: one.LocalMethodReference, context: TContext) { }
+    protected visitLocalMethodReference(expr: one.MethodReference, context: TContext) { }
 
-    protected visitLocalClassVariable(expr: one.LocalClassVariable, context: TContext) { }
+    protected visitLocalClassVariable(expr: one.ClassFieldRef, context: TContext) { }
+    
+    protected visitClassReference(expr: one.ClassReference, context: TContext) { }
+    
+    protected visitThisReference(expr: one.ThisReference, context: TContext) { }
 
     protected visitExpression(expression: one.Expression, context: TContext) {
         if (expression.exprKind === one.ExpressionKind.Binary) {
@@ -162,19 +166,25 @@ export abstract class AstVisitor<TContext> {
             this.visitElementAccessExpression(<one.ElementAccessExpression> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.ArrayLiteral) {
             this.visitArrayLiteral(<one.ArrayLiteral> expression, context);
-        } else if (expression.exprKind === one.ExpressionKind.LocalMethodVariable) {
-            this.visitLocalMethodVariable(<one.LocalMethodVariable> expression, context);
-        } else if (expression.exprKind === one.ExpressionKind.LocalMethodReference) {
-            this.visitLocalMethodReference(<one.LocalMethodReference> expression, context);
-        } else if (expression.exprKind === one.ExpressionKind.LocalClassVariable) {
-            this.visitLocalClassVariable(<one.LocalClassVariable> expression, context);
+        } else if (expression.exprKind === one.ExpressionKind.LocalVariableRef) {
+            this.visitLocalMethodVariable(<one.LocalVariableRef> expression, context);
+        } else if (expression.exprKind === one.ExpressionKind.MethodReference) {
+            this.visitLocalMethodReference(<one.MethodReference> expression, context);
+        } else if (expression.exprKind === one.ExpressionKind.ClassFieldRef) {
+            this.visitLocalClassVariable(<one.ClassFieldRef> expression, context);
+        } else if (expression.exprKind === one.ExpressionKind.ClassReference) {
+            this.visitClassReference(<one.ClassReference> expression, context);
+        } else if (expression.exprKind === one.ExpressionKind.ThisReference) {
+            this.visitThisReference(<one.ThisReference> expression, context);
         } else {
             this.visitUnknownExpression(expression, context);
         }
     }
 
     protected visitMethod(method: one.Method, context: TContext) { 
-        method.body = this.visitBlock(method.body, context) || method.body; 
+        this.visitBlock(method.body, context);
+        for (const param of method.parameters)
+            this.visitVariableDeclaration(param, context);
     } 
  
     protected visitClass(cls: one.Class, context: TContext) { 
