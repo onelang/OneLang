@@ -127,6 +127,11 @@ export class InferTypesTransform extends AstVisitor<TiContext> implements ISchem
         }
     }
 
+    protected visitNewExpression(expr: one.NewExpression, context: TiContext) {
+        super.visitNewExpression(expr, context);
+        expr.valueType = expr.class.valueType;
+    }
+
     protected visitLiteral(expr: one.Literal, context: TiContext) {
         if (expr.literalType === "numeric")
             expr.valueType = one.Type.Number;

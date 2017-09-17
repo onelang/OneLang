@@ -1,8 +1,18 @@
+class Class2 {
+    property = 5;
+    child: Class2;
+}
+
 class TestClass {
     arrayTest() {
+        const c2 = new Class2();
+
         let arr = [1, 2];
         arr.push(3);
         arr.push(4);
+        arr.push(c2.property);
+        arr.push(c2.child.property);
+        arr.push(c2.child.child.property);
         let arr2 = [1 + 2, false];
 
         for (const item of arr) {
