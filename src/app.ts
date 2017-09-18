@@ -18,6 +18,7 @@ import { FillParentTransform } from "./One/Transforms/FillParentTransform";
 import { FillMetaPathTransform } from "./One/Transforms/FillMetaPathTransform";
 import { ResolveIdentifiersTransform } from "./One/Transforms/ResolveIdentifiersTransform";
 import { InlineOverlayTypesTransform } from "./One/Transforms/InlineOverlayTypesTransform";
+import { ConvertInlineThisRefTransform } from "./One/Transforms/ConvertInlineThisRefTransform";
 
 class Utils {
     static writeFile(fn: string, data: any) {
@@ -50,24 +51,26 @@ SchemaTransformer.instance.addTransform(new FillMetaPathTransform());
 SchemaTransformer.instance.addTransform(new ResolveIdentifiersTransform());
 SchemaTransformer.instance.addTransform(new InferTypesTransform());
 SchemaTransformer.instance.addTransform(new InlineOverlayTypesTransform());
+SchemaTransformer.instance.addTransform(new ConvertInlineThisRefTransform());
 
 const tsToOneCtx = new SchemaContext(tsToOne);
-tsToOneCtx.ensureTransforms("fillName");
+tsToOneCtx.ensureTransforms("inferTypes", "fillMetaPath", "convertInlineThisRef");
 tsToOne.classes["TsArray"].meta = { iterable: true };
-tsToOneCtx.ensureTransforms("inlineOverlayTypes");
-
-const schemaCtx = new SchemaContext(schema);
-schemaCtx.addOverlaySchema(tsToOne);
-schemaCtx.ensureTransforms("inlineOverlayTypes");
-
 saveSchemaState(tsToOneCtx, "tsToOne");
 
-//saveSchemaState(schema, "tsOneSchema");
+const schemaCtx = new SchemaContext(schema);
+saveSchemaState(schemaCtx, "Test_0_Original");
+
+schemaCtx.addOverlaySchema(tsToOne);
+schemaCtx.ensureTransforms("inferTypes");
+saveSchemaState(schemaCtx, "Test_1_TypesInferred");
+
+schemaCtx.ensureTransforms("inlineOverlayTypes");
+saveSchemaState(schemaCtx, "Test_2_OverlayTypesInlined");
 
 //new TypeInferer(schemaCtx, tsToOneCtx).process();
 //new IdentifierResolver(schema).process();
 
-saveSchemaState(schemaCtx, "tsOneResolvedSchema");
 
 //console.log(schemaJson);
 

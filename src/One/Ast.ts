@@ -20,7 +20,7 @@ export namespace OneAst {
     }
 
     export interface Class extends NamedItem {
-        parent?: Schema;
+        parentRef?: Schema;
         fields: { [name: string]: Field };
         properties: { [name: string]: Property };
         constructor: Constructor;
@@ -53,6 +53,7 @@ export namespace OneAst {
     }
 
     export class Type implements IType {
+        $objType = "Type";
         constructor(public typeKind: TypeKind = null) { }
         
         public className: string;
@@ -144,7 +145,7 @@ export namespace OneAst {
     }
 
     export interface Method extends NamedItem {
-        parent?: Class;
+        parentRef?: Class;
         static: boolean;
         parameters: MethodParameter[];
         returns: Type;
@@ -176,38 +177,38 @@ export namespace OneAst {
 
     export interface Expression {
         exprKind: ExpressionKind;
-        parent?: Expression|Statement;
+        parentRef?: Expression|Statement;
         valueType?: Type;
     }
 
     export abstract class Reference implements Expression {
         abstract exprKind: ExpressionKind;
-        parent?: Expression | Statement;
+        parentRef?: Expression | Statement;
         valueType?: Type;
     }
 
     export class LocalVariableRef extends Reference {
         exprKind = ExpressionKind.LocalVariableRef;
 
-        constructor(public value?: VariableBase, public isArgument = false) { super(); }
+        constructor(public varRef?: VariableBase, public isArgument = false) { super(); }
     }
 
     export class ClassFieldRef extends Reference {
         exprKind = ExpressionKind.ClassFieldRef;
 
-        constructor(public cls: Class, public value?: VariableBase, public thisExpr?: Expression) { super(); }
+        constructor(public classRef: Class, public varRef?: VariableBase, public thisExpr?: Expression) { super(); }
     }
 
     export class MethodReference extends Reference {
         exprKind = ExpressionKind.MethodReference;
 
-        constructor(public cls: Class, public method: Method, public thisExpr?: Expression) { super(); }
+        constructor(public classRef: Class, public methodRef: Method, public thisExpr?: Expression) { super(); }
     }
 
     export class ClassReference extends Reference {
         exprKind = ExpressionKind.ClassReference;
         
-        constructor(public cls: Class) { super(); }
+        constructor(public classRef: Class) { super(); }
     }
 
     export class ThisReference extends Reference {
@@ -285,7 +286,7 @@ export namespace OneAst {
     }
 
     export interface Statement {
-        parent?: Block;
+        parentRef?: Block;
         stmtType: StatementType;
     }
 
@@ -330,7 +331,7 @@ export namespace OneAst {
     }
 
     export interface Block extends NamedItem {
-        parent?: Statement|MethodLike;
+        parentRef?: Statement|MethodLike;
         statements: Statement[];
     }
 }

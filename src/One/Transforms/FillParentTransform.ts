@@ -7,27 +7,27 @@ export class FillParentTransform extends AstVisitor<any> implements ISchemaTrans
     name: string = "fillParent";
 
     protected visitExpression(expression: one.Expression, parent: any) {
-        expression.parent = parent;
+        expression.parentRef = parent;
         super.visitExpression(expression, expression);
     }
 
     protected visitStatement(statement: one.Statement, parent: any) {
-        statement.parent = parent;
+        statement.parentRef = parent;
         super.visitStatement(statement, statement);
     }
 
     protected visitBlock(block: one.Block, parent: any) {
-        block.parent = parent;
+        block.parentRef = parent;
         super.visitBlock(block, block);
     }
 
     protected visitMethod(method: one.Method, parent: any) { 
-        method.parent = parent;
+        method.parentRef = parent;
         super.visitMethod(method, method);
     }
 
     protected visitClass(cls: one.Class, parent: any) {
-        cls.parent = parent;
+        cls.parentRef = parent;
         super.visitClass(cls, cls);
     }
     

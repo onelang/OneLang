@@ -76,6 +76,9 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.addLine(`Body`);
             this.visitBlock(stmt.body);
             this.indent(-1);
+        } else if (statement.stmtType === one.StatementType.Expression) {
+            this.addLine(`ExpressionStatement`);
+            super.visitStatement(statement, null);
         } else {
             this.addLine(`${statement.stmtType}`);
             super.visitStatement(statement, null);
@@ -131,18 +134,18 @@ export class OverviewGenerator extends AstVisitor<void> {
             super.visitExpression(expression, null);
         } else if (expression.exprKind === one.ExpressionKind.ClassFieldRef) {
             const expr = <one.ClassFieldRef> expression;
-            addHdr(`ClassFieldRef: ${expr.value.name}`);
+            addHdr(`ClassFieldRef: ${expr.varRef.name}`);
             if (expr.thisExpr)
                 this.visitExpression(expr.thisExpr);
         } else if (expression.exprKind === one.ExpressionKind.ClassReference) {
             const expr = <one.ClassReference> expression;
-            addHdr(`ClassReference: ${expr.cls.name}`);
+            addHdr(`ClassReference`);
         } else if (expression.exprKind === one.ExpressionKind.LocalVariableRef) {
             const expr = <one.LocalVariableRef> expression;
-            addHdr(`${expr.value.name}`, this.showRefs ? ` => ${expr.value.metaPath}` : "");
+            addHdr(`LocalVar: ${expr.varRef.name}`, this.showRefs ? ` => ${expr.varRef.metaPath}` : "");
         } else if (expression.exprKind === one.ExpressionKind.MethodReference) {
             const expr = <one.MethodReference> expression;
-            addHdr(`MethodReference: ${expr.method.name}`);
+            addHdr(`MethodReference`);
             if (expr.thisExpr)
                 this.visitExpression(expr.thisExpr);
         } else if (expression.exprKind === one.ExpressionKind.ThisReference) {

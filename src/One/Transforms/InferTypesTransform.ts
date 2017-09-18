@@ -178,7 +178,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
     }
 
     protected visitClassReference(expr: one.ClassReference, context: Context) {
-        expr.valueType = one.Type.Class(expr.cls.name);
+        expr.valueType = one.Type.Class(expr.classRef.name);
     }
     
     protected visitThisReference(expr: one.ThisReference, context: Context) {
@@ -186,15 +186,15 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
     }
 
     protected visitLocalVariableRef(expr: one.LocalVariableRef, context: Context) { 
-        expr.valueType = expr.value.type;
+        expr.valueType = expr.varRef.type;
     }
     
     protected visitMethodReference(expr: one.MethodReference, context: Context) {
-        expr.valueType = one.Type.Method(one.Type.Class(expr.cls.name), expr.method.name);
+        expr.valueType = one.Type.Method(one.Type.Class(expr.classRef.name), expr.methodRef.name);
     }
 
     protected visitClassFieldRef(expr: one.ClassFieldRef, context: Context) { 
-        expr.valueType = expr.value.type;
+        expr.valueType = expr.varRef.type;
     }
     
     getTypeFromString(typeStr: string) {
