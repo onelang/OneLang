@@ -39,7 +39,8 @@ export namespace LangFileSchema {
             void: string;
             boolean: string;
             string: string;
-            int32: string;
+            number: string;
+            any: string;
         };
         array: string;
         templates: Templates;

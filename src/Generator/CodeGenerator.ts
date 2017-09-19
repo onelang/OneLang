@@ -26,7 +26,7 @@ function tmpl(parts: TemplateStringsArray, ...values: any[]) {
     for (let i = 0; i < values.length; i++) {
         const prevLastLineIdx = result.lastIndexOf("\n");
         const extraPad = result.length - (prevLastLineIdx === -1 ? 0 : prevLastLineIdx + 1);
-        result += values[i].toString().replace(/\n/g, "\n" + " ".repeat(extraPad)) + parts[i + 1];
+        result += (values[i]||"").toString().replace(/\n/g, "\n" + " ".repeat(extraPad)) + parts[i + 1];
     }
     return deindent(result);
 }
@@ -65,19 +65,20 @@ class CodeGeneratorModel {
     
     gen(obj: one.Statement|one.Expression) {
         const type = (<one.Statement>obj).stmtType || (<one.Expression>obj).exprKind;
-        if (type === one.StatementType.Expression)
-            obj = (<one.ExpressionStatement>obj).expression;
 
         if (type === one.ExpressionKind.Call) {
             const callExpr = <one.CallExpression> obj;
-            const methodPath = this.generator.getMethodPath(callExpr.method);
-            const method = methodPath && this.generator.lang.functions[methodPath];
+            const methodRef = <one.MethodReference> callExpr.method;
+            const metaPath = methodRef.methodRef.metaPath;
+            const methodPath = metaPath && metaPath.replace(/\//g, ".");
+            const method = this.generator.lang.functions[methodPath];
             if (method) {
                 if (method.arguments.length !== callExpr.arguments.length)
                     throw new Error(`Invalid argument count for '${methodPath}': expected: ${method.arguments.length}, actual: ${callExpr.arguments.length}.`);
 
                 const args = callExpr.arguments.map(x => this.gen(x));
-                const code = this.internalMethodGenerators[methodPath].apply(this, args);
+                const thisArg = methodRef.thisExpr ? this.gen(methodRef.thisExpr) : null;
+                const code = this.internalMethodGenerators[methodPath].apply(this, [thisArg].concat(args));
                 return code;
             }
         }
@@ -86,8 +87,24 @@ class CodeGeneratorModel {
         if (genName === one.ExpressionKind.Literal) {
             const literalExpr = <one.Literal> obj;
             genName = `${literalExpr.literalType.ucFirst()}Literal`;
+        } else if (genName === one.ExpressionKind.VariableReference) {
+            const varRef = <one.VariableRef> obj;
+            genName = `${varRef.varType}`;
+        } else if (genName === one.ExpressionKind.MethodReference) {
+            const methodRef = <one.MethodReference> obj;
+            genName = methodRef.thisExpr ? "InstanceMethod" : "StaticMethod";
+        } else if (genName === one.ExpressionKind.Unary) {
+            const unaryExpr = <one.UnaryExpression> obj;
+            genName = unaryExpr.unaryType.ucFirst();
         }
 
+        if (type === one.ExpressionKind.ArrayLiteral) {
+            const arrayLitExpr = <one.ArrayLiteral> obj;
+            const oneArrType = arrayLitExpr.valueType.typeArguments[0].typeKind;
+            const nativeArrType = this.generator.lang.primitiveTypes[oneArrType];
+            arrayLitExpr.arrayType = nativeArrType;
+        }
+        
         const genFunc = this.expressionGenerators[genName];
         if (!genFunc)
             throw new Error(`Expression template not found: ${genName}!`);
@@ -109,8 +126,9 @@ export class CodeGenerator {
     templateObject;
 
     constructor(schema: one.Schema, public lang: LangFileSchema.LangFile) {
-        this.schema = JSON.parse(JSON.stringify(schema)); // clone
-        this.setupNames();
+        //this.schema = JSON.parse(JSON.stringify(schema)); // clone
+        this.schema = schema;
+        //this.setupNames();
         this.setupClasses();
         this.setupIncludes();
 
@@ -241,7 +259,8 @@ export class CodeGenerator {
                 internalMethodGenerators: {
                     ${Object.keys(this.lang.functions).map(funcPath => {
                         const funcInfo = this.lang.functions[funcPath];
-                        return this.genTemplateMethodCode(funcPath, funcInfo.arguments.map(x => x.name), funcInfo.template);
+                        const funcArgs = ["self"].concat(funcInfo.arguments.map(x => x.name));
+                        return this.genTemplateMethodCode(funcPath, funcArgs, funcInfo.template);
                     }).join("\n\n")}
                 },
 

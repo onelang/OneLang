@@ -57,13 +57,13 @@ export abstract class AstVisitor<TContext> {
     protected visitStatement(statement: one.Statement, context: TContext) {
         if (statement.stmtType === one.StatementType.Return) {
             return this.visitReturnStatement(<one.ReturnStatement> statement, context);
-        } else if (statement.stmtType === one.StatementType.Expression) {
+        } else if (statement.stmtType === one.StatementType.ExpressionStatement) {
             return this.visitExpressionStatement(<one.ExpressionStatement> statement, context);
         } else if (statement.stmtType === one.StatementType.If) {
             return this.visitIfStatement(<one.IfStatement> statement, context);
         } else if (statement.stmtType === one.StatementType.Throw) {
             return this.visitThrowStatement(<one.ThrowStatement> statement, context);
-        } else if (statement.stmtType === one.StatementType.Variable) {
+        } else if (statement.stmtType === one.StatementType.VariableDeclaration) {
             return this.visitVariableDeclaration(<one.VariableDeclaration> statement, context);
         } else if (statement.stmtType === one.StatementType.While) {
             return this.visitWhileStatement(<one.WhileStatement> statement, context);
@@ -100,7 +100,7 @@ export abstract class AstVisitor<TContext> {
     }
 
     protected visitNewExpression(expr: one.NewExpression, context: TContext) {
-        this.visitExpression(expr.class, context);
+        this.visitExpression(expr.cls, context);
         for (const arg of expr.arguments)
             this.visitExpression(arg, context);
     }

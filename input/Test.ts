@@ -19,7 +19,7 @@ class TestClass {
             console.log(item);
         }
 
-        for (const item of arr)
+        for (const item of arr2)
             console.log(item);
 
         for (let i = 0; i < arr.length; i++)

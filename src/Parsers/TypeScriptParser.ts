@@ -99,7 +99,7 @@ export class TypeScriptParser {
             const newExpr = <ts.NewExpression> tsExpr;
             return <one.NewExpression> { 
                 exprKind: one.ExpressionKind.New,
-                class: this.convertExpression(newExpr.expression),
+                cls: this.convertExpression(newExpr.expression),
                 arguments: newExpr.arguments.map(arg => this.convertExpression(arg))
             };
         } else if (tsExpr.kind === ts.SyntaxKind.ConditionalExpression) {
@@ -190,7 +190,7 @@ export class TypeScriptParser {
 
     convertVariableDeclaration(varDecl: ts.VariableDeclaration): one.VariableDeclaration {
         return <one.VariableDeclaration> {
-            stmtType: one.StatementType.Variable,
+            stmtType: one.StatementType.VariableDeclaration,
             name: varDecl.name.getText(),
             initializer: this.convertExpression(varDecl.initializer)
         };
@@ -238,7 +238,7 @@ export class TypeScriptParser {
         } else if (tsStatement.kind === ts.SyntaxKind.ExpressionStatement) {
             const expressionStatement = <ts.ExpressionStatement> tsStatement;
             oneStmt = <one.ExpressionStatement> {
-                stmtType: one.StatementType.Expression,
+                stmtType: one.StatementType.ExpressionStatement,
                 expression: this.convertExpression(expressionStatement.expression),
             };
         } else if (tsStatement.kind === ts.SyntaxKind.VariableStatement) {

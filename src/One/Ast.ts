@@ -253,10 +253,11 @@ export namespace OneAst {
 
     export interface ArrayLiteral extends Expression {
         items: Expression[];
+        arrayType?: string;
     }
 
     export interface NewExpression extends Expression {
-        class: Expression;
+        cls: Expression;
         arguments: Expression[];
     }
 
@@ -297,8 +298,8 @@ export namespace OneAst {
     export enum StatementType { 
         If = "If",
         Return = "Return",
-        Expression = "Expression",
-        Variable = "Variable",
+        ExpressionStatement = "ExpressionStatement",
+        VariableDeclaration = "VariableDeclaration",
         While = "While",
         Throw = "Throw",
         Foreach = "Foreach",

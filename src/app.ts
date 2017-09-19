@@ -68,6 +68,16 @@ saveSchemaState(schemaCtx, "Test_1_TypesInferred");
 schemaCtx.ensureTransforms("inlineOverlayTypes");
 saveSchemaState(schemaCtx, "Test_2_OverlayTypesInlined");
 
+function loadLangSchema(name: string) {
+    const langSchema = <LangFileSchema.LangFile> YAML.parse(fs.readFileSync(`langs/${name}.yaml`, "utf8"));
+    return langSchema;
+}
+
+const csharp = loadLangSchema("csharp");
+
+const generatedCode = new CodeGenerator(schema, csharp).generate(true);
+console.log(generatedCode);
+
 //new TypeInferer(schemaCtx, tsToOneCtx).process();
 //new IdentifierResolver(schema).process();
 

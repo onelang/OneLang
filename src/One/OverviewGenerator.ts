@@ -44,7 +44,7 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.visitBlock(stmt.then);
             this.addLine(`Else`);
             this.visitBlock(stmt.else);
-        } else if (statement.stmtType === one.StatementType.Variable) {
+        } else if (statement.stmtType === one.StatementType.VariableDeclaration) {
             const stmt = <one.VariableDeclaration> statement;
             this.addLine(`Variable: ${stmt.name}`);
             this.visitExpression(stmt.initializer);
@@ -76,7 +76,7 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.addLine(`Body`);
             this.visitBlock(stmt.body);
             this.indent(-1);
-        } else if (statement.stmtType === one.StatementType.Expression) {
+        } else if (statement.stmtType === one.StatementType.ExpressionStatement) {
             this.addLine(`ExpressionStatement`);
             super.visitStatement(statement, null);
         } else {

@@ -1,11 +1,16 @@
 functions:
-  stdlib.console.print:
+  OneConsole.print:
     arguments:
       - name: str
     includes:
       - System
     template: |-
-      Console.WriteLine({{str}});
+      Console.WriteLine({{str}})
+  OneArray.add:
+    arguments:
+      - name: str
+    template: |-
+      {{self}}.Add({{str}})
 extension: cs
 casing:
   class: pascal_case
@@ -15,6 +20,7 @@ primitiveTypes:
   boolean: bool
   string: string
   number: int
+  any: object
 array: '{{type}}[]'
 templates:
   testGenerator: |-
@@ -31,7 +37,7 @@ templates:
       using {{inc}};
     {{/for}}
 
-    {{for class in classes}}
+    {{for class in classes|sep=\n\n}}
       public class {{class.name}}
       {
           {{for method in class.methods|sep=\n\n}}
@@ -59,17 +65,47 @@ templates:
       {{for param in method.parameters|sep=", "}}
         {{param.type}} {{param.name}}
       {{/for}}
-expressions:
-  call: |-
-    {{gen(expr.method)}}(
-      {{for arg in expr.arguments|sep=", " inline}}
-        {{gen(arg)}}
+  genParams:
+    args:
+      - name: params
+    template: |-
+      {{for param in params|sep=", " inline}}
+        {{gen(param)}}
       {{/for}}
-    )
+  genVar:
+    args:
+      - name: itemVar
+    template: "var {{itemVar.name}} = {{gen(itemVar.initializer)}}"
+expressions:
+  call: "{{gen(expr.method)}}({{genParams(expr.arguments)}})"
   propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
   identifier: "{{expr.text}}"
   stringLiteral: "\"{{expr.value}}\""
-  return: "return {{gen(expr.expression)}};"
+  return: "return {{gen(expr.expression)}};\n"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
+  postfix: "{{gen(expr.operand)}}{{expr.operator}}"
+  prefix: "{{expr.operator}}{{gen(expr.operand)}}"
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
+  variableDeclaration: "{{genVar(expr)}};\n"
+  new: "new {{gen(expr.class)}}({{genParams(expr.arguments)}})"
+  classReference: "{{expr.classRef.name}}"
+  arrayLiteral: "new List<{{expr.arrayType}}> { {{genParams(expr.items)}} }"
+  expressionStatement: "{{gen(expr.expression)}};\n"
+  instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.name}}"
+  staticMethod: "{{expr.methodRef.parentRef.name}}.{{expr.methodRef.name}}"
+  localVar: "{{expr.varRef.name}}"
+  methodArgument: "{{expr.varRef.name}}"
+  instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}"
+  booleanLiteral: "{{expr.value}}"
+  elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}}"
+  thisReference: this
+  foreach: |
+    for (var {{expr.itemVariable.name}} in {{gen(expr.items)}}) {
+        {{genBody(expr.body)}}
+    }
+
+  for: |
+    for ({{genVar(expr.itemVariable)}}; {{gen(expr.condition)}}; {{gen(expr.incrementor)}}) {
+        {{genBody(expr.body)}}
+    }

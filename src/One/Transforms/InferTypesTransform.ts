@@ -105,7 +105,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
 
     protected visitNewExpression(expr: one.NewExpression, context: Context) {
         super.visitNewExpression(expr, context);
-        expr.valueType = expr.class.valueType;
+        expr.valueType = expr.cls.valueType;
     }
 
     protected visitLiteral(expr: one.Literal, context: Context) {
