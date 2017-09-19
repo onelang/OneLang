@@ -44,7 +44,7 @@ export class ClassRepository {
 
 export class InferTypesTransform extends AstVisitor<Context> implements ISchemaTransform {
     name: string = "inferTypes";
-    dependencies = ["fillName", "resolveIdentifiers"];
+    dependencies = ["fillName", "fillParent", "resolveIdentifiers"];
 
     protected visitIdentifier(id: one.Identifier, context: Context) {
         console.log(`No identifier should be here!`);
@@ -75,8 +75,14 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
     protected visitBinaryExpression(expr: one.BinaryExpression, context: Context) {
         super.visitBinaryExpression(expr, context);
 
-        if (expr.left.valueType.typeKind === one.TypeKind.Number && 
-                expr.right.valueType.typeKind === one.TypeKind.Number)
+        if (expr.left.valueType.isNumber && expr.right.valueType.isNumber)
+            expr.valueType = one.Type.Number;
+    }
+
+    protected visitUnaryExpression(expr: one.UnaryExpression, context: Context) {
+        this.visitExpression(expr.operand, context);
+
+        if (expr.operand.valueType.isNumber)
             expr.valueType = one.Type.Number;
     }
 
@@ -136,6 +142,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         }
 
         const thisIsStatic = expr.object.exprKind === one.ExpressionKind.ClassReference;
+        const thisIsThis = expr.object.exprKind === one.ExpressionKind.ThisReference;
 
         const method = cls.methods[expr.propertyName];
         if (method) {
@@ -144,7 +151,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
             else if (!method.static && thisIsStatic)
                 this.log("Tried to call non-static method via static reference");
 
-            const newValue = new one.MethodReference(cls, method, thisIsStatic ? null : expr.object);
+            const newValue = new one.MethodReference(method, thisIsStatic ? null : expr.object);
             const newExpr = AstHelper.replaceProperties(expr, newValue);
             newExpr.valueType = one.Type.Method(objType, method.name);
             return;
@@ -152,7 +159,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
 
         const fieldOrProp = cls.fields[expr.propertyName] || cls.properties[expr.propertyName];
         if (fieldOrProp) {
-            const newValue = new one.ClassFieldRef(cls, fieldOrProp, expr.object);
+            const newValue = one.VariableRef.InstanceField(expr.object, fieldOrProp);
             const newExpr = AstHelper.replaceProperties(expr, newValue);
             newExpr.valueType = fieldOrProp.type;
             return;
@@ -178,24 +185,31 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
     }
 
     protected visitClassReference(expr: one.ClassReference, context: Context) {
-        expr.valueType = one.Type.Class(expr.classRef.name);
+        expr.valueType = expr.classRef.type;
     }
     
     protected visitThisReference(expr: one.ThisReference, context: Context) {
         expr.valueType = context.currClassType;
     }
 
-    protected visitLocalVariableRef(expr: one.LocalVariableRef, context: Context) { 
+    protected visitVariableRef(expr: one.VariableRef, context: Context) { 
         expr.valueType = expr.varRef.type;
     }
     
     protected visitMethodReference(expr: one.MethodReference, context: Context) {
-        expr.valueType = one.Type.Method(one.Type.Class(expr.classRef.name), expr.methodRef.name);
+        expr.valueType = expr.methodRef.type;
     }
 
-    protected visitClassFieldRef(expr: one.ClassFieldRef, context: Context) { 
-        expr.valueType = expr.varRef.type;
-    }
+    protected visitMethod(method: one.Method, context: Context) { 
+        method.type = one.Type.Method(method.parentRef.type, method.name);
+        super.visitMethod(method, context);
+    } 
+ 
+    protected visitClass(cls: one.Class, context: Context) {
+        // TODO: type arguments?
+        cls.type = one.Type.Class(cls.name);
+        super.visitClass(cls, context);
+    } 
     
     getTypeFromString(typeStr: string) {
         // TODO: serious hacks here
@@ -217,6 +231,6 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         for (const cls of Object.values(schemaCtx.schema.classes)) { 
             context.currClassType = one.Type.Class(cls.name);
             this.visitClass(cls, context); 
-        }         
+        }
     }
 }

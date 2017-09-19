@@ -21,6 +21,7 @@ export namespace OneAst {
 
     export interface Class extends NamedItem {
         parentRef?: Schema;
+        type?: Type;
         fields: { [name: string]: Field };
         properties: { [name: string]: Property };
         constructor: Constructor;
@@ -54,6 +55,7 @@ export namespace OneAst {
 
     export class Type implements IType {
         $objType = "Type";
+        
         constructor(public typeKind: TypeKind = null) { }
         
         public className: string;
@@ -64,6 +66,7 @@ export namespace OneAst {
         get isPrimitiveType() { return Type.PrimitiveTypeKinds.includes(this.typeKind); }
         get isClass() { return this.typeKind === TypeKind.Class; }
         get isMethod() { return this.typeKind === TypeKind.Method; }
+        get isNumber() { return this.typeKind === TypeKind.Number; }
 
         equals(other: Type) {
             if (this.typeKind !== other.typeKind)
@@ -145,6 +148,7 @@ export namespace OneAst {
     }
 
     export interface Method extends NamedItem {
+        type?: Type;
         parentRef?: Class;
         static: boolean;
         parameters: MethodParameter[];
@@ -168,8 +172,7 @@ export namespace OneAst {
         Parenthesized = "Parenthesized",
         Unary = "Unary",
         ArrayLiteral = "ArrayLiteral",
-        LocalVariableRef = "LocalVariableRef",
-        ClassFieldRef = "ClassFieldRef",
+        VariableReference = "VariableReference",
         MethodReference = "MethodReference",
         ThisReference = "ThisReference",
         ClassReference = "ClassReference",
@@ -187,22 +190,39 @@ export namespace OneAst {
         valueType?: Type;
     }
 
-    export class LocalVariableRef extends Reference {
-        exprKind = ExpressionKind.LocalVariableRef;
-
-        constructor(public varRef?: VariableBase, public isArgument = false) { super(); }
+    export enum VariableRefType { 
+        InstanceField = "InstanceField",
+        MethodArgument = "MethodArgument",
+        LocalVar = "LocalVar",
     }
 
-    export class ClassFieldRef extends Reference {
-        exprKind = ExpressionKind.ClassFieldRef;
+    export class VariableRef extends Reference {
+        $objType = "VariableRef";
+        exprKind = ExpressionKind.VariableReference;
 
-        constructor(public classRef: Class, public varRef?: VariableBase, public thisExpr?: Expression) { super(); }
+        static InstanceField(thisExpr: Expression, varRef: VariableBase) {
+            return new VariableRef(VariableRefType.InstanceField, varRef, thisExpr);
+        }
+
+        static MethodVariable(varRef: VariableBase) {
+            return new VariableRef(VariableRefType.LocalVar, varRef);
+        }
+
+        static MethodArgument(varRef: VariableBase) {
+            return new VariableRef(VariableRefType.MethodArgument, varRef);
+        }
+
+        static Load(source: any) {
+            return Object.assign(new VariableRef(null, null), source);
+        }
+
+        protected constructor(public varType: VariableRefType, public varRef: VariableBase, public thisExpr?: Expression) { super(); }
     }
 
     export class MethodReference extends Reference {
         exprKind = ExpressionKind.MethodReference;
 
-        constructor(public classRef: Class, public methodRef: Method, public thisExpr?: Expression) { super(); }
+        constructor(public methodRef: Method, public thisExpr?: Expression) { super(); }
     }
 
     export class ClassReference extends Reference {

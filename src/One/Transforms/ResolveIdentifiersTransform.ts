@@ -16,7 +16,7 @@ export class Context {
     }
 
     addLocalVar(variable: one.VariableBase) {
-        this.variables.add(variable.name, new one.LocalVariableRef(variable));
+        this.variables.add(variable.name, one.VariableRef.MethodVariable(variable));
     }
 
     inherit() {
@@ -81,7 +81,7 @@ export class ResolveIdentifiersTransform extends AstVisitor<Context> implements 
             for (const method of Object.values(cls.methods)) {
                 const methodContext = classContext.inherit();
                 for (const param of method.parameters)
-                    methodContext.variables.add(param.name, new one.LocalVariableRef(param, true));
+                    methodContext.variables.add(param.name, one.VariableRef.MethodArgument(param));
                 this.visitBlock(method.body, methodContext);
             }
         }

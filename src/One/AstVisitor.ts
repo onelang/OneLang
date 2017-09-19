@@ -133,18 +133,16 @@ export abstract class AstVisitor<TContext> {
         this.log(`Unknown expression type: ${expr.exprKind}`);
     }
 
-    protected visitLocalVariableRef(expr: one.LocalVariableRef, context: TContext) { }
+    protected visitVariableRef(expr: one.VariableRef, context: TContext) {
+        if (expr.thisExpr)
+            this.visitExpression(expr.thisExpr, context);
+    }
 
     protected visitMethodReference(expr: one.MethodReference, context: TContext) {
         if (expr.thisExpr)
             this.visitExpression(expr.thisExpr, context);
     }
 
-    protected visitClassFieldRef(expr: one.ClassFieldRef, context: TContext) {
-        if (expr.thisExpr)
-            this.visitExpression(expr.thisExpr, context);
-    }
-    
     protected visitClassReference(expr: one.ClassReference, context: TContext) { }
     
     protected visitThisReference(expr: one.ThisReference, context: TContext) { }
@@ -172,12 +170,10 @@ export abstract class AstVisitor<TContext> {
             return this.visitElementAccessExpression(<one.ElementAccessExpression> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.ArrayLiteral) {
             return this.visitArrayLiteral(<one.ArrayLiteral> expression, context);
-        } else if (expression.exprKind === one.ExpressionKind.LocalVariableRef) {
-            return this.visitLocalVariableRef(<one.LocalVariableRef> expression, context);
+        } else if (expression.exprKind === one.ExpressionKind.VariableReference) {
+            return this.visitVariableRef(<one.VariableRef> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.MethodReference) {
             return this.visitMethodReference(<one.MethodReference> expression, context);
-        } else if (expression.exprKind === one.ExpressionKind.ClassFieldRef) {
-            return this.visitClassFieldRef(<one.ClassFieldRef> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.ClassReference) {
             return this.visitClassReference(<one.ClassReference> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.ThisReference) {

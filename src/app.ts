@@ -19,6 +19,7 @@ import { FillMetaPathTransform } from "./One/Transforms/FillMetaPathTransform";
 import { ResolveIdentifiersTransform } from "./One/Transforms/ResolveIdentifiersTransform";
 import { InlineOverlayTypesTransform } from "./One/Transforms/InlineOverlayTypesTransform";
 import { ConvertInlineThisRefTransform } from "./One/Transforms/ConvertInlineThisRefTransform";
+import { AstHelper } from "./One/AstHelper";
 
 class Utils {
     static writeFile(fn: string, data: any) {
@@ -40,8 +41,7 @@ const schema = parseTs(`input/${prgName}.ts`);
 function saveSchemaState(schemaCtx: SchemaContext, name: string) {
     const schemaOverview = new OverviewGenerator().generate(schemaCtx);
     fs.writeFileSync(`tmp/${name}.txt`, schemaOverview);
-    const schemaJson = JSON.stringify(schemaCtx.schema, (k, v) =>
-        k === "parent" || k === "cls" || k === "method" ? undefined : v, 4);
+    const schemaJson = AstHelper.toJson(schemaCtx.schema);
     fs.writeFileSync(`tmp/${name}.json`, schemaJson);
 }
 

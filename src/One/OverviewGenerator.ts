@@ -132,21 +132,20 @@ export class OverviewGenerator extends AstVisitor<void> {
             const expr = <one.PropertyAccessExpression> expression;
             addHdr(`PropertyAccess (.${expr.propertyName})`);
             super.visitExpression(expression, null);
-        } else if (expression.exprKind === one.ExpressionKind.ClassFieldRef) {
-            const expr = <one.ClassFieldRef> expression;
-            addHdr(`ClassFieldRef: ${expr.varRef.name}`);
-            if (expr.thisExpr)
-                this.visitExpression(expr.thisExpr);
         } else if (expression.exprKind === one.ExpressionKind.ClassReference) {
             const expr = <one.ClassReference> expression;
             addHdr(`ClassReference`);
-        } else if (expression.exprKind === one.ExpressionKind.LocalVariableRef) {
-            const expr = <one.LocalVariableRef> expression;
-            addHdr(`LocalVar: ${expr.varRef.name}`, this.showRefs ? ` => ${expr.varRef.metaPath}` : "");
+        } else if (expression.exprKind === one.ExpressionKind.VariableReference) {
+            const expr = <one.VariableRef> expression;
+            addHdr(`${expr.varType}: ${expr.varRef.name}`, this.showRefs ? ` => ${expr.varRef.metaPath}` : "");
+            if (expr.thisExpr)
+                this.visitExpression(expr.thisExpr);
         } else if (expression.exprKind === one.ExpressionKind.MethodReference) {
             const expr = <one.MethodReference> expression;
-            addHdr(`MethodReference`);
-            if (expr.thisExpr)
+            const specType = !expr.thisExpr ? "static" : 
+                expr.thisExpr.exprKind === one.ExpressionKind.ThisReference ? "this" : null;
+            addHdr(`MethodReference${specType ? ` (${specType})` : ""}`);
+            if (!specType)
                 this.visitExpression(expr.thisExpr);
         } else if (expression.exprKind === one.ExpressionKind.ThisReference) {
             const expr = <one.ThisReference> expression;

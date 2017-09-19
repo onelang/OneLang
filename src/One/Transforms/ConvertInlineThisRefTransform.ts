@@ -9,15 +9,16 @@ export class ConvertInlineThisRefTransform extends AstVisitor<void> implements I
     name = "convertInlineThisRef";
     dependencies = ["inferTypes"];
 
-    protected visitClassFieldRef(expr: one.ClassFieldRef) {
+    protected visitVariableRef(expr: one.VariableRef) {
         if (expr.thisExpr && expr.thisExpr.exprKind === one.ExpressionKind.ThisReference
+                && expr.varType === one.VariableRefType.InstanceField
                 && expr.varRef.name === "_one") {
             AstHelper.replaceProperties(expr, one.ThisReference.instance);
         } else {
-            super.visitClassFieldRef(expr, null);
+            super.visitVariableRef(expr, null);
         }
     }
-    
+
     transform(schemaCtx: SchemaContext) {
         this.visitSchema(schemaCtx.schema, null);
     }
