@@ -42,16 +42,18 @@ templates:
     {{for class in classes|sep=\n\n}}
       public class {{class.name}}
       {
+          {{for field in class.fields|sep=\n}}
+            {{field.visibility}} {{field.type}} {{field.name}};
+          {{/for}}
+
           {{for method in class.methods|sep=\n\n}}
             {{method.visibility}} {{method.returnType}} {{method.name}}({{genArgs(method)}})
             {
                 {{genBody(method.body)}}
             }
-
           {{/for}}
       }
     {{/for}}
-
   genBody:
     args:
       - name: body
@@ -59,7 +61,6 @@ templates:
       {{for statement in body.statements|sep=\n}}
         {{statement.leadingTrivia}}{{gen(statement)}}
       {{/for}}
-
   genArgs:
     args:
       - name: method
@@ -106,7 +107,6 @@ expressions:
     foreach (var {{expr.itemVariable.name}} in {{gen(expr.items)}}) {
         {{genBody(expr.body)}}
     }
-
   for: |-
     for ({{genVar(expr.itemVariable)}}; {{gen(expr.condition)}}; {{gen(expr.incrementor)}}) {
         {{genBody(expr.body)}}

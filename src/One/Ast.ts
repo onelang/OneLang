@@ -154,6 +154,7 @@ export namespace OneAst {
         parameters: MethodParameter[];
         returns: Type;
         body: Block;
+        visibility?: Visibility;
     }
 
     export type MethodLike = Method | Constructor;

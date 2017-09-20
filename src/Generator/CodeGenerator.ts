@@ -26,7 +26,11 @@ function tmpl(parts: TemplateStringsArray, ...values: any[]) {
     for (let i = 0; i < values.length; i++) {
         const prevLastLineIdx = result.lastIndexOf("\n");
         const extraPad = result.length - (prevLastLineIdx === -1 ? 0 : prevLastLineIdx + 1);
-        result += (values[i]||"").toString().replace(/\n/g, "\n" + " ".repeat(extraPad)) + parts[i + 1];
+        const value = (values[i]||"").toString().replace(/\n/g, "\n" + " ".repeat(extraPad));
+        //const valueIsEmpty = /^\s*$/.test(value);
+        //if (valueIsEmpty)
+        //    result = result.replace(/\s+$/g, "");
+        result += value + parts[i + 1];
     }
     return deindent(result);
 }
@@ -207,10 +211,8 @@ export class CodeGenerator {
     }
 
     setupClasses() {
-        this.model.classes = Object.keys(this.schema.classes).map(className => {
-            const cls = this.schema.classes[className];
-            const methods = Object.keys(cls.methods).map(methodName => {
-                const method = cls.methods[methodName];
+        this.model.classes = Object.values(this.schema.classes).map(cls => {
+            const methods = Object.values(cls.methods).map(method => {
                 return <CodeGeneratorModel.Method> {
                     name: method.name,
                     returnType: this.getTypeName(method.returns),
@@ -222,14 +224,28 @@ export class CodeGenerator {
                             type: this.getTypeName(param.type),
                         };
                     }),
-                    visibility: "public" // TODO
+                    visibility: method.visibility || "public"
                 };
             });
+
+            const fields = Object.values(cls.fields).map(field => {
+                return {
+                    name: field.name,
+                    type: this.getTypeName(field.type),
+                    visibility: field.visibility || "public"
+                }
+            });
+
             return <CodeGeneratorModel.Class> {
                 name: cls.name,
                 methods: methods,
-                publicMethods: methods,
-                privateMethods: []
+                publicMethods: methods.filter(x => x.visibility === "public"),
+                protectedMethods: methods.filter(x => x.visibility === "protected"),
+                privateMethods: methods.filter(x => x.visibility === "private"),
+                fields: fields,
+                publicFields: fields.filter(x => x.visibility === "public"),
+                protectedFields: fields.filter(x => x.visibility === "protected"),
+                privateFields: fields.filter(x => x.visibility === "private"),
             };
         });
     }
