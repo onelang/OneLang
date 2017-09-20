@@ -34,11 +34,20 @@ export class OverviewGenerator extends AstVisitor<void> {
     }
 
     visitStatement(statement: one.Statement) {
+        const addHdr = (line: string) => {
+            this.addLine(line);
+        };
+
+        if (statement.leadingTrivia) {
+            this.addLine(`Comment: "${statement.leadingTrivia.replace(/\n/g, "\\n")}"`);
+            this.add("- ");
+        }
+    
         if (statement === null) {
-            this.addLine("<null>");
+            addHdr("<null>");
         } else if (statement.stmtType === one.StatementType.If) {
             const stmt = <one.IfStatement> statement;
-            this.addLine(`If`);
+            addHdr(`If`);
             this.visitExpression(stmt.condition);
             this.addLine(`Then`);
             this.visitBlock(stmt.then);
@@ -46,11 +55,11 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.visitBlock(stmt.else);
         } else if (statement.stmtType === one.StatementType.VariableDeclaration) {
             const stmt = <one.VariableDeclaration> statement;
-            this.addLine(`Variable: ${stmt.name}`);
+            addHdr(`Variable: ${stmt.name}`);
             this.visitExpression(stmt.initializer);
         } else if (statement.stmtType === one.StatementType.While) {
             const stmt = <one.WhileStatement> statement;
-            this.addLine(`While`);
+            addHdr(`While`);
             this.indent(1);
             this.visitExpression(stmt.condition);
             this.addLine(`Body`);
@@ -58,7 +67,7 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.indent(-1);
         } else if (statement.stmtType === one.StatementType.Foreach) {
             const stmt = <one.ForeachStatement> statement;
-            this.addLine(`Foreach ${stmt.itemVariable.name}: ${stmt.itemVariable.type && stmt.itemVariable.type.repr()}`);
+            addHdr(`Foreach ${stmt.itemVariable.name}: ${stmt.itemVariable.type && stmt.itemVariable.type.repr()}`);
             this.indent(1);
             this.addLine(`Items`);
             this.visitExpression(stmt.items);
@@ -67,7 +76,7 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.indent(-1);
         } else if (statement.stmtType === one.StatementType.For) {
             const stmt = <one.ForStatement> statement;
-            this.addLine(`For ("${stmt.itemVariable.name}")`);
+            addHdr(`For ("${stmt.itemVariable.name}")`);
             this.indent(1);
             this.addLine(`Condition`);
             this.visitExpression(stmt.condition);
@@ -77,10 +86,10 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.visitBlock(stmt.body);
             this.indent(-1);
         } else if (statement.stmtType === one.StatementType.ExpressionStatement) {
-            this.addLine(`ExpressionStatement`);
+            addHdr(`ExpressionStatement`);
             super.visitStatement(statement, null);
         } else {
-            this.addLine(`${statement.stmtType}`);
+            addHdr(`${statement.stmtType}`);
             super.visitStatement(statement, null);
         }
     }

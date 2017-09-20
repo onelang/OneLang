@@ -104,7 +104,7 @@ class CodeGeneratorModel {
             const nativeArrType = this.generator.lang.primitiveTypes[oneArrType];
             arrayLitExpr.arrayType = nativeArrType;
         }
-        
+
         const genFunc = this.expressionGenerators[genName];
         if (!genFunc)
             throw new Error(`Expression template not found: ${genName}!`);

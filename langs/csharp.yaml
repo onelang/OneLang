@@ -8,9 +8,11 @@ functions:
       Console.WriteLine({{str}})
   OneArray.add:
     arguments:
-      - name: str
+      - name: item
+    includes:
+      - System.Collections.Generic
     template: |-
-      {{self}}.Add({{str}})
+      {{self}}.Add({{item}})
 extension: cs
 casing:
   class: pascal_case
@@ -33,7 +35,7 @@ templates:
     }
 
   main: |-
-    {{for inc in includes}}
+    {{for inc in includes|sep=\n}}
       using {{inc}};
     {{/for}}
 
@@ -54,8 +56,8 @@ templates:
     args:
       - name: body
     template: |-
-      {{for statement in body.statements}}
-        {{gen(statement)}}
+      {{for statement in body.statements|sep=\n}}
+        {{statement.leadingTrivia}}{{gen(statement)}}
       {{/for}}
 
   genArgs:
@@ -81,31 +83,31 @@ expressions:
   propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
   identifier: "{{expr.text}}"
   stringLiteral: "\"{{expr.value}}\""
-  return: "return {{gen(expr.expression)}};\n"
+  return: "return {{gen(expr.expression)}};"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
   prefix: "{{expr.operator}}{{gen(expr.operand)}}"
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
-  variableDeclaration: "{{genVar(expr)}};\n"
+  variableDeclaration: "{{genVar(expr)}};"
   new: "new {{gen(expr.class)}}({{genParams(expr.arguments)}})"
   classReference: "{{expr.classRef.name}}"
   arrayLiteral: "new List<{{expr.arrayType}}> { {{genParams(expr.items)}} }"
-  expressionStatement: "{{gen(expr.expression)}};\n"
+  expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.name}}"
   staticMethod: "{{expr.methodRef.parentRef.name}}.{{expr.methodRef.name}}"
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
   instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}"
   booleanLiteral: "{{expr.value}}"
-  elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}}"
+  elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
   thisReference: this
-  foreach: |
-    for (var {{expr.itemVariable.name}} in {{gen(expr.items)}}) {
+  foreach: |-
+    foreach (var {{expr.itemVariable.name}} in {{gen(expr.items)}}) {
         {{genBody(expr.body)}}
     }
 
-  for: |
+  for: |-
     for ({{genVar(expr.itemVariable)}}; {{gen(expr.condition)}}; {{gen(expr.incrementor)}}) {
         {{genBody(expr.body)}}
     }

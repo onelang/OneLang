@@ -2,6 +2,7 @@ import * as ts from "typescript";
 import * as SimpleAst from "ts-simple-ast";
 import { TsSimpleAst } from "ts-simple-ast";
 import { OneAst as one } from "../One/Ast";
+import { deindent } from "../Generator/CodeGenerator";
 
 function flattenArray<T>(arrays: T[][]): T[] {
     return [].concat.apply([], arrays);
@@ -9,17 +10,19 @@ function flattenArray<T>(arrays: T[][]): T[] {
 
 export class TypeScriptParser {
     ast: TsSimpleAst;
+    sourceFile: SimpleAst.SourceFile;
+    schema: one.Schema;
 
-    constructor() {
+    constructor(public sourceCode: string, filePath?: string) {
         this.ast = new (SimpleAst.TsSimpleAst || SimpleAst["default"])();
+        this.ast.addSourceFileFromText(filePath || "main.ts", sourceCode);
+        this.ast.addSourceFileFromText("/node_modules/typescript/lib/lib.d.ts", "");
+        this.sourceFile = this.ast.getSourceFiles()[0];
     }
 
     static parseFile(sourceCode: string, filePath?: string): one.Schema {
-        const parser = new TypeScriptParser();
-        parser.ast.addSourceFileFromText(filePath || "main.ts", sourceCode);
-        parser.ast.addSourceFileFromText("/node_modules/typescript/lib/lib.d.ts", "");
-        const sourceFile = parser.ast.getSourceFiles()[0];
-        const schema = parser.createSchemaFromSourceFile(sourceFile);
+        const parser = new TypeScriptParser(sourceCode, filePath);
+        const schema = parser.generate();
         return schema;
     }
 
@@ -271,7 +274,17 @@ export class TypeScriptParser {
         } else
             this.logNodeError(`Unexpected statement kind.`, tsStatement);
 
-        return oneStmts || (oneStmt ? [oneStmt] : []);
+        oneStmts = oneStmts || (oneStmt ? [oneStmt] : []);
+
+        if (oneStmts.length > 0) {
+            const triviaStart = tsStatement.pos;
+            const triviaEnd = tsStatement.getStart();
+            const realEnd = this.sourceCode.lastIndexOf("\n", triviaEnd) + 1;
+            const trivia = this.sourceCode.substring(triviaStart, realEnd);
+            oneStmts[0].leadingTrivia = deindent(trivia);
+        }
+
+        return oneStmts;
     }
 
     convertBlock(tsBlock: ts.BlockLike|ts.Statement): one.Block {
@@ -295,22 +308,22 @@ export class TypeScriptParser {
         return visibility;
     }
 
-    createSchemaFromSourceFile(typeInfo: SimpleAst.SourceFile): one.Schema {
+    generate() {
         const schema = <one.Schema> { globals: {}, enums: {}, classes: {} };
         
-        for (const varDecl of typeInfo.getVariableDeclarations()) {
+        for (const varDecl of this.sourceFile.getVariableDeclarations()) {
             const oneVarDecl = this.convertVariableDeclaration(varDecl.compilerNode);
             oneVarDecl.type = this.convertTsType(varDecl.getType().compilerType);
             schema.globals[varDecl.getName()] = oneVarDecl;
         }
 
-        for (const tsEnum of typeInfo.getEnums()) {
+        for (const tsEnum of this.sourceFile.getEnums()) {
             schema.enums[tsEnum.getName()] = <one.Enum> { 
                 values: tsEnum.getMembers().map(tsEnumMember => ({ name: tsEnumMember.getName() }))
             };
         }
 
-        for (const tsClass of typeInfo.getClasses()) {
+        for (const tsClass of this.sourceFile.getClasses()) {
             const classSchema = schema.classes[tsClass.getName()] = <one.Class> { fields: {}, methods: {}, properties: {} };
             
             for (const tsProp of tsClass.getInstanceProperties()) {
@@ -350,6 +363,6 @@ export class TypeScriptParser {
                 };
         }
 
-        return schema;
+        return this.schema = schema;
     }
 }

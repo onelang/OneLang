@@ -15,10 +15,14 @@ class TestClass {
         arr.push(c2.child.child.property);
         let arr2 = [1 + 2, false];
 
+        // some comment
         for (const item of arr) {
             console.log(item);
         }
 
+        /* some other comment
+           multiline and stuff
+        */
         for (const item of arr2)
             console.log(item);
 
