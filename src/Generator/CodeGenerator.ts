@@ -21,18 +21,50 @@ export function deindent(str: string) {
     return newStr;
 }
 
-function tmpl(parts: TemplateStringsArray, ...values: any[]) {
-    let result = parts[0];
-    for (let i = 0; i < values.length; i++) {
-        const prevLastLineIdx = result.lastIndexOf("\n");
-        const extraPad = result.length - (prevLastLineIdx === -1 ? 0 : prevLastLineIdx + 1);
-        const value = (values[i]||"").toString().replace(/\n/g, "\n" + " ".repeat(extraPad));
-        //const valueIsEmpty = /^\s*$/.test(value);
-        //if (valueIsEmpty)
-        //    result = result.replace(/\s+$/g, "");
-        result += value + parts[i + 1];
+function tmpl(literalParts: TemplateStringsArray, ...values: any[]) {
+    interface TemplatePart { type: "text"|"value", value: any, block?: boolean };
+    let parts: TemplatePart[] = [];
+
+    for (let i = 0; i < values.length + 1; i++) {
+        parts.push({ type: "text", value: literalParts[i] });
+        if (i < values.length) {
+            let value = values[i];
+            if (value instanceof tmpl.Block) {
+                parts.push({ type: "value", value: value.data, block: true });
+            } else {
+                parts.push({ type: "value", value: value, block: false });
+            }
+        }
+    }
+
+    const isEmptyBlock = (part: TemplatePart) => part && part.block && part.value === "";
+
+    // filter out whitespace text part if it's between two blocks from which one is empty
+    //  (so the whitespace was there to separate blocks but there is no need for separator
+    //  if the block is empty)
+    parts = parts.filter((part, i) => 
+        !(part.type === "text" && (isEmptyBlock(parts[i - 1]) || isEmptyBlock(parts[i + 1]))
+            && /^\s*$/.test(part.value) ));
+
+    let result = "";
+    for (const part of parts) {
+        if (part.type === "text") {
+            result += part.value;
+        } else if (part.type === "value") {
+            const prevLastLineIdx = result.lastIndexOf("\n");
+            const extraPad = result.length - (prevLastLineIdx === -1 ? 0 : prevLastLineIdx + 1);
+            const value = (part.value||"").toString().replace(/\n/g, "\n" + " ".repeat(extraPad));
+            result += value;
+        }
     }
     return deindent(result);
+}
+
+namespace tmpl {
+    export function Block(data: string) {
+        if (!(this instanceof Block)) return new (<any>Block)(data);
+        this.data = data;
+    }
 }
 
 namespace CodeGeneratorModel {
@@ -190,7 +222,9 @@ export class CodeGenerator {
     genTemplate(template: string, args: string[]) {
         const tmpl = new Template(template, args);
         tmpl.convertIdentifier = this.convertIdentifier;
-        return `return tmpl\`\n${tmpl.templateToJS(tmpl.treeRoot, args)}\`;`;
+        const tmplCode = tmpl.templateToJS(tmpl.treeRoot, args)
+            .split("\n").map(x => `    ${x}`).join("\n");
+        return `return tmpl\`\n${tmplCode}\`;`;
     }
 
     setupNames() {

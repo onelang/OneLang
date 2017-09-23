@@ -75,8 +75,10 @@ function loadLangSchema(name: string) {
 
 const csharp = loadLangSchema("csharp");
 
-const generatedCode = new CodeGenerator(schema, csharp).generate(true);
+const codeGen = new CodeGenerator(schema, csharp);
+const generatedCode = codeGen.generate(true);
 Utils.writeFile("tmp/Test.cs", generatedCode);
+Utils.writeFile("tmp/TemplateGenerators.js", codeGen.templateObjectCode);
 console.log(generatedCode);
 
 //new TypeInferer(schemaCtx, tsToOneCtx).process();

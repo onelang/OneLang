@@ -186,10 +186,10 @@ export class Template {
                 const varName = this.convertIdentifier(node.value.for.itemName, vars, "declaration");
                 const forArray = this.exprToJS(node.value.for.array, vars, false);
                 const sep = node.value.params.sep||"";
-                const childrenText = getChildren([varName]);
-                result += `\${(${forArray}||[]).map(${varName} => tmpl\`${childrenText}\`).join("${sep}")}`;
+                const childrenText = getChildren([varName]).replace(/\n/g, "\n    ");
+                result += `\${tmpl.Block((${forArray}||[]).map(${varName} => tmpl\`${childrenText}\`).join("${sep}"))}`;
             } else if (node.value.type === "if") {
-                result += `\${${this.exprToJS(node.value.if.condition, vars, false)} ? tmpl\`${getChildren()}\` : ""}`;
+                result += `\${tmpl.Block(${this.exprToJS(node.value.if.condition, vars, false)} ? tmpl\`${getChildren()}\` : ""})`;
             } else if (node.value.type === "template") {
                 result += `\${${this.exprToJS(node.value.template.expr, vars, false)}}`;
             } else {
@@ -200,13 +200,5 @@ export class Template {
             result = getChildren();
 
         return result;
-    }
-
-    getGeneratorFunction() {
-        const jsCode = `
-            (function (${this.args.map(arg => `${arg}`).join(", ")}) {
-                return \`${this.templateToJS(this.treeRoot, this.args)}\`;
-            })`;
-        return eval(jsCode);
     }
 }
