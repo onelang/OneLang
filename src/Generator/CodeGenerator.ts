@@ -222,9 +222,9 @@ export class CodeGenerator {
     genTemplate(template: string, args: string[]) {
         const tmpl = new Template(template, args);
         tmpl.convertIdentifier = this.convertIdentifier;
-        const tmplCode = tmpl.templateToJS(tmpl.treeRoot, args)
-            .split("\n").map(x => `    ${x}`).join("\n");
-        return `return tmpl\`\n${tmplCode}\`;`;
+        const tmplCodeLines = tmpl.templateToJS(tmpl.treeRoot, args).split("\n");
+        const tmplCode = tmplCodeLines.length > 1 ? tmplCodeLines.map(x => `\n    ${x}`).join("") : tmplCodeLines[0];
+        return `return tmpl\`${tmplCode}\`;`;
     }
 
     setupNames() {
