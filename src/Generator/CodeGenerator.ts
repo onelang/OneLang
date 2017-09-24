@@ -98,6 +98,8 @@ class CodeGeneratorModel {
     internalMethodGenerators: { [name: string]: (expr: any) => string } = {};
 
     constructor(public generator: CodeGenerator) { }
+
+    log(data: string) { console.log(`[CodeGeneratorModel] ${data}`); }
     
     gen(obj: one.Statement|one.Expression) {
         const type = (<one.Statement>obj).stmtType || (<one.Expression>obj).exprKind;
@@ -116,6 +118,19 @@ class CodeGeneratorModel {
                 const thisArg = methodRef.thisExpr ? this.gen(methodRef.thisExpr) : null;
                 const code = this.internalMethodGenerators[methodPath].apply(this, [thisArg].concat(args));
                 return code;
+            }
+        } else if (type === one.ExpressionKind.VariableReference) {
+            const varRef = <one.VariableRef> obj;
+            if (varRef.varType === one.VariableRefType.InstanceField) {
+                const varPath = `${varRef.thisExpr.valueType.className}.${varRef.varRef.name}`;
+                const func = this.generator.lang.functions[varPath];
+                const thisArg = varRef.thisExpr ? this.gen(varRef.thisExpr) : null;
+                const gen = this.internalMethodGenerators[varPath];
+                this.log(varPath);
+                if (gen) {
+                    const code = gen.apply(this, [thisArg]);
+                    return code;
+                }
             }
         }
 
@@ -309,7 +324,7 @@ export class CodeGenerator {
                 internalMethodGenerators: {
                     ${Object.keys(this.lang.functions).map(funcPath => {
                         const funcInfo = this.lang.functions[funcPath];
-                        const funcArgs = ["self"].concat(funcInfo.arguments.map(x => x.name));
+                        const funcArgs = ["self"].concat((funcInfo.arguments||[]).map(x => x.name));
                         return this.genTemplateMethodCode(funcPath, funcArgs, funcInfo.template);
                     }).join("\n\n")}
                 },

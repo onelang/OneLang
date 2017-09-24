@@ -14,7 +14,7 @@ export class AstHelper {
     }
 
     static methodRepr(method: one.Method) {
-        return `${method.parentRef.name}::${method.name}(${method.parameters.map(x => x.type.repr()).join(", ")})`;
+        return `${method.classRef.name}::${method.name}(${method.parameters.map(x => x.type.repr()).join(", ")})`;
     }
 
     static toJson(obj: any) {
@@ -24,7 +24,7 @@ export class AstHelper {
                     //console.log("Clone is not possible as metaPath is missing!");
                 }
 
-                return { metaPath: v.metaPath };
+                return { metaPath: v.metaPath, name: v.name };
             } else {
                 return v;
             }

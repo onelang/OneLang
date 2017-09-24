@@ -54,7 +54,8 @@ SchemaTransformer.instance.addTransform(new InlineOverlayTypesTransform());
 SchemaTransformer.instance.addTransform(new ConvertInlineThisRefTransform());
 
 const tsToOneCtx = new SchemaContext(tsToOne);
-tsToOneCtx.ensureTransforms("inferTypes", "fillMetaPath", "convertInlineThisRef");
+tsToOneCtx.ensureTransforms("convertInlineThisRef");
+tsToOneCtx.ensureTransforms("fillMetaPath");
 tsToOne.classes["TsArray"].meta = { iterable: true };
 saveSchemaState(tsToOneCtx, "tsToOne");
 
@@ -79,7 +80,7 @@ const codeGen = new CodeGenerator(schema, csharp);
 const generatedCode = codeGen.generate(true);
 Utils.writeFile("tmp/Test.cs", generatedCode);
 Utils.writeFile("tmp/TemplateGenerators.js", codeGen.templateObjectCode);
-console.log(generatedCode);
+//console.log(generatedCode);
 
 //new TypeInferer(schemaCtx, tsToOneCtx).process();
 //new IdentifierResolver(schema).process();

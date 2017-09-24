@@ -339,7 +339,8 @@ export class TypeScriptParser {
                 } else if (tsProp instanceof SimpleAst.GetAccessorDeclaration) {
                     const propSchema = classSchema.properties[tsProp.getName()] = <one.Property> { 
                         type: this.convertTsType(tsProp.getReturnType().compilerType),
-                        visibility: this.convertVisibility(tsProp)
+                        visibility: this.convertVisibility(tsProp),
+                        getter: this.convertBlock(tsProp.compilerNode.body),
                     };
                 } else {
                     this.logNodeError(`Unknown property type`, tsProp.compilerNode);

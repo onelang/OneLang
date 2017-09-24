@@ -193,6 +193,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
     }
 
     protected visitVariableRef(expr: one.VariableRef, context: Context) { 
+        super.visitVariableRef(expr, context);
         expr.valueType = expr.varRef.type;
     }
     
@@ -201,7 +202,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
     }
 
     protected visitMethod(method: one.Method, context: Context) { 
-        method.type = one.Type.Method(method.parentRef.type, method.name);
+        method.type = one.Type.Method(method.classRef.type, method.name);
         super.visitMethod(method, context);
     } 
  

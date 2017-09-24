@@ -26,7 +26,11 @@ export abstract class AstVisitor<TContext> {
         this.visitExpression(stmt.expression, context);
     }
 
+    protected visitVariable(stmt: one.VariableBase, context: TContext) {
+    }
+
     protected visitVariableDeclaration(stmt: one.VariableDeclaration, context: TContext) {
+        this.visitVariable(stmt, context);
         if (stmt.initializer)
             this.visitExpression(stmt.initializer, context);
     }
@@ -189,10 +193,24 @@ export abstract class AstVisitor<TContext> {
             this.visitVariableDeclaration(param, context);
     } 
  
+    protected visitField(field: one.Field, context: TContext) { 
+        this.visitVariable(field, context);
+    } 
+ 
+    protected visitProperty(prop: one.Property, context: TContext) { 
+        this.visitBlock(prop.getter, context);
+        this.visitVariable(prop, context);
+    } 
+ 
     protected visitClass(cls: one.Class, context: TContext) { 
-        for (const method of Object.values(cls.methods)) { 
-            this.visitMethod(method, context); 
-        } 
+        for (const method of Object.values(cls.methods))
+            this.visitMethod(method, context);
+
+        for (const prop of Object.values(cls.properties))
+            this.visitProperty(prop, context);
+
+        for (const field of Object.values(cls.fields))
+            this.visitField(field, context);
     } 
  
     protected visitSchema(schema: one.Schema, context: TContext) { 

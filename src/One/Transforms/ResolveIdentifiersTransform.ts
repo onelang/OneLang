@@ -42,8 +42,8 @@ export class ResolveIdentifiersTransform extends AstVisitor<Context> implements 
         }
     }
 
-    protected visitVariableDeclaration(stmt: one.VariableDeclaration, context: Context) { 
-        super.visitVariableDeclaration(stmt, context); 
+    protected visitVariable(stmt: one.VariableDeclaration, context: Context) { 
+        super.visitVariable(stmt, context); 
         context.addLocalVar(stmt); 
     }
 
@@ -77,7 +77,12 @@ export class ResolveIdentifiersTransform extends AstVisitor<Context> implements 
         
         for (const cls of classes) {
             const classContext = globalContext.inherit();
-            classContext.variables.add("this", one.ThisReference.instance);
+            classContext.variables.add("this", new one.ThisReference());
+
+            for (const prop of Object.values(cls.properties)) {
+                this.visitBlock(prop.getter, classContext);
+            }
+
             for (const method of Object.values(cls.methods)) {
                 const methodContext = classContext.inherit();
                 for (const param of method.parameters)

@@ -20,7 +20,7 @@ export namespace OneAst {
     }
 
     export interface Class extends NamedItem {
-        parentRef?: Schema;
+        schemaRef?: Schema;
         type?: Type;
         fields: { [name: string]: Field };
         properties: { [name: string]: Property };
@@ -130,14 +130,16 @@ export namespace OneAst {
     }
 
     export interface Field extends VariableBase {
+        classRef?: Class;
         visibility: Visibility;
         defaultValue?: any;
     }
 
     export interface Property extends VariableBase {
+        classRef?: Class;
         visibility: Visibility;
-        getter: Method;
-        setter: Method;
+        getter: Block;
+        setter: Block;
     }
 
     export interface MethodParameter extends VariableDeclaration { }
@@ -149,7 +151,7 @@ export namespace OneAst {
 
     export interface Method extends NamedItem {
         type?: Type;
-        parentRef?: Class;
+        classRef?: Class;
         static: boolean;
         parameters: MethodParameter[];
         returns: Type;
@@ -234,8 +236,6 @@ export namespace OneAst {
 
     export class ThisReference extends Reference {
         exprKind = ExpressionKind.ThisReference;
-
-        static instance = new ThisReference();
     }
 
     export interface CallExpression extends Expression {

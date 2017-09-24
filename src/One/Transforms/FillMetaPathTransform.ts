@@ -38,7 +38,7 @@ export class FillMetaPathTransform extends AstVisitor<Context> implements ISchem
         return newContext;
     }
 
-    protected visitVariableDeclaration(stmt: one.VariableDeclaration, context: Context) {
+    protected visitVariable(stmt: one.VariableBase, context: Context) {
         this.subContext(context, stmt);
     }
 

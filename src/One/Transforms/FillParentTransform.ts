@@ -22,12 +22,22 @@ export class FillParentTransform extends AstVisitor<any> implements ISchemaTrans
     }
 
     protected visitMethod(method: one.Method, parent: any) { 
-        method.parentRef = parent;
+        method.classRef = parent;
         super.visitMethod(method, method);
     }
 
+    protected visitField(field: one.Field, parent: any) { 
+        field.classRef = parent;
+        super.visitField(field, parent);
+    }
+
+    protected visitProperty(prop: one.Property, parent: any) { 
+        prop.classRef = parent;
+        super.visitField(prop, parent);
+    }
+
     protected visitClass(cls: one.Class, parent: any) {
-        cls.parentRef = parent;
+        cls.schemaRef = parent;
         super.visitClass(cls, cls);
     }
     

@@ -5,6 +5,9 @@ import { SchemaContext } from "../SchemaContext";
 import { OverviewGenerator } from "../OverviewGenerator";
 import { AstHelper } from "../AstHelper";
 
+/**
+ * Converts "this._one" to "this".
+ */
 export class ConvertInlineThisRefTransform extends AstVisitor<void> implements ISchemaTransform {
     name = "convertInlineThisRef";
     dependencies = ["inferTypes"];
@@ -13,7 +16,9 @@ export class ConvertInlineThisRefTransform extends AstVisitor<void> implements I
         if (expr.thisExpr && expr.thisExpr.exprKind === one.ExpressionKind.ThisReference
                 && expr.varType === one.VariableRefType.InstanceField
                 && expr.varRef.name === "_one") {
-            AstHelper.replaceProperties(expr, one.ThisReference.instance);
+            const thisRef = new one.ThisReference();
+            thisRef.valueType = expr.valueType;
+            AstHelper.replaceProperties(expr, thisRef);
         } else {
             super.visitVariableRef(expr, null);
         }

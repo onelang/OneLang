@@ -13,6 +13,9 @@ functions:
       - System.Collections.Generic
     template: |-
       {{self}}.Add({{item}})
+  OneArray.length:
+    template: |-
+      {{self}}.Count
 extension: cs
 casing:
   class: pascal_case

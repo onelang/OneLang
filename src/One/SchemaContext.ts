@@ -24,4 +24,8 @@ export class SchemaContext {
             this.tiContext.classes.addClass(cls);        
         }
     }
+
+    getClass(name: string): one.Class {
+        return this.schema.classes[name] || this.tiContext.classes.classes[name];
+    }
 }

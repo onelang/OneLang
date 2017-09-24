@@ -146,13 +146,18 @@ export class OverviewGenerator extends AstVisitor<void> {
             addHdr(`ClassReference`);
         } else if (expression.exprKind === one.ExpressionKind.VariableReference) {
             const expr = <one.VariableRef> expression;
-            addHdr(`${expr.varType}: ${expr.varRef.name}`, this.showRefs ? ` => ${expr.varRef.metaPath}` : "");
-            if (expr.thisExpr)
+            const instanceField = expr.varType === one.VariableRefType.InstanceField;
+            const specType = !instanceField ? null : !expr.thisExpr ? "static" : 
+                expr.thisExpr.exprKind === one.ExpressionKind.ThisReference ? "this" : null;
+
+            addHdr(`${expr.varType}${specType ? ` (${specType})` : ""}: ${expr.varRef.name}`, this.showRefs ? ` => ${expr.varRef.metaPath}` : "");
+            if (!specType && expr.thisExpr)
                 this.visitExpression(expr.thisExpr);
         } else if (expression.exprKind === one.ExpressionKind.MethodReference) {
             const expr = <one.MethodReference> expression;
             const specType = !expr.thisExpr ? "static" : 
                 expr.thisExpr.exprKind === one.ExpressionKind.ThisReference ? "this" : null;
+
             addHdr(`MethodReference${specType ? ` (${specType})` : ""}`);
             if (!specType)
                 this.visitExpression(expr.thisExpr);
@@ -179,8 +184,10 @@ export class OverviewGenerator extends AstVisitor<void> {
             for (const field of Object.values(cls.fields))
                 this.addLine(`${cls.name}::${field.name}: ${field.type.repr()}`);
 
-            for (const prop of Object.values(cls.properties))
+            for (const prop of Object.values(cls.properties)) {
                 this.addLine(`${cls.name}::${prop.name}: ${prop.type.repr()}`);
+                this.visitBlock(prop.getter);
+            }
 
             for (const method of Object.values(cls.methods)) {
                 const argList = method.parameters.map(arg => `${arg.name}: ${arg.type.repr()}`).join(", ");
