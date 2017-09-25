@@ -20,6 +20,7 @@ import { ResolveIdentifiersTransform } from "./One/Transforms/ResolveIdentifiers
 import { InlineOverlayTypesTransform } from "./One/Transforms/InlineOverlayTypesTransform";
 import { ConvertInlineThisRefTransform } from "./One/Transforms/ConvertInlineThisRefTransform";
 import { AstHelper } from "./One/AstHelper";
+import { ConvertCasingTransform } from "./One/Transforms/ConvertCasingTransform";
 
 class Utils {
     static writeFile(fn: string, data: any) {
@@ -52,6 +53,7 @@ SchemaTransformer.instance.addTransform(new ResolveIdentifiersTransform());
 SchemaTransformer.instance.addTransform(new InferTypesTransform());
 SchemaTransformer.instance.addTransform(new InlineOverlayTypesTransform());
 SchemaTransformer.instance.addTransform(new ConvertInlineThisRefTransform());
+SchemaTransformer.instance.addTransform(new ConvertCasingTransform());
 
 const tsToOneCtx = new SchemaContext(tsToOne);
 tsToOneCtx.ensureTransforms("convertInlineThisRef");
@@ -75,6 +77,10 @@ function loadLangSchema(name: string) {
 }
 
 const csharp = loadLangSchema("csharp");
+
+schemaCtx.lang = csharp;
+schemaCtx.ensureTransforms("convertCasing");
+saveSchemaState(schemaCtx, "Test_3_CasingConverted");
 
 const codeGen = new CodeGenerator(schema, csharp);
 const generatedCode = codeGen.generate(true);

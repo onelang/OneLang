@@ -18,6 +18,10 @@ export namespace LangFileSchema {
     export interface CasingOptions {
         class?: Casing;
         method?: Casing;
+        field?: Casing;
+        property?: Casing;
+        enum?: Casing;
+        variable?: Casing;
     }
 
     export interface TemplateObj {

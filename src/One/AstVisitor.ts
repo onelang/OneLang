@@ -187,22 +187,22 @@ export abstract class AstVisitor<TContext> {
         }
     }
 
-    protected visitMethod(method: one.Method, context: TContext) { 
+    protected visitMethod(method: one.Method, context: TContext) {
         this.visitBlock(method.body, context);
         for (const param of method.parameters)
             this.visitVariableDeclaration(param, context);
-    } 
+    }
  
-    protected visitField(field: one.Field, context: TContext) { 
+    protected visitField(field: one.Field, context: TContext) {
         this.visitVariable(field, context);
-    } 
+    }
  
-    protected visitProperty(prop: one.Property, context: TContext) { 
+    protected visitProperty(prop: one.Property, context: TContext) {
         this.visitBlock(prop.getter, context);
         this.visitVariable(prop, context);
-    } 
+    }
  
-    protected visitClass(cls: one.Class, context: TContext) { 
+    protected visitClass(cls: one.Class, context: TContext) {
         for (const method of Object.values(cls.methods))
             this.visitMethod(method, context);
 
@@ -211,11 +211,11 @@ export abstract class AstVisitor<TContext> {
 
         for (const field of Object.values(cls.fields))
             this.visitField(field, context);
-    } 
+    }
  
-    protected visitSchema(schema: one.Schema, context: TContext) { 
-        for (const cls of Object.values(schema.classes)) { 
-            this.visitClass(cls, context); 
-        } 
-    } 
+    protected visitSchema(schema: one.Schema, context: TContext) {
+        for (const cls of Object.values(schema.classes)) {
+            this.visitClass(cls, context);
+        }
+    }
 }

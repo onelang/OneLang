@@ -1,10 +1,12 @@
 import { SchemaTransformer } from "./SchemaTransformer";
 import { OneAst as one } from "./Ast";
 import { Context as TiContext } from "./Transforms/ResolveIdentifiersTransform";
+import { LangFileSchema } from "../Generator/LangFileSchema";
 
 export class SchemaContext {
     transformer: SchemaTransformer;
     tiContext = new TiContext();
+    lang: LangFileSchema.LangFile; // TODO: reconsider responsibilities
 
     constructor(public schema: one.Schema) {
         this.transformer = SchemaTransformer.instance;

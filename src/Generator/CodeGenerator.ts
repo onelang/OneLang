@@ -126,7 +126,7 @@ class CodeGeneratorModel {
                 const func = this.generator.lang.functions[varPath];
                 const thisArg = varRef.thisExpr ? this.gen(varRef.thisExpr) : null;
                 const gen = this.internalMethodGenerators[varPath];
-                this.log(varPath);
+                //this.log(varPath);
                 if (gen) {
                     const code = gen.apply(this, [thisArg]);
                     return code;
