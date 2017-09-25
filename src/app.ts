@@ -76,7 +76,7 @@ function loadLangSchema(name: string) {
 }
 
 //const langNames = fs.readdirSync("langs").map(x => x.replace(".yaml", ""));
-const langNames = ["csharp"];
+const langNames = ["cpp", "csharp"];
 for (const langName of langNames) {
     const lang = loadLangSchema(langName);
     new CaseConverter(lang.casing).process(schemaCtx.schema);

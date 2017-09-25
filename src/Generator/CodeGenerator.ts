@@ -300,9 +300,11 @@ export class CodeGenerator {
     }
 
     setupIncludes() {
+        const includes = {};
         for (const func of Object.values(this.lang.functions))
             for (const include of func.includes || [])
-                this.model.includes.push(include);
+                includes[include] = true;
+        this.model.includes.push(...Object.keys(includes));
     }
 
     genTemplateMethodCode(name: string, args: string[], template: string) {
