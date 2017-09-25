@@ -118,7 +118,7 @@ export class Template {
     }
 
     generateTree() {
-        const parts = this.template.split(/\{\{(.*?)\}\}/).map((x,i) => new TemplatePart(x, i % 2 === 0));
+        const parts = this.template.split(/\{\{([^{}]*?)\}\}/).map((x,i) => new TemplatePart(x, i % 2 === 0));
         for (let i = 0; i < parts.length - 1; i++)
             if (parts[i].type === "text" && ["closeNode"].includes(parts[i + 1].type))
                 parts[i].textValue = parts[i].textValue.replace(/\n\s*$/, "");
