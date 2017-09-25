@@ -20,7 +20,7 @@ import { ResolveIdentifiersTransform } from "./One/Transforms/ResolveIdentifiers
 import { InlineOverlayTypesTransform } from "./One/Transforms/InlineOverlayTypesTransform";
 import { ConvertInlineThisRefTransform } from "./One/Transforms/ConvertInlineThisRefTransform";
 import { AstHelper } from "./One/AstHelper";
-import { ConvertCasingTransform } from "./One/Transforms/ConvertCasingTransform";
+import { CaseConverter } from "./One/Transforms/CaseConverter";
 
 class Utils {
     static writeFile(fn: string, data: any) {
@@ -53,7 +53,6 @@ SchemaTransformer.instance.addTransform(new ResolveIdentifiersTransform());
 SchemaTransformer.instance.addTransform(new InferTypesTransform());
 SchemaTransformer.instance.addTransform(new InlineOverlayTypesTransform());
 SchemaTransformer.instance.addTransform(new ConvertInlineThisRefTransform());
-SchemaTransformer.instance.addTransform(new ConvertCasingTransform());
 
 const tsToOneCtx = new SchemaContext(tsToOne);
 tsToOneCtx.ensureTransforms("convertInlineThisRef");
@@ -62,50 +61,29 @@ tsToOne.classes["TsArray"].meta = { iterable: true };
 saveSchemaState(tsToOneCtx, "tsToOne");
 
 const schemaCtx = new SchemaContext(schema);
-saveSchemaState(schemaCtx, "Test_0_Original");
+saveSchemaState(schemaCtx, `${prgName}_0_Original`);
 
 schemaCtx.addOverlaySchema(tsToOne);
 schemaCtx.ensureTransforms("inferTypes");
-saveSchemaState(schemaCtx, "Test_1_TypesInferred");
+saveSchemaState(schemaCtx, `${prgName}_1_TypesInferred`);
 
 schemaCtx.ensureTransforms("inlineOverlayTypes");
-saveSchemaState(schemaCtx, "Test_2_OverlayTypesInlined");
+saveSchemaState(schemaCtx, `${prgName}_2_OverlayTypesInlined`);
 
 function loadLangSchema(name: string) {
     const langSchema = <LangFileSchema.LangFile> YAML.parse(fs.readFileSync(`langs/${name}.yaml`, "utf8"));
     return langSchema;
 }
 
-const csharp = loadLangSchema("csharp");
-
-schemaCtx.lang = csharp;
-schemaCtx.ensureTransforms("convertCasing");
-saveSchemaState(schemaCtx, "Test_3_CasingConverted");
-
-const codeGen = new CodeGenerator(schema, csharp);
-const generatedCode = codeGen.generate(true);
-Utils.writeFile("tmp/Test.cs", generatedCode);
-Utils.writeFile("tmp/TemplateGenerators.js", codeGen.templateObjectCode);
-//console.log(generatedCode);
-
-//new TypeInferer(schemaCtx, tsToOneCtx).process();
-//new IdentifierResolver(schema).process();
-
-
-//console.log(schemaJson);
-
-//let langs = fs.readdirSync("langs");
-//langs = ["csharp.yaml"];
-//for (const langFn of langs) {
-//    const langName = langFn.replace(".yaml", "");
-//    const langSchema = <LangFileSchema.LangFile> YAML.parse(fs.readFileSync(`langs/${langFn}`, "utf8"));
-//
-//    const codeGenerator = new CodeGenerator(tsOneSchema, langSchema);
-//
-//    //const generatedCode = codeGenerator.generate(true);
-//    //Utils.writeFile(`SamplePrograms/${prgName}/${prgName}.${langSchema.extension}`, generatedCode);
-//
-//    const overview = codeGenerator.generateOverview();
-//    fs.writeFileSync("tmp/overview.txt", overview);
-//    //console.log(overview);
-//}
+//const langNames = fs.readdirSync("langs").map(x => x.replace(".yaml", ""));
+const langNames = ["csharp"];
+for (const langName of langNames) {
+    const lang = loadLangSchema(langName);
+    new CaseConverter(lang.casing).process(schemaCtx.schema);
+    saveSchemaState(schemaCtx, `${prgName}_3_${langName}_CasingConverted`);
+    
+    const codeGen = new CodeGenerator(schema, lang);
+    const generatedCode = codeGen.generate(true);
+    Utils.writeFile(`tmp/${prgName}.${lang.extension}`, generatedCode);
+    Utils.writeFile(`tmp/TemplateGenerators_${langName}.js`, codeGen.templateObjectCode);
+}

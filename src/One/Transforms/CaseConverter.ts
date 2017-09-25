@@ -6,7 +6,7 @@ import { OverviewGenerator } from "../OverviewGenerator";
 import { AstHelper } from "../AstHelper";
 import { LangFileSchema } from "../../Generator/LangFileSchema";
 
-class CaseConverter extends AstVisitor<void> {
+export class CaseConverter extends AstVisitor<void> {
     constructor(public casing: LangFileSchema.CasingOptions) { super(); }
 
     toSnakeCase(name: string) { 
@@ -65,13 +65,5 @@ class CaseConverter extends AstVisitor<void> {
 
     process(schema: one.Schema) {
         this.visitSchema(schema, null);
-    }
-}
-
-export class ConvertCasingTransform implements ISchemaTransform {
-    name = "convertCasing";
-
-    transform(schemaCtx: SchemaContext) {
-        new CaseConverter(schemaCtx.lang.casing).process(schemaCtx.schema);
     }
 }
