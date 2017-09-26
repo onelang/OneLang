@@ -154,7 +154,9 @@ class CodeGeneratorModel {
             genName = methodRef.thisExpr ? "InstanceMethod" : "StaticMethod";
         } else if (type === one.ExpressionKind.Unary) {
             const unaryExpr = <one.UnaryExpression> obj;
-            genName = unaryExpr.unaryType.ucFirst();
+            const unaryName = unaryExpr.unaryType.ucFirst();
+            const fullName = `${unaryName}${unaryExpr.operator}`;
+            genName = this.expressionGenerators[fullName] ? fullName : unaryName;
         }
 
         if (type === one.ExpressionKind.ArrayLiteral) {
@@ -317,7 +319,7 @@ export class CodeGenerator {
     }
 
     genTemplateMethodCode(name: string, args: string[], template: string) {
-        const newName = name.includes(".") ? `"${name}"` : name;
+        const newName = /^[a-z]+$/.test(name) ? name : `"${name}"`;
         return tmpl`
             ${newName}(${args.join(", ")}) {
                 ${this.genTemplate(template, args)}
