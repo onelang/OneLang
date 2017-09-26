@@ -104,7 +104,8 @@ expressions:
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
   instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}"
-  booleanLiteral: "{{expr.value}}"
+  falseLiteral: "false"
+  trueLiteral: "true"
   elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
   thisReference: this
   foreach: |-

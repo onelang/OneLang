@@ -1,9 +1,17 @@
 functions:
-  stdlib.console.print:
+  OneConsole.print:
     arguments:
       - name: str
     template: |-
-      print {{str}};
+      print {{str}}
+  OneArray.add:
+    arguments:
+      - name: item
+    template: |-
+      push {{self}}, {{item}}
+  OneArray.length:
+    template: |-
+      scalar({{self}})
 extension: pl
 casing:
   class: pascal_case
@@ -18,7 +26,7 @@ templates:
     use strict;
     use warnings;
 
-    {{for class in classes}}
+    {{for class in classes|sep=\n\n}}
       package {{class.name}};
 
       sub new
@@ -41,7 +49,7 @@ templates:
     args:
       - name: body
     template: |-
-      {{for statement in body.statements}}
+      {{for statement in body.statements|sep=\n}}
         {{gen(statement)}}
       {{/for}}
 
@@ -52,6 +60,17 @@ templates:
       {{for param in method.parameters|sep=", "}}
         {{param.type}} {{param.name}}
       {{/for}}
+  genParams:
+    args:
+      - name: params
+    template: |-
+      {{for param in params|sep=", " inline}}
+        {{gen(param)}}
+      {{/for}}
+  genVar:
+    args:
+      - name: itemVar
+    template: "my ${{itemVar.name}} = {{gen(itemVar.initializer)}}"
 expressions:
   call: |-
     {{gen(expr.method)}}(
@@ -59,10 +78,34 @@ expressions:
         {{gen(arg)}}
       {{/for}}
     )
-  propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
+  propertyAccess: "{{gen(expr.object)}}->{{gen(expr.propertyName)}}"
   identifier: "${{expr.text}}"
   stringLiteral: "\"{{expr.value}}\""
   return: "return {{gen(expr.expression)}};"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
+  postfix: "{{gen(expr.operand)}}{{expr.operator}}"
+  prefix: "{{expr.operator}}{{gen(expr.operand)}}"
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
+  variableDeclaration: "{{genVar(expr)}};"
+  new: "new {{gen(expr.class)}}({{genParams(expr.arguments)}})"
+  classReference: "{{expr.classRef.name}}"
+  arrayLiteral: "({{genParams(expr.items)}})"
+  expressionStatement: "{{gen(expr.expression)}};"
+  instanceMethod: "{{gen(expr.thisExpr)}}->{{expr.methodRef.name}}"
+  staticMethod: "{{expr.methodRef.parentRef.name}}::{{expr.methodRef.name}}"
+  localVar: "${{expr.varRef.name}}"
+  methodArgument: "${{expr.varRef.name}}"
+  instanceField: "{{gen(expr.thisExpr)}}->${{expr.varRef.name}}"
+  trueLiteral: "1"
+  falseLiteral: "0"
+  elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
+  thisReference: $self
+  foreach: |-
+    foreach my ${{expr.itemVariable.name}} ({{gen(expr.items)}}) {
+        {{genBody(expr.body)}}
+    }
+  for: |-
+    for ({{genVar(expr.itemVariable)}}; {{gen(expr.condition)}}; {{gen(expr.incrementor)}}) {
+        {{genBody(expr.body)}}
+    }

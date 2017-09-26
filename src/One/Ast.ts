@@ -249,7 +249,7 @@ export namespace OneAst {
 
     export interface Literal extends Expression {
         literalType: "numeric"|"string"|"boolean"|"null";
-        value: string;
+        value: any;
     }
 
     export interface ArrayLiteral extends Expression {

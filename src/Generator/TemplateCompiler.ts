@@ -3,6 +3,8 @@ import { ExpressionParser } from "./ExpressionLanguage/ExpressionParser";
 
 class TemplateNode {
     children: TemplateNode[] = [];
+    ifTrue: TemplateNode;
+    ifFalse: TemplateNode;
 
     constructor(public value: TemplatePart, public parent: TemplateNode) { }
 
@@ -58,7 +60,7 @@ class ParamParser {
 }
 
 class TemplatePart {
-    type: "text"|"template"|"for"|"if"|"closeNode";
+    type: "text"|"template"|"for"|"if"|"else"|"closeNode";
     params: { [name: string]: string|boolean } = {};
 
     textValue: string;
@@ -83,9 +85,11 @@ class TemplatePart {
             } else if (match = /^if (.*)/.exec(valueWoParams)) {
                 this.type = "if";
                 this.if = { condition: ExpressionParser.parse(match[1]) };
-            } else if (match = /^\/(for|if)/.exec(valueWoParams)) {
+            } else if (match = /^\/(for|if)$/.exec(valueWoParams)) {
                 this.type = "closeNode";
                 this.closeNode = { tag: <"for"|"if">match[1] };
+            } else if (match = /^else$/.exec(valueWoParams)) {
+                this.type = "else";
             } else {
                 this.type = "template";
                 this.template = { expr: ExpressionParser.parse(valueWoParams) };
@@ -129,15 +133,25 @@ export class Template {
         for (let part of parts) {
             //console.log(part.type, part.for || part.if || part.template || part.closeNode);
             if (part.type === "closeNode") {
+                if (part.closeNode.tag === "if")
+                    current = current.parent;
+
                 if (current.value.type !== part.closeNode.tag)
                     throw new Error(`Invalid close tag! Expected ${current.value.type}, got ${part.closeNode.tag}!`);
 
                 current = current.parent;
+            } else if (part.type === "else") {
+                const ifTag = current.parent;
+                current = ifTag.ifFalse = new TemplateNode(part, ifTag);
             } else {
                 const newNode = new TemplateNode(part, current);
                 current.children.push(newNode);
-                if (part.type === "for" || part.type === "if")
+
+                if (part.type === "if") {
+                    current = newNode.ifTrue = new TemplateNode(part, newNode);
+                } else if (part.type === "for") {
                     current = newNode;
+                }
             }
         }
         return root;
@@ -164,20 +178,20 @@ export class Template {
             throw new Error(`Unhandled AST type: ${ast.type}!`);
     }
 
+    getChildren(node: TemplateNode, vars: string[], newVars: string[] = []) {
+        const allVars = vars.concat(newVars);
+        const childTexts = (node.children||[]).map(child => this.templateToJS(child, allVars));
+        for (let i = 0; i < childTexts.length; i++)
+            if (node.children[i].value.params.inline === true) {
+                childTexts[i - 1] = childTexts[i - 1].replace(/(\s|\n)*$/, ""); // trim end
+                childTexts[i] = childTexts[i].trim(); // trim start and end
+                childTexts[i + 1] = childTexts[i + 1].replace(/^(\s|\n)*/, ""); // trim start
+            }
+        return childTexts.join("");
+    }
+
     templateToJS(node: TemplateNode, vars: string[], padding = "") {
         let result = padding;
-
-        const getChildren = (newVars: string[] = []) => {
-            const allVars = vars.concat(newVars);
-            const childTexts = (node.children||[]).map(child => this.templateToJS(child, allVars));
-            for (let i = 0; i < childTexts.length; i++)
-                if (node.children[i].value.params.inline === true) {
-                    childTexts[i - 1] = childTexts[i - 1].replace(/(\s|\n)*$/, ""); // trim end
-                    childTexts[i] = childTexts[i].trim(); // trim start and end
-                    childTexts[i + 1] = childTexts[i + 1].replace(/^(\s|\n)*/, ""); // trim start
-                }
-            return childTexts.join("");
-        };
 
         if (node.value) {
             if (node.value.type === "text") {
@@ -186,10 +200,10 @@ export class Template {
                 const varName = this.convertIdentifier(node.value.for.itemName, vars, "declaration");
                 const forArray = this.exprToJS(node.value.for.array, vars, false);
                 const sep = node.value.params.sep||"";
-                const childrenText = getChildren([varName]).replace(/\n/g, "\n    ");
+                const childrenText = this.getChildren(node, vars, [varName]).replace(/\n/g, "\n    ");
                 result += `\${tmpl.Block((${forArray}||[]).map(${varName} => tmpl\`${childrenText}\`).join("${sep}"))}`;
             } else if (node.value.type === "if") {
-                result += `\${tmpl.Block(${this.exprToJS(node.value.if.condition, vars, false)} ? tmpl\`${getChildren()}\` : ""})`;
+                result += `\${tmpl.Block(${this.exprToJS(node.value.if.condition, vars, false)} ? tmpl\`${this.getChildren(node.ifTrue, vars)}\` : tmpl\`${this.getChildren(node.ifFalse, vars)}\`)}`;
             } else if (node.value.type === "template") {
                 result += `\${${this.exprToJS(node.value.template.expr, vars, false)}}`;
             } else {
@@ -197,7 +211,7 @@ export class Template {
             }
         }
         else
-            result = getChildren();
+            result = this.getChildren(node, vars);
 
         return result;
     }

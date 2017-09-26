@@ -13,7 +13,7 @@ class TestClass {
         arr.push(c2.property);
         arr.push(c2.child.property);
         arr.push(c2.child.child.property);
-        let arr2 = [1 + 2, false];
+        let arr2 = [1 + 2, false, true];
 
         // some comment
         for (const item of arr) {

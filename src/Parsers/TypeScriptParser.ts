@@ -131,7 +131,7 @@ export class TypeScriptParser {
             return <one.Literal> { 
                 exprKind: one.ExpressionKind.Literal,
                 literalType: "boolean",
-                value: tsExpr.getText()
+                value: tsExpr.kind === ts.SyntaxKind.TrueKeyword
             };
         } else if (tsExpr.kind === ts.SyntaxKind.NullKeyword) {
             return <one.Literal> { 

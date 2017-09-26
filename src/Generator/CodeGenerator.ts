@@ -139,16 +139,20 @@ class CodeGeneratorModel {
         }
 
         let genName = type.toString();
-        if (genName === one.ExpressionKind.Literal) {
+        if (type === one.ExpressionKind.Literal) {
             const literalExpr = <one.Literal> obj;
-            genName = `${literalExpr.literalType.ucFirst()}Literal`;
-        } else if (genName === one.ExpressionKind.VariableReference) {
+            if (literalExpr.literalType === "boolean") {
+                genName = `${literalExpr.value ? "True" : "False"}Literal`;
+            } else {
+                genName = `${literalExpr.literalType.ucFirst()}Literal`;
+            }
+        } else if (type === one.ExpressionKind.VariableReference) {
             const varRef = <one.VariableRef> obj;
             genName = `${varRef.varType}`;
-        } else if (genName === one.ExpressionKind.MethodReference) {
+        } else if (type === one.ExpressionKind.MethodReference) {
             const methodRef = <one.MethodReference> obj;
             genName = methodRef.thisExpr ? "InstanceMethod" : "StaticMethod";
-        } else if (genName === one.ExpressionKind.Unary) {
+        } else if (type === one.ExpressionKind.Unary) {
             const unaryExpr = <one.UnaryExpression> obj;
             genName = unaryExpr.unaryType.ucFirst();
         }
@@ -156,7 +160,8 @@ class CodeGeneratorModel {
         if (type === one.ExpressionKind.ArrayLiteral) {
             const arrayLitExpr = <one.ArrayLiteral> obj;
             const oneArrType = arrayLitExpr.valueType.typeArguments[0].typeKind;
-            const nativeArrType = this.generator.lang.primitiveTypes[oneArrType];
+            const primTypes = this.generator.lang.primitiveTypes;
+            const nativeArrType = primTypes && primTypes[oneArrType];
             arrayLitExpr.arrayType = nativeArrType;
         }
 
