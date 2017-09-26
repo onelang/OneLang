@@ -101,6 +101,10 @@ class CodeGeneratorModel {
 
     log(data: string) { console.log(`[CodeGeneratorModel] ${data}`); }
     
+    typeName(type: one.Type) {
+        return this.generator.getTypeName(type);
+    }
+
     gen(obj: one.Statement|one.Expression) {
         const type = (<one.Statement>obj).stmtType || (<one.Expression>obj).exprKind;
 
@@ -202,11 +206,11 @@ export class CodeGenerator {
             throw new Error(`Unknown casing: ${casing}`);
     }
 
-    getTypeName(type: one.IType) {
+    getTypeName(type: one.IType): string {
         if (type.typeKind === one.TypeKind.Class)
             return this.getName(type.className, "class");
         else
-            return this.lang.primitiveTypes ? this.lang.primitiveTypes[type.typeKind] : type.typeKind;
+            return this.lang.primitiveTypes ? this.lang.primitiveTypes[type.typeKind] : type.typeKind.toString();
     }
 
     convertIdentifier(origName: string, vars: string[], mode: "variable"|"field"|"declaration") {
