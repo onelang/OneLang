@@ -1,29 +1,42 @@
 functions:
-  stdlib.console.print:
+  OneConsole.print:
     arguments:
       - name: str
     template: |-
-      console.log({{str}});
+      console.log({{str}})
+  OneArray.add:
+    arguments:
+      - name: item
+    template: |-
+      {{self}}.push({{item}})
+  OneArray.length:
+    template: |-
+      {{self}}.length
 extension: ts
 casing:
   class: pascal_case
   method: camel_case
 primitiveTypes:
   void: void
-  boolean: boolean
+  boolean: bool
   string: string
   number: number
+  any: object
 templates:
   testGenerator: |-
     console.log(new {{class}}().{{method}}());
 
   main: |-
-    {{for class in classes}}
+    {{for class in classes|sep=\n\n}}
       class {{class.name}} {
+        {{for field in class.fields|sep=\n}}
+          {{field.visibility}} {{field.name}}: {{field.type}};
+        {{/for}}
+
         {{for method in class.methods|sep=\n\n}}
-            {{method.name}}({{genArgs(method)}}) {
-                {{genBody(method.body)}}
-            }
+          {{method.name}}({{genArgs(method)}}) {
+            {{genBody(method.body)}}
+          }
         {{/for}}
       }
     {{/for}}
@@ -32,8 +45,8 @@ templates:
     args:
       - name: body
     template: |-
-      {{for statement in body.statements}}
-        {{gen(statement)}}
+      {{for statement in body.statements|sep=\n}}
+        {{statement.leadingTrivia}}{{gen(statement)}}
       {{/for}}
 
   genArgs:
@@ -43,6 +56,17 @@ templates:
       {{for param in method.parameters|sep=", "}}
         {{param.name}}: {{param.type}}
       {{/for}}
+  genParams:
+    args:
+      - name: params
+    template: |-
+      {{for param in params|sep=", " inline}}
+        {{gen(param)}}
+      {{/for}}
+  genVar:
+    args:
+      - name: itemVar
+    template: "let {{itemVar.name}} = {{gen(itemVar.initializer)}}"
 expressions:
   call: |-
     {{gen(expr.method)}}(
@@ -55,5 +79,29 @@ expressions:
   stringLiteral: "\"{{expr.value}}\""
   return: "return {{gen(expr.expression)}};"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
+  postfix: "{{gen(expr.operand)}}{{expr.operator}}"
+  prefix: "{{expr.operator}}{{gen(expr.operand)}}"
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
+  variableDeclaration: "{{genVar(expr)}};"
+  new: "new {{gen(expr.class)}}({{genParams(expr.arguments)}})"
+  classReference: "{{expr.classRef.name}}"
+  arrayLiteral: "[{{genParams(expr.items)}}]"
+  expressionStatement: "{{gen(expr.expression)}};"
+  instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.name}}"
+  staticMethod: "{{expr.methodRef.parentRef.name}}.{{expr.methodRef.name}}"
+  localVar: "{{expr.varRef.name}}"
+  methodArgument: "{{expr.varRef.name}}"
+  instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}"
+  falseLiteral: "false"
+  trueLiteral: "true"
+  elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
+  thisReference: this
+  foreach: |-
+    for (const {{expr.itemVariable.name}} of {{gen(expr.items)}}) {
+        {{genBody(expr.body)}}
+    }
+  for: |-
+    for ({{genVar(expr.itemVariable)}}; {{gen(expr.condition)}}; {{gen(expr.incrementor)}}) {
+        {{genBody(expr.body)}}
+    }
