@@ -41,7 +41,7 @@ templates:
     {{for class in classes|sep=\n\n}}
       type {{class.name}} struct {
           {{for field in class.fields|sep=\n}}
-            {{field.name}} {{field.type}}
+            {{field.name}} {{getType(field)}}
           {{/for}}
       }
 
@@ -51,6 +51,11 @@ templates:
         }
       {{/for}}
     {{/for}}
+
+  getType:
+    args:
+      - name: item
+    template: "{{if item.typeInfo.isClass}}*{{/if}}{{item.type}}"
 
   genBody:
     args:

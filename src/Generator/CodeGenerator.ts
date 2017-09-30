@@ -41,7 +41,7 @@ function tmpl(literalParts: TemplateStringsArray, ...values: any[]) {
             result += value;
         }
     }
-    
+
     return deindent(result);
 }
 
@@ -57,6 +57,7 @@ namespace CodeGeneratorModel {
         idx: number;
         name: string;
         type: string;
+        typeInfo: one.Type;
     }
 
     export interface Method {
@@ -267,7 +268,7 @@ export class CodeGenerator {
                         return <CodeGeneratorModel.MethodParameter> {
                             idx,
                             name: param.name,
-                            type: this.getTypeName(param.type),
+                            type: this.getTypeName(param.type)
                         };
                     }),
                     visibility: method.visibility || "public"
@@ -278,6 +279,7 @@ export class CodeGenerator {
                 return {
                     name: field.name,
                     type: this.getTypeName(field.type),
+                    typeInfo: field.type,                    
                     visibility: field.visibility || "public"
                 }
             });
