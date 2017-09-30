@@ -1,20 +1,16 @@
 import { Layout, LangUi } from "./UI/AppLayout";
 import { CodeGenerator } from "./Generator/CodeGenerator";
-import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs";
+import { langConfigs, LangConfig, CompileResult, LangConfigs } from "./Generator/LangConfigs";
 import { TypeScriptParser } from "./Parsers/TypeScriptParser";
 import { ExposedPromise } from "./Utils/ExposedPromise";
 import { LangFileSchema } from "./Generator/LangFileSchema";
+import { OneCompiler } from "./OneCompiler";
 
 declare var YAML: any;
 
 async function downloadTextFile(url: string): Promise<string> {
     const response = await (await fetch(url)).text();
     return response;
-}
-
-async function getLangTemplate(langName: string) {
-    const response = await downloadTextFile(`langs/${langName}.yaml`);
-    return <LangFileSchema.LangFile> YAML.parse(response);
 }
 
 async function runLang(langConfig: LangConfig, code?: string) {
@@ -62,6 +58,28 @@ function escapeHtml(unsafe) {
     };
 }
 
+class CompileHelper {
+    overlayContent: string;
+
+    constructor(public langConfigs: LangConfigs) { }
+
+    async init() {
+        this.overlayContent = await downloadTextFile(`langs/NativeResolvers/typescript.ts`);
+
+        for (const lang of Object.values(this.langConfigs))
+            lang.schemaYaml = await downloadTextFile(`langs/${lang.name}.yaml`);
+    }
+
+    compile(programCode: string, langName: string) {
+        const compiler = new OneCompiler();
+        compiler.parseFromTS(programCode, this.overlayContent);
+        const code = compiler.compile(this.langConfigs[langName].schemaYaml, langName);
+        return code;
+    }
+}
+
+const compileHelper = new CompileHelper(langConfigs);
+
 function initLayout() {
     layout.init();
     layout.onEditorChange = async (lang: string, newContent: string) => {
@@ -74,13 +92,11 @@ function initLayout() {
             try {
                 const langConfig = langConfigs[langName];
 
-                const schema = TypeScriptParser.parseFile(newContent);
-                const codeGenerator = new CodeGenerator(schema, langConfig.schema);
-                const generatedCode = codeGenerator.generate(!langConfig.request.className);
-                const code = generatedCode.replace(/\n\n+/g, "\n\n").trim();
+                const code = compileHelper.compile(newContent, langName);
                 const isSourceLang = langName === lang;
                 if (!isSourceLang)
                     langUi.changeHandler.setContent(code);
+
                 //console.log(generatedCode.generatedTemplates);
                 //console.log(generatedCode.code);
     
@@ -120,15 +136,11 @@ async function setupTestProgram() {
 }
 
 async function main() {
-    for (const langName of Object.keys(langConfigs)) {
-        langConfigs[langName].name = langName;
-        langConfigs[langName].schema = await getLangTemplate(langName);
-    }
-
     //runLangTests();
     //runLang(langConfigs.ruby);
 
     initLayout();
+    await compileHelper.init();
     await setupTestProgram();
 }
 

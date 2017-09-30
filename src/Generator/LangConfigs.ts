@@ -10,10 +10,13 @@ export interface LangConfig {
         className?: string;
         methodName?: string;
     };
+    schemaYaml?: string;
     schema?: LangFileSchema.LangFile;
 }
 
-export const langConfigs: { [name: string]: LangConfig } = {
+export type LangConfigs = { [name: string]: LangConfig };
+
+export const langConfigs: LangConfigs = {
     cpp: {
         port: 8000,
         request: {
