@@ -13,7 +13,6 @@ class TestClass {
         arr.push(c2.property);
         arr.push(c2.child.property);
         arr.push(c2.child.child.property);
-        let arr2 = [1 + 2, false, true];
 
         // some comment
         for (const item of arr) {
@@ -23,9 +22,6 @@ class TestClass {
         /* some other comment
            multiline and stuff
         */
-        for (const item of arr2)
-            console.log(item);
-
         for (let i = 0; i < arr.length; i++)
             console.log(arr[i]);
     }
