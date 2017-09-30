@@ -26,20 +26,26 @@ export class Layout {
     initLangComponents() {
         this.manager.root
             .addHorizontal(mainCols => mainCols
-                .addVertical(rows => rows
+                .addVertical(rows => rows.setConfig({ width: 50 })
                     .addComponent("TypeScript", c => this.initLang(c, "typescript"))
-                    .addComponent("C++", c => this.initLang(c, "cpp", "c_cpp"))
-                    .addComponent("C#", c => this.initLang(c, "csharp"))
+                    .addHorizontal(cols => cols
+                        .addComponent("C++", c => this.initLang(c, "cpp", "c_cpp"))
+                        .addComponent("C#", c => this.initLang(c, "csharp"))
+                    )
+                    .addHorizontal(cols => cols
+                        .addComponent("Go", c => this.initLang(c, "go", "swift"))
+                        .addComponent("Java", c => this.initLang(c, "java"))
+                    )
                 )
-                .addVertical(rows => rows
-                    .addComponent("Go", c => this.initLang(c, "go", "swift"))
-                    .addComponent("Java", c => this.initLang(c, "java"))
+                .addVertical(rows => rows.setConfig({ width: 25 })
                     .addComponent("Perl", c => this.initLang(c, "perl"))
-                )
-                .addVertical(rows => rows
                     .addComponent("PHP", c => this.initLang(c, "php"))
                     .addComponent("Python", c => this.initLang(c, "python"))
+                )
+                .addVertical(rows => rows.setConfig({ width: 25 })
                     .addComponent("Ruby", c => this.initLang(c, "ruby"))
+                    .addComponent("Swift", c => this.initLang(c, "swift"))
+                    .addComponent("JavaScript", c => this.initLang(c, "javascript"))
                 )
             );
 
