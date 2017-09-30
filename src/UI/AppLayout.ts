@@ -63,7 +63,7 @@ export class Layout {
             `).appendTo(component.element);
         const statusBar = parent.find('.statusBar');
         const editor = LayoutHelper.setupEditor(component, aceLang || name, parent.find('.aceEditor').get(0));
-        const changeHandler = new EditorChangeHandler(editor, 200, (newContent, userChange) => {
+        const changeHandler = new EditorChangeHandler(editor, 500, (newContent, userChange) => {
             if (userChange)
                 this.onEditorChange(name, newContent);
         });
