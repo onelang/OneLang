@@ -81,51 +81,62 @@ class CompileHelper {
 
 const compileHelper = new CompileHelper(langConfigs);
 
+async function runLangUi(langName: string, codeCallback: () => string) {
+    const langUi = layout.langs[langName];
+    langUi.statusBar.text("loading...");
+    try {
+        const langConfig = langConfigs[langName];
+
+        const code = codeCallback();
+        const respJson = await runLang(langConfig, code);
+
+        if (respJson.exceptionText) {
+            langUi.statusBar.attr("title", respJson.exceptionText);
+            html`<span class="label error">error</span>${respJson.exceptionText}`(langUi.statusBar);
+        } else {
+            let result = respJson.result;
+            result = result === null ? "<null>" : result.toString();
+            if (result.endsWith("\n"))
+                result = result.substr(0, result.length - 1);
+
+            langUi.statusBar.attr("title", "");
+            html`<span class="label success">${respJson.elapsedMs}ms</span><span class="result">${result || "<no result>"}</span>`(langUi.statusBar);
+            return result;
+        }
+    } catch(e) {
+        html`<span class="result">${e}</span>`(langUi.statusBar);
+        //langUi.changeHandler.setContent(`${e}`);
+    }
+}
+
 function initLayout() {
     layout.init();
-    layout.onEditorChange = async (lang: string, newContent: string) => {
-        console.log("editor change", lang, newContent);
-        //new CodeGenerator(
-        const sourceLangPromise = new ExposedPromise<string>();
-        await Promise.all(Object.keys(layout.langs).map(async langName => {
-            const langUi = layout.langs[langName];
-            langUi.statusBar.text("loading...");
-            try {
-                const langConfig = langConfigs[langName];
+    layout.onEditorChange = async (sourceLang: string, newContent: string) => {
+        console.log("editor change", sourceLang, newContent);
 
-                const code = compileHelper.compile(newContent, langName);
-                const isSourceLang = langName === lang;
-                if (!isSourceLang)
-                    langUi.changeHandler.setContent(code);
-
-                //console.log(generatedCode.generatedTemplates);
-                //console.log(generatedCode.code);
+        if (sourceLang === "typescript") {
+            const sourceLangPromise = new ExposedPromise<string>();
+            await Promise.all(Object.keys(layout.langs).map(async langName => {
+                const langUi = layout.langs[langName];
+                const isSourceLang = langName === sourceLang;
     
-                runLang(langConfig, code).then(async respJson => {
-                    if (respJson.exceptionText) {
-                        langUi.statusBar.attr("title", respJson.exceptionText);
-                        html`<span class="label error">error</span>${respJson.exceptionText}`(langUi.statusBar);
-                    } else {
-                        let result = respJson.result;
-                        result = result === null ? "<null>" : result.toString();
-                        if (result.endsWith("\n"))
-                            result = result.substr(0, result.length - 1);
-
-                        langUi.statusBar.attr("title", "");
-                        html`<span class="label waiting">${respJson.elapsedMs}ms</span><span class="result">${result || "<no result>"}</span>`(langUi.statusBar);
-                        if (isSourceLang)
-                            sourceLangPromise.resolve(result);
-
-                        const sourceLangResult = await sourceLangPromise;
-                        const isMatch = result === sourceLangResult;
-                        langUi.statusBar.find(".label").addClass(isMatch ? "success" : "error").removeClass("waiting");
-                    }
+                const result = await runLangUi(langName, () => {
+                    const code = compileHelper.compile(newContent, langName);
+                    if (!isSourceLang)
+                        langUi.changeHandler.setContent(code);
+                    return code;
                 });
-            } catch(e) {
-                html`<span class="result">${e}</span>`(langUi.statusBar);
-                //langUi.changeHandler.setContent(`${e}`);
-            }
-        }));
+                
+                if (isSourceLang)
+                    sourceLangPromise.resolve(result);
+    
+                const sourceLangResult = await sourceLangPromise;
+                const isMatch = result === sourceLangResult;
+                langUi.statusBar.find(".label").removeClass("success").addClass(isMatch ? "success" : "error");
+            }));
+        } else {
+            runLangUi(sourceLang, () => newContent);
+        }
     };
 }
 
