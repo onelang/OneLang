@@ -96,7 +96,7 @@ expressions:
   staticMethod: "{{expr.methodRef.parentRef.name}}::{{expr.methodRef.name}}"
   localVar: "${{expr.varRef.name}}"
   methodArgument: "${{expr.varRef.name}}"
-  instanceField: "{{gen(expr.thisExpr)}}->${{expr.varRef.name}}"
+  instanceField: "{{gen(expr.thisExpr)}}->{{expr.varRef.name}}"
   trueLiteral: "1"
   falseLiteral: "0"
   elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
