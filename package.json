@@ -6,6 +6,7 @@
   "dependencies": {
     "mkdirp": "^0.5.1",
     "node": "^8.3.0",
+    "request": "^2.83.0",
     "serializer.ts": "0.0.12",
     "ts-simple-ast": "^0.48.2",
     "ts-type-info": "^7.0.1",

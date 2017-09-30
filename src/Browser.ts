@@ -1,6 +1,6 @@
 import { Layout, LangUi } from "./UI/AppLayout";
-import { CodeGenerator, deindent } from "./Generator/CodeGenerator";
-import { langConfigs, LangConfig } from "./Generator/LangConfigs";
+import { CodeGenerator } from "./Generator/CodeGenerator";
+import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs";
 import { TypeScriptParser } from "./Parsers/TypeScriptParser";
 import { ExposedPromise } from "./Utils/ExposedPromise";
 import { LangFileSchema } from "./Generator/LangFileSchema";
@@ -17,12 +17,6 @@ async function getLangTemplate(langName: string) {
     return <LangFileSchema.LangFile> YAML.parse(response);
 }
 
-interface CompileResult {
-    result?: string;
-    elapsedMs?: number;
-    exceptionText?: string;
-}
-
 async function runLang(langConfig: LangConfig, code?: string) {
     if (code)
         langConfig.request.code = code;
@@ -33,7 +27,7 @@ async function runLang(langConfig: LangConfig, code?: string) {
         body: JSON.stringify(langConfig.request)
     });
 
-    const responseJson = <CompileResult>await response.json();
+    const responseJson = <CompileResult> await response.json();
     console.log(langConfig.name, responseJson);
     if (responseJson.exceptionText)
         console.log(langConfig.name, "Exception", responseJson.exceptionText);

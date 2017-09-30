@@ -1,5 +1,5 @@
-import { deindent } from "./CodeGenerator";
 import { LangFileSchema } from "./LangFileSchema";
+import { deindent } from "./Utils";
 
 export interface LangConfig {
     name?: string;
@@ -110,22 +110,6 @@ export const langConfigs: { [name: string]: LangConfig } = {
             methodName: 'testMethod'
         },
     },
-    php: {
-        port: 8003,
-        request: {
-            lang: "PHP",
-            code: deindent(`
-                <?php
-                
-                class TestClass {
-                    function testMethod() {
-                        return "Hello World!";
-                    }
-                }`),
-            className: 'TestClass',
-            methodName: 'testMethod'
-        }
-    },
     perl: {
         port: 8000,
         request: {
@@ -150,6 +134,22 @@ export const langConfigs: { [name: string]: LangConfig } = {
                 package Program;
                 my $c = new TestClass();
                 $c->testMethod()`)
+        }
+    },
+    php: {
+        port: 8003,
+        request: {
+            lang: "PHP",
+            code: deindent(`
+                <?php
+                
+                class TestClass {
+                    function testMethod() {
+                        return "Hello World!";
+                    }
+                }`),
+            className: 'TestClass',
+            methodName: 'testMethod'
         }
     },
     python: {
@@ -209,3 +209,12 @@ export const langConfigs: { [name: string]: LangConfig } = {
         },
     },
 };
+
+export interface CompileResult {
+    result?: string;
+    elapsedMs?: number;
+    exceptionText?: string;
+}
+
+for (const langName of Object.keys(langConfigs))
+    langConfigs[langName].name = langName;

@@ -1,8 +1,9 @@
 require("./Utils/Extensions.js");
 global["YAML"] = require('yamljs'); 
 const fs = require("fs");
-import { writeFile, readFile } from "./Utils/NodeUtils";
+import { writeFile, readFile, jsonRequest } from "./Utils/NodeUtils";
 import { OneCompiler } from "./OneCompiler";
+import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs";
 
 const prgName = "Test";
 
@@ -15,13 +16,24 @@ const programCode = readFile(`input/${prgName}.ts`);
 const overlayCode = readFile(`langs/NativeResolvers/typescript.ts`);
 compiler.parseFromTS(programCode, overlayCode);
 
-const langNames = fs.readdirSync("langs").filter(x => x.endsWith(".yaml")).map(x => x.replace(".yaml", ""));
-//const langNames = ["cpp", "csharp", "go", "java", "javascript", "perl", "php", "python", "ruby", "swift", "typescript"];
-for (const langName of langNames) {
-    const langYaml = readFile(`langs/${langName}.yaml`);
-    const codeGen = compiler.getCodeGenerator(langYaml, langName);
-    codeGen.generate(true);
+const langs = Object.values(langConfigs);
+for (const lang of langs) {
+    const langYaml = readFile(`langs/${lang.name}.yaml`);
+    const codeGen = compiler.getCodeGenerator(langYaml, lang.name);
+    lang.request.code = codeGen.generate(true);
 
     writeFile(`tmp/${prgName}.${codeGen.lang.extension}`, codeGen.generatedCode);
-    writeFile(`tmp/TemplateGenerators_${langName}.js`, codeGen.templateObjectCode);
+    writeFile(`tmp/TemplateGenerators_${lang.name}.js`, codeGen.templateObjectCode);
 }
+
+// run compiled codes
+async function executeCodes() {
+    await Promise.all(langs.map(async lang => {
+        const result = await jsonRequest<CompileResult>(`http://127.0.0.1:${lang.port}/compile`, lang.request);
+        console.log(lang.name, result);
+    }));
+    
+    debugger;
+}
+
+executeCodes();

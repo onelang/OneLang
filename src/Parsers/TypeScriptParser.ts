@@ -2,7 +2,7 @@ import * as ts from "typescript";
 import * as SimpleAst from "ts-simple-ast";
 import TsSimpleAst from "ts-simple-ast";
 import { OneAst as one } from "../One/Ast";
-import { deindent } from "../Generator/CodeGenerator";
+import { deindent } from "../Generator/Utils";
 
 function flattenArray<T>(arrays: T[][]): T[] {
     return [].concat.apply([], arrays);
