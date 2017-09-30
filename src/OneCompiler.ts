@@ -82,9 +82,9 @@ export class OneCompiler {
         return codeGen;
     }
 
-    compile(langCode: string, langName?: string) {
+    compile(langCode: string, langName?: string, callTestMethod = true) {
         const codeGen = this.getCodeGenerator(langCode, langName);
-        const generatedCode = codeGen.generate(true);
+        const generatedCode = codeGen.generate(callTestMethod);
         return generatedCode;
     }
 }
