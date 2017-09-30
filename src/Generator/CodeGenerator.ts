@@ -185,7 +185,8 @@ export class CodeGenerator {
     schema: one.Schema;
     model = new CodeGeneratorModel(this);
     templateObjectCode: string;
-    templateObject;
+    templateObject: any;
+    generatedCode: string;
 
     constructor(schema: one.Schema, public lang: LangFileSchema.LangFile) {
         //this.schema = JSON.parse(JSON.stringify(schema)); // clone
@@ -357,11 +358,11 @@ export class CodeGenerator {
     generate(callTestMethod: boolean) {
         const model = Object.assign(this.model, this.templateObject);
 
-        let code = this.model.main();
+        this.generatedCode = this.model.main();
         if (callTestMethod)
-            code += "\n\n" + this.model.testGenerator(this.getName("test_class", "class"), this.getName("test_method", "method"));
+        this.generatedCode += "\n\n" + this.model.testGenerator(this.getName("test_class", "class"), this.getName("test_method", "method"));
 
-        return code;
+        return this.generatedCode;
     }
 }
 

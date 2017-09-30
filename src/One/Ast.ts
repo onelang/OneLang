@@ -1,5 +1,6 @@
 export namespace OneAst {
     export interface Schema {
+        sourceType: "program"|"overlay";
         meta: { transforms?: { [name: string]: boolean } };
         globals: { [name: string]: VariableDeclaration };
         enums: { [name: string]: Enum };
