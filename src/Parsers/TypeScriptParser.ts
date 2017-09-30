@@ -1,6 +1,6 @@
 import * as ts from "typescript";
 import * as SimpleAst from "ts-simple-ast";
-import { TsSimpleAst } from "ts-simple-ast";
+import TsSimpleAst from "ts-simple-ast";
 import { OneAst as one } from "../One/Ast";
 import { deindent } from "../Generator/CodeGenerator";
 
@@ -14,7 +14,7 @@ export class TypeScriptParser {
     schema: one.Schema;
 
     constructor(public sourceCode: string, filePath?: string) {
-        this.ast = new (SimpleAst.TsSimpleAst || SimpleAst["default"])();
+        this.ast = new SimpleAst.default();
         this.ast.addSourceFileFromText(filePath || "main.ts", sourceCode);
         this.ast.addSourceFileFromText("/node_modules/typescript/lib/lib.d.ts", "");
         this.sourceFile = this.ast.getSourceFiles()[0];

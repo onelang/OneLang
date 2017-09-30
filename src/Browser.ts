@@ -7,8 +7,13 @@ import { LangFileSchema } from "./Generator/LangFileSchema";
 
 declare var YAML: any;
 
+async function downloadTextFile(url: string): Promise<string> {
+    const response = await (await fetch(url)).text();
+    return response;
+}
+
 async function getLangTemplate(langName: string) {
-    const response = await (await fetch(`langs/${langName}.yaml`)).text();
+    const response = await downloadTextFile(`langs/${langName}.yaml`);
     return <LangFileSchema.LangFile> YAML.parse(response);
 }
 
@@ -66,7 +71,7 @@ function escapeHtml(unsafe) {
 function initLayout() {
     layout.init();
     layout.onEditorChange = async (lang: string, newContent: string) => {
-        //console.log("editor change", lang, newContent);
+        console.log("editor change", lang, newContent);
         //new CodeGenerator(
         const sourceLangPromise = new ExposedPromise<string>();
         await Promise.all(Object.keys(layout.langs).map(async langName => {
@@ -106,7 +111,8 @@ function initLayout() {
                     }
                 });
             } catch(e) {
-                langUi.changeHandler.setContent(`${e}`);
+                html`<span class="result">${e}</span>`(langUi.statusBar);
+                //langUi.changeHandler.setContent(`${e}`);
             }
         }));
     };
@@ -114,21 +120,9 @@ function initLayout() {
 
 //runLangTests();
 
-function setupTestProgram() {
-    layout.langs["typescript"].changeHandler.setContent(deindent(`
-    class TestClass {
-        calc() {
-            return (1 + 2) * 3;
-        }
-    
-        methodWithArgs(arg1: number, arg2: number, arg3: number) {
-            return arg1 + arg2 + arg3 * this.calc();
-        }
-    
-        testMethod() {
-            return "Hello world!";
-        }
-    }`), true);
+async function setupTestProgram() {
+    const testPrg = await downloadTextFile("input/Test.ts");
+    layout.langs["typescript"].changeHandler.setContent(testPrg, true);
 }
 
 async function main() {
@@ -141,7 +135,7 @@ async function main() {
     //runLang(langConfigs.ruby);
 
     initLayout();
-    setupTestProgram();
+    await setupTestProgram();
 }
 
 main();
