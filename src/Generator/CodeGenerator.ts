@@ -113,14 +113,27 @@ class CodeGeneratorModel {
             const metaPath = methodRef.methodRef.metaPath;
             const methodPath = metaPath && metaPath.replace(/\//g, ".");
             const method = this.generator.lang.functions[methodPath];
+            // TODO: unify overlay / normal method handling
             if (method) {
                 if (method.arguments.length !== callExpr.arguments.length)
                     throw new Error(`Invalid argument count for '${methodPath}': expected: ${method.arguments.length}, actual: ${callExpr.arguments.length}.`);
+
+                // TODO: move this to AST visitor
+                for (let i = 0; i < method.arguments.length; i++)
+                    callExpr.arguments[i].paramName = method.arguments[i].name;
 
                 const args = callExpr.arguments.map(x => this.gen(x));
                 const thisArg = methodRef.thisExpr ? this.gen(methodRef.thisExpr) : null;
                 const code = this.internalMethodGenerators[methodPath].apply(this, [thisArg].concat(args));
                 return code;
+            } else {
+                const methodArgs = methodRef.methodRef.parameters;
+                if (methodArgs.length !== callExpr.arguments.length)
+                    throw new Error(`Invalid argument count for '${methodPath}': expected: ${method.arguments.length}, actual: ${callExpr.arguments.length}.`);
+
+                // TODO: move this to AST visitor
+                for (let i = 0; i < methodArgs.length; i++)
+                    callExpr.arguments[i].paramName = methodArgs[i].name;
             }
         } else if (type === one.ExpressionKind.VariableReference) {
             const varRef = <one.VariableRef> obj;
