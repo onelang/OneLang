@@ -80,15 +80,22 @@ class CodeGeneratorModel {
     includes: string[] = [];
     absoluteIncludes: string[] = [];
     classes: CodeGeneratorModel.Class[] = [];
-    expressionGenerators: { [name: string]: (expr: any) => string } = {};
-    internalMethodGenerators: { [name: string]: (expr: any) => string } = {};
+    expressionGenerators: { [name: string]: (expr: any, ...args: any[]) => string } = {};
+    internalMethodGenerators: { [name: string]: (expr: any, ...args: any[]) => string } = {};
 
     constructor(public generator: CodeGenerator) { }
 
     log(data: string) { console.log(`[CodeGeneratorModel] ${data}`); }
     
     typeName(type: one.Type) {
-        return this.generator.getTypeName(type);
+        const gen = this.internalMethodGenerators[type.className];
+        if (gen) {
+            const code = gen.apply(this, [null, type]);
+            console.log("varDecl", type.repr(), code);
+            return code;
+        } else {
+            return this.generator.getTypeName(type);
+        }
     }
 
     gen(obj: one.Statement|one.Expression, ...args: any[]) {

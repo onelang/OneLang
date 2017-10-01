@@ -12,6 +12,10 @@ functions:
   OneArray.length:
     template: |-
       {{self}}.size()
+  OneArray:
+    arguments:
+      - name: type
+    template: "ArrayList<{{typeName(type.typeArguments[0])}}>"
 extension: java
 casing:
   class: pascal_case
@@ -28,7 +32,7 @@ templates:
   main: |
     import java.util.ArrayList; // TODO: hack
     import java.util.Arrays;
-    
+
     {{for inc in includes|sep=\n}}
       using {{inc}};
     {{/for}}
