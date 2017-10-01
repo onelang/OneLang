@@ -89,13 +89,8 @@ class CodeGeneratorModel {
     
     typeName(type: one.Type) {
         const gen = this.internalMethodGenerators[type.className];
-        if (gen) {
-            const code = gen.apply(this, [null, type]);
-            console.log("varDecl", type.repr(), code);
-            return code;
-        } else {
-            return this.generator.getTypeName(type);
-        }
+        const result = gen ? gen.apply(this, [null, type]) : this.generator.getTypeName(type);
+        return result;
     }
 
     gen(obj: one.Statement|one.Expression, ...args: any[]) {
