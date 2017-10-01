@@ -3,7 +3,7 @@ functions:
     arguments:
       - name: str
     template: |-
-      console.log({{str}});
+      console.log({{str}})
   OneArray.add:
     arguments:
       - name: item

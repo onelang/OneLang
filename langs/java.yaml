@@ -3,7 +3,7 @@ functions:
     arguments:
       - name: str
     template: |-
-      System.out.println({{str}});
+      System.out.println({{str}})
   OneArray.add:
     arguments:
       - name: item
@@ -97,7 +97,7 @@ expressions:
   variableDeclaration: "{{genVar(expr)}};"
   new: "new {{gen(expr.class)}}({{genParams(expr.arguments)}})"
   classReference: "{{expr.classRef.name}}"
-  arrayLiteral: "new ArrayList<{{expr.arrayType}}>(Arrays.asList({{genParams(expr.items)}}));"
+  arrayLiteral: "new ArrayList<{{expr.arrayType}}>(Arrays.asList({{genParams(expr.items)}}))"
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.name}}"
   staticMethod: "{{expr.methodRef.parentRef.name}}.{{expr.methodRef.name}}"

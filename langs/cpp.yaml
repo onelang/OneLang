@@ -5,7 +5,7 @@ functions:
     includes:
       - iostream
     template: |-
-      std::cout << {{str}} << std::endl;
+      std::cout << {{str}} << std::endl
   OneArray.add:
     arguments:
       - name: item

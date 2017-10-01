@@ -3,7 +3,7 @@ functions:
     arguments:
       - name: str
     template: |-
-      print({{str}} . "\\n");
+      print({{str}} . "\\n")
   OneArray.add:
     arguments:
       - name: item
