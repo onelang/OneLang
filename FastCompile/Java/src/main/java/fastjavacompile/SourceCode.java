@@ -4,9 +4,6 @@ import javax.tools.SimpleJavaFileObject;
 import java.io.IOException;
 import java.net.URI;
 
-/**
- * Created by trung on 5/3/15.
- */
 public class SourceCode extends SimpleJavaFileObject {
     private String contents = null;
 
@@ -19,3 +16,4 @@ public class SourceCode extends SimpleJavaFileObject {
         return contents;
     }
 }
+

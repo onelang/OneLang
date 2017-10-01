@@ -38,7 +38,7 @@ templates:
     {{/for}}
 
     {{for class in classes|sep=\n\n}}
-      public class {{class.name}} {
+      class {{class.name}} {
           {{for field in class.fields|sep=\n}}
             {{field.visibility}} {{field.type}} {{field.name}};
           {{/for}}

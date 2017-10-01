@@ -19,9 +19,6 @@ import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import java.util.Arrays;
 
-/**
- * Created by trung on 5/3/15.
- */
 public class App
 {
     static JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
@@ -88,20 +85,23 @@ public class App
 
                 long startTime = System.nanoTime();
 
+                JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
                 SourceCode sourceCode = new SourceCode(request.className, request.code);
-                CompiledCode compiledCode = new CompiledCode(request.className);
                 Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(sourceCode);
                 DynamicClassLoader cl = new DynamicClassLoader(ClassLoader.getSystemClassLoader());
-                ExtendedStandardJavaFileManager fileManager = new ExtendedStandardJavaFileManager(javac.getStandardFileManager(null, null, null), compiledCode, cl);
+                ExtendedStandardJavaFileManager fileManager = new ExtendedStandardJavaFileManager(
+                        javac.getStandardFileManager(null, null, null), cl);
                 StringWriter writer = new StringWriter();
                 JavaCompiler.CompilationTask task = javac.getTask(writer, fileManager, null, null, null, compilationUnits);
                 if (!task.call()) {
                     response.exceptionText = writer.toString();
                 } else {
                     Class<?> testClass = cl.loadClass(request.className);
-                    Constructor<?> ctor = testClass.getConstructor();
+                    Constructor<?> ctor = testClass.getDeclaredConstructor();
+                    ctor.setAccessible(true);
                     Object instance = ctor.newInstance();
                     Method testMethod = testClass.getMethod(request.methodName);
+                    testMethod.setAccessible(true);
                     response.result = testMethod.invoke(instance);
                     response.elapsedMs = (System.nanoTime() - startTime) / 1000 / 1000;
                 }
