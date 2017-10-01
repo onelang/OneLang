@@ -26,6 +26,9 @@ array: '{{type}}[]'
 templates:
   testGenerator: ""
   main: |
+    import java.util.ArrayList; // TODO: hack
+    import java.util.Arrays;
+    
     {{for inc in includes|sep=\n}}
       using {{inc}};
     {{/for}}
@@ -99,7 +102,7 @@ expressions:
   instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}"
   falseLiteral: "false"
   trueLiteral: "true"
-  elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
+  elementAccess: "{{gen(expr.object)}}.get({{gen(expr.elementExpr)}})"
   thisReference: this
   foreach: |-
     for ({{typeName(expr.itemVariable.type)}} {{expr.itemVariable.name}} : {{gen(expr.items)}}) {
