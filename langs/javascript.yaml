@@ -105,11 +105,11 @@ expressions:
     if ({{gen(expr.condition)}}) {
         {{genBody(expr.then)}}
     }
-    {{if expr.else}}
+    {{if expr.else|inline}}
       {{if isIfBlock(expr.else)}}
-        else {{genBody(expr.else)}}
+        \ else\ {{genBody(expr.else)|inline}}
       {{else}}
-        else {
+        \ else {
             {{genBody(expr.else)}}
         }
       {{/if}}

@@ -19,7 +19,8 @@ export abstract class AstVisitor<TContext> {
     protected visitIfStatement(stmt: one.IfStatement, context: TContext) {
         this.visitExpression(stmt.condition, context);
         this.visitBlock(stmt.then, context);
-        this.visitBlock(stmt.else, context);
+        if (stmt.else)
+            this.visitBlock(stmt.else, context);
     }
 
     protected visitThrowStatement(stmt: one.ThrowStatement, context: TContext) {

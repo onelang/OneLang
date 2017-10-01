@@ -113,7 +113,7 @@ expressions:
         {{genBody(expr.then)}}
     {{if expr.else}}
       {{if isIfBlock(expr.else)}}
-        el{{genBody(expr.else)}}
+        el{{genBody(expr.else)|inline}}
       {{else}}
         else:
             {{genBody(expr.else)}}

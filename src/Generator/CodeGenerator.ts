@@ -376,7 +376,7 @@ export class CodeGenerator {
         if (callTestMethod)
         this.generatedCode += "\n\n" + this.model.testGenerator(this.getName("test_class", "class"), this.getName("test_method", "method"));
 
-        return this.generatedCode;
+        return this.generatedCode.replace(/\{space\}/g, " ");
     }
 }
 

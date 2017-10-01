@@ -80,7 +80,7 @@ export class OneCompiler {
     }
 
     getCodeGenerator(langCode: string, langName?: string) {
-        const lang = <LangFileSchema.LangFile> YAML.parse(langCode);
+        const lang = <LangFileSchema.LangFile> YAML.parse(langCode.replace(/\\ /g, "{space}"));
 
         new CaseConverter(lang.casing).process(this.schemaCtx.schema);
         new FillVariableMutability(lang).process(this.schemaCtx.schema);

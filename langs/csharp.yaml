@@ -116,14 +116,16 @@ expressions:
         {{genBody(expr.body)}}
     }
   if: |-
-    if ({{gen(expr.condition)}}) {
+    if ({{gen(expr.condition)}})
+    {
         {{genBody(expr.then)}}
     }
     {{if expr.else}}
       {{if isIfBlock(expr.else)}}
-        else {{genBody(expr.else)}}
+        else\ {{genBody(expr.else)|inline}}
       {{else}}
-        else {
+        else
+        {
             {{genBody(expr.else)}}
         }
       {{/if}}

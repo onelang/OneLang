@@ -5,15 +5,29 @@ class Class2 {
 
 class TestClass {
     ifTest(x: number): string {
+        let result = "<unk>";
+
         if (x > 3) {
-            return "hello";
+            result = "hello";
         } else if (x < 1) {
-            return "bello";
+            result = "bello";
         } else if (x < 0) {
-            return "bello2";
+            result = "bello2";
         } else {
-            return "???";
+            result = "???";
         }
+
+        if (x > 3) {
+            result = "z";
+        }
+
+        if (x > 3) {
+            result = "x";
+        } else {
+            result = "y";
+        }
+
+        return result;
     }
 
     //splitJoinTest() {

@@ -8,6 +8,11 @@ import { LangFileSchema } from "../../Generator/LangFileSchema";
 export class FillVariableMutability extends AstVisitor<boolean> {
     constructor(public lang: LangFileSchema.LangFile) { super(); }
     
+    protected visitBinaryExpression(expr: one.BinaryExpression, isMutable: boolean) {
+        this.visitExpression(expr.left, expr.operator === "=");
+        this.visitExpression(expr.right, false);
+    }
+
     protected visitCallExpression(callExpr: one.CallExpression, isMutable: boolean) {
         const methodRef = <one.MethodReference> callExpr.method;
         const metaPath = methodRef.methodRef.metaPath;

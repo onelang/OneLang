@@ -52,7 +52,8 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.addLine(`Then`);
             this.visitBlock(stmt.then);
             this.addLine(`Else`);
-            this.visitBlock(stmt.else);
+            if (stmt.else)
+                this.visitBlock(stmt.else);
         } else if (statement.stmtType === one.StatementType.VariableDeclaration) {
             const stmt = <one.VariableDeclaration> statement;
             addHdr(`Variable: ${stmt.name}`);
