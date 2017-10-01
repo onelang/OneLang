@@ -76,7 +76,7 @@ class TemplatePart {
             this.textValue = value;
         } else {
             const paramsOffs = value.lastIndexOf("|");
-            const valueWoParams = paramsOffs === -1 ? value : value.substr(0, paramsOffs).trim();
+            const valueWoParams = paramsOffs === -1 || value[paramsOffs - 1] === "|" ? value : value.substr(0, paramsOffs).trim();
             this.params = paramsOffs === -1 ? {} : new ParamParser(value.substr(paramsOffs + 1).trim()).parse();
 
             if (match = /^for ([a-zA-Z]+) in (.*)/.exec(valueWoParams)) {
@@ -163,18 +163,31 @@ export class Template {
         return charsToQuote.reduce((prev, char) => prev.replace(new RegExp(char, "g"), "\\" + char), str);
     }
 
+    operandListToJS(opList: OperatorWithOperand[], vars: string[], isMember: boolean): string {
+        return opList.reduce((prev, curr) =>
+            `${prev}${curr.operator ? curr.operator.text : ""}${this.exprToJS(curr.operand, vars, curr.operator && curr.operator.text === ".")}` , "");
+    }
+
     exprToJS(ast: AstNode, vars: string[], isMember: boolean): string {
+        if (!ast) return "";
+        
         if (ast.type === AstNodeType.Identifier) {
             if (/\d+/.exec(ast.identifier))
                 return ast.identifier;
             else
                 return this.convertIdentifier(ast.identifier, vars, isMember ? "field" : "variable");
-        } else if (ast.type === AstNodeType.OperatorList)
-            return ast.operands.reduce((prev, curr) =>
-                `${prev}${curr.operator ? curr.operator.text : ""}${this.exprToJS(curr.operand, vars, curr.operator && curr.operator.text === ".")}` , "");
-        else if (ast.type === AstNodeType.Function)
-            return `${this.exprToJS(ast.function, vars, false)}(${ast.arguments.map(arg => this.exprToJS(arg, vars, false)).join(", ")})`;
-        else
+        } else if (ast.type === AstNodeType.OperatorList) {
+            return this.operandListToJS(ast.operands, vars, isMember);
+        } else if (ast.type === AstNodeType.Function) {
+            const argsText = ast.arguments.map(arg => this.exprToJS(arg, vars, false)).join(", ");
+
+            const lastOp = ast.function.operands && ast.function.operands.last();
+            if (lastOp && lastOp.operator.text === "." && lastOp.operand.identifier === "index") {
+                return `${this.operandListToJS(ast.function.operands.slice(0, -1), vars, false)}[${argsText}]`;
+            } else {
+                return `${this.exprToJS(ast.function, vars, false)}(${argsText})`;
+            }
+        } else
             throw new Error(`Unhandled AST type: ${ast.type}!`);
     }
 

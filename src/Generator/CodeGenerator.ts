@@ -91,7 +91,7 @@ class CodeGeneratorModel {
         return this.generator.getTypeName(type);
     }
 
-    gen(obj: one.Statement|one.Expression) {
+    gen(obj: one.Statement|one.Expression, ...args: any[]) {
         const type = (<one.Statement>obj).stmtType || (<one.Expression>obj).exprKind;
 
         if (type === one.ExpressionKind.Call) {
@@ -156,7 +156,7 @@ class CodeGeneratorModel {
         const genFunc = this.expressionGenerators[genName];
         if (!genFunc)
             throw new Error(`Expression template not found: ${genName}!`);
-        const result = genFunc.call(this, obj);
+        const result = genFunc.call(this, obj, ...args);
 
         //console.log("generate statement", obj, result);
 
@@ -210,7 +210,8 @@ export class CodeGenerator {
     convertIdentifier(origName: string, vars: string[], mode: "variable"|"field"|"declaration") {
         const name = origName === "class" ? "cls" : origName;
         const isLocalVar = vars.includes(name);
-        return `${isLocalVar || mode === "declaration" || mode === "field" ? "" : "this."}${name}`;
+        const knownKeyword = ["true", "false"].includes(name);
+        return `${isLocalVar || mode === "declaration" || mode === "field" || knownKeyword ? "" : "this."}${name}`;
     }
 
     getMethodPath(method: one.Expression) {
@@ -309,8 +310,8 @@ export class CodeGenerator {
     genTemplateMethodCode(name: string, args: string[], template: string) {
         const newName = /^[a-z]+$/.test(name) ? name : `"${name}"`;
         return tmpl`
-            ${newName}(${args.join(", ")}) {
-                ${this.genTemplate(template, args)}
+            ${newName}(${args.concat("...args").join(", ")}) {
+                ${this.genTemplate(template, args.concat("args"))}
             },`;
     }
 

@@ -70,7 +70,13 @@ templates:
   genVar:
     args:
       - name: itemVar
-    template: "my ${{itemVar.name}} = {{gen(itemVar.initializer)}}"
+    template: "my {{varName(itemVar)}} = {{gen(itemVar.initializer)}}"
+
+  varName:
+    args:
+      - name: item
+      - name: asVar
+    template: "{{if item.type.isOneArray && !asVar}}@{{else}}${{/if}}{{item.name}}"
 expressions:
   call: |-
     {{gen(expr.method)}}(
@@ -94,12 +100,12 @@ expressions:
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}->{{expr.methodRef.name}}"
   staticMethod: "{{expr.methodRef.parentRef.name}}::{{expr.methodRef.name}}"
-  localVar: "${{expr.varRef.name}}"
-  methodArgument: "${{expr.varRef.name}}"
+  localVar: "{{varName(expr.varRef, args[0])}}"
+  methodArgument: "{{varName(expr.varRef)}}"
   instanceField: "{{gen(expr.thisExpr)}}->{{expr.varRef.name}}"
   trueLiteral: "1"
   falseLiteral: "0"
-  elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
+  elementAccess: "{{gen(expr.object, true)}}[{{gen(expr.elementExpr)}}]"
   thisReference: $self
   foreach: |-
     foreach my ${{expr.itemVariable.name}} ({{gen(expr.items)}}) {

@@ -68,6 +68,7 @@ export namespace OneAst {
         get isClass() { return this.typeKind === TypeKind.Class; }
         get isMethod() { return this.typeKind === TypeKind.Method; }
         get isNumber() { return this.typeKind === TypeKind.Number; }
+        get isOneArray() { return this.className === "OneArray"; }
 
         equals(other: Type) {
             if (this.typeKind !== other.typeKind)

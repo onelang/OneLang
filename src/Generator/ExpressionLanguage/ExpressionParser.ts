@@ -23,6 +23,7 @@ const operators = [
     new OperatorData("-", 1),
     new OperatorData("*", 2),
     new OperatorData("/", 2),
+    new OperatorData("&&", 0),
     new OperatorData("&", 4),
     new OperatorData("%", 3),
     new OperatorData("||", 0),
@@ -43,9 +44,9 @@ export class ExpressionParser {
             if (ptoken.value === "[") {
                 tokens.push(new Token(TokenType.Operator, new OperatorData(".")));
                 tokens.push(new Token(TokenType.Identifier, null, "index"));
-                tokens.push(new Token(TokenType.Operator, new OperatorData(null, null, OperatorType.LeftParenthesis)));
+                tokens.push(new Token(TokenType.Operator, new OperatorData("[", null, OperatorType.LeftParenthesis)));
             } else if (ptoken.value === "]") {
-                tokens.push(new Token(TokenType.Operator, new OperatorData(null, null, OperatorType.RightParenthesis)));
+                tokens.push(new Token(TokenType.Operator, new OperatorData("]", null, OperatorType.RightParenthesis)));
             } else {
                 var token: Token;
 

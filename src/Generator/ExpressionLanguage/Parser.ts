@@ -65,14 +65,21 @@ export class Parser {
         var item = this.nodeStack.pop();
         var parent = this.nodeStack.pop();
 
-        if (parent.type !== AstNodeType.OperatorList || nodeOp.operator.precedence !== parent.operands[1].operator.precedence) {
-            const oldParent = parent;
-            parent = new AstNode(AstNodeType.OperatorList);
-            parent.operands = [new OperatorWithOperand(null, oldParent)];
-        }
+        if (!parent) {
+            const newNode = new AstNode(AstNodeType.OperatorList);
+            newNode.operands = [new OperatorWithOperand(null, item), new OperatorWithOperand(nodeOp.operator, null)];
+            this.nodeStack.push(newNode);
+        } else {
+            if (parent.type !== AstNodeType.OperatorList || 
+                    (parent.operands[1] && nodeOp.operator.precedence !== parent.operands[1].operator.precedence)) {
+                const oldParent = parent;
+                parent = new AstNode(AstNodeType.OperatorList);
+                parent.operands = [new OperatorWithOperand(null, oldParent)];
+            }
 
-        parent.operands.push(new OperatorWithOperand(nodeOp.operator, item));
-        this.nodeStack.push(parent);
+            parent.operands.push(new OperatorWithOperand(nodeOp.operator, item));
+            this.nodeStack.push(parent);
+        }
     }
 
     nextOp(type: OpStackItemType) {
