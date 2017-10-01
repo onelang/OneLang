@@ -101,3 +101,16 @@ expressions:
     for ({{genVar(expr.itemVariable)}}; {{gen(expr.condition)}}; {{gen(expr.incrementor)}}) {
         {{genBody(expr.body)}}
     }
+  if: |-
+    if ({{gen(expr.condition)}}) {
+        {{genBody(expr.then)}}
+    }
+    {{if expr.else}}
+      {{if isIfBlock(expr.else)}}
+        else {{genBody(expr.else)}}
+      {{else}}
+        else {
+            {{genBody(expr.else)}}
+        }
+      {{/if}}
+    {{/if}}

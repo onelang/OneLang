@@ -75,7 +75,7 @@ expressions:
   call: |-
     {{gen(expr.method)}}(
       {{for arg in expr.arguments|sep=", " inline}}
-        {{gen(arg)}}
+        {{arg.paramName}}: {{gen(arg)}}
       {{/for}}
     )
   stringLiteral: "\"{{expr.value}}\""
@@ -110,3 +110,16 @@ expressions:
         {{genBody(expr.body)}}
         {{gen(expr.incrementor)}}
     }
+  if: |-
+    if {{gen(expr.condition)}} {
+        {{genBody(expr.then)}}
+    }
+    {{if expr.else}}
+      {{if isIfBlock(expr.else)}}
+        else {{genBody(expr.else)}}
+      {{else}}
+        else {
+            {{genBody(expr.else)}}
+        }
+      {{/if}}
+    {{/if}}

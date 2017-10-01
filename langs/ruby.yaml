@@ -103,3 +103,17 @@ expressions:
         {{genBody(expr.body)}}
         {{gen(expr.incrementor)}}
     end
+  if: |-
+    if {{gen(expr.condition)}}
+        {{genBody(expr.then)}}
+    {{if expr.else}}
+      {{if isIfBlock(expr.else)}}
+        els{{genBody(expr.else)}}
+      {{else}}
+        else
+            {{genBody(expr.else)}}
+        end
+      {{/if}}
+    {{else}}
+      end
+    {{/if}}

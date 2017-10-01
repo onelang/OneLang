@@ -36,7 +36,13 @@ function tmpl(literalParts: TemplateStringsArray, ...values: any[]) {
             result += part.value;
         } else if (part.type === "value") {
             const prevLastLineIdx = result.lastIndexOf("\n");
-            const extraPad = result.length - (prevLastLineIdx === -1 ? 0 : prevLastLineIdx + 1);
+            let extraPad = 0;
+            if (prevLastLineIdx !== -1) {
+                while (result[prevLastLineIdx + 1 + extraPad] === " ")
+                    extraPad++;
+            } else
+                extraPad = result.length;
+
             const value = (part.value||"").toString().replace(/\n/g, "\n" + " ".repeat(extraPad));
             result += value;
         }
@@ -91,6 +97,11 @@ class CodeGeneratorModel {
         const gen = this.internalMethodGenerators[type.className];
         const result = gen ? gen.apply(this, [null, type]) : this.generator.getTypeName(type);
         return result;
+    }
+
+    isIfBlock(block: one.Block) {
+        return block.statements && block.statements.length === 1
+            && block.statements[0].stmtType === one.StatementType.If;
     }
 
     gen(obj: one.Statement|one.Expression, ...args: any[]) {

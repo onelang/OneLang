@@ -280,8 +280,11 @@ export class TypeScriptParser {
             const triviaStart = tsStatement.pos;
             const triviaEnd = tsStatement.getStart();
             const realEnd = this.sourceCode.lastIndexOf("\n", triviaEnd) + 1;
-            const trivia = this.sourceCode.substring(triviaStart, realEnd);
-            oneStmts[0].leadingTrivia = deindent(trivia);
+
+            if (realEnd > triviaStart) {
+                const trivia = this.sourceCode.substring(triviaStart, realEnd);
+                oneStmts[0].leadingTrivia = deindent(trivia);
+            }
         }
 
         return oneStmts;

@@ -108,3 +108,14 @@ expressions:
     while {{gen(expr.condition)}}:
         {{genBody(expr.body)}}
         {{gen(expr.incrementor)}}
+  if: |-
+    if {{gen(expr.condition)}}:
+        {{genBody(expr.then)}}
+    {{if expr.else}}
+      {{if isIfBlock(expr.else)}}
+        el{{genBody(expr.else)}}
+      {{else}}
+        else:
+            {{genBody(expr.else)}}
+      {{/if}}
+    {{/if}}

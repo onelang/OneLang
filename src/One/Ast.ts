@@ -190,6 +190,10 @@ export namespace OneAst {
         valueType?: Type;
     }
 
+    export interface CallArgument extends Expression {
+        paramName?: string;
+    }
+
     export abstract class Reference implements Expression {
         abstract exprKind: ExpressionKind;
         parentRef?: Expression | Statement;
@@ -243,7 +247,7 @@ export namespace OneAst {
 
     export interface CallExpression extends Expression {
         method: Expression;
-        arguments: Expression[];
+        arguments: CallArgument[];
     }
 
     export interface Identifier extends Expression {

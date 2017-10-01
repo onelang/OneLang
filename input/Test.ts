@@ -4,6 +4,32 @@ class Class2 {
 }
 
 class TestClass {
+    ifTest(x: number): string {
+        if (x > 3) {
+            return "hello";
+        } else if (x < 1) {
+            return "bello";
+        } else if (x < 0) {
+            return "bello2";
+        } else {
+            return "???";
+        }
+    }
+
+    //splitJoinTest() {
+    //    const items = "1,2,3".split(",");
+    //    const newStr = items.join("_");
+    //    return newStr;
+    //}
+
+    //mapTest() {
+    //    let map = { x: 5, y: 3 };
+    //    let containsX = "x" in map;
+    //    map["z"] = 9;
+    //    let keys = Object.keys(map);
+    //    let values = Object.values(map);
+    //}
+
     arrayTest() {
         const c2 = new Class2();
 
@@ -39,6 +65,6 @@ class TestClass {
     }
 
     testMethod() {
-        return "Hello world!";
+        return this.ifTest(5);
     }
 }
