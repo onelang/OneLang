@@ -46,17 +46,22 @@ templates:
       class {{class.name}} {
         public:
           {{for field in class.publicFields|sep=\n}}
-            {{field.type}} {{field.name}};
+            {{getType(field)}} {{field.name}};
           {{/for}}
           {{genMethods(class.publicMethods)}}
 
         private:
           {{for field in class.privateFields|sep=\n}}
-            {{field.type}} {{field.name}};
+            {{getType(field)}} {{field.name}};
           {{/for}}
           {{genMethods(class.privateMethods)}}
       };
     {{/for}}
+
+  getType:
+    args:
+      - name: item
+    template: "{{item.type}}{{if item.typeInfo.isClass}}*{{/if}}"
 
   genMethods:
     args:
@@ -113,7 +118,7 @@ expressions:
   variableDeclaration: "{{genVar(expr)}};"
   new: "std::make_shared<{{gen(expr.class)}}>({{genParams(expr.arguments)}})"
   classReference: "{{expr.classRef.name}}"
-  arrayLiteral: "std::make_shared<std::vector<{{expr.arrayType}}>> { {{genParams(expr.items)}} }"
+  arrayLiteral: "std::make_shared<std::vector<{{expr.arrayType}}>>(std::vector<{{expr.arrayType}}> { {{genParams(expr.items)}} })"
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}->{{expr.methodRef.name}}"
   staticMethod: "{{expr.methodRef.parentRef.name}}::{{expr.methodRef.name}}"
@@ -122,7 +127,7 @@ expressions:
   instanceField: "{{gen(expr.thisExpr)}}->{{expr.varRef.name}}"
   falseLiteral: "false"
   trueLiteral: "true"
-  elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
+  elementAccess: "(*{{gen(expr.object)}})[{{gen(expr.elementExpr)}}]"
   thisReference: this
   foreach: |-
     for (auto it = {{gen(expr.items)}}->begin(); it != {{gen(expr.items)}}->end(); ++it) {
