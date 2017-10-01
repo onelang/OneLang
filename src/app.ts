@@ -32,8 +32,6 @@ async function executeCodes() {
         const result = await jsonRequest<CompileResult>(`http://127.0.0.1:${lang.port}/compile`, lang.request);
         console.log(lang.name, result);
     }));
-    
-    debugger;
 }
 
-executeCodes();
+//executeCodes();
