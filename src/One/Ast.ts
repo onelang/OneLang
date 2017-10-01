@@ -178,6 +178,7 @@ export namespace OneAst {
         Parenthesized = "Parenthesized",
         Unary = "Unary",
         ArrayLiteral = "ArrayLiteral",
+        ObjectLiteral = "ObjectLiteral",
         VariableReference = "VariableReference",
         MethodReference = "MethodReference",
         ThisReference = "ThisReference",
@@ -262,6 +263,10 @@ export namespace OneAst {
     export interface ArrayLiteral extends Expression {
         items: Expression[];
         arrayType?: string;
+    }
+
+    export interface ObjectLiteral extends Expression {
+        properties: VariableDeclaration[];
     }
 
     export interface NewExpression extends Expression {

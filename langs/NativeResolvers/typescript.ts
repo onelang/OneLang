@@ -15,6 +15,11 @@ class console {
     }
 }
 
+class Object {
+    static keys() { }
+    static values() { }
+}
+
 class TsArray<T> {
     _one: OneArray<T>;
 

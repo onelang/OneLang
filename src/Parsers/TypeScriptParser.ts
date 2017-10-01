@@ -175,6 +175,12 @@ export class TypeScriptParser {
                 exprKind: one.ExpressionKind.ArrayLiteral,
                 items: expr.elements.map(x => this.convertExpression(x))
             };
+        } else if (tsExpr.kind === ts.SyntaxKind.ObjectLiteralExpression) {
+            const expr = <ts.ObjectLiteralExpression> tsExpr;
+            return <one.ObjectLiteral> { 
+                exprKind: one.ExpressionKind.ObjectLiteral,
+                properties: expr.properties.map((x: ts.PropertyAssignment) => this.convertVariableDeclaration(x))
+            };
         } else {
             const kindName = ts.SyntaxKind[tsExpr.kind];
             const knownKeywords = ["this", "super"];
@@ -191,7 +197,7 @@ export class TypeScriptParser {
         }
     }
 
-    convertVariableDeclaration(varDecl: ts.VariableDeclaration): one.VariableDeclaration {
+    convertVariableDeclaration(varDecl: ts.VariableDeclaration|ts.PropertyAssignment): one.VariableDeclaration {
         return <one.VariableDeclaration> {
             stmtType: one.StatementType.VariableDeclaration,
             name: varDecl.name.getText(),
