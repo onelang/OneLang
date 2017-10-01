@@ -14,6 +14,7 @@ import { AstHelper } from "./One/AstHelper";
 import { CaseConverter } from "./One/Transforms/CaseConverter";
 import { LangFileSchema } from "./Generator/LangFileSchema";
 import { CodeGenerator } from "./Generator/CodeGenerator";
+import { FillVariableMutability } from "./One/Transforms/FillVariableMutability";
 
 declare var YAML: any;
 
@@ -75,8 +76,10 @@ export class OneCompiler {
 
     getCodeGenerator(langCode: string, langName?: string) {
         const lang = <LangFileSchema.LangFile> YAML.parse(langCode);
+
         new CaseConverter(lang.casing).process(this.schemaCtx.schema);
-        this.saveSchemaState(this.schemaCtx, `3_${langName ? `${langName}_` : ""}CasingConverted`);
+        new FillVariableMutability(lang).process(this.schemaCtx.schema);
+        this.saveSchemaState(this.schemaCtx, `10_${langName ? `${langName}_` : ""}Init`);
         
         const codeGen = new CodeGenerator(this.schemaCtx.schema, lang);
         return codeGen;

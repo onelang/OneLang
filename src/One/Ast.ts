@@ -129,6 +129,7 @@ export namespace OneAst {
 
     export interface VariableBase extends NamedItem {
         type: Type;
+        isMutable?: boolean;
     }
 
     export interface Field extends VariableBase {

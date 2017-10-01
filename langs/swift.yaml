@@ -7,6 +7,7 @@ functions:
   OneArray.add:
     arguments:
       - name: item
+    mutates: true
     template: |-
       {{self}}.append({{item}})
   OneArray.length:
@@ -69,7 +70,7 @@ templates:
   genVar:
     args:
       - name: itemVar
-    template: "var {{itemVar.name}} = {{gen(itemVar.initializer)}}"
+    template: "{{if itemVar.isMutable}}var{{else}}let{{/if}} {{itemVar.name}} = {{gen(itemVar.initializer)}}"
 expressions:
   call: |-
     {{gen(expr.method)}}(

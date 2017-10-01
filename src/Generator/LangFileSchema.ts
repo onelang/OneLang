@@ -7,6 +7,7 @@ export namespace LangFileSchema {
         arguments: FunctionArgument[];
         includes: string[];
         template: string;
+        mutates?: boolean;
     }
 
     export enum Casing {
