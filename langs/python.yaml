@@ -41,7 +41,7 @@ templates:
       - name: body
     template: |-
       {{for statement in body.statements|sep=\n}}
-          {{gen(statement)}}
+          {{statement.leadingTrivia2}}{{gen(statement)}}
       {{/for}}
       {{if body.statements.length == 0}}
           pass

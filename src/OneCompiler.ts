@@ -15,6 +15,7 @@ import { CaseConverter } from "./One/Transforms/CaseConverter";
 import { LangFileSchema } from "./Generator/LangFileSchema";
 import { CodeGenerator } from "./Generator/CodeGenerator";
 import { FillVariableMutability } from "./One/Transforms/FillVariableMutability";
+import { TriviaCommentTransform } from "./One/Transforms/TriviaCommentTransform";
 
 declare var YAML: any;
 
@@ -25,6 +26,7 @@ SchemaTransformer.instance.addTransform(new ResolveIdentifiersTransform());
 SchemaTransformer.instance.addTransform(new InferTypesTransform());
 SchemaTransformer.instance.addTransform(new InlineOverlayTypesTransform());
 SchemaTransformer.instance.addTransform(new ConvertInlineThisRefTransform());
+SchemaTransformer.instance.addTransform(new TriviaCommentTransform());
 
 export class OneCompiler {
     schemaCtx: SchemaContext;
@@ -72,6 +74,9 @@ export class OneCompiler {
         
         this.schemaCtx.ensureTransforms("inlineOverlayTypes");
         this.saveSchemaState(this.schemaCtx, `2_OverlayTypesInlined`);
+
+        this.schemaCtx.ensureTransforms("triviaComment");
+        this.saveSchemaState(this.schemaCtx, `3_ExtendedInfoAdded`);
     }
 
     getCodeGenerator(langCode: string, langName?: string) {

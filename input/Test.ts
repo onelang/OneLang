@@ -17,6 +17,7 @@ class TestClass {
         let constantArr = [5, 6];
 
         // some comment
+        //   some comment line 2
         for (const item of mutableArr) {
             console.log(item);
         }

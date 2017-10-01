@@ -311,7 +311,8 @@ export namespace OneAst {
     }
 
     export interface Statement {
-        leadingTrivia: string;
+        leadingTrivia?: string;
+        leadingTrivia2?: string;
         parentRef?: Block;
         stmtType: StatementType;
     }
