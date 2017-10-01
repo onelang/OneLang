@@ -23,7 +23,7 @@ primitiveTypes:
   boolean: Bool
 templates:
   testGenerator: |-
-    print({{class}}().{{method}}());
+    print({{class}}().{{method}}())
 
   main: |
     {{for inc in includes|sep=\n}}
@@ -33,7 +33,7 @@ templates:
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
         {{for field in class.fields|sep=\n}}
-            var {{field.name}};
+            var {{field.name}}: {{field.type}}?
         {{/for}}
 
         {{for method in class.methods|sep=\n\n}}
@@ -77,25 +77,24 @@ expressions:
         {{gen(arg)}}
       {{/for}}
     )
-  propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
-  identifier: "{{expr.text}}"
   stringLiteral: "\"{{expr.value}}\""
-  return: "return {{gen(expr.expression)}};"
+  return: "return {{gen(expr.expression)}}"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
-  postfix: "{{gen(expr.operand)}}{{expr.operator}};"
-  prefix: "{{expr.operator}}{{gen(expr.operand)}};"
+  postfix++: "{{gen(expr.operand)}} += 1"
+  postfix: "{{gen(expr.operand)}}{{expr.operator}}"
+  prefix: "{{expr.operator}}{{gen(expr.operand)}}"
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
-  variableDeclaration: "{{genVar(expr)}};"
+  variableDeclaration: "{{genVar(expr)}}"
   new: "{{gen(expr.class)}}({{genParams(expr.arguments)}})"
   classReference: "{{expr.classRef.name}}"
   arrayLiteral: "[{{genParams(expr.items)}}]"
-  expressionStatement: "{{gen(expr.expression)}};"
+  expressionStatement: "{{gen(expr.expression)}}"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.name}}"
   staticMethod: "{{expr.methodRef.parentRef.name}}.{{expr.methodRef.name}}"
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
-  instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}"
+  instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}!"
   falseLiteral: "false"
   trueLiteral: "true"
   elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
