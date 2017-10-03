@@ -87,6 +87,12 @@ expressions:
   new: "new {{gen(expr.class)}}({{genParams(expr.arguments)}})"
   classReference: "{{expr.classRef.name}}"
   arrayLiteral: "[{{genParams(expr.items)}}]"
+  mapLiteral: |- 
+    {
+      {{for prop in expr.properties|sep=",\n"}}
+        {{prop.name}}: {{gen(prop.initializer)}}
+      {{/for}}
+    }
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.name}}"
   staticMethod: "{{expr.methodRef.classRef.name}}.{{expr.methodRef.name}}"

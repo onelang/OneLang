@@ -1,9 +1,14 @@
-class Class2 {
-    property = 5;
-    child: Class2;
-}
-
 class TestClass {
+    mapTest() {
+        let mapObj = { x: 5, y: 3 };
+        return mapObj["x"];
+        //console.log(mapObj);
+        //let containsX = "x" in map;
+        //map["z"] = 9;
+        //let keys = Object.keys(map);
+        //let values = Object.values(map);
+    }
+
     ifTest(x: number): string {
         let result = "<unk>";
 
@@ -36,23 +41,15 @@ class TestClass {
     //    return newStr;
     //}
 
-    mapTest() {
-        //let map = { x: 5, y: 3 };
-        //let containsX = "x" in map;
-        //map["z"] = 9;
-        //let keys = Object.keys(map);
-        //let values = Object.values(map);
-    }
-
     arrayTest() {
-        const c2 = new Class2();
+        //const c2 = new Class2();
 
         let mutableArr = [1, 2];
         mutableArr.push(3);
         mutableArr.push(4);
-        mutableArr.push(c2.property);
-        mutableArr.push(c2.child.property);
-        mutableArr.push(c2.child.child.property);
+        // mutableArr.push(c2.property);
+        // mutableArr.push(c2.child.property);
+        // mutableArr.push(c2.child.child.property);
 
         let constantArr = [5, 6];
 
@@ -79,6 +76,11 @@ class TestClass {
     }
 
     testMethod() {
-        return this.ifTest(5);
+        return this.mapTest();
     }
 }
+
+// class Class2 {
+//     property = 5;
+//     child: Class2;
+// }

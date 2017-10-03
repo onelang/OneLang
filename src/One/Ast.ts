@@ -178,7 +178,7 @@ export namespace OneAst {
         Parenthesized = "Parenthesized",
         Unary = "Unary",
         ArrayLiteral = "ArrayLiteral",
-        ObjectLiteral = "ObjectLiteral",
+        MapLiteral = "MapLiteral",
         VariableReference = "VariableReference",
         MethodReference = "MethodReference",
         ThisReference = "ThisReference",
@@ -266,7 +266,7 @@ export namespace OneAst {
         arrayType?: string;
     }
 
-    export interface ObjectLiteral extends Expression {
+    export interface MapLiteral extends Expression {
         properties: VariableDeclaration[];
     }
 

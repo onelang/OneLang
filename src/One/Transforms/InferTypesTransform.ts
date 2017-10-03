@@ -178,6 +178,16 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         expr.valueType = one.Type.Class("TsArray", [itemType]);
     }
 
+    protected visitMapLiteral(expr: one.MapLiteral, context: Context) {
+        super.visitMapLiteral(expr, context);
+
+        let itemType = expr.properties.length > 0 ? expr.properties[0].type : one.Type.Any;
+        if (expr.properties.some(x => !x.type.equals(itemType)))
+            itemType = one.Type.Any;
+
+        expr.valueType = one.Type.Class("TsMap", [one.Type.String, itemType]);
+    }
+
     protected visitExpression(expression: one.Expression, context: Context) {
         super.visitExpression(expression, context);
         if(!expression.valueType)

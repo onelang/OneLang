@@ -38,6 +38,7 @@ templates:
     }
 
   main: |-
+    #include <map>
     {{for inc in includes|sep=\n}}
       #include <{{inc}}>
     {{/for}}
@@ -119,6 +120,12 @@ expressions:
   new: "std::make_shared<{{gen(expr.class)}}>({{genParams(expr.arguments)}})"
   classReference: "{{expr.classRef.name}}"
   arrayLiteral: "std::make_shared<std::vector<{{expr.typeArgs[0]}}>>(std::vector<{{expr.typeArgs[0]}}> { {{genParams(expr.items)}} })"
+  mapLiteral: |- 
+    std::make_shared<std::map<{{expr.typeArgs[0]}}, {{expr.typeArgs[1]}}>>(std::map<{{expr.typeArgs[0]}}, {{expr.typeArgs[1]}}> {
+      {{for prop in expr.properties|sep=",\n"}}
+        { "{{prop.name}}", {{gen(prop.initializer)}} }
+      {{/for}}
+    })
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}->{{expr.methodRef.name}}"
   staticMethod: "{{expr.methodRef.classRef.name}}::{{expr.methodRef.name}}"

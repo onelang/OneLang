@@ -171,6 +171,12 @@ export class OverviewGenerator extends AstVisitor<void> {
         } else if (expression.exprKind === one.ExpressionKind.ThisReference) {
             const expr = <one.ThisReference> expression;
             addHdr(`ThisRef`);
+        } else if (expression.exprKind === one.ExpressionKind.MapLiteral) {
+            const expr = <one.MapLiteral> expression;
+            addHdr(expression.exprKind);
+            this.indent(1);
+            super.visitExpression(expression, null);
+            this.indent(-1);
         } else {
             addHdr(expression.exprKind);
             super.visitExpression(expression, null);

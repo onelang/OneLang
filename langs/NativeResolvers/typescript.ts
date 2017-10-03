@@ -9,6 +9,9 @@ class OneArray<T> {
     add(item: T) { }
 }
 
+class OneMap<K,V> {
+}
+
 class console {
     static log(data: any) {
         OneConsole.print(data);
@@ -16,8 +19,8 @@ class console {
 }
 
 class Object {
-    static keys() { }
-    static values() { }
+    static keys(map: any) { }
+    static values(map: any) { }
 }
 
 class TsArray<T> {
@@ -28,4 +31,8 @@ class TsArray<T> {
     push(item: T) {
         this._one.add(item);
     }
+}
+
+class TsMap<K,V> {
+    _one: OneMap<K,V>;
 }

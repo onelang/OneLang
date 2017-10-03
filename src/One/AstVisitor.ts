@@ -134,7 +134,7 @@ export abstract class AstVisitor<TContext> {
             this.visitExpression(item, context);
     }
 
-    protected visitObjectLiteral(expr: one.ObjectLiteral, context: TContext) {
+    protected visitMapLiteral(expr: one.MapLiteral, context: TContext) {
         for (const item of expr.properties)
             this.visitVariableDeclaration(item, context);
     }
@@ -180,8 +180,8 @@ export abstract class AstVisitor<TContext> {
             return this.visitElementAccessExpression(<one.ElementAccessExpression> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.ArrayLiteral) {
             return this.visitArrayLiteral(<one.ArrayLiteral> expression, context);
-        } else if (expression.exprKind === one.ExpressionKind.ObjectLiteral) {
-            return this.visitObjectLiteral(<one.ObjectLiteral> expression, context);
+        } else if (expression.exprKind === one.ExpressionKind.MapLiteral) {
+            return this.visitMapLiteral(<one.MapLiteral> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.VariableReference) {
             return this.visitVariableRef(<one.VariableRef> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.MethodReference) {

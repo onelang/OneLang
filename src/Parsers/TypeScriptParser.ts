@@ -177,8 +177,8 @@ export class TypeScriptParser {
             };
         } else if (tsExpr.kind === ts.SyntaxKind.ObjectLiteralExpression) {
             const expr = <ts.ObjectLiteralExpression> tsExpr;
-            return <one.ObjectLiteral> { 
-                exprKind: one.ExpressionKind.ObjectLiteral,
+            return <one.MapLiteral> { 
+                exprKind: one.ExpressionKind.MapLiteral,
                 properties: expr.properties.map((x: ts.PropertyAssignment) => this.convertVariableDeclaration(x))
             };
         } else {
