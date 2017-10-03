@@ -12,6 +12,12 @@ functions:
   OneArray.length:
     template: |-
       len({{self}})
+  OneMap.keys:
+    template: |-
+      {{self}}.keys()
+  OneMap.values:
+    template: |-
+      {{self}}.values()
 extension: py
 casing:
   class: pascal_case

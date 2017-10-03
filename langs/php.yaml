@@ -12,6 +12,12 @@ functions:
   OneArray.length:
     template: |-
       count({{self}})
+  OneMap.keys:
+    template: |-
+      array_keys({{self}})
+  OneMap.values:
+    template: |-
+      array_values({{self}})
 extension: php
 casing:
   class: pascal_case

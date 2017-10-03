@@ -18,6 +18,12 @@ functions:
       - vector
     template: |-
       {{self}}->size()
+  OneMap.keys:
+    template: |-
+      MapHelper::keys({{self}})
+  OneMap.values:
+    template: |-
+      MapHelper::values({{self}})
 extension: cpp
 casing:
   class: pascal_case

@@ -12,6 +12,12 @@ functions:
   OneArray.length:
     template: |-
       {{self}}.length
+  OneMap.keys:
+    template: |-
+      Object.keys({{self}})
+  OneMap.values:
+    template: |-
+      Object.values({{self}})
 extension: js
 casing:
   class: pascal_case

@@ -13,6 +13,12 @@ functions:
   OneArray.length:
     template: |-
       {{self}}.count
+  OneMap.keys:
+    template: |-
+      Array({{self}}.keys)
+  OneMap.values:
+    template: |-
+      Array({{self}}.values)
 extension: swift
 casing:
   class: pascal_case

@@ -20,6 +20,12 @@ functions:
     arguments:
       - name: type
     template: "HashMap<{{typeName(type.typeArguments[0])}}, {{typeName(type.typeArguments[1])}}>"
+  OneMap.keys:
+    template: |-
+      {{self}}.keySet()
+  OneMap.values:
+    template: |-
+      {{self}}.values()
 extension: java
 casing:
   class: pascal_case

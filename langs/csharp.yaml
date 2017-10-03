@@ -16,6 +16,12 @@ functions:
   OneArray.length:
     template: |-
       {{self}}.Count
+  OneMap.keys:
+    template: |-
+      {{self}}.Keys
+  OneMap.values:
+    template: |-
+      {{self}}.Values
 extension: cs
 casing:
   class: pascal_case

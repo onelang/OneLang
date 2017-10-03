@@ -33,8 +33,10 @@ export class TypeScriptParser {
     convertTsType(tsType: ts.Type) {
         const result = new one.Type();
 
-        const typeText = (<any>tsType).intrinsicName || tsType.symbol.name;
-        if (typeText === "number")
+        const typeText = (<any>tsType).intrinsicName || (tsType.symbol && tsType.symbol.name);
+        if (!typeText)
+            result.typeKind = one.TypeKind.Any;
+        else if (typeText === "number")
             result.typeKind = one.TypeKind.Number;
         else if (typeText === "string")
             result.typeKind = one.TypeKind.String;

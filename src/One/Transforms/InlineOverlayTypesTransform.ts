@@ -39,30 +39,44 @@ class ReplaceReferences extends AstVisitor<void> {
     protected visitCallExpression(expr: one.CallExpression) {
         super.visitCallExpression(expr, null);
 
-        if (expr.method.exprKind === one.ExpressionKind.MethodReference) {
-            const methodRef = <one.MethodReference> expr.method;
-            const method = methodRef.methodRef;
-            const cls = method.classRef;
-            if (cls.meta && cls.meta.overlay) {
-                if (method.parameters.length != expr.arguments.length) {
-                    this.log(`Called overlay method ${AstHelper.methodRepr(method)} ` +
-                        `with parameters (${expr.arguments.map(x => x.valueType.repr()).join(", ")})`);
-                    return;
-                }
+        if (expr.method.exprKind !== one.ExpressionKind.MethodReference) 
+            return;
 
-                const statements = AstHelper.clone(method.body.statements);
+        const methodRef = <one.MethodReference> expr.method;
+        const method = methodRef.methodRef;
+        const cls = method.classRef;
 
-                const varReplacer = new VariableReplacer();
-                varReplacer.thisReplacement = methodRef.thisExpr;
-                for (var i = 0; i < method.parameters.length; i++)
-                    varReplacer.replacements[method.parameters[i].metaPath] = expr.arguments[i];
-
-                // TODO: 
-                //  - resolve variable declaration conflicts
-                varReplacer.visitStatements(statements);
-                return statements;
-            }
+        if (!(cls.meta && cls.meta.overlay))
+            return;
+            
+        if (method.parameters.length != expr.arguments.length) {
+            this.log(`Called overlay method ${AstHelper.methodRepr(method)} ` +
+                `with parameters (${expr.arguments.map(x => x.valueType.repr()).join(", ")})`);
+            return;
         }
+
+        const statements = AstHelper.clone(method.body.statements);
+
+        const varReplacer = new VariableReplacer();
+        varReplacer.thisReplacement = methodRef.thisExpr;
+        for (var i = 0; i < method.parameters.length; i++)
+            varReplacer.replacements[method.parameters[i].metaPath] = expr.arguments[i];
+
+        // TODO: 
+        //  - resolve variable declaration conflicts
+        varReplacer.visitStatements(statements);
+        if (statements.length !== 1 || statements[0].stmtType !== one.StatementType.ExpressionStatement) {
+            this.log("Expected ExpressionStatement");
+            return;
+        }
+
+        const newCallExpr = <one.CallExpression> (<one.ExpressionStatement> statements[0]).expression;
+        if (newCallExpr.exprKind !== one.ExpressionKind.Call) {
+            this.log("Expected CallExpression");
+            return;
+        }
+
+        AstHelper.replaceProperties(expr, newCallExpr);
     }
 
     protected visitVariableRef(expr: one.VariableRef) {

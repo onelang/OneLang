@@ -115,12 +115,14 @@ class CodeGeneratorModel {
             const method = this.generator.lang.functions[methodPath];
             // TODO: unify overlay / normal method handling
             if (method) {
-                if (method.arguments.length !== callExpr.arguments.length)
+                const methodArgs = method.arguments || [];
+
+                if (methodArgs.length !== callExpr.arguments.length)
                     throw new Error(`Invalid argument count for '${methodPath}': expected: ${method.arguments.length}, actual: ${callExpr.arguments.length}.`);
 
                 // TODO: move this to AST visitor
-                for (let i = 0; i < method.arguments.length; i++)
-                    callExpr.arguments[i].paramName = method.arguments[i].name;
+                for (let i = 0; i < methodArgs.length; i++)
+                    callExpr.arguments[i].paramName = methodArgs[i].name;
 
                 const args = callExpr.arguments.map(x => this.gen(x));
                 const thisArg = methodRef.thisExpr ? this.gen(methodRef.thisExpr) : null;

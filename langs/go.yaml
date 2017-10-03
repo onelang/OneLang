@@ -14,6 +14,12 @@ functions:
   OneArray.length:
     template: |-
       len({{self}})
+  OneMap.keys:
+    template: |-
+      MapHelper.keys({{self}})
+  OneMap.values:
+    template: |-
+      MapHelper.values({{self}})
 extension: go
 casing:
   class: pascal_case

@@ -175,6 +175,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         if (expr.items.some(x => !x.valueType.equals(itemType)))
             itemType = one.Type.Any;
 
+        // TODO: this is TypeScript-specific!
         expr.valueType = one.Type.Class("TsArray", [itemType]);
     }
 
@@ -185,6 +186,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         if (expr.properties.some(x => !x.type.equals(itemType)))
             itemType = one.Type.Any;
 
+        // TODO: this is TypeScript-specific!
         expr.valueType = one.Type.Class("TsMap", [one.Type.String, itemType]);
     }
 

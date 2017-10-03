@@ -10,6 +10,8 @@ class OneArray<T> {
 }
 
 class OneMap<K,V> {
+    keys(): K[] { return null; }
+    values(): V[] { return null; }
 }
 
 class console {
@@ -19,8 +21,13 @@ class console {
 }
 
 class Object {
-    static keys(map: any) { }
-    static values(map: any) { }
+    static keys<K,V>(map: OneMap<K,V>) {
+        map.keys();
+    }
+
+    static values<K,V>(map: OneMap<K,V>) {
+        map.values();
+    }
 }
 
 class TsArray<T> {
