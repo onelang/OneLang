@@ -189,6 +189,7 @@ export namespace OneAst {
         exprKind: ExpressionKind;
         parentRef?: Expression|Statement;
         valueType?: Type;
+        typeArgs?: string[];
     }
 
     export interface CallArgument extends Expression {

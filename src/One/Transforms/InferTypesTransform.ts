@@ -212,16 +212,6 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         super.visitClass(cls, context);
     } 
     
-    getTypeFromString(typeStr: string) {
-        // TODO: serious hacks here
-        if (typeStr === "int")
-            return one.Type.Number;
-        else {
-            console.log(`getTypeFromString unknown type: ${typeStr}`);
-            return one.Type.Any;
-        }
-    }
-
     transform(schemaCtx: SchemaContext) {
         const context = new Context();
         context.classes = schemaCtx.tiContext.classes;

@@ -37,11 +37,11 @@ class TestClass {
     //}
 
     mapTest() {
-        let map = { x: 5, y: 3 };
-        let containsX = "x" in map;
-        map["z"] = 9;
-        let keys = Object.keys(map);
-        let values = Object.values(map);
+        //let map = { x: 5, y: 3 };
+        //let containsX = "x" in map;
+        //map["z"] = 9;
+        //let keys = Object.keys(map);
+        //let values = Object.values(map);
     }
 
     arrayTest() {

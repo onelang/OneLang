@@ -99,7 +99,7 @@ expressions:
   arrayLiteral: "({{genParams(expr.items)}})"
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}->{{expr.methodRef.name}}"
-  staticMethod: "{{expr.methodRef.parentRef.name}}::{{expr.methodRef.name}}"
+  staticMethod: "{{expr.methodRef.classRef.name}}::{{expr.methodRef.name}}"
   localVar: "{{varName(expr.varRef, args[0])}}"
   methodArgument: "{{varName(expr.varRef)}}"
   instanceField: "{{gen(expr.thisExpr)}}->{{expr.varRef.name}}"

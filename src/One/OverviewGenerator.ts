@@ -33,6 +33,10 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.pad = this.pad.substr(0, this.pad.length - 2);
     }
 
+    protected visitVariable(stmt: one.VariableBase) {
+        this.addLine(`- Variable: ${stmt.name}`);
+    }
+
     visitStatement(statement: one.Statement) {
         const addHdr = (line: string) => {
             this.addLine(line);
@@ -49,11 +53,13 @@ export class OverviewGenerator extends AstVisitor<void> {
             const stmt = <one.IfStatement> statement;
             addHdr(`If`);
             this.visitExpression(stmt.condition);
+            this.indent(1);
             this.addLine(`Then`);
             this.visitBlock(stmt.then);
             this.addLine(`Else`);
             if (stmt.else)
                 this.visitBlock(stmt.else);
+            this.indent(-1);
         } else if (statement.stmtType === one.StatementType.VariableDeclaration) {
             const stmt = <one.VariableDeclaration> statement;
             addHdr(`Variable: ${stmt.name}`);

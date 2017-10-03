@@ -37,13 +37,12 @@ function tmpl(literalParts: TemplateStringsArray, ...values: any[]) {
         } else if (part.type === "value") {
             const prevLastLineIdx = result.lastIndexOf("\n");
             let extraPad = 0;
-            if (prevLastLineIdx !== -1) {
-                while (result[prevLastLineIdx + 1 + extraPad] === " ")
-                    extraPad++;
-            } else
-                extraPad = result.length;
+            while (result[prevLastLineIdx + 1 + extraPad] === " ")
+                extraPad++;
 
             const value = (part.value||"").toString().replace(/\n/g, "\n" + " ".repeat(extraPad));
+            //if (value.includes("Dictionary") || value.includes("std::map"))
+            //    debugger;
             result += value;
         }
     }
@@ -105,8 +104,9 @@ class CodeGeneratorModel {
     }
 
     gen(obj: one.Statement|one.Expression, ...args: any[]) {
-        const type = (<one.Statement>obj).stmtType || (<one.Expression>obj).exprKind;
-
+        const objExpr = (<one.Expression> obj);
+        const type = (<one.Statement>obj).stmtType || objExpr.exprKind;
+        
         if (type === one.ExpressionKind.Call) {
             const callExpr = <one.CallExpression> obj;
             const methodRef = <one.MethodReference> callExpr.method;
@@ -129,7 +129,7 @@ class CodeGeneratorModel {
             } else {
                 const methodArgs = methodRef.methodRef.parameters;
                 if (methodArgs.length !== callExpr.arguments.length)
-                    throw new Error(`Invalid argument count for '${methodPath}': expected: ${method.arguments.length}, actual: ${callExpr.arguments.length}.`);
+                    throw new Error(`Invalid argument count for '${methodPath}': expected: ${methodArgs.length}, actual: ${callExpr.arguments.length}.`);
 
                 // TODO: move this to AST visitor
                 for (let i = 0; i < methodArgs.length; i++)
@@ -171,12 +171,8 @@ class CodeGeneratorModel {
             genName = this.expressionGenerators[fullName] ? fullName : unaryName;
         }
 
-        if (type === one.ExpressionKind.ArrayLiteral) {
-            const arrayLitExpr = <one.ArrayLiteral> obj;
-            const oneArrType = arrayLitExpr.valueType.typeArguments[0].typeKind;
-            const primTypes = this.generator.lang.primitiveTypes;
-            const nativeArrType = primTypes && primTypes[oneArrType];
-            arrayLitExpr.arrayType = nativeArrType;
+        if (objExpr.valueType && objExpr.valueType.typeArguments) {
+            objExpr.typeArgs = objExpr.valueType.typeArguments.map(x => this.generator.getTypeName(x));
         }
 
         const genFunc = this.expressionGenerators[genName];
