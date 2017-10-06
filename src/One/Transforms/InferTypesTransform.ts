@@ -15,6 +15,7 @@ export class Reference {
 }
 
 export class Context {
+    schemaCtx: SchemaContext;
     currClass: one.Class;
     classes: ClassRepository = null;
 
@@ -246,8 +247,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         if (expr.items.some(x => !x.valueType.equals(itemType)))
             itemType = one.Type.Any;
 
-        // TODO: this is TypeScript-specific!
-        expr.valueType = one.Type.Class("TsArray", [itemType]);
+        expr.valueType = one.Type.Class(context.schemaCtx.arrayType, [itemType]);
     }
 
     protected visitMapLiteral(expr: one.MapLiteral, context: Context) {
@@ -257,8 +257,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         if (expr.properties.some(x => !x.type.equals(itemType)))
             itemType = one.Type.Any;
 
-        // TODO: this is TypeScript-specific!
-        expr.valueType = one.Type.Class("TsMap", [one.Type.String, itemType]);
+        expr.valueType = one.Type.Class(context.schemaCtx.mapType, [one.Type.String, itemType]);
     }
 
     protected visitExpression(expression: one.Expression, context: Context) {
@@ -297,6 +296,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
 
     transform(schemaCtx: SchemaContext) {
         const context = new Context();
+        context.schemaCtx = schemaCtx;
         context.classes = schemaCtx.tiContext.classes;
 
         for (const cls of Object.values(schemaCtx.schema.classes))

@@ -4,6 +4,8 @@ import { Context as TiContext } from "./Transforms/ResolveIdentifiersTransform";
 import { LangFileSchema } from "../Generator/LangFileSchema";
 
 export class SchemaContext {
+    arrayType: string;
+    mapType: string;
     transformer: SchemaTransformer;
     tiContext = new TiContext();
 

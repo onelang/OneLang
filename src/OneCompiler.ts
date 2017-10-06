@@ -66,6 +66,9 @@ export class OneCompiler {
         this.saveSchemaState(this.overlayCtx, "1_Converted");
         
         this.schemaCtx = new SchemaContext(schema);
+        // TODO: move to somewhere else...
+        this.schemaCtx.arrayType = "TsArray";
+        this.schemaCtx.mapType = "TsMap";
         this.saveSchemaState(this.schemaCtx, `0_Original`);
         
         this.schemaCtx.addOverlaySchema(overlaySchema);
@@ -78,7 +81,11 @@ export class OneCompiler {
         this.schemaCtx.ensureTransforms("triviaComment");
         this.saveSchemaState(this.schemaCtx, `3_ExtendedInfoAdded`);
 
+        // TODO: looks like as a giantic hack...
         this.schemaCtx.schema.meta.transforms["inferTypes"] = false;
+        this.schemaCtx.arrayType = "OneArray";
+        this.schemaCtx.mapType = "OneMap";
+
         this.schemaCtx.ensureTransforms("inferTypes");
         this.saveSchemaState(this.schemaCtx, `4_TypesInferredAgain`);
     }

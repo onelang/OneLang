@@ -5,7 +5,7 @@ import { writeFile, readFile, jsonRequest } from "./Utils/NodeUtils";
 import { OneCompiler } from "./OneCompiler";
 import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs";
 
-const prgName = "Test";
+const prgName = "ArrayTest";
 
 const compiler = new OneCompiler();
 compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay", name: string, data: string) => {
@@ -18,6 +18,8 @@ compiler.parseFromTS(programCode, overlayCode);
 
 const langs = Object.values(langConfigs);
 for (const lang of langs) {
+    if (lang.name !== "csharp") continue;
+
     const langYaml = readFile(`langs/${lang.name}.yaml`);
     const codeGen = compiler.getCodeGenerator(langYaml, lang.name);
     lang.request.code = codeGen.generate(true);
