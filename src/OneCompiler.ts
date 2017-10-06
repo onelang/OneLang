@@ -77,6 +77,10 @@ export class OneCompiler {
 
         this.schemaCtx.ensureTransforms("triviaComment");
         this.saveSchemaState(this.schemaCtx, `3_ExtendedInfoAdded`);
+
+        this.schemaCtx.schema.meta.transforms["inferTypes"] = false;
+        this.schemaCtx.ensureTransforms("inferTypes");
+        this.saveSchemaState(this.schemaCtx, `4_TypesInferredAgain`);
     }
 
     getCodeGenerator(langCode: string, langName?: string) {

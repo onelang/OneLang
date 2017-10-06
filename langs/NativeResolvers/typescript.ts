@@ -21,12 +21,12 @@ class console {
 }
 
 class Object {
-    static keys<K,V>(map: OneMap<K,V>) {
-        map.keys();
+    static keys<K,V>(map: OneMap<K,V>): K[] {
+        return map.keys();
     }
 
-    static values<K,V>(map: OneMap<K,V>) {
-        map.values();
+    static values<K,V>(map: OneMap<K,V>): V[] {
+        return map.values();
     }
 }
 

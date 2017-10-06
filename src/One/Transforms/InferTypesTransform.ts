@@ -15,7 +15,7 @@ export class Reference {
 }
 
 export class Context {
-    currClassType: one.Type;
+    currClass: one.Class;
     classes: ClassRepository = null;
 
     constructor(parent: Context = null) {
@@ -39,6 +39,41 @@ export class ClassRepository {
         if (!cls)
             console.log(`[ClassRepository] Class not found: ${name}.`);
         return cls;
+    }
+}
+
+export class GenericsMapping {
+    constructor(public map: { [genericName: string]: one.Type }) { }
+
+    static log(data: string) { console.log(`[GenericsMapping] ${data}`); }
+
+    static create(cls: one.Class, realClassType: one.Type) {
+        if (cls.typeArguments.length !== realClassType.typeArguments.length) {
+            this.log(`Type argument count mismatch! '${cls.type.repr()}' <=> '${realClassType.repr()}'`);
+            return null;
+        }
+
+        const resolveDict = {};
+        for (let i = 0; i < cls.typeArguments.length; i++)
+            resolveDict[cls.typeArguments[i]] = realClassType.typeArguments[i];
+        return new GenericsMapping(resolveDict);
+    }
+
+    replace(type: one.Type) {
+        let newType = one.Type.Load(type);
+        if (type.isGenerics) {
+            const resolvedType = this.map[type.genericsName];
+            if (!resolvedType)
+                GenericsMapping.log(`Generics '${type.genericsName}' is not mapped. Mapped types: ${Object.keys(this.map).join(", ")}.`);
+            else
+                newType = one.Type.Load(resolvedType);
+        }
+
+        if (newType.isClass)
+            for (let i = 0; i < newType.typeArguments.length; i++)
+                newType.typeArguments[i] = this.replace(newType.typeArguments[i]);
+
+        return newType;
     }
 }
 
@@ -79,6 +114,10 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
             expr.valueType = one.Type.Number;
     }
 
+    protected visitReturnStatement(stmt: one.ReturnStatement, context: Context) {
+        super.visitReturnStatement(stmt, context);
+    }
+
     protected visitUnaryExpression(expr: one.UnaryExpression, context: Context) {
         this.visitExpression(expr.operand, context);
 
@@ -86,26 +125,58 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
             expr.valueType = one.Type.Number;
     }
 
+    protected visitElementAccessExpression(expr: one.ElementAccessExpression, context: Context) {
+        super.visitElementAccessExpression(expr, context);
+        
+        // TODO: use the return type of get() method
+        const typeArgs = expr.object.valueType.typeArguments;
+        if (typeArgs && typeArgs.length === 1)
+            expr.valueType = typeArgs[0];
+    }
+
     protected visitCallExpression(expr: one.CallExpression, context: Context) {
         super.visitCallExpression(expr, context);
 
-        if (expr.method.valueType.isMethod) {
-            const className = expr.method.valueType.classType.className;
-            const methodName = expr.method.valueType.methodName;
-            const cls = context.classes.getClass(className);
-            const method = cls.methods[methodName];
-            if (!method)
-                this.log(`Method not found: ${className}::${methodName}`);
-            else
-                expr.valueType = one.Type.Load(method.returns);
-        } else {
+        if (!expr.method.valueType.isMethod) {
             this.log(`Tried to call a non-method type '${expr.method.valueType.repr()}'.`);
+            return;
         }
+
+        const className = expr.method.valueType.classType.className;
+        const methodName = expr.method.valueType.methodName;
+        const cls = context.classes.getClass(className);
+        const method = cls.methods[methodName];
+        if (!method) {
+            this.log(`Method not found: ${className}::${methodName}`);
+            return;
+        }
+
+        expr.valueType = one.Type.Load(method.returns);
+
+        const thisExpr = (<one.MethodReference> expr.method).thisExpr;
+        if (thisExpr) {
+            const genMap = GenericsMapping.create(cls, thisExpr.valueType);
+            expr.valueType = genMap.replace(expr.valueType);
+        }
+    }
+
+    getType(name: string) {
+        if (name === "number")
+            return one.Type.Number;
+        else if (name === "string")
+            return one.Type.String;
+        else if (name === "boolean")
+            return one.Type.Boolean;
+        else if (name === "null")
+            return one.Type.Null;
+        else
+            return null;
     }
 
     protected visitNewExpression(expr: one.NewExpression, context: Context) {
         super.visitNewExpression(expr, context);
-        expr.valueType = expr.cls.valueType;
+        expr.valueType = one.Type.Load(expr.cls.valueType);
+        expr.valueType.typeArguments = expr.typeArguments.map(t => this.getType(t) || one.Type.Class(t));
     }
 
     protected visitLiteral(expr: one.Literal, context: Context) {
@@ -201,7 +272,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
     }
     
     protected visitThisReference(expr: one.ThisReference, context: Context) {
-        expr.valueType = context.currClassType;
+        expr.valueType = context.currClass.type;
     }
 
     protected visitVariableRef(expr: one.VariableRef, context: Context) { 
@@ -210,7 +281,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
     }
     
     protected visitMethodReference(expr: one.MethodReference, context: Context) {
-        expr.valueType = expr.methodRef.type;
+        expr.valueType = expr.methodRef.type || expr.valueType;
     }
 
     protected visitMethod(method: one.Method, context: Context) { 
@@ -219,11 +290,11 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
     } 
  
     protected visitClass(cls: one.Class, context: Context) {
-        // TODO: type arguments?
-        cls.type = one.Type.Class(cls.name);
+        context.currClass = cls;
+        cls.type = one.Type.Class(cls.name, cls.typeArguments.map(t => one.Type.Generics(t)));
         super.visitClass(cls, context);
-    } 
-    
+    }
+
     transform(schemaCtx: SchemaContext) {
         const context = new Context();
         context.classes = schemaCtx.tiContext.classes;
@@ -232,7 +303,6 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
             context.classes.addClass(cls);
 
         for (const cls of Object.values(schemaCtx.schema.classes)) { 
-            context.currClassType = one.Type.Class(cls.name);
             this.visitClass(cls, context); 
         }
     }

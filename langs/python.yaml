@@ -85,6 +85,7 @@ expressions:
   propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
   identifier: "{{expr.text}}"
   stringLiteral: "\"{{expr.value}}\""
+  nullLiteral: "None"
   return: "return {{gen(expr.expression)}}"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix++: "{{gen(expr.operand)}} += 1"

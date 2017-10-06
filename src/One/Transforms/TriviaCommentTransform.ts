@@ -7,7 +7,7 @@ export class TriviaCommentTransform extends AstVisitor<void> implements ISchemaT
     name = "triviaComment";
 
     protected visitStatement(stmt: one.Statement) {
-        const lines = stmt.leadingTrivia.split("\n");
+        const lines = (stmt.leadingTrivia || "").split("\n");
         
         let newLines = [];
         let inComment = false;

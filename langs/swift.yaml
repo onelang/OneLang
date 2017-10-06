@@ -92,6 +92,7 @@ expressions:
   prefix: "{{expr.operator}}{{gen(expr.operand)}}"
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
+  nullLiteral: "nil"
   variableDeclaration: "{{genVar(expr)}}"
   new: "{{gen(expr.class)}}({{genParams(expr.arguments)}})"
   classReference: "{{expr.classRef.name}}"

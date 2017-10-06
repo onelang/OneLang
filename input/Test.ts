@@ -1,12 +1,12 @@
 class TestClass {
-    mapTest() {
+    mapTest(): number {
         let mapObj = { x: 5, y: 3 };
         //console.log(mapObj);
         //let containsX = "x" in mapObj;
         //mapObj["z"] = 9;
         //let keysVar = Object.keys(mapObj);
         let valuesVar = Object.values(mapObj);
-        //return mapObj["x"];
+        return valuesVar[0];
     }
 
     ifTest(x: number): string {

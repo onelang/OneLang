@@ -1,6 +1,7 @@
 class MapTestClass {
     mapTest() {
         let mapObj = { x: 5 };
-        let keysVar = Object.keys(mapObj);
+        let values = Object.values(mapObj);
+        return values[0]
     }
 }

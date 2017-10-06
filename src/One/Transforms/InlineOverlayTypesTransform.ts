@@ -65,8 +65,9 @@ class ReplaceReferences extends AstVisitor<void> {
         // TODO: 
         //  - resolve variable declaration conflicts
         varReplacer.visitStatements(statements);
-        if (statements.length !== 1 || statements[0].stmtType !== one.StatementType.ExpressionStatement) {
-            this.log("Expected ExpressionStatement");
+        if (statements.length !== 1 || (statements[0].stmtType !== one.StatementType.ExpressionStatement
+                && statements[0].stmtType !== one.StatementType.Return)) {
+            this.log("Expected Expression or Return statement");
             return;
         }
 

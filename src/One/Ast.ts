@@ -27,6 +27,7 @@ export namespace OneAst {
         properties: { [name: string]: Property };
         constructor: Constructor;
         methods: { [name: string]: Method };
+        typeArguments: string[];
         meta?: {
             iterable?: boolean;
             overlay?: boolean;
@@ -44,6 +45,7 @@ export namespace OneAst {
         Any = "any",
         Class = "class",
         Method = "method",
+        Generics = "generics"
     }
 
     export interface IType {
@@ -63,10 +65,12 @@ export namespace OneAst {
         public typeArguments: Type[];
         public classType: Type;
         public methodName: string;
+        public genericsName: string;
 
         get isPrimitiveType() { return Type.PrimitiveTypeKinds.includes(this.typeKind); }
         get isClass() { return this.typeKind === TypeKind.Class; }
         get isMethod() { return this.typeKind === TypeKind.Method; }
+        get isGenerics() { return this.typeKind === TypeKind.Generics; }
         get isNumber() { return this.typeKind === TypeKind.Number; }
         get isOneArray() { return this.className === "OneArray"; }
 
@@ -94,6 +98,8 @@ export namespace OneAst {
                     `<${this.typeArguments.map(x => x.repr()).join(", ")}>`);
             } else if (this.isMethod) {
                 return `${this.classType.repr()}::${this.methodName}`;
+            } else if (this.isGenerics) {
+                return this.genericsName;
             } else {
                 return "?";
             }
@@ -119,6 +125,12 @@ export namespace OneAst {
             const result = new Type(TypeKind.Method);
             result.classType = classType;
             result.methodName = methodName;
+            return result;
+        }
+
+        static Generics(genericsName: string) {
+            const result = new Type(TypeKind.Generics);
+            result.genericsName = genericsName;
             return result;
         }
 
@@ -155,6 +167,7 @@ export namespace OneAst {
     export interface Method extends NamedItem {
         type?: Type;
         classRef?: Class;
+        typeArguments: string[];
         static: boolean;
         parameters: MethodParameter[];
         returns: Type;
@@ -248,7 +261,7 @@ export namespace OneAst {
     }
 
     export interface CallExpression extends Expression {
-        method: Expression;
+        method: Identifier|MethodReference;
         arguments: CallArgument[];
     }
 
@@ -271,7 +284,8 @@ export namespace OneAst {
     }
 
     export interface NewExpression extends Expression {
-        cls: Expression;
+        cls: Identifier|ClassReference;
+        typeArguments: string[];
         arguments: Expression[];
     }
 

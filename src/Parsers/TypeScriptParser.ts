@@ -12,6 +12,8 @@ export class TypeScriptParser {
     ast: TsSimpleAst;
     sourceFile: SimpleAst.SourceFile;
     schema: one.Schema;
+    currClass: one.Class;
+    currMethod: one.Method;
 
     constructor(public sourceCode: string, filePath?: string) {
         this.ast = new SimpleAst.default();
@@ -31,25 +33,24 @@ export class TypeScriptParser {
     }
 
     convertTsType(tsType: ts.Type) {
-        const result = new one.Type();
+        let result: one.Type;
 
         const typeText = (<any>tsType).intrinsicName || (tsType.symbol && tsType.symbol.name);
         if (!typeText)
-            result.typeKind = one.TypeKind.Any;
+            result = one.Type.Any;
         else if (typeText === "number")
-            result.typeKind = one.TypeKind.Number;
+            result = one.Type.Number;
         else if (typeText === "string")
-            result.typeKind = one.TypeKind.String;
+            result = one.Type.String;
         else if (typeText === "boolean")
-            result.typeKind = one.TypeKind.Boolean;
+            result = one.Type.Boolean;
         else if (typeText === "void")
-            result.typeKind = one.TypeKind.Void;
-        else {
-            result.typeKind = one.TypeKind.Class;
-            result.className = typeText;
-
+            result = one.Type.Void;
+        else if (this.currClass.typeArguments.includes(typeText) || this.currMethod.typeArguments.includes(typeText)) {
+            result = one.Type.Generics(typeText);
+        } else {
             const typeArgs = <ts.Type[]>(<any>tsType).typeArguments || [];
-            result.typeArguments = typeArgs.map(x => this.convertTsType(x));
+            result = one.Type.Class(typeText, typeArgs.map(x => this.convertTsType(x)));
         }
 
         return result;
@@ -102,9 +103,16 @@ export class TypeScriptParser {
             };
         } else if (tsExpr.kind === ts.SyntaxKind.NewExpression) {
             const newExpr = <ts.NewExpression> tsExpr;
-            return <one.NewExpression> { 
+
+            if (newExpr.expression.kind !== ts.SyntaxKind.Identifier)
+                this.logNodeError(`Only Identifier can be used as "new" class.`, newExpr.expression);
+
+            const classIdentifier = <ts.Identifier> newExpr.expression;
+
+            return <one.NewExpression> {
                 exprKind: one.ExpressionKind.New,
-                cls: this.convertExpression(newExpr.expression),
+                cls: this.convertExpression(classIdentifier),
+                typeArguments: newExpr.typeArguments.map(arg => arg.getText()),
                 arguments: newExpr.arguments.map(arg => this.convertExpression(arg))
             };
         } else if (tsExpr.kind === ts.SyntaxKind.ConditionalExpression) {
@@ -336,7 +344,9 @@ export class TypeScriptParser {
 
         for (const tsClass of this.sourceFile.getClasses()) {
             const classSchema = schema.classes[tsClass.getName()] = <one.Class> { fields: {}, methods: {}, properties: {} };
-            
+            this.currClass = classSchema;
+            classSchema.typeArguments = tsClass.getTypeParameters().map(x => x.compilerNode.name.text);
+
             for (const tsProp of tsClass.getInstanceProperties()) {
                 if (tsProp instanceof SimpleAst.PropertyDeclaration || tsProp instanceof SimpleAst.ParameterDeclaration) {
                     const fieldSchema = classSchema.fields[tsProp.getName()] = <one.Field> { 
@@ -361,6 +371,8 @@ export class TypeScriptParser {
             const tsMethods = <SimpleAst.MethodDeclaration[]> tsClass.getAllMembers().filter(x => x instanceof SimpleAst.MethodDeclaration);
             for (const tsMethod of tsMethods) {
                 const methodSchema = classSchema.methods[tsMethod.getName()] = <one.Method>{};
+                this.currMethod = methodSchema;
+                methodSchema.typeArguments = tsMethod.getTypeParameters().map(x => x.compilerNode.name.text);
                 methodSchema.static = tsMethod.isStatic();
                 methodSchema.returns = this.convertTsType(tsMethod.getReturnType().compilerType);
                 methodSchema.parameters = tsMethod.getParameters().map(tsParam => this.convertParameter(tsParam));
