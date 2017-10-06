@@ -171,6 +171,11 @@ class CodeGeneratorModel {
             const unaryName = unaryExpr.unaryType.ucFirst();
             const fullName = `${unaryName}${unaryExpr.operator}`;
             genName = this.expressionGenerators[fullName] ? fullName : unaryName;
+        } else if (type === one.StatementType.VariableDeclaration) {
+            const varDecl = <one.VariableDeclaration> obj;
+            if (varDecl.initializer.exprKind === one.ExpressionKind.MapLiteral
+                    && this.expressionGenerators["MapLiteralDeclaration"])
+                genName = "MapLiteralDeclaration";
         }
 
         if (objExpr.valueType && objExpr.valueType.typeArguments) {

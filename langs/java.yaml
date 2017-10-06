@@ -25,7 +25,7 @@ functions:
       {{self}}.keySet()
   OneMap.values:
     template: |-
-      {{self}}.values()
+      new ArrayList({{self}}.values())
 extension: java
 casing:
   class: pascal_case
@@ -110,10 +110,10 @@ expressions:
   new: "new {{gen(expr.class)}}({{genParams(expr.arguments)}})"
   classReference: "{{expr.classRef.name}}"
   arrayLiteral: "new ArrayList<{{expr.typeArgs[0]}}>(Arrays.asList({{genParams(expr.items)}}))"
-  mapLiteral: |- 
-    new HashMap<{{expr.typeArgs[0]}}, {{expr.typeArgs[1]}}>();
-    {{for prop in expr.properties|sep="\n"}}
-      tmp.put("{{prop.name}}", {{gen(prop.initializer)}});
+  mapLiteralDeclaration: |- 
+    HashMap<{{typeName(expr.initializer.valueType.typeArguments[0])}}, {{typeName(expr.initializer.valueType.typeArguments[1])}}> {{expr.name}} = new HashMap<{{typeName(expr.initializer.valueType.typeArguments[0])}}, {{typeName(expr.initializer.valueType.typeArguments[1])}}>();
+    {{for prop in expr.initializer.properties|sep="\n"}}
+      {{expr.name}}.put("{{prop.name}}", {{gen(prop.initializer)}});
     {{/for}}
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.name}}"

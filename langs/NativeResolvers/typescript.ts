@@ -10,8 +10,8 @@ class OneArray<T> {
 }
 
 class OneMap<K,V> {
-    keys(): K[] { return null; }
-    values(): V[] { return null; }
+    keys(): OneArray<K> { return null; }
+    values(): OneArray<V> { return null; }
 }
 
 class console {
