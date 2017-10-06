@@ -42,6 +42,7 @@ templates:
   main: |
     import java.util.ArrayList; // TODO: hack
     import java.util.Arrays;
+    import java.util.HashMap;
 
     {{for inc in includes|sep=\n}}
       using {{inc}};

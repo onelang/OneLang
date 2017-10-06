@@ -20,10 +20,10 @@ functions:
       {{self}}->size()
   OneMap.keys:
     template: |-
-      MapHelper::keys({{self}})
+      MapHelper::keys(*{{self}})
   OneMap.values:
     template: |-
-      MapHelper::values({{self}})
+      MapHelper::values(*{{self}})
 extension: cpp
 casing:
   class: pascal_case
@@ -48,6 +48,23 @@ templates:
     {{for inc in includes|sep=\n}}
       #include <{{inc}}>
     {{/for}}
+
+    class MapHelper {
+      public:
+        template<typename K, typename V> static std::shared_ptr<std::vector<K>> keys(const std::map<K,V>& map) {
+            std::vector<K> result;
+            for(auto it = map.begin(); it != map.end(); ++it)
+                result.push_back(it->first);
+            return std::make_shared<std::vector<K>>(result);
+        }
+
+        template<typename K, typename V> static std::shared_ptr<std::vector<V>> values(const std::map<K,V>& map) {
+            std::vector<V> result;
+            for(auto it = map.begin(); it != map.end(); ++it)
+                result.push_back(it->second);
+            return std::make_shared<std::vector<V>>(result);
+        }
+    };
 
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {

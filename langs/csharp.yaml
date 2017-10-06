@@ -20,8 +20,10 @@ functions:
     template: |-
       {{self}}.Keys
   OneMap.values:
+    includes:
+      - System.Linq
     template: |-
-      {{self}}.Values
+      {{self}}.Values.ToArray()
 extension: cs
 casing:
   class: pascal_case
