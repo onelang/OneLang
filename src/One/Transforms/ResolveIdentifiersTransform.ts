@@ -87,7 +87,9 @@ export class ResolveIdentifiersTransform extends AstVisitor<Context> implements 
                 const methodContext = classContext.inherit();
                 for (const param of method.parameters)
                     methodContext.variables.add(param.name, one.VariableRef.MethodArgument(param));
-                this.visitBlock(method.body, methodContext);
+                
+                if (method.body)
+                    this.visitBlock(method.body, methodContext);
             }
         }
     }

@@ -17,14 +17,14 @@ export class SchemaContext {
         this.transformer.ensure(this, ...transformNames);
     }
 
-    addOverlaySchema(schema: one.Schema) {
+    addDependencySchema(schema: one.Schema, type: "overlay"|"stdlib") {
         for (const glob of Object.values(schema.globals))
             this.tiContext.addLocalVar(glob);
         
         for (const cls of Object.values(schema.classes)) {
             cls.meta = cls.meta || {};
-            cls.meta.overlay = true;
-            this.tiContext.classes.addClass(cls);        
+            cls.meta[type] = true;
+            this.tiContext.classes.addClass(cls);
         }
     }
 

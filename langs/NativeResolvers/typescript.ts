@@ -1,18 +1,4 @@
-//// <reference path="../StdLibs/typescript.d.ts" />
-
-class OneConsole {
-    static print(str: any) { }
-}
-
-class OneArray<T> {
-    length: number;
-    add(item: T) { }
-}
-
-class OneMap<K,V> {
-    keys(): OneArray<K> { return null; }
-    values(): OneArray<V> { return null; }
-}
+/// <reference path="../StdLibs/stdlib.d.ts" />
 
 class console {
     static log(data: any) {
@@ -21,11 +7,11 @@ class console {
 }
 
 class Object {
-    static keys<K,V>(map: OneMap<K,V>): K[] {
+    static keys<K,V>(map: OneMap<K,V>): OneArray<K> {
         return map.keys();
     }
 
-    static values<K,V>(map: OneMap<K,V>): V[] {
+    static values<K,V>(map: OneMap<K,V>): OneArray<V> {
         return map.values();
     }
 }

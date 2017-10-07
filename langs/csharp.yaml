@@ -1,31 +1,22 @@
 functions:
   OneConsole.print:
-    arguments:
-      - name: str
-    includes:
-      - System
-    template: |-
-      Console.WriteLine({{str}})
+    includes: [System]
+    template: "Console.WriteLine({{str}})"
   OneArray.add:
     arguments:
       - name: item
-    includes:
-      - System.Collections.Generic
-    template: |-
-      {{self}}.Add({{item}})
+    includes: [System.Collections.Generic]
+    template: "{{self}}.Add({{item}})"
   OneArray.length:
-    template: |-
-      {{self}}.Count
+    template: "{{self}}.Count"
   OneMap.keys:
-    includes:
-      - System.Linq
-    template: |-
-      {{self}}.Keys.ToArray()
+    includes: [System.Linq]
+    template: "{{self}}.Keys.ToArray()"
   OneMap.values:
-    includes:
-      - System.Linq
-    template: |-
-      {{self}}.Values.ToArray()
+    includes: [System.Linq]
+    template: "{{self}}.Values.ToArray()"
+  OneMap.hasKey:
+    template: "{{self}}.ContainsKey({{keyName}})"
 extension: cs
 casing:
   class: pascal_case

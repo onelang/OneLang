@@ -5,20 +5,21 @@ import { writeFile, readFile, jsonRequest } from "./Utils/NodeUtils";
 import { OneCompiler } from "./OneCompiler";
 import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs";
 
-const prgName = "MapTest";
+const prgName = "Test";
 
 const compiler = new OneCompiler();
-compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay", name: string, data: string) => {
-    writeFile(`tmp/${schemaType === "program" ? prgName : "tsToOne"}_${name}.${type === "overviewText" ? "txt" : "json"}`, data); 
+compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, data: string) => {
+    writeFile(`tmp/${schemaType === "program" ? prgName : schemaType}_${name}.${type === "overviewText" ? "txt" : "json"}`, data); 
 };
 
 const programCode = readFile(`input/${prgName}.ts`);
 const overlayCode = readFile(`langs/NativeResolvers/typescript.ts`);
-compiler.parseFromTS(programCode, overlayCode);
+const stdlibCode = readFile(`langs/StdLibs/stdlib.d.ts`);
+compiler.parseFromTS(programCode, overlayCode, stdlibCode);
 
 const langs = Object.values(langConfigs);
 for (const lang of langs) {
-    //if (lang.name !== "go") continue;
+    if (lang.name !== "go") continue;
 
     const langYaml = readFile(`langs/${lang.name}.yaml`);
     const codeGen = compiler.getCodeGenerator(langYaml, lang.name);

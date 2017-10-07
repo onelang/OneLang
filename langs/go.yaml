@@ -1,22 +1,13 @@
 functions:
   OneConsole.print:
-    arguments:
-      - name: str
-    includes:
-      - fmt
-    template: |-
-      fmt.Println({{str}})
+    includes: [fmt]
+    template: "fmt.Println({{str}})"
   OneArray.add:
-    arguments:
-      - name: item
-    template: |-
-      {{self}} = append({{self}}, {{item}})
+    template: "{{self}} = append({{self}}, {{item}})"
   OneArray.length:
-    template: |-
-      len({{self}})
+    template: "len({{self}})"
   OneMap.keys:
-    arguments:
-      - name: result
+    extraArgs: [result]
     template: |-
       {{result}} := make([]{{typeArgs[0]}}, 0, len({{self}}))
 
@@ -24,8 +15,7 @@ functions:
         {{result}} = append({{result}}, key)
       }
   OneMap.values:
-    arguments:
-      - name: result
+    extraArgs: [result]
     template: |-
       {{result}} := make([]{{typeArgs[1]}}, 0, len({{self}}))
 

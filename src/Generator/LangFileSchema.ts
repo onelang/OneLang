@@ -4,7 +4,7 @@ export namespace LangFileSchema {
     }
 
     export interface Function {
-        arguments: FunctionArgument[];
+        extraArgs: string[];
         includes: string[];
         template: string;
         mutates?: boolean;

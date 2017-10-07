@@ -196,7 +196,9 @@ export abstract class AstVisitor<TContext> {
     }
 
     protected visitMethod(method: one.Method, context: TContext) {
-        this.visitBlock(method.body, context);
+        if (method.body)
+            this.visitBlock(method.body, context);
+
         for (const param of method.parameters)
             this.visitVariableDeclaration(param, context);
     }

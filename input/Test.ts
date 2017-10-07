@@ -1,12 +1,14 @@
 class TestClass {
     mapTest(): string {
         let mapObj = { x: 5, y: 3 };
-        //console.log(mapObj);
+
         //let containsX = "x" in mapObj;
         //mapObj["z"] = 9;
-        //let keysVar = Object.keys(mapObj);
-        let valuesVar = Object.keys(mapObj);
-        return valuesVar[0];
+        //delete mapObj["x"]
+
+        let keysVar = Object.keys(mapObj);
+        let valuesVar = Object.values(mapObj);
+        return keysVar[0];
     }
 
     ifTest(x: number): string {
@@ -66,16 +68,16 @@ class TestClass {
             console.log(constantArr[i]);
     }
 
-    calc() {
+    calc(): number {
         return (1 + 2) * 3;
     }
 
-    methodWithArgs(arg1: number, arg2: number, arg3: number) {
+    methodWithArgs(arg1: number, arg2: number, arg3: number): number {
         const stuff = arg1 + arg2 + arg3 * this.calc();
         return stuff;
     }
 
-    testMethod() {
+    testMethod(): string {
         return this.mapTest();
     }
 }

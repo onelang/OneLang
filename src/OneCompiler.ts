@@ -31,17 +31,20 @@ SchemaTransformer.instance.addTransform(new TriviaCommentTransform());
 export class OneCompiler {
     schemaCtx: SchemaContext;
     overlayCtx: SchemaContext;
+    stdlibCtx: SchemaContext;
 
-    saveSchemaStateCallback: (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay", name: string, data: string) => void;
+    saveSchemaStateCallback: (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, data: string) => void;
 
-    parseFromTS(programCode: string, overlayCode: string) {
+    parseFromTS(programCode: string, overlayCode: string, stdlibCode: string) {
+        overlayCode = overlayCode.replace(/^[^\n]*<reference.*stdlib.d.ts[^\n]*\n/, "");
         const schema = TypeScriptParser.parseFile(programCode);
         const overlaySchema = TypeScriptParser.parseFile(overlayCode);
+        const stdlibSchema = TypeScriptParser.parseFile(stdlibCode);
 
         // TODO: hack
         overlaySchema.classes["TsArray"].meta = { iterable: true };
         
-        this.prepareSchemas(schema, overlaySchema);
+        this.prepareSchemas(schema, overlaySchema, stdlibSchema);
     }
 
     protected saveSchemaState(schemaCtx: SchemaContext, name: string) {
@@ -54,15 +57,22 @@ export class OneCompiler {
         this.saveSchemaStateCallback("schemaJson", schemaCtx.schema.sourceType, name, schemaJson);
     }
 
-    protected prepareSchemas(schema: one.Schema, overlaySchema: one.Schema) {
+    protected prepareSchemas(schema: one.Schema, overlaySchema: one.Schema, stdlibSchema: one.Schema) {
         schema.sourceType = "program";
         overlaySchema.sourceType = "overlay";
+        stdlibSchema.sourceType = "stdlib";
 
+        this.stdlibCtx = new SchemaContext(stdlibSchema);
+        this.saveSchemaState(this.stdlibCtx, "0_Original");
+
+        this.stdlibCtx.ensureTransforms("fillMetaPath", "inferTypes");
+        this.saveSchemaState(this.stdlibCtx, "0_Converted");
+        
         this.overlayCtx = new SchemaContext(overlaySchema);
+        this.overlayCtx.addDependencySchema(stdlibSchema, "stdlib");
         this.saveSchemaState(this.overlayCtx, "0_Original");
 
-        this.overlayCtx.ensureTransforms("convertInlineThisRef");
-        this.overlayCtx.ensureTransforms("fillMetaPath");
+        this.overlayCtx.ensureTransforms("convertInlineThisRef", "fillMetaPath");
         this.saveSchemaState(this.overlayCtx, "1_Converted");
         
         this.schemaCtx = new SchemaContext(schema);
@@ -71,7 +81,8 @@ export class OneCompiler {
         this.schemaCtx.mapType = "TsMap";
         this.saveSchemaState(this.schemaCtx, `0_Original`);
         
-        this.schemaCtx.addOverlaySchema(overlaySchema);
+        this.schemaCtx.addDependencySchema(overlaySchema, "overlay");
+        this.schemaCtx.addDependencySchema(stdlibSchema, "stdlib");
         this.schemaCtx.ensureTransforms("inferTypes");
         this.saveSchemaState(this.schemaCtx, `1_TypesInferred`);
         
@@ -97,7 +108,7 @@ export class OneCompiler {
         new FillVariableMutability(lang).process(this.schemaCtx.schema);
         this.saveSchemaState(this.schemaCtx, `10_${langName ? `${langName}_` : ""}Init`);
         
-        const codeGen = new CodeGenerator(this.schemaCtx.schema, lang);
+        const codeGen = new CodeGenerator(this.schemaCtx.schema, this.stdlibCtx.schema, lang);
         return codeGen;
     }
 

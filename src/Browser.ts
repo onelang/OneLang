@@ -60,11 +60,13 @@ function escapeHtml(unsafe) {
 
 class CompileHelper {
     overlayContent: string;
+    stdlibContent: string;
 
     constructor(public langConfigs: LangConfigs) { }
 
     async init() {
         this.overlayContent = await downloadTextFile(`langs/NativeResolvers/typescript.ts`);
+        this.stdlibContent = await downloadTextFile(`langs/StdLibs/stdlib.d.ts`);
 
         for (const lang of Object.values(this.langConfigs))
             lang.schemaYaml = await downloadTextFile(`langs/${lang.name}.yaml`);
@@ -72,7 +74,7 @@ class CompileHelper {
 
     compile(programCode: string, langName: string) {
         const compiler = new OneCompiler();
-        compiler.parseFromTS(programCode, this.overlayContent);
+        compiler.parseFromTS(programCode, this.overlayContent, this.stdlibContent);
         const lang = this.langConfigs[langName];
         const code = compiler.compile(lang.schemaYaml, langName, !lang.request.className);
         return code;

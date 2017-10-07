@@ -105,34 +105,48 @@ class CodeGeneratorModel {
 
     getOverlayCallCode(callExpr: one.CallExpression, extraArgs: { [name: string]: any } = {}) {
         const methodRef = <one.MethodReference> callExpr.method;
-        const metaPath = methodRef.methodRef.metaPath;
-        const methodPath = metaPath && metaPath.replace(/\//g, ".");
-        const method = this.generator.lang.functions[methodPath];
-        // TODO: unify overlay / normal method handling
+        
+        let metaPath = methodRef.methodRef.metaPath;
+        if (!metaPath) {
+            if (methodRef.methodRef.classRef)
+                metaPath = `${methodRef.methodRef.classRef.name}/${methodRef.methodRef.name}`;
+            else {
+                this.log("Meta path is missing!");
+                return null;
+            }
+        }
+
+        const metaPathParts = metaPath.split("/");
+        const className = metaPathParts[0];
+        const methodName = metaPathParts[1];
+        const generatorName = `${className}.${methodName}`;
+
+        const method = this.generator.lang.functions[generatorName];
         if (!method) return null;
 
-        const methodArgs = method.arguments || [];
+        const stdMethod = this.generator.stdlib.classes[className].methods[methodName];
+        const methodArgs = stdMethod.parameters.map(x => x.name).concat(method.extraArgs||[]);
         const exprCallArgs = callExpr.arguments.map(x => this.gen(x));
         const allExtraArgNames = Object.keys(extraArgs);
-        const extraArgNames = allExtraArgNames.filter(x => methodArgs.map(y => y.name).includes(x));
+        const extraArgNames = allExtraArgNames.filter(x => methodArgs.includes(x));
 
         // if not all extra arg are used then fail
         if (allExtraArgNames.length !== extraArgNames.length)
             return null;
 
         if (methodArgs.length !== exprCallArgs.length + extraArgNames.length)
-            throw new Error(`Invalid argument count for '${methodPath}': expected: ${methodArgs.length}, actual: ${callExpr.arguments.length}.`);
+            throw new Error(`Invalid argument count for '${generatorName}': expected: ${methodArgs.length}, actual: ${callExpr.arguments.length}.`);
 
         // TODO: move this to AST visitor
         let argIdx = 0;
         for (let i = 0; i < callExpr.arguments.length; i++, argIdx++)
-            callExpr.arguments[i].paramName = methodArgs[argIdx].name;
+            callExpr.arguments[i].paramName = methodArgs[argIdx];
         for (let i = 0; i < extraArgNames.length; i++, argIdx++)
-            if (methodArgs[argIdx].name !== extraArgNames[i])
-                throw new Error(`Extra argument name mismatch: ${methodArgs[argIdx].name} != ${extraArgNames[i]}`);
+            if (methodArgs[argIdx] !== extraArgNames[i])
+                throw new Error(`Extra argument name mismatch: ${methodArgs[argIdx]} != ${extraArgNames[i]}`);
 
         const thisArg = methodRef.thisExpr ? this.gen(methodRef.thisExpr) : null;
-        const overlayFunc = this.internalMethodGenerators[methodPath];
+        const overlayFunc = this.internalMethodGenerators[generatorName];
         const typeArgs = methodRef.thisExpr && methodRef.thisExpr.valueType.typeArguments.map(x => this.typeName(x));
 
         const callArgs = exprCallArgs.concat(extraArgNames.map(x => extraArgs[x]));
@@ -224,22 +238,14 @@ class CodeGeneratorModel {
 }
 
 export class CodeGenerator {
-    schema: one.Schema;
     model = new CodeGeneratorModel(this);
     templateObjectCode: string;
     templateObject: any;
     generatedCode: string;
 
-    constructor(schema: one.Schema, public lang: LangFileSchema.LangFile) {
-        //this.schema = JSON.parse(JSON.stringify(schema)); // clone
-        this.schema = schema;
-        //this.setupNames();
+    constructor(public schema: one.Schema, public stdlib: one.Schema, public lang: LangFileSchema.LangFile) {
         this.setupClasses();
         this.setupIncludes();
-
-        // TODO: use SchemaTransformer to infer types...
-        //this.inferTypes();
-
         this.compileTemplates();
     }
 
@@ -382,7 +388,14 @@ export class CodeGenerator {
                 internalMethodGenerators: {
                     ${Object.keys(this.lang.functions).map(funcPath => {
                         const funcInfo = this.lang.functions[funcPath];
-                        const funcArgs = ["self", "typeArgs"].concat((funcInfo.arguments||[]).map(x => x.name));
+
+                        const funcPathParts = funcPath.split(".");
+                        const className = funcPathParts[0];
+                        const methodName = funcPathParts[1];
+                        const stdMethod = this.stdlib.classes[className].methods[methodName];
+                        const methodArgs = stdMethod ? stdMethod.parameters.map(x => x.name) : [];
+
+                        const funcArgs = ["self", "typeArgs"].concat(methodArgs).concat(funcInfo.extraArgs||[]);
                         return this.genTemplateMethodCode(funcPath, funcArgs, funcInfo.template);
                     }).join("\n\n")}
                 },

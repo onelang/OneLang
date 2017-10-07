@@ -1,6 +1,6 @@
 export namespace OneAst {
     export interface Schema {
-        sourceType: "program"|"overlay";
+        sourceType: "program"|"overlay"|"stdlib";
         meta: { transforms?: { [name: string]: boolean } };
         globals: { [name: string]: VariableDeclaration };
         enums: { [name: string]: Enum };
@@ -31,6 +31,7 @@ export namespace OneAst {
         meta?: {
             iterable?: boolean;
             overlay?: boolean;
+            stdlib?: boolean;
         }
     }
 

@@ -1,7 +1,8 @@
 class MapTestClass {
     mapTest() {
         let mapObj = { x: 5 };
-        let values = Object.values(mapObj);
-        return values[0]
+        const keys = Object.keys(mapObj);
+        let containsX = "x" in mapObj;
+        return containsX
     }
 }
