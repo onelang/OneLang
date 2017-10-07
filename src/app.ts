@@ -18,7 +18,7 @@ compiler.parseFromTS(programCode, overlayCode);
 
 const langs = Object.values(langConfigs);
 for (const lang of langs) {
-    if (lang.name !== "java") continue;
+    //if (lang.name !== "go") continue;
 
     const langYaml = readFile(`langs/${lang.name}.yaml`);
     const codeGen = compiler.getCodeGenerator(langYaml, lang.name);

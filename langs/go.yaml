@@ -18,8 +18,14 @@ functions:
     template: |-
       MapHelper.keys({{self}})
   OneMap.values:
+    arguments:
+      - name: result
     template: |-
-      MapHelper.values({{self}})
+      {{result}} := make([]{{typeArgs[1]}}, 0, len({{self}}))
+
+      for  _, value := range {{self}} {
+        {{result}} = append({{result}}, value)
+      }
 extension: go
 casing:
   class: pascal_case

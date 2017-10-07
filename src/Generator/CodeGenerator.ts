@@ -94,7 +94,7 @@ class CodeGeneratorModel {
     
     typeName(type: one.Type) {
         const gen = this.internalMethodGenerators[type.className];
-        const result = gen ? gen.apply(this, [null, type]) : this.generator.getTypeName(type);
+        const result = gen ? gen.apply(this, [null, type.typeArguments.map(x => this.typeName(x))]) : this.generator.getTypeName(type);
         return result;
     }
 
@@ -103,40 +103,61 @@ class CodeGeneratorModel {
             && block.statements[0].stmtType === one.StatementType.If;
     }
 
-    gen(obj: one.Statement|one.Expression, ...args: any[]) {
+    getOverlayCallCode(callExpr: one.CallExpression, extraArgs: { [name: string]: any } = {}) {
+        const methodRef = <one.MethodReference> callExpr.method;
+        const metaPath = methodRef.methodRef.metaPath;
+        const methodPath = metaPath && metaPath.replace(/\//g, ".");
+        const method = this.generator.lang.functions[methodPath];
+        // TODO: unify overlay / normal method handling
+        if (!method) return null;
+
+        const methodArgs = method.arguments || [];
+        const exprCallArgs = callExpr.arguments.map(x => this.gen(x));
+        const allExtraArgNames = Object.keys(extraArgs);
+        const extraArgNames = allExtraArgNames.filter(x => methodArgs.map(y => y.name).includes(x));
+
+        // if not all extra arg are used then fail
+        if (allExtraArgNames.length !== extraArgNames.length)
+            return null;
+
+        if (methodArgs.length !== exprCallArgs.length + extraArgNames.length)
+            throw new Error(`Invalid argument count for '${methodPath}': expected: ${methodArgs.length}, actual: ${callExpr.arguments.length}.`);
+
+        // TODO: move this to AST visitor
+        let argIdx = 0;
+        for (let i = 0; i < callExpr.arguments.length; i++, argIdx++)
+            callExpr.arguments[i].paramName = methodArgs[argIdx].name;
+        for (let i = 0; i < extraArgNames.length; i++, argIdx++)
+            if (methodArgs[argIdx].name !== extraArgNames[i])
+                throw new Error(`Extra argument name mismatch: ${methodArgs[argIdx].name} != ${extraArgNames[i]}`);
+
+        const thisArg = methodRef.thisExpr ? this.gen(methodRef.thisExpr) : null;
+        const overlayFunc = this.internalMethodGenerators[methodPath];
+        const typeArgs = methodRef.thisExpr && methodRef.thisExpr.valueType.typeArguments.map(x => this.typeName(x));
+
+        const callArgs = exprCallArgs.concat(extraArgNames.map(x => extraArgs[x]));
+        const code = overlayFunc.apply(this, [thisArg, typeArgs].concat(callArgs));
+        return code;
+    }
+
+    gen(obj: one.Statement|one.Expression, ...genArgs: any[]) {
         const objExpr = (<one.Expression> obj);
         const type = (<one.Statement>obj).stmtType || objExpr.exprKind;
         
         if (type === one.ExpressionKind.Call) {
             const callExpr = <one.CallExpression> obj;
+            const overlayCallCode = this.getOverlayCallCode(callExpr);
+            if (overlayCallCode)
+                return overlayCallCode;
+
             const methodRef = <one.MethodReference> callExpr.method;
-            const metaPath = methodRef.methodRef.metaPath;
-            const methodPath = metaPath && metaPath.replace(/\//g, ".");
-            const method = this.generator.lang.functions[methodPath];
-            // TODO: unify overlay / normal method handling
-            if (method) {
-                const methodArgs = method.arguments || [];
+            const methodArgs = methodRef.methodRef.parameters;
+            if (methodArgs.length !== callExpr.arguments.length)
+                throw new Error(`Invalid argument count for '${methodRef.methodRef.metaPath}': expected: ${methodArgs.length}, actual: ${callExpr.arguments.length}.`);
 
-                if (methodArgs.length !== callExpr.arguments.length)
-                    throw new Error(`Invalid argument count for '${methodPath}': expected: ${method.arguments.length}, actual: ${callExpr.arguments.length}.`);
-
-                // TODO: move this to AST visitor
-                for (let i = 0; i < methodArgs.length; i++)
-                    callExpr.arguments[i].paramName = methodArgs[i].name;
-
-                const args = callExpr.arguments.map(x => this.gen(x));
-                const thisArg = methodRef.thisExpr ? this.gen(methodRef.thisExpr) : null;
-                const code = this.internalMethodGenerators[methodPath].apply(this, [thisArg].concat(args));
-                return code;
-            } else {
-                const methodArgs = methodRef.methodRef.parameters;
-                if (methodArgs.length !== callExpr.arguments.length)
-                    throw new Error(`Invalid argument count for '${methodPath}': expected: ${methodArgs.length}, actual: ${callExpr.arguments.length}.`);
-
-                // TODO: move this to AST visitor
-                for (let i = 0; i < methodArgs.length; i++)
-                    callExpr.arguments[i].paramName = methodArgs[i].name;
-            }
+            // TODO: move this to AST visitor
+            for (let i = 0; i < methodArgs.length; i++)
+                callExpr.arguments[i].paramName = methodArgs[i].name;
         } else if (type === one.ExpressionKind.VariableReference) {
             const varRef = <one.VariableRef> obj;
             if (varRef.varType === one.VariableRefType.InstanceField) {
@@ -173,9 +194,15 @@ class CodeGeneratorModel {
             genName = this.expressionGenerators[fullName] ? fullName : unaryName;
         } else if (type === one.StatementType.VariableDeclaration) {
             const varDecl = <one.VariableDeclaration> obj;
-            if (varDecl.initializer.exprKind === one.ExpressionKind.MapLiteral
+            const initType = varDecl.initializer.exprKind;
+            if (initType === one.ExpressionKind.MapLiteral
                     && this.expressionGenerators["MapLiteralDeclaration"])
                 genName = "MapLiteralDeclaration";
+            else if (initType === one.ExpressionKind.Call) {
+                const overlayCall = this.getOverlayCallCode(<one.CallExpression> varDecl.initializer, { result: varDecl.name });
+                if (overlayCall)
+                    return overlayCall;
+            }
         }
 
         if (objExpr.valueType && objExpr.valueType.typeArguments) {
@@ -185,7 +212,7 @@ class CodeGeneratorModel {
         const genFunc = this.expressionGenerators[genName];
         if (!genFunc)
             throw new Error(`Expression template not found: ${genName}!`);
-        const result = genFunc.call(this, obj, ...args);
+        const result = genFunc.call(this, obj, ...genArgs);
 
         //console.log("generate statement", obj, result);
 
@@ -355,7 +382,7 @@ export class CodeGenerator {
                 internalMethodGenerators: {
                     ${Object.keys(this.lang.functions).map(funcPath => {
                         const funcInfo = this.lang.functions[funcPath];
-                        const funcArgs = ["self"].concat((funcInfo.arguments||[]).map(x => x.name));
+                        const funcArgs = ["self", "typeArgs"].concat((funcInfo.arguments||[]).map(x => x.name));
                         return this.genTemplateMethodCode(funcPath, funcArgs, funcInfo.template);
                     }).join("\n\n")}
                 },
@@ -384,4 +411,3 @@ export class CodeGenerator {
         return this.generatedCode;
     }
 }
-

@@ -13,13 +13,9 @@ functions:
     template: |-
       {{self}}.size()
   OneArray:
-    arguments:
-      - name: type
-    template: "ArrayList<{{typeName(type.typeArguments[0])}}>"
+    template: "ArrayList<{{typeArgs[0]}}>"
   OneMap:
-    arguments:
-      - name: type
-    template: "HashMap<{{typeName(type.typeArguments[0])}}, {{typeName(type.typeArguments[1])}}>"
+    template: "HashMap<{{typeArgs[0]}}, {{typeArgs[1]}}>"
   OneMap.keys:
     template: |-
       {{self}}.keySet()
