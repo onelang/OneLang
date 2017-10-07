@@ -1,29 +1,3 @@
-functions:
-  OneConsole.print:
-    arguments:
-      - name: str
-    includes:
-      - iostream
-    template: |-
-      std::cout << {{str}} << std::endl
-  OneArray.add:
-    arguments:
-      - name: item
-    includes:
-      - vector
-    template: |-
-      {{self}}->push_back({{item}})
-  OneArray.length:
-    includes:
-      - vector
-    template: |-
-      {{self}}->size()
-  OneMap.keys:
-    template: |-
-      MapHelper::keys(*{{self}})
-  OneMap.values:
-    template: |-
-      MapHelper::values(*{{self}})
 extension: cpp
 casing:
   class: pascal_case
@@ -34,6 +8,20 @@ primitiveTypes:
   string: std::string
   number: int
 array: '{{type}}[]'
+functions:
+  OneConsole.print:
+    includes: [iostream]
+    template: "std::cout << {{str}} << std::endl"
+  OneArray.add:
+    includes: [vector]
+    template: "{{self}}->push_back({{item}})"
+  OneArray.length:
+    includes: [vector]
+    template: "{{self}}->size()"
+  OneMap.keys:
+    template: "MapHelper::keys(*{{self}})"
+  OneMap.values:
+    template: "MapHelper::values(*{{self}})"
 templates:
   testGenerator: |-
     int main()

@@ -1,23 +1,14 @@
 functions:
   OneConsole.print:
-    arguments:
-      - name: str
-    template: |-
-      print({{str}} . "\\n")
+    template: 'print({{str}} . "\\n")'
   OneArray.add:
-    arguments:
-      - name: item
-    template: |-
-      {{self}}[] = {{item}}
+    template: "{{self}}[] = {{item}}"
   OneArray.length:
-    template: |-
-      count({{self}})
+    template: "count({{self}})"
   OneMap.keys:
-    template: |-
-      array_keys({{self}})
+    template: "array_keys({{self}})"
   OneMap.values:
-    template: |-
-      array_values({{self}})
+    template: "array_values({{self}})"
 extension: php
 casing:
   class: pascal_case

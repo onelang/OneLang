@@ -1,27 +1,3 @@
-functions:
-  OneConsole.print:
-    arguments:
-      - name: str
-    template: |-
-      System.out.println({{str}})
-  OneArray.add:
-    arguments:
-      - name: item
-    template: |-
-      {{self}}.add({{item}})
-  OneArray.length:
-    template: |-
-      {{self}}.size()
-  OneArray:
-    template: "ArrayList<{{typeArgs[0]}}>"
-  OneMap:
-    template: "HashMap<{{typeArgs[0]}}, {{typeArgs[1]}}>"
-  OneMap.keys:
-    template: |-
-      new ArrayList({{self}}.keySet())
-  OneMap.values:
-    template: |-
-      new ArrayList({{self}}.values())
 extension: java
 casing:
   class: pascal_case
@@ -33,6 +9,21 @@ primitiveTypes:
   string: String
   number: Integer
 array: '{{type}}[]'
+functions:
+  OneConsole.print:
+    template: "System.out.println({{str}})"
+  OneArray.add:
+    template: "{{self}}.add({{item}})"
+  OneArray.length:
+    template: "{{self}}.size()"
+  OneArray:
+    template: "ArrayList<{{typeArgs[0]}}>"
+  OneMap:
+    template: "HashMap<{{typeArgs[0]}}, {{typeArgs[1]}}>"
+  OneMap.keys:
+    template: "new ArrayList({{self}}.keySet())"
+  OneMap.values:
+    template: "new ArrayList({{self}}.values())"
 templates:
   testGenerator: ""
   main: |

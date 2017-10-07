@@ -1,27 +1,18 @@
-functions:
-  OneConsole.print:
-    arguments:
-      - name: str
-    template: |-
-      puts {{str}}
-  OneArray.add:
-    arguments:
-      - name: item
-    template: |-
-      {{self}} << {{item}}
-  OneArray.length:
-    template: |-
-      {{self}}.length
-  OneMap.keys:
-    template: |-
-      {{self}}.keys
-  OneMap.values:
-    template: |-
-      {{self}}.values
 extension: rb
 casing:
   class: pascal_case
   method: snake_case
+functions:
+  OneConsole.print:
+    template: "puts {{str}}"
+  OneArray.add:
+    template: "{{self}} << {{item}}"
+  OneArray.length:
+    template: "{{self}}.length"
+  OneMap.keys:
+    template: "{{self}}.keys"
+  OneMap.values:
+    template: "{{self}}.values"
 templates:
   testGenerator: |-
     puts {{class}}.new().{{method}}()

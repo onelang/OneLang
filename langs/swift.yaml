@@ -1,24 +1,3 @@
-functions:
-  OneConsole.print:
-    arguments:
-      - name: str
-    template: |-
-      print({{str}})
-  OneArray.add:
-    arguments:
-      - name: item
-    mutates: true
-    template: |-
-      {{self}}.append({{item}})
-  OneArray.length:
-    template: |-
-      {{self}}.count
-  OneMap.keys:
-    template: |-
-      Array({{self}}.keys)
-  OneMap.values:
-    template: |-
-      Array({{self}}.values)
 extension: swift
 casing:
   class: pascal_case
@@ -28,6 +7,18 @@ primitiveTypes:
   number: Int
   void: Void
   boolean: Bool
+functions:
+  OneConsole.print:
+    template: "print({{str}})"
+  OneArray.add:
+    mutates: true
+    template: "{{self}}.append({{item}})"
+  OneArray.length:
+    template: "{{self}}.count"
+  OneMap.keys:
+    template: "Array({{self}}.keys)"
+  OneMap.values:
+    template: "Array({{self}}.values)"
 templates:
   testGenerator: |-
     print({{class}}().{{method}}())

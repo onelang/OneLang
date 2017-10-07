@@ -1,3 +1,13 @@
+extension: go
+casing:
+  class: pascal_case
+  method: pascal_case
+primitiveTypes:
+  void: ""
+  boolean: bool
+  string: string
+  number: int
+array: '[]{{type}}'
 functions:
   OneConsole.print:
     includes: [fmt]
@@ -22,16 +32,6 @@ functions:
       for  _, value := range {{self}} {
         {{result}} = append({{result}}, value)
       }
-extension: go
-casing:
-  class: pascal_case
-  method: pascal_case
-primitiveTypes:
-  void: ""
-  boolean: bool
-  string: string
-  number: int
-array: '[]{{type}}'
 templates:
   testGenerator: |-
     func main() {

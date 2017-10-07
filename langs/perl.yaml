@@ -1,27 +1,18 @@
-functions:
-  OneConsole.print:
-    arguments:
-      - name: str
-    template: |-
-      print {{str}}
-  OneArray.add:
-    arguments:
-      - name: item
-    template: |-
-      push {{self}}, {{item}}
-  OneArray.length:
-    template: |-
-      scalar({{self}})
-  OneMap.keys:
-    template: |-
-      keys {{self}}
-  OneMap.values:
-    template: |-
-      values {{self}}
 extension: pl
 casing:
   class: pascal_case
   method: camel_case
+functions:
+  OneConsole.print:
+    template: "print {{str}}"
+  OneArray.add:
+    template: "push {{self}}, {{item}}"
+  OneArray.length:
+    template: "scalar({{self}})"
+  OneMap.keys:
+    template: "keys {{self}}"
+  OneMap.values:
+    template: "values {{self}}"
 templates:
   testGenerator: |-
     package Program;

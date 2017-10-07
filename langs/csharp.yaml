@@ -1,10 +1,19 @@
+extension: cs
+casing:
+  class: pascal_case
+  method: pascal_case
+primitiveTypes:
+  void: void
+  boolean: bool
+  string: string
+  number: int
+  any: object
+array: '{{type}}[]'
 functions:
   OneConsole.print:
     includes: [System]
     template: "Console.WriteLine({{str}})"
   OneArray.add:
-    arguments:
-      - name: item
     includes: [System.Collections.Generic]
     template: "{{self}}.Add({{item}})"
   OneArray.length:
@@ -17,17 +26,6 @@ functions:
     template: "{{self}}.Values.ToArray()"
   OneMap.hasKey:
     template: "{{self}}.ContainsKey({{keyName}})"
-extension: cs
-casing:
-  class: pascal_case
-  method: pascal_case
-primitiveTypes:
-  void: void
-  boolean: bool
-  string: string
-  number: int
-  any: object
-array: '{{type}}[]'
 templates:
   testGenerator: |-
     public class Program
