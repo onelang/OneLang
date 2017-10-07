@@ -17,8 +17,10 @@ functions:
     template: |-
       {{self}}.Count
   OneMap.keys:
+    includes:
+      - System.Linq
     template: |-
-      {{self}}.Keys
+      {{self}}.Keys.ToArray()
   OneMap.values:
     includes:
       - System.Linq

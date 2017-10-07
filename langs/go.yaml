@@ -15,8 +15,14 @@ functions:
     template: |-
       len({{self}})
   OneMap.keys:
+    arguments:
+      - name: result
     template: |-
-      MapHelper.keys({{self}})
+      {{result}} := make([]{{typeArgs[0]}}, 0, len({{self}}))
+
+      for  key, _ := range {{self}} {
+        {{result}} = append({{result}}, key)
+      }
   OneMap.values:
     arguments:
       - name: result

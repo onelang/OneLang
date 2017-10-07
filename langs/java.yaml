@@ -18,7 +18,7 @@ functions:
     template: "HashMap<{{typeArgs[0]}}, {{typeArgs[1]}}>"
   OneMap.keys:
     template: |-
-      {{self}}.keySet()
+      new ArrayList({{self}}.keySet())
   OneMap.values:
     template: |-
       new ArrayList({{self}}.values())
