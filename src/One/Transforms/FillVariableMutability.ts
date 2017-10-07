@@ -26,6 +26,7 @@ export class FillVariableMutability extends AstVisitor<boolean> {
 
     protected visitVariable(stmt: one.VariableBase) {
         stmt.isMutable = false;
+        stmt.isUnused = true;
     }
 
     protected visitVariableRef(expr: one.VariableRef, isMutable: boolean) {
@@ -34,6 +35,8 @@ export class FillVariableMutability extends AstVisitor<boolean> {
 
         if (isMutable)
             expr.varRef.isMutable = true;
+
+        expr.varRef.isUnused = false;
     }
 
     protected visitUnaryExpression(expr: one.UnaryExpression) {

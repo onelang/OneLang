@@ -141,6 +141,7 @@ export namespace OneAst {
 
     export interface VariableBase extends NamedItem {
         type: Type;
+        isUnused?: boolean;
         isMutable?: boolean;
     }
 

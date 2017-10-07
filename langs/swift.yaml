@@ -76,7 +76,7 @@ templates:
   genVar:
     args:
       - name: itemVar
-    template: "{{if itemVar.isMutable}}var{{else}}let{{/if}} {{itemVar.name}} = {{gen(itemVar.initializer)}}"
+    template: "{{if itemVar.isMutable}}var{{else}}let{{/if}} {{if itemVar.isUnused}}_{{else}}{{itemVar.name}}{{/if}} = {{gen(itemVar.initializer)}}"
 expressions:
   call: |-
     {{gen(expr.method)}}(
