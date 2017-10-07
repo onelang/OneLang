@@ -19,7 +19,7 @@ export class Context {
 
         const newName = unique ? name : `${name}(${newIdx})`;
         
-        return new Context(this.path.concat(newName));
+        return new Context([...this.path, newName]);
     }
 }
 

@@ -16,7 +16,7 @@ export class TypeScriptParser {
     currMethod: one.Method;
 
     constructor(public sourceCode: string, filePath?: string) {
-        this.ast = new SimpleAst.default();
+        this.ast = new TsSimpleAst();
         this.ast.addSourceFileFromText(filePath || "main.ts", sourceCode);
         this.ast.addSourceFileFromText("/node_modules/typescript/lib/lib.d.ts", "");
         this.sourceFile = this.ast.getSourceFiles()[0];
@@ -32,7 +32,7 @@ export class TypeScriptParser {
         console.warn(`[TypeScriptParser] ${message}${node ? ` (nodeType: ${ts.SyntaxKind[node.kind]})` : ""}`, node || "");
     }
 
-    convertTsType2(tsType: ts.TypeNode) {
+    convertTsType(tsType: ts.TypeNode) {
         let result: one.Type;
 
         if (!tsType) {
@@ -53,7 +53,7 @@ export class TypeScriptParser {
                 result = one.Type.Generics(typeText);
             } else {
                 const typeArgs = typeRef.typeArguments;
-                result = one.Type.Class(typeText, typeArgs.map(x => this.convertTsType2(x)));
+                result = one.Type.Class(typeText, typeArgs.map(x => this.convertTsType(x)));
             }
         } else {
             this.logNodeError(`Unknown type node`, tsType);
@@ -62,34 +62,10 @@ export class TypeScriptParser {
         return result || one.Type.Any;
     }
 
-    convertTsType(tsType: ts.Type) {
-        let result: one.Type;
-
-        const typeText = (<any>tsType).intrinsicName || (tsType.symbol && tsType.symbol.name);
-        if (!typeText)
-            result = one.Type.Any;
-        else if (typeText === "number")
-            result = one.Type.Number;
-        else if (typeText === "string")
-            result = one.Type.String;
-        else if (typeText === "boolean")
-            result = one.Type.Boolean;
-        else if (typeText === "void")
-            result = one.Type.Void;
-        else if (this.currClass.typeArguments.includes(typeText) || this.currMethod.typeArguments.includes(typeText)) {
-            result = one.Type.Generics(typeText);
-        } else {
-            const typeArgs = <ts.Type[]>(<any>tsType).typeArguments || [];
-            result = one.Type.Class(typeText, typeArgs.map(x => this.convertTsType(x)));
-        }
-
-        return result;
-    }
-
     convertParameter(tsParam: SimpleAst.ParameterDeclaration) {
         return <one.MethodParameter> {
             name: tsParam.getName(),
-            type: this.convertTsType2(tsParam.compilerNode.type)
+            type: this.convertTsType(tsParam.compilerNode.type)
         };
     }
 
@@ -362,7 +338,7 @@ export class TypeScriptParser {
         
         for (const varDecl of this.sourceFile.getVariableDeclarations()) {
             const oneVarDecl = this.convertVariableDeclaration(varDecl.compilerNode);
-            oneVarDecl.type = this.convertTsType2(varDecl.compilerNode.type);
+            oneVarDecl.type = this.convertTsType(varDecl.compilerNode.type);
             schema.globals[varDecl.getName()] = oneVarDecl;
         }
 
@@ -380,7 +356,7 @@ export class TypeScriptParser {
             for (const tsProp of tsClass.getInstanceProperties()) {
                 if (tsProp instanceof SimpleAst.PropertyDeclaration || tsProp instanceof SimpleAst.ParameterDeclaration) {
                     const fieldSchema = classSchema.fields[tsProp.getName()] = <one.Field> { 
-                        type: this.convertTsType2(tsProp.compilerNode.type),
+                        type: this.convertTsType(tsProp.compilerNode.type),
                         visibility: this.convertVisibility(tsProp)
                     };
     
@@ -389,7 +365,7 @@ export class TypeScriptParser {
                         fieldSchema.defaultValue = initializer.getText();
                 } else if (tsProp instanceof SimpleAst.GetAccessorDeclaration) {
                     const propSchema = classSchema.properties[tsProp.getName()] = <one.Property> { 
-                        type: this.convertTsType2(tsProp.compilerNode.type),
+                        type: this.convertTsType(tsProp.compilerNode.type),
                         visibility: this.convertVisibility(tsProp),
                         getter: this.convertBlock(tsProp.compilerNode.body),
                     };
@@ -404,7 +380,7 @@ export class TypeScriptParser {
                 this.currMethod = methodSchema;
                 methodSchema.typeArguments = tsMethod.getTypeParameters().map(x => x.compilerNode.name.text);
                 methodSchema.static = tsMethod.isStatic();
-                methodSchema.returns = this.convertTsType2(tsMethod.compilerNode.type);
+                methodSchema.returns = this.convertTsType(tsMethod.compilerNode.type);
                 methodSchema.parameters = tsMethod.getParameters().map(tsParam => this.convertParameter(tsParam));
                 const tsBody = tsMethod.getBody();
                 methodSchema.body = tsBody && this.convertBlock(<ts.BlockLike> tsBody.compilerNode);

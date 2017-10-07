@@ -103,9 +103,10 @@ class CodeGeneratorModel {
             && block.statements[0].stmtType === one.StatementType.If;
     }
 
-    getOverlayCallCode(callExpr: one.CallExpression, extraArgs: { [name: string]: any } = {}) {
+    getOverlayCallCode(callExpr: one.CallExpression, extraArgs?: { [name: string]: any }) {
         const methodRef = <one.MethodReference> callExpr.method;
         
+        // TODO: I should either use metaPath or methodRef/classRef everywhere, but not hacks like this
         let metaPath = methodRef.methodRef.metaPath;
         if (!metaPath) {
             if (methodRef.methodRef.classRef)
@@ -122,35 +123,31 @@ class CodeGeneratorModel {
         const generatorName = `${className}.${methodName}`;
 
         const method = this.generator.lang.functions[generatorName];
-        if (!method) return null;
+        // if extraArgs was used then we only accept a method with extra args and vice versa
+        if (!method || (!!method.extraArgs !== !!extraArgs)) return null;
+
+        const extraArgValues = (method.extraArgs||[]).map(extraArgName => {
+            if (!extraArgs.hasOwnProperty(extraArgName))
+                throw new Error(`Extra argument '${extraArgName}' is missing!`);
+            return extraArgs[extraArgName];
+        });
 
         const stdMethod = this.generator.stdlib.classes[className].methods[methodName];
-        const methodArgs = stdMethod.parameters.map(x => x.name).concat(method.extraArgs||[]);
+        const methodArgs = stdMethod.parameters.map(x => x.name);
         const exprCallArgs = callExpr.arguments.map(x => this.gen(x));
-        const allExtraArgNames = Object.keys(extraArgs);
-        const extraArgNames = allExtraArgNames.filter(x => methodArgs.includes(x));
 
-        // if not all extra arg are used then fail
-        if (allExtraArgNames.length !== extraArgNames.length)
-            return null;
-
-        if (methodArgs.length !== exprCallArgs.length + extraArgNames.length)
+        if (methodArgs.length !== exprCallArgs.length)
             throw new Error(`Invalid argument count for '${generatorName}': expected: ${methodArgs.length}, actual: ${callExpr.arguments.length}.`);
 
         // TODO: move this to AST visitor
-        let argIdx = 0;
-        for (let i = 0; i < callExpr.arguments.length; i++, argIdx++)
-            callExpr.arguments[i].paramName = methodArgs[argIdx];
-        for (let i = 0; i < extraArgNames.length; i++, argIdx++)
-            if (methodArgs[argIdx] !== extraArgNames[i])
-                throw new Error(`Extra argument name mismatch: ${methodArgs[argIdx]} != ${extraArgNames[i]}`);
+        for (let i = 0; i < callExpr.arguments.length; i++)
+            callExpr.arguments[i].paramName = methodArgs[i];
 
         const thisArg = methodRef.thisExpr ? this.gen(methodRef.thisExpr) : null;
         const overlayFunc = this.internalMethodGenerators[generatorName];
         const typeArgs = methodRef.thisExpr && methodRef.thisExpr.valueType.typeArguments.map(x => this.typeName(x));
 
-        const callArgs = exprCallArgs.concat(extraArgNames.map(x => extraArgs[x]));
-        const code = overlayFunc.apply(this, [thisArg, typeArgs].concat(callArgs));
+        const code = overlayFunc.apply(this, [thisArg, typeArgs, ...exprCallArgs, ...extraArgValues]);
         return code;
     }
 
@@ -372,8 +369,8 @@ export class CodeGenerator {
     genTemplateMethodCode(name: string, args: string[], template: string) {
         const newName = /^[a-z]+$/.test(name) ? name : `"${name}"`;
         return tmpl`
-            ${newName}(${args.concat("...args").join(", ")}) {
-                ${this.genTemplate(template, args.concat("args"))}
+            ${newName}(${[...args, "...args"].join(", ")}) {
+                ${this.genTemplate(template, [...args, "args"])}
             },`;
     }
 
@@ -395,7 +392,7 @@ export class CodeGenerator {
                         const stdMethod = this.stdlib.classes[className].methods[methodName];
                         const methodArgs = stdMethod ? stdMethod.parameters.map(x => x.name) : [];
 
-                        const funcArgs = ["self", "typeArgs"].concat(methodArgs).concat(funcInfo.extraArgs||[]);
+                        const funcArgs = ["self", "typeArgs", ...methodArgs, ...funcInfo.extraArgs||[]];
                         return this.genTemplateMethodCode(funcPath, funcArgs, funcInfo.template);
                     }).join("\n\n")}
                 },

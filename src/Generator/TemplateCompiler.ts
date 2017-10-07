@@ -194,7 +194,7 @@ export class Template {
     getChildren(node: TemplateNode, vars: string[], newVars: string[] = []) {
         if (!node) return "";
 
-        const allVars = vars.concat(newVars);
+        const allVars = [...vars, ...newVars];
         const childTexts = (node.children||[]).map(child => this.templateToJS(child, allVars));
         for (let i = 0; i < childTexts.length; i++)
             if (node.children[i].value.params.inline === true) {
