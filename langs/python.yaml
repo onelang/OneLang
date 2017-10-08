@@ -13,6 +13,8 @@ functions:
     template: "{{self}}.keys()"
   OneMap.values:
     template: "{{self}}.values()"
+  OneMap.remove:
+    template: "del {{self}}[{{key}}]"
 templates:
   testGenerator: |-
     print {{class}}().{{method}}()

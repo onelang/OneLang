@@ -13,6 +13,8 @@ functions:
     template: "keys {{self}}"
   OneMap.values:
     template: "values {{self}}"
+  OneMap.remove:
+    template: "delete ${{self}}{{{key}}}"
 templates:
   testGenerator: |-
     package Program;

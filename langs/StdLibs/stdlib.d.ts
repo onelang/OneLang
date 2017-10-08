@@ -8,7 +8,12 @@ declare class OneArray<T> {
 }
 
 declare class OneMap<K, V> {
+    get(key: K): V;
+    set(key: K, value: V);
+    remove(key: K);
+
+    hasKey(key: K): boolean;
+
     keys(): OneArray<K>;
     values(): OneArray<V>;
-    hasKey(keyName: string): boolean;
 }

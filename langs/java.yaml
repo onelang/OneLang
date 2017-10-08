@@ -24,6 +24,8 @@ functions:
     template: "new ArrayList({{self}}.keySet())"
   OneMap.values:
     template: "new ArrayList({{self}}.values())"
+  OneMap.remove:
+    template: "{{self}}.remove({{key}})"
 templates:
   testGenerator: ""
   main: |

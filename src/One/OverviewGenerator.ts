@@ -123,7 +123,8 @@ export class OverviewGenerator extends AstVisitor<void> {
         this.add("- ");
 
         const addHdr = (line: string, postfix: string = "") => {
-            const typeText = expression.valueType ? ` [${expression.valueType.repr()}]` : "";
+            const typeText = !expression ? " [null]" : 
+                expression.valueType ? ` [${expression.valueType.repr()}]` : "";
             this.addLine(`${line}${typeText}${postfix}`);
         };
 

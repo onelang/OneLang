@@ -19,6 +19,8 @@ functions:
     template: "Object.keys({{self}})"
   OneMap.values:
     template: "Object.values({{self}})"
+  OneMap.remove:
+    template: "delete {{self}}[{{key}}]"
 templates:
   testGenerator: |-
     console.log(new {{class}}().{{method}}());

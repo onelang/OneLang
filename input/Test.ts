@@ -4,7 +4,7 @@ class TestClass {
 
         //let containsX = "x" in mapObj;
         //mapObj["z"] = 9;
-        //delete mapObj["x"]
+        delete mapObj["x"]
 
         let keysVar = Object.keys(mapObj);
         let valuesVar = Object.values(mapObj);

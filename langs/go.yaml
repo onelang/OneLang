@@ -30,6 +30,8 @@ functions:
       for  _, value := range {{self}} {
         {{result}} = append({{result}}, value)
       }
+  OneMap.remove:
+    template: "delete({{self}}, {{key}})"
 templates:
   testGenerator: |-
     func main() {

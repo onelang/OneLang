@@ -24,6 +24,8 @@ functions:
   OneMap.values:
     includes: [System.Linq]
     template: "{{self}}.Values.ToArray()"
+  OneMap.remove:
+    template: "{{self}}.Remove({{key}})"
   OneMap.hasKey:
     template: "{{self}}.ContainsKey({{keyName}})"
 templates:

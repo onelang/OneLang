@@ -163,6 +163,9 @@ class CodeGeneratorModel {
 
             const methodRef = <one.MethodReference> callExpr.method;
             const methodArgs = methodRef.methodRef.parameters;
+            if (!methodArgs)
+                throw new Error(`Method implementation is not found: ${methodRef.methodRef.metaPath}`);
+
             if (methodArgs.length !== callExpr.arguments.length)
                 throw new Error(`Invalid argument count for '${methodRef.methodRef.metaPath}': expected: ${methodArgs.length}, actual: ${callExpr.arguments.length}.`);
 

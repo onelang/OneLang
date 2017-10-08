@@ -19,6 +19,9 @@ functions:
     template: "Array({{self}}.keys)"
   OneMap.values:
     template: "Array({{self}}.values)"
+  OneMap.remove:
+    mutates: true
+    template: "{{self}}[{{key}}] = nil"
 templates:
   testGenerator: |-
     print({{class}}().{{method}}())

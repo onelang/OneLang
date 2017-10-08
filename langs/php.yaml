@@ -9,6 +9,8 @@ functions:
     template: "array_keys({{self}})"
   OneMap.values:
     template: "array_values({{self}})"
+  OneMap.remove:
+    template: "unset({{self}}[{{key}}])"
 extension: php
 casing:
   class: pascal_case

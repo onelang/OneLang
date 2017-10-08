@@ -28,4 +28,22 @@ class TsArray<T> {
 
 class TsMap<K,V> {
     _one: OneMap<K,V>;
+
+    delete(key: K) {
+        this._one.remove(key);
+    }
+}
+
+class TsMapOperators {
+    op_in<K,V>(left: K, right: TsMap<K,V>): boolean {
+        return right._one.hasKey(left);
+    }
+
+    op_set<K,V>(map: OneMap<K,V>, key: K, value: V) {
+        map.set(key, value);
+    }
+
+    op_get<K,V>(map: OneMap<K,V>, key: K): V {
+        return map.get(key);
+    }
 }

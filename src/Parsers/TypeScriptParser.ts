@@ -197,6 +197,23 @@ export class TypeScriptParser {
                 exprKind: one.ExpressionKind.MapLiteral,
                 properties: expr.properties.map((x: ts.PropertyAssignment) => this.convertVariableDeclaration(x))
             };
+        } else if (tsExpr.kind === ts.SyntaxKind.DeleteExpression) {
+            const expr = <ts.DeleteExpression> tsExpr;
+            const objToDelete = <one.ElementAccessExpression> this.convertExpression(expr.expression);
+            if (objToDelete.exprKind !== one.ExpressionKind.ElementAccess) {
+                this.logNodeError(`Delete is not supported for this kind of expression: ${ts.SyntaxKind[objToDelete.exprKind]}`, expr);
+                return null;
+            }
+
+            return <one.CallExpression> {
+                exprKind: one.ExpressionKind.Call,
+                method: <one.PropertyAccessExpression> {
+                    exprKind: one.ExpressionKind.PropertyAccess,
+                    object: objToDelete.object,
+                    propertyName: "delete"
+                },
+                arguments: [objToDelete.elementExpr]
+            };
         } else {
             const kindName = ts.SyntaxKind[tsExpr.kind];
             const knownKeywords = ["this", "super"];

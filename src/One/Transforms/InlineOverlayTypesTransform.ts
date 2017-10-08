@@ -80,6 +80,10 @@ class ReplaceReferences extends AstVisitor<void> {
         AstHelper.replaceProperties(expr, newCallExpr);
     }
 
+    protected visitBinaryExpression(expr: one.BinaryExpression) {
+        super.visitBinaryExpression(expr, null);
+    }
+
     protected visitVariableRef(expr: one.VariableRef) {
         if (expr.varType !== one.VariableRefType.InstanceField) return;
 

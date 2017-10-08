@@ -263,7 +263,7 @@ export namespace OneAst {
     }
 
     export interface CallExpression extends Expression {
-        method: Identifier|MethodReference;
+        method: Expression|MethodReference;
         arguments: CallArgument[];
     }
 
