@@ -5,7 +5,7 @@ casing:
 primitiveTypes:
   any: Object
   void: void
-  boolean: bool
+  boolean: boolean
   string: String
   number: Integer
 array: '{{type}}[]'
@@ -26,6 +26,8 @@ functions:
     template: "new ArrayList({{self}}.values())"
   OneMap.remove:
     template: "{{self}}.remove({{key}})"
+  OneMap.hasKey:
+    template: "{{self}}.containsKey({{key}})"
 templates:
   testGenerator: ""
   main: |

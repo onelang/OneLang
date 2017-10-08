@@ -20,10 +20,12 @@ functions:
     template: "{{self}}->size()"
   OneMap.keys:
     template: "MapHelper::keys(*{{self}})"
-  OneMap.remove:
-    template: "{{self}}->erase({{key}})"
   OneMap.values:
     template: "MapHelper::values(*{{self}})"
+  OneMap.remove:
+    template: "{{self}}->erase({{key}})"
+  OneMap.hasKey:
+    template: "{{self}}->find({{key}}) != {{self}}->end()"
 templates:
   testGenerator: |-
     int main()

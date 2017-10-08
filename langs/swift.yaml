@@ -22,6 +22,8 @@ functions:
   OneMap.remove:
     mutates: true
     template: "{{self}}[{{key}}] = nil"
+  OneMap.hasKey:
+    template: "{{self}}[{{key}}] != nil"
 templates:
   testGenerator: |-
     print({{class}}().{{method}}())

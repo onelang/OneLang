@@ -27,7 +27,7 @@ functions:
   OneMap.remove:
     template: "{{self}}.Remove({{key}})"
   OneMap.hasKey:
-    template: "{{self}}.ContainsKey({{keyName}})"
+    template: "{{self}}.ContainsKey({{key}})"
 templates:
   testGenerator: |-
     public class Program

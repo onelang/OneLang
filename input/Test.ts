@@ -1,14 +1,14 @@
 class TestClass {
-    mapTest(): string {
+    mapTest(): boolean {
         let mapObj = { x: 5, y: 3 };
 
-        //let containsX = "x" in mapObj;
+        let containsX = "x" in mapObj;
         //mapObj["z"] = 9;
         delete mapObj["x"]
 
         let keysVar = Object.keys(mapObj);
         let valuesVar = Object.values(mapObj);
-        return keysVar[0];
+        return containsX;
     }
 
     ifTest(x: number): string {
@@ -77,7 +77,7 @@ class TestClass {
         return stuff;
     }
 
-    testMethod(): string {
+    testMethod(): boolean {
         return this.mapTest();
     }
 }

@@ -4,6 +4,7 @@ import { ISchemaTransform } from "../SchemaTransformer";
 import { SchemaContext } from "../SchemaContext";
 import { OverviewGenerator } from "../OverviewGenerator";
 import { AstHelper } from "../AstHelper";
+import { arrayEq } from "../../Utils/Helpers";
 
 export class VariableReplacer extends AstVisitor<void> {
     thisReplacement: one.Expression;
@@ -36,31 +37,24 @@ export class VariableReplacer extends AstVisitor<void> {
 class ReplaceReferences extends AstVisitor<void> {
     constructor(public schemaCtx: SchemaContext) { super(); }
 
-    protected visitCallExpression(expr: one.CallExpression) {
-        super.visitCallExpression(expr, null);
-
-        if (expr.method.exprKind !== one.ExpressionKind.MethodReference) 
-            return;
-
-        const methodRef = <one.MethodReference> expr.method;
-        const method = methodRef.methodRef;
+    protected overlayMethod(expr: one.Expression, method: one.Method, thisExpr: one.Expression, args: one.Expression[]) {
         const cls = method.classRef;
-
+        
         if (!(cls.meta && cls.meta.overlay))
             return;
             
-        if (method.parameters.length != expr.arguments.length) {
+        if (method.parameters.length != args.length) {
             this.log(`Called overlay method ${AstHelper.methodRepr(method)} ` +
-                `with parameters (${expr.arguments.map(x => x.valueType.repr()).join(", ")})`);
+                `with parameters (${args.map(x => x.valueType.repr()).join(", ")})`);
             return;
         }
 
         const statements = AstHelper.clone(method.body.statements);
 
         const varReplacer = new VariableReplacer();
-        varReplacer.thisReplacement = methodRef.thisExpr;
+        varReplacer.thisReplacement = thisExpr;
         for (var i = 0; i < method.parameters.length; i++)
-            varReplacer.replacements[method.parameters[i].metaPath] = expr.arguments[i];
+            varReplacer.replacements[method.parameters[i].metaPath] = args[i];
 
         // TODO: 
         //  - resolve variable declaration conflicts
@@ -80,7 +74,29 @@ class ReplaceReferences extends AstVisitor<void> {
         AstHelper.replaceProperties(expr, newCallExpr);
     }
 
+    protected visitCallExpression(expr: one.CallExpression) {
+        super.visitCallExpression(expr, null);
+
+        if (expr.method.exprKind !== one.ExpressionKind.MethodReference) 
+            return;
+
+        const methodRef = <one.MethodReference> expr.method;
+        this.overlayMethod(expr, methodRef.methodRef, methodRef.thisExpr, expr.arguments);
+    }
+
     protected visitBinaryExpression(expr: one.BinaryExpression) {
+        for (const operand of [expr.left, expr.right]) {
+            const className = `${(operand.valueType.className || operand.valueType.typeKind).ucFirst()}Operators`;
+            const cls = this.schemaCtx.getClass(className);
+            if (!cls) continue;
+
+            const method = cls.methods[`op_${expr.operator}`];
+            if (!method || !arrayEq(method.parameters.map(x => x.name), ["left", "right"])) continue;
+
+            this.overlayMethod(expr, method, null, [expr.left, expr.right]);
+            return;
+        }
+
         super.visitBinaryExpression(expr, null);
     }
 

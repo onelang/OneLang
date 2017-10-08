@@ -32,6 +32,9 @@ functions:
       }
   OneMap.remove:
     template: "delete({{self}}, {{key}})"
+  OneMap.hasKey:
+    extraArgs: [result]
+    template: "_, {{result}} := {{self}}[{{key}}]"
 templates:
   testGenerator: |-
     func main() {

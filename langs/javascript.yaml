@@ -21,6 +21,8 @@ functions:
     template: "Object.values({{self}})"
   OneMap.remove:
     template: "delete {{self}}[{{key}}]"
+  OneMap.hasKey:
+    template: "{{key}} in {{self}}"
 templates:
   testGenerator: |-
     console.log(new {{class}}().{{method}}());

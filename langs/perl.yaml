@@ -14,7 +14,9 @@ functions:
   OneMap.values:
     template: "values {{self}}"
   OneMap.remove:
-    template: "delete ${{self}}{{{key}}}"
+    template: "delete {{self}}{{{key}}}"
+  OneMap.hasKey:
+    template: "exists {{self}}{{{key}}}"
 templates:
   testGenerator: |-
     package Program;
