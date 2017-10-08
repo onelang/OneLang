@@ -14,9 +14,9 @@ functions:
   OneMap.values:
     template: "values {{self}}"
   OneMap.remove:
-    template: "delete {{self}}{{{key}}}"
+    template: "delete {{hackHashToVar(self)}}{{{key}}}"
   OneMap.hasKey:
-    template: "exists {{self}}{{{key}}}"
+    template: "exists {{hackHashToVar(self)}}{{{key}}}"
 templates:
   testGenerator: |-
     package Program;
@@ -77,7 +77,7 @@ templates:
     args:
       - name: item
       - name: asVar
-    template: "{{if item.type.isOneArray && !asVar}}@{{else}}${{/if}}{{item.name}}"
+    template: "{{if item.type.isOneMap && !asVar}}%{{else}}{{if item.type.isOneArray && !asVar}}@{{else}}${{/if}}{{/if}}{{item.name}}"
 expressions:
   call: |-
     {{gen(expr.method)}}(
@@ -100,11 +100,11 @@ expressions:
   classReference: "{{expr.classRef.name}}"
   arrayLiteral: "({{genParams(expr.items)}})"
   mapLiteral: |- 
-    {
+    (
       {{for prop in expr.properties|sep="\n"}}
         {{prop.name}} => {{gen(prop.initializer)}},
       {{/for}}
-    }
+    )
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}->{{expr.methodRef.name}}"
   staticMethod: "{{expr.methodRef.classRef.name}}::{{expr.methodRef.name}}"

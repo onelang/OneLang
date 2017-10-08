@@ -74,6 +74,7 @@ export namespace OneAst {
         get isGenerics() { return this.typeKind === TypeKind.Generics; }
         get isNumber() { return this.typeKind === TypeKind.Number; }
         get isOneArray() { return this.className === "OneArray"; }
+        get isOneMap() { return this.className === "OneMap"; }
 
         equals(other: Type) {
             if (this.typeKind !== other.typeKind)
