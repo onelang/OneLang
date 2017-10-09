@@ -43,6 +43,10 @@ class TsArray<T> {
 class TsMap<K,V> {
     _one: OneMap<K,V>;
 
+    set(key: K, value: V) {
+        this._one.set(key, value);
+    }
+
     delete(key: K) {
         this._one.remove(key);
     }

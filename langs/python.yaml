@@ -17,6 +17,10 @@ functions:
     template: "del {{self}}[{{key}}]"
   OneMap.hasKey:
     template: "{{key}} in {{self}}"
+  OneMap.set:
+    template: "{{self}}[{{key}}] = {{value}}"
+  OneMap.get:
+    template: "{{self}}[{{key}}]"
 templates:
   testGenerator: |-
     print {{class}}().{{method}}()

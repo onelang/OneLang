@@ -16,6 +16,7 @@ import { LangFileSchema } from "./Generator/LangFileSchema";
 import { CodeGenerator } from "./Generator/CodeGenerator";
 import { FillVariableMutability } from "./One/Transforms/FillVariableMutability";
 import { TriviaCommentTransform } from "./One/Transforms/TriviaCommentTransform";
+import { GenericTransformer, GenericTransformerFile } from "./One/Transforms/GenericTransformer";
 
 declare var YAML: any;
 
@@ -32,14 +33,17 @@ export class OneCompiler {
     schemaCtx: SchemaContext;
     overlayCtx: SchemaContext;
     stdlibCtx: SchemaContext;
+    genericTransformer: GenericTransformer;
 
     saveSchemaStateCallback: (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, data: string) => void;
 
-    parseFromTS(programCode: string, overlayCode: string, stdlibCode: string) {
+    parseFromTS(programCode: string, overlayCode: string, stdlibCode: string, genericTransformerYaml: string) {
         overlayCode = overlayCode.replace(/^[^\n]*<reference.*stdlib.d.ts[^\n]*\n/, "");
         const schema = TypeScriptParser.parseFile(programCode);
         const overlaySchema = TypeScriptParser.parseFile(overlayCode);
         const stdlibSchema = TypeScriptParser.parseFile(stdlibCode);
+        this.genericTransformer = new GenericTransformer(<GenericTransformerFile>
+            YAML.parse(genericTransformerYaml));
 
         // TODO: hack
         overlaySchema.classes["TsArray"].meta = { iterable: true };
@@ -81,16 +85,19 @@ export class OneCompiler {
         this.schemaCtx.mapType = "TsMap";
         this.saveSchemaState(this.schemaCtx, `0_Original`);
         
+        this.genericTransformer.process(this.schemaCtx.schema);
+        this.saveSchemaState(this.schemaCtx, `1_GenericTransforms`);
+        
         this.schemaCtx.addDependencySchema(overlaySchema, "overlay");
         this.schemaCtx.addDependencySchema(stdlibSchema, "stdlib");
         this.schemaCtx.ensureTransforms("inferTypes");
-        this.saveSchemaState(this.schemaCtx, `1_TypesInferred`);
+        this.saveSchemaState(this.schemaCtx, `2_TypesInferred`);
         
         this.schemaCtx.ensureTransforms("inlineOverlayTypes");
-        this.saveSchemaState(this.schemaCtx, `2_OverlayTypesInlined`);
+        this.saveSchemaState(this.schemaCtx, `3_OverlayTypesInlined`);
 
         this.schemaCtx.ensureTransforms("triviaComment");
-        this.saveSchemaState(this.schemaCtx, `3_ExtendedInfoAdded`);
+        this.saveSchemaState(this.schemaCtx, `4_ExtendedInfoAdded`);
 
         // TODO: looks like as a giantic hack...
         this.schemaCtx.schema.meta.transforms["inferTypes"] = false;
@@ -98,7 +105,7 @@ export class OneCompiler {
         this.schemaCtx.mapType = "OneMap";
 
         this.schemaCtx.ensureTransforms("inferTypes");
-        this.saveSchemaState(this.schemaCtx, `4_TypesInferredAgain`);
+        this.saveSchemaState(this.schemaCtx, `5_TypesInferredAgain`);
     }
 
     getCodeGenerator(langCode: string, langName?: string) {

@@ -13,6 +13,10 @@ functions:
     template: "unset({{self}}[{{key}}])"
   OneMap.hasKey:
     template: "array_key_exists({{key}}, {{self}})"
+  OneMap.set:
+    template: "{{self}}[{{key}}] = {{value}}"
+  OneMap.get:
+    template: "{{self}}[{{key}}]"
 extension: php
 casing:
   class: pascal_case

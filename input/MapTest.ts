@@ -1,10 +1,11 @@
 class MapTestClass {
     mapTest() {
         let mapObj = { x: 5 };
-        let containsX = "x" in mapObj;
-        delete mapObj["x"];
+        //let containsX = "x" in mapObj;
+        //delete mapObj["x"];
         mapObj["x"] = 3;
-        const xVal = mapObj["x"];
-        return containsX
+        return mapObj["x"];
+        //const xVal = mapObj["x"];
+        //return containsX
     }
 }

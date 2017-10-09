@@ -35,6 +35,10 @@ functions:
   OneMap.hasKey:
     extraArgs: [result]
     template: "_, {{result}} := {{self}}[{{key}}]"
+  OneMap.set:
+    template: "{{self}}[{{key}}] = {{value}}"
+  OneMap.get:
+    template: "{{self}}[{{key}}]"
 templates:
   testGenerator: |-
     func main() {

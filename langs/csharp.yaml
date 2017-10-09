@@ -28,6 +28,10 @@ functions:
     template: "{{self}}.Remove({{key}})"
   OneMap.hasKey:
     template: "{{self}}.ContainsKey({{key}})"
+  OneMap.set:
+    template: "{{self}}[{{key}}] = {{value}}"
+  OneMap.get:
+    template: "{{self}}[{{key}}]"
 templates:
   testGenerator: |-
     public class Program

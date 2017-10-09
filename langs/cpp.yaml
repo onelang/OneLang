@@ -26,6 +26,10 @@ functions:
     template: "{{self}}->erase({{key}})"
   OneMap.hasKey:
     template: "{{self}}->find({{key}}) != {{self}}->end()"
+  OneMap.set:
+    template: "(*{{self}})[{{key}}] = {{value}}"
+  OneMap.get:
+    template: "(*{{self}})[{{key}}]"
 templates:
   testGenerator: |-
     int main()

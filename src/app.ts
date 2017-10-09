@@ -5,7 +5,9 @@ import { writeFile, readFile, jsonRequest } from "./Utils/NodeUtils";
 import { OneCompiler } from "./OneCompiler";
 import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs";
 
-const prgName = "MapTest";
+declare var YAML;
+
+const prgName = "Test";
 
 const compiler = new OneCompiler();
 compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, data: string) => {
@@ -15,7 +17,8 @@ compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaTyp
 const programCode = readFile(`input/${prgName}.ts`);
 const overlayCode = readFile(`langs/NativeResolvers/typescript.ts`);
 const stdlibCode = readFile(`langs/StdLibs/stdlib.d.ts`);
-compiler.parseFromTS(programCode, overlayCode, stdlibCode);
+const genericTransforms = readFile(`langs/NativeResolvers/GenericTransforms.yaml`);
+compiler.parseFromTS(programCode, overlayCode, stdlibCode, genericTransforms);
 
 const langs = Object.values(langConfigs);
 for (const lang of langs) {

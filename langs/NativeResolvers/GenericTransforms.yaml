@@ -1,0 +1,17 @@
+transforms:
+  propertySetter:
+    input:
+      exprKind: Binary
+      operator: =
+      left:
+        exprKind: ElementAccess
+        object: $object
+        elementExpr: $elementExpr
+      right: $newValue
+    output:
+      exprKind: Call
+      method:
+        exprKind: PropertyAccess
+        object: $object
+        propertyName: set
+      arguments: [$elementExpr, $newValue]

@@ -17,6 +17,10 @@ functions:
     template: "delete {{hackHashToVar(self)}}{{{key}}}"
   OneMap.hasKey:
     template: "exists {{hackHashToVar(self)}}{{{key}}}"
+  OneMap.set:
+    template: "{{self}}[{{key}}] = {{value}}"
+  OneMap.get:
+    template: "{{self}}[{{key}}]"
 templates:
   testGenerator: |-
     package Program;
@@ -113,7 +117,7 @@ expressions:
   instanceField: "{{gen(expr.thisExpr)}}->{{expr.varRef.name}}"
   trueLiteral: "1"
   falseLiteral: "0"
-  elementAccess: "{{gen(expr.object, true)}}[{{gen(expr.elementExpr)}}]"
+  elementAccess: "{{gen(expr.object, true)}}{{{gen(expr.elementExpr)}}}"
   thisReference: $self
   foreach: |-
     foreach my ${{expr.itemVariable.name}} ({{gen(expr.items)}}) {

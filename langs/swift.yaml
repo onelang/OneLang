@@ -24,6 +24,10 @@ functions:
     template: "{{self}}[{{key}}] = nil"
   OneMap.hasKey:
     template: "{{self}}[{{key}}] != nil"
+  OneMap.set:
+    template: "{{self}}[{{key}}] = {{value}}"
+  OneMap.get:
+    template: "{{self}}[{{key}}]!"
 templates:
   testGenerator: |-
     print({{class}}().{{method}}())
