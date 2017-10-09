@@ -5,6 +5,10 @@ functions:
     template: "{{self}}[] = {{item}}"
   OneArray.length:
     template: "count({{self}})"
+  OneArray.get:
+    template: "{{self}}[{{index}}]"
+  OneArray.set:
+    template: "{{self}}[{{index}}] = {{value}}"
   OneMap.keys:
     template: "array_keys({{self}})"
   OneMap.values:
@@ -13,10 +17,10 @@ functions:
     template: "unset({{self}}[{{key}}])"
   OneMap.hasKey:
     template: "array_key_exists({{key}}, {{self}})"
-  OneMap.set:
-    template: "{{self}}[{{key}}] = {{value}}"
   OneMap.get:
     template: "{{self}}[{{key}}]"
+  OneMap.set:
+    template: "{{self}}[{{key}}] = {{value}}"
 extension: php
 casing:
   class: pascal_case

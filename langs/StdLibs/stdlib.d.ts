@@ -5,6 +5,8 @@ declare class OneConsole {
 declare class OneArray<T> {
     length: number;
     add(item: T);
+    get(index: number);
+    set(index: number, value: T);
 }
 
 declare class OneMap<K, V> {

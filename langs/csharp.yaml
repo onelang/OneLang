@@ -18,6 +18,10 @@ functions:
     template: "{{self}}.Add({{item}})"
   OneArray.length:
     template: "{{self}}.Count"
+  OneArray.get:
+    template: "{{self}}[{{index}}]"
+  OneArray.set:
+    template: "{{self}}[{{index}}] = {{value}}"
   OneMap.keys:
     includes: [System.Linq]
     template: "{{self}}.Keys.ToArray()"
@@ -28,10 +32,10 @@ functions:
     template: "{{self}}.Remove({{key}})"
   OneMap.hasKey:
     template: "{{self}}.ContainsKey({{key}})"
-  OneMap.set:
-    template: "{{self}}[{{key}}] = {{value}}"
   OneMap.get:
     template: "{{self}}[{{key}}]"
+  OneMap.set:
+    template: "{{self}}[{{key}}] = {{value}}"
 templates:
   testGenerator: |-
     public class Program

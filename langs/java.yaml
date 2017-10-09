@@ -18,6 +18,10 @@ functions:
     template: "{{self}}.size()"
   OneArray:
     template: "ArrayList<{{typeArgs[0]}}>"
+  OneArray.get:
+    template: "{{self}}.get({{index}})"
+  OneArray.set:
+    template: "{{self}}.set({{index}}], {{value}})"
   OneMap:
     template: "HashMap<{{typeArgs[0]}}, {{typeArgs[1]}}>"
   OneMap.keys:
@@ -28,10 +32,10 @@ functions:
     template: "{{self}}.remove({{key}})"
   OneMap.hasKey:
     template: "{{self}}.containsKey({{key}})"
-  OneMap.set:
-    template: "{{self}}.put({{key}}, {{value}})"
   OneMap.get:
     template: "{{self}}.get({{key}})"
+  OneMap.set:
+    template: "{{self}}.put({{key}}, {{value}})"
 templates:
   testGenerator: ""
   main: |

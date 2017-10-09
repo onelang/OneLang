@@ -12,6 +12,14 @@ class OneArray<T> {
     add(item: T) {
         this.items.push(item);
     }
+
+    get(index: number) {
+        return this.items[index];
+    }
+
+    set(index: number, value: T) {
+        this.items[index] = value;
+    }
 }
 
 class OneMap<K, V> {

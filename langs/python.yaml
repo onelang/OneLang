@@ -9,6 +9,10 @@ functions:
     template: "{{self}}.append({{item}})"
   OneArray.length:
     template: "len({{self}})"
+  OneArray.get:
+    template: "{{self}}[{{index}}]"
+  OneArray.set:
+    template: "{{self}}[{{index}}] = {{value}}"
   OneMap.keys:
     template: "{{self}}.keys()"
   OneMap.values:
@@ -17,10 +21,10 @@ functions:
     template: "del {{self}}[{{key}}]"
   OneMap.hasKey:
     template: "{{key}} in {{self}}"
-  OneMap.set:
-    template: "{{self}}[{{key}}] = {{value}}"
   OneMap.get:
     template: "{{self}}[{{key}}]"
+  OneMap.set:
+    template: "{{self}}[{{key}}] = {{value}}"
 templates:
   testGenerator: |-
     print {{class}}().{{method}}()

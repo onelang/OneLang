@@ -15,3 +15,15 @@ transforms:
         object: $object
         propertyName: set
       arguments: [$elementExpr, $newValue]
+  propertyGetter:
+    input:
+      exprKind: ElementAccess
+      object: $object
+      elementExpr: $elementExpr
+    output:
+      exprKind: Call
+      method:
+        exprKind: PropertyAccess
+        object: $object
+        propertyName: get
+      arguments: [$elementExpr]

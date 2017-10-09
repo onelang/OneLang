@@ -104,8 +104,8 @@ class CodeGeneratorModel {
     }
 
     // TODO: hack: understand how perl works and fix this...
-    hackHashToVar(name: string) {
-        return name.replace(/%/g, '$');
+    hackPerlToVar(name: string) {
+        return name.replace(/%|@/g, '$');
     }
 
     getOverlayCallCode(callExpr: one.CallExpression, extraArgs?: { [name: string]: any }) {

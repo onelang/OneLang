@@ -9,18 +9,22 @@ functions:
     template: "push {{self}}, {{item}}"
   OneArray.length:
     template: "scalar({{self}})"
+  OneArray.get:
+    template: "{{hackPerlToVar(self)}}[{{index}}]"
+  OneArray.set:
+    template: "{{hackPerlToVar(self)}}[{{index}}] = {{value}}"
   OneMap.keys:
     template: "keys {{self}}"
   OneMap.values:
     template: "values {{self}}"
   OneMap.remove:
-    template: "delete {{hackHashToVar(self)}}{{{key}}}"
+    template: "delete {{hackPerlToVar(self)}}{{{key}}}"
   OneMap.hasKey:
-    template: "exists {{hackHashToVar(self)}}{{{key}}}"
-  OneMap.set:
-    template: "{{self}}[{{key}}] = {{value}}"
+    template: "exists {{hackPerlToVar(self)}}{{{key}}}"
   OneMap.get:
-    template: "{{self}}[{{key}}]"
+    template: "{{hackPerlToVar(self)}}{{{key}}}"
+  OneMap.set:
+    template: "{{hackPerlToVar(self)}}{{{key}}} = {{value}}"
 templates:
   testGenerator: |-
     package Program;

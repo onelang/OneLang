@@ -18,6 +18,10 @@ functions:
   OneArray.length:
     includes: [vector]
     template: "{{self}}->size()"
+  OneArray.get:
+    template: "(*{{self}})[{{index}}]"
+  OneArray.set:
+    template: "(*{{self}})[{{index}}] = {{value}}"
   OneMap.keys:
     template: "MapHelper::keys(*{{self}})"
   OneMap.values:
@@ -26,10 +30,10 @@ functions:
     template: "{{self}}->erase({{key}})"
   OneMap.hasKey:
     template: "{{self}}->find({{key}}) != {{self}}->end()"
-  OneMap.set:
-    template: "(*{{self}})[{{key}}] = {{value}}"
   OneMap.get:
     template: "(*{{self}})[{{key}}]"
+  OneMap.set:
+    template: "(*{{self}})[{{key}}] = {{value}}"
 templates:
   testGenerator: |-
     int main()
