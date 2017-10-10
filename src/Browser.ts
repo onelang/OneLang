@@ -8,16 +8,24 @@ import { OneCompiler } from "./OneCompiler";
 
 declare var YAML: any;
 
+const qs = {};
+location.search.substr(1).split('&').map(x => x.split('=')).forEach(x => qs[x[0]] = x[1]);
+const localhost = location.hostname === "127.0.0.1" || location.hostname === "localhost";
+const serverhost = qs["server"] || (localhost && "127.0.0.1");
+
 async function downloadTextFile(url: string): Promise<string> {
     const response = await (await fetch(url)).text();
     return response;
 }
 
 async function runLang(langConfig: LangConfig, code?: string) {
+    if (!serverhost)
+        throw new Error("No compilation backend!");
+
     if (code)
         langConfig.request.code = code;
 
-    const response = await fetch(`http://127.0.0.1:${langConfig.port}/compile`, {
+    const response = await fetch(`http://${serverhost}:${langConfig.port}/compile`, {
         method: 'post',
         mode: 'cors',
         body: JSON.stringify(langConfig.request)
