@@ -103,34 +103,37 @@ if not os.path.isdir("tmp/FastCompile"): os.mkdir("tmp/FastCompile")
 
 testText = "Works!"
 for langName in langs:
-    lang = langs[langName]
-    if not "serverCmd" in lang: continue
+    try:
+        lang = langs[langName]
+        if not "serverCmd" in lang: continue
 
-    log("Starting %s compiler..." % langName)
+        log("Starting %s compiler..." % langName)
 
-    cwd = "%s/FastCompile/%s" % (os.getcwd(), langName)
-    args = lang["serverCmd"].replace("{port}", str(lang["port"])).split(" ")
-    lang["subp"] = subprocess.Popen(args, cwd=cwd, stdin=subprocess.PIPE)
+        cwd = "%s/FastCompile/%s" % (os.getcwd(), langName)
+        args = lang["serverCmd"].replace("{port}", str(lang["port"])).split(" ")
+        lang["subp"] = subprocess.Popen(args, cwd=cwd, stdin=subprocess.PIPE)
 
-    if TEST_SERVERS:
-        requestJson = json.dumps(lang["testRequest"], indent=4).replace("{testText}", testText)
+        if TEST_SERVERS:
+            requestJson = json.dumps(lang["testRequest"], indent=4).replace("{testText}", testText)
 
-        maxTries = 10
-        for i in xrange(maxTries):
-            try:
-                time.sleep(0.1 * (i + 1))
-                log("  Checking %s compiler's status (%d / %d)..." % (langName, i + 1, maxTries))
-                responseJson = postRequest("http://127.0.0.1:%d/compile" % lang["port"], requestJson)
-                break
-            except:
-                pass
+            maxTries = 10
+            for i in xrange(maxTries):
+                try:
+                    time.sleep(0.1 * (i + 1))
+                    log("  Checking %s compiler's status (%d / %d)..." % (langName, i + 1, maxTries))
+                    responseJson = postRequest("http://127.0.0.1:%d/compile" % lang["port"], requestJson)
+                    break
+                except:
+                    pass
 
-        response = json.loads(responseJson)
-        log("  %s compiler's test response: %s" % (langName, response))
-        if response["result"] != testText:
-            log("Invalid response. Compiler will be disabled.")
-        else:
-            log("%s compiler is ready!" % langName)
+            response = json.loads(responseJson)
+            log("  %s compiler's test response: %s" % (langName, response))
+            if response["result"] != testText:
+                log("Invalid response. Compiler will be disabled.")
+            else:
+                log("%s compiler is ready!" % langName)
+    except Exception as e:
+        print "Failed to start compiler %s: %r" % (langName, e)
 
 class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
