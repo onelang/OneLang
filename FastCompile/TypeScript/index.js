@@ -49,7 +49,7 @@ const server = http.createServer(async (request, response) => {
 });
 
 const port = process.argv.length > 2 ? parseInt(process.argv[2]) : 8002;
-server.listen(port, (err) => {
+server.listen(port, '127.0.0.1', (err) => {
     if (err)
         log('something bad happened', err);
     else
