@@ -188,7 +188,7 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 log("Press Ctrl+C to exit.")
 
 try:
-    ThreadedHTTPServer(("", PORT), HTTPHandler).serve_forever()
+    ThreadedHTTPServer(("127.0.0.1", PORT), HTTPHandler).serve_forever()
 except KeyboardInterrupt:
     pass
 
