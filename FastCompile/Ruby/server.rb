@@ -6,7 +6,7 @@ server = WEBrick::HTTPServer.new :Port => 8005, :AccessLog => [], :BindAddress =
 trap 'INT' do server.shutdown end
 
 server.mount_proc '/compile' do |req, res|
-    res["Access-Control-Allow-Origin"] = "http://127.0.0.1:8000"
+    res["Access-Control-Allow-Origin"] = "*"
     begin
         request = JSON.parse(req.body())
         code = "#{request['code']}\n#{request['className']}.new().#{request['methodName']}"

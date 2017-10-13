@@ -20,7 +20,7 @@ function log(...args) {
 }
 
 const server = http.createServer(async (request, response) => {
-    response.setHeader("Access-Control-Allow-Origin", "http://127.0.0.1:8000");
+    response.setHeader("Access-Control-Allow-Origin", "*");
     try {
         const requestText = (await readRequestBody(request)).toString();
         const requestJson = JSON.parse(requestText);

@@ -139,7 +139,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def resp(self, statusCode, result):
         responseBody = json.dumps(result)
         self.send_response(statusCode)
-        self.send_header("Access-Control-Allow-Origin", "http://127.0.0.1:8000")
+        self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Content-Length", "%d" % len(responseBody))
         self.end_headers()
         self.wfile.write(responseBody)

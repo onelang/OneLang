@@ -4,7 +4,7 @@ function exception_error_handler($errno, $errstr, $errfile, $errline ) {
 }
 set_error_handler("exception_error_handler");
 
-header("Access-Control-Allow-Origin: http://127.0.0.1:8000");
+header("Access-Control-Allow-Origin: *");
 try {
     $postdata = json_decode(file_get_contents("php://input"), true);
     
