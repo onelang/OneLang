@@ -4,6 +4,7 @@ import { deindent } from "./Utils";
 export interface LangConfig {
     name?: string;
     port: number;
+    httpsEndpoint?: string;
     request: {
         lang?: string;
         code: string;
@@ -87,6 +88,7 @@ export const langConfigs: LangConfigs = {
     },
     java: {
         port: 8001,
+        httpsEndpoint: "java",
         request: {
             code: deindent(`
                 public class TestClass {
@@ -100,6 +102,7 @@ export const langConfigs: LangConfigs = {
     },
     javascript: {
         port: 8002,
+        httpsEndpoint: "javascript",
         request: {
             code: deindent(`
                 class TestClass {
@@ -141,6 +144,7 @@ export const langConfigs: LangConfigs = {
     },
     php: {
         port: 8003,
+        httpsEndpoint: "php",
         request: {
             lang: "PHP",
             code: deindent(`
@@ -157,6 +161,7 @@ export const langConfigs: LangConfigs = {
     },
     python: {
         port: 8004,
+        httpsEndpoint: "python",
         request: {
             lang: "Python",
             className: 'TestClass',
@@ -169,6 +174,7 @@ export const langConfigs: LangConfigs = {
     },
     ruby: {
         port: 8005,
+        httpsEndpoint: "ruby",
         request: {
             lang: "Ruby",
             className: 'TestClass',
@@ -197,6 +203,7 @@ export const langConfigs: LangConfigs = {
     },
     typescript: {
         port: 8002,
+        httpsEndpoint: "javascript",
         request: {
             lang: "TypeScript",
             className: 'TestClass',
