@@ -45,6 +45,7 @@ templates:
 
   main: |-
     #include <map>
+    #include <memory>
     {{for inc in includes|sep=\n}}
       #include <{{inc}}>
     {{/for}}
