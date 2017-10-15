@@ -25,6 +25,11 @@ functions:
     template: "{{hackPerlToVar(self)}}{{{key}}}"
   OneMap.set:
     template: "{{hackPerlToVar(self)}}{{{key}}} = {{value}}"
+operators:
+  string + string:
+    template: "{{gen(left)}} . {{gen(right)}}"
+  string += string:
+    template: "{{gen(left)}} .= {{gen(right)}}"
 templates:
   testGenerator: |-
     package Program;

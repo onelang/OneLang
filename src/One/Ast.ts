@@ -73,6 +73,7 @@ export namespace OneAst {
         get isMethod() { return this.typeKind === TypeKind.Method; }
         get isGenerics() { return this.typeKind === TypeKind.Generics; }
         get isNumber() { return this.typeKind === TypeKind.Number; }
+        get isString() { return this.typeKind === TypeKind.String; }
         get isOneArray() { return this.className === "OneArray"; }
         get isOneMap() { return this.className === "OneMap"; }
 

@@ -111,8 +111,11 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
     protected visitBinaryExpression(expr: one.BinaryExpression, context: Context) {
         super.visitBinaryExpression(expr, context);
 
+        // TODO: really big hack...
         if (expr.left.valueType.isNumber && expr.right.valueType.isNumber)
             expr.valueType = one.Type.Number;
+        else if (expr.left.valueType.isString && expr.right.valueType.isString)
+            expr.valueType = one.Type.String;
     }
 
     protected visitReturnStatement(stmt: one.ReturnStatement, context: Context) {

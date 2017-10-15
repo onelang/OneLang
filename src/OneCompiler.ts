@@ -108,9 +108,19 @@ export class OneCompiler {
         this.saveSchemaState(this.schemaCtx, `5_TypesInferredAgain`);
     }
 
+    preprocessLangFile(lang: LangFileSchema.LangFile) {
+        for (const opDesc of Object.keys(lang.operators||{})) {
+            const opData = lang.operators[opDesc];
+            const opDescParts = opDesc.split(" ").filter(x => x !== "");
+            if (opDescParts.length === 3)
+                [opData.leftType, opData.operator, opData.rightType] = opDescParts;
+        }
+    }
+
     getCodeGenerator(langCode: string, langName?: string) {
         const lang = <LangFileSchema.LangFile> YAML.parse(langCode.replace(/\\ /g, "{space}"));
 
+        this.preprocessLangFile(lang);
         new CaseConverter(lang.casing).process(this.schemaCtx.schema);
         new FillVariableMutability(lang).process(this.schemaCtx.schema);
         this.saveSchemaState(this.schemaCtx, `10_${langName ? `${langName}_` : ""}Init`);

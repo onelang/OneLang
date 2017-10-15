@@ -36,8 +36,16 @@ export namespace LangFileSchema {
         [name: string]: string|TemplateObj;
     }
 
+    export interface Operator {
+        template: string;
+        leftType?: string;
+        rightType?: string;
+        operator?: string;
+    }
+
     export interface LangFile {
         functions: { [name: string]: Function };
+        operators: { [name: string]: Operator };
         extension: string;
         casing: CasingOptions;
         primitiveTypes: {

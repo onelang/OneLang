@@ -85,6 +85,7 @@ class CodeGeneratorModel {
     includes: string[] = [];
     absoluteIncludes: string[] = [];
     classes: CodeGeneratorModel.Class[] = [];
+    operatorGenerators: { [name: string]: (left: one.Expression, right: one.Expression) => string } = {};
     expressionGenerators: { [name: string]: (expr: any, ...args: any[]) => string } = {};
     internalMethodGenerators: { [name: string]: (expr: any, ...args: any[]) => string } = {};
 
@@ -211,6 +212,14 @@ class CodeGeneratorModel {
             const unaryName = unaryExpr.unaryType.ucFirst();
             const fullName = `${unaryName}${unaryExpr.operator}`;
             genName = this.expressionGenerators[fullName] ? fullName : unaryName;
+        } else if (type === one.ExpressionKind.Binary) {
+            const binaryExpr = <one.BinaryExpression> obj;
+            const leftType = binaryExpr.left.valueType.repr();
+            const rightType = binaryExpr.right.valueType.repr();
+            const opGenName = `${leftType} ${binaryExpr.operator} ${rightType}`;
+            const opGen = this.operatorGenerators[opGenName];
+            if (opGen)
+                return opGen.call(this, binaryExpr.left, binaryExpr.right);
         } else if (type === one.StatementType.VariableDeclaration) {
             const varDecl = <one.VariableDeclaration> obj;
             const initType = varDecl.initializer.exprKind;
@@ -402,6 +411,13 @@ export class CodeGenerator {
 
                         const funcArgs = ["self", "typeArgs", ...methodArgs, ...funcInfo.extraArgs||[]];
                         return this.genTemplateMethodCode(funcPath, funcArgs, funcInfo.template);
+                    }).join("\n\n")}
+                },
+
+                operatorGenerators: {
+                    ${Object.keys(this.lang.operators||{}).map(opName => {
+                        const funcInfo = this.lang.operators[opName];
+                        return this.genTemplateMethodCode(opName, ["left", "right"], funcInfo.template);
                     }).join("\n\n")}
                 },
 

@@ -21,6 +21,11 @@ functions:
     template: "{{self}}[{{key}}]"
   OneMap.set:
     template: "{{self}}[{{key}}] = {{value}}"
+operators:
+  string + string:
+    template: "{{gen(left)}} . {{gen(right)}}"
+  string += string:
+    template: "{{gen(left)}} .= {{gen(right)}}"
 extension: php
 casing:
   class: pascal_case
