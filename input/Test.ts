@@ -76,9 +76,20 @@ class TestClass {
         const stuff = arg1 + arg2 + arg3 * this.calc();
         return stuff;
     }
+    
+    stringTest(): string {
+        var x = "x";
+        var y = "y";
 
-    testMethod(): number {
-        return this.mapTest();
+        var z = "z";
+        z += "Z";
+        z += x;
+        
+        return z + "|" + x + y;
+    }
+
+    testMethod(): string {
+        return this.stringTest();
     }
 }
 

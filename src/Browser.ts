@@ -159,7 +159,7 @@ function initLayout() {
 //runLangTests();
 
 async function setupTestProgram() {
-    const testPrg = await downloadTextFile("input/Test.ts");
+    const testPrg = await downloadTextFile("input/StringTest.ts");
     layout.langs["typescript"].changeHandler.setContent(testPrg, true);
 }
 
