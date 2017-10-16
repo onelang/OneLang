@@ -105,7 +105,7 @@ class CodeGeneratorModel {
     
     typeName(type: one.Type) {
         const cls = this.classGenerators[type.className];
-        const result = cls ? cls.typeGenerator.apply(this, [null, type.typeArguments.map(x => this.typeName(x))]) : this.generator.getTypeName(type);
+        const result = cls ? cls.typeGenerator.apply(this, [type.typeArguments.map(x => this.typeName(x))]) : this.generator.getTypeName(type);
         return result;
     }
 
@@ -138,7 +138,8 @@ class CodeGeneratorModel {
         const methodName = metaPathParts[1];
         const generatorName = `${className}.${methodName}`;
 
-        const method = this.generator.lang.classes[className].methods[methodName];
+        const cls = this.generator.lang.classes[className];
+        const method = cls && cls.methods[methodName];
         // if extraArgs was used then we only accept a method with extra args and vice versa
         if (!method || (!!method.extraArgs !== !!extraArgs)) return null;
 
@@ -195,7 +196,7 @@ class CodeGeneratorModel {
                 const fieldName = varRef.varRef.name;
                 const func = this.generator.lang.classes[className].fields[fieldName];
                 const thisArg = varRef.thisExpr ? this.gen(varRef.thisExpr) : null;
-                const gen = this.classGenerators[className].fields[fieldName];
+                const gen = (this.classGenerators[className].fields||{})[fieldName];
                 //this.log(varPath);
                 if (gen) {
                     const code = gen.apply(this, [thisArg]);
@@ -425,6 +426,14 @@ export class CodeGenerator {
         return this.genTemplateMethodCode(methodName, funcArgs, funcInfo.template);
     }
 
+    compileClassField(className: string, cls: LangFileSchema.Class, fieldName: string) {
+        const fieldInfo = cls.fields[fieldName];
+        const stdField = this.stdlib.classes[className].fields[fieldName];
+
+        const funcArgs = ["self", "typeArgs"];
+        return this.genTemplateMethodCode(fieldName, funcArgs, fieldInfo.template);
+    }
+
     compileTemplates() {
         this.templateObjectCode = tmpl`
             ({
@@ -443,6 +452,12 @@ export class CodeGenerator {
                                 methods: {
                                     ${Object.keys(cls.methods||[]).map(methodName => {
                                         return this.compileClassMethod(className, cls, methodName);
+                                    }).join("\n\n")}
+                                },
+
+                                fields: {
+                                    ${Object.keys(cls.fields||[]).map(fieldName => {
+                                        return this.compileClassField(className, cls, fieldName);
                                     }).join("\n\n")}
                                 }
                             }`

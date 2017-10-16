@@ -39,7 +39,6 @@ export namespace OneAst {
     
     export enum TypeKind { 
         Void = "void",
-        Boolean = "boolean",
         Null = "null",
         Any = "any",
         Class = "class",

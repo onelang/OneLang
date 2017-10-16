@@ -7,6 +7,10 @@ primitiveTypes:
 classes:
   OneString:
     type: std::string
+  OneNumber:
+    type: int
+  OneBoolean:
+    type: bool
   OneArray:
     includes: [vector]
     fields:

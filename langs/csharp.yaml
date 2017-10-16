@@ -8,6 +8,10 @@ primitiveTypes:
 classes:
   OneString:
     type: string
+  OneNumber:
+    type: int
+  OneBoolean:
+    type: bool
   OneConsole:
     methods:
       print:
@@ -16,7 +20,7 @@ classes:
   OneArray:
     includes: [System.Collections.Generic]
     fields:
-      length: 
+      length:
         template: "{{self}}.Count"
     methods:
       add: 
