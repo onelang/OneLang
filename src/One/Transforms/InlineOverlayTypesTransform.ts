@@ -150,12 +150,23 @@ class ReplaceReferences extends AstVisitor<void> {
 class ReplaceVariables extends AstVisitor<void> {
     constructor(public schemaCtx: SchemaContext) { super(); }
 
-    protected visitVariable(stmt: one.VariableBase) {
-        const clsName = stmt.type.className;
-        const cls = clsName && this.schemaCtx.getClass(clsName);
-        if (!(cls && cls.meta && cls.meta.overlay)) return;
+    protected convertType(type: one.Type) {
+        const cls = type.className && this.schemaCtx.getClass(type.className);
+        if (cls && cls.meta && cls.meta.overlay)
+            type.className = cls.fields["_one"].type.className;
+    }
 
-        stmt.type.className = cls.fields["_one"].type.className;
+    protected visitLiteral(expr: one.Literal) {
+        this.convertType(expr.valueType);
+    }
+
+    protected visitVariable(stmt: one.VariableBase) {
+        this.convertType(stmt.type);
+    }
+
+    protected visitMethod(method: one.Method) {
+        super.visitMethod(method, null);
+        this.convertType(method.returns);
     }
 
     process() {

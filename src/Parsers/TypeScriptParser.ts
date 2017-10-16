@@ -38,11 +38,11 @@ export class TypeScriptParser {
         if (!tsType) {
             result = one.Type.Void;
         } else if (tsType.kind === ts.SyntaxKind.StringKeyword) {
-            result = one.Type.String;
+            result = one.Type.Class("TsString");
         } else if (tsType.kind === ts.SyntaxKind.BooleanKeyword) {
-            result = one.Type.Boolean;
+            result = one.Type.Class("TsBoolean");
         } else if (tsType.kind === ts.SyntaxKind.NumberKeyword) {
-            result = one.Type.Number;
+            result = one.Type.Class("TsNumber");
         } else if (tsType.kind === ts.SyntaxKind.AnyKeyword) {
             result = one.Type.Any;
         } else if (tsType.kind === ts.SyntaxKind.TypeReference) {
@@ -53,7 +53,7 @@ export class TypeScriptParser {
                 result = one.Type.Generics(typeText);
             } else {
                 const typeArgs = typeRef.typeArguments;
-                result = one.Type.Class(typeText, typeArgs.map(x => this.convertTsType(x)));
+                result = one.Type.Class(typeText, typeArgs && typeArgs.map(x => this.convertTsType(x)));
             }
         } else {
             this.logNodeError(`Unknown type node`, tsType);
@@ -118,7 +118,7 @@ export class TypeScriptParser {
             return <one.NewExpression> {
                 exprKind: one.ExpressionKind.New,
                 cls: this.convertExpression(classIdentifier),
-                typeArguments: newExpr.typeArguments.map(arg => arg.getText()),
+                typeArguments: newExpr.typeArguments.map(arg => this.convertTsType(arg)),
                 arguments: newExpr.arguments.map(arg => this.convertExpression(arg))
             };
         } else if (tsExpr.kind === ts.SyntaxKind.ConditionalExpression) {
@@ -134,6 +134,7 @@ export class TypeScriptParser {
             return <one.Literal> {
                 exprKind: one.ExpressionKind.Literal,
                 literalType: "string",
+                literalClassName: "TsString",
                 value: literalExpr.text
             };
         } else if (tsExpr.kind === ts.SyntaxKind.NumericLiteral) {
@@ -141,12 +142,14 @@ export class TypeScriptParser {
             return <one.Literal> {
                 exprKind: one.ExpressionKind.Literal,
                 literalType: "numeric",
+                literalClassName: "TsNumber",
                 value: literalExpr.text
             };
         } else if (tsExpr.kind === ts.SyntaxKind.FalseKeyword || tsExpr.kind === ts.SyntaxKind.TrueKeyword) {
             return <one.Literal> { 
                 exprKind: one.ExpressionKind.Literal,
                 literalType: "boolean",
+                literalClassName: "TsBoolean",
                 value: tsExpr.kind === ts.SyntaxKind.TrueKeyword
             };
         } else if (tsExpr.kind === ts.SyntaxKind.NullKeyword) {

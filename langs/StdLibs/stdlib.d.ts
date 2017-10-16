@@ -19,3 +19,13 @@ declare class OneMap<K, V> {
     keys(): OneArray<K>;
     values(): OneArray<V>;
 }
+
+declare class OneString {
+    length: number;
+}
+
+declare class OneNumber {
+}
+
+declare class OneBoolean {
+}

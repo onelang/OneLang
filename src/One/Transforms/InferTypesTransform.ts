@@ -110,12 +110,6 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
 
     protected visitBinaryExpression(expr: one.BinaryExpression, context: Context) {
         super.visitBinaryExpression(expr, context);
-
-        // TODO: really big hack...
-        if (expr.left.valueType.isNumber && expr.right.valueType.isNumber)
-            expr.valueType = one.Type.Number;
-        else if (expr.left.valueType.isString && expr.right.valueType.isString)
-            expr.valueType = one.Type.String;
     }
 
     protected visitReturnStatement(stmt: one.ReturnStatement, context: Context) {
@@ -124,9 +118,6 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
 
     protected visitUnaryExpression(expr: one.UnaryExpression, context: Context) {
         this.visitExpression(expr.operand, context);
-
-        if (expr.operand.valueType.isNumber)
-            expr.valueType = one.Type.Number;
     }
 
     protected visitElementAccessExpression(expr: one.ElementAccessExpression, context: Context) {
@@ -164,32 +155,17 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         }
     }
 
-    getType(name: string) {
-        if (name === "number")
-            return one.Type.Number;
-        else if (name === "string")
-            return one.Type.String;
-        else if (name === "boolean")
-            return one.Type.Boolean;
-        else if (name === "null")
-            return one.Type.Null;
-        else
-            return null;
-    }
-
     protected visitNewExpression(expr: one.NewExpression, context: Context) {
         super.visitNewExpression(expr, context);
         expr.valueType = one.Type.Load(expr.cls.valueType);
-        expr.valueType.typeArguments = expr.typeArguments.map(t => this.getType(t) || one.Type.Class(t));
+        expr.valueType.typeArguments = expr.typeArguments;
     }
 
     protected visitLiteral(expr: one.Literal, context: Context) {
-        if (expr.literalType === "numeric")
-            expr.valueType = one.Type.Number;
-        else if (expr.literalType === "string")
-            expr.valueType = one.Type.String;
-        else if (expr.literalType === "boolean")
-            expr.valueType = one.Type.Boolean;
+        if (expr.valueType) return;
+        
+        if (expr.literalType === "numeric" || expr.literalType === "string" || expr.literalType === "boolean")
+            expr.valueType = one.Type.Class(expr.literalClassName);
         else if (expr.literalType === "null")
             expr.valueType = one.Type.Null;
         else
@@ -260,7 +236,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         if (expr.properties.some(x => !x.type.equals(itemType)))
             itemType = one.Type.Any;
 
-        expr.valueType = one.Type.Class(context.schemaCtx.mapType, [one.Type.String, itemType]);
+        expr.valueType = one.Type.Class(context.schemaCtx.mapType, [one.Type.Class("OneString"), itemType]);
     }
 
     protected visitExpression(expression: one.Expression, context: Context) {

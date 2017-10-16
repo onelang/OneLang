@@ -56,3 +56,15 @@ class TsMap<K,V> {
     }
 }
 
+class TsString {
+    _one: OneString;
+    get length() { return this._one.length; }
+}
+
+class TsNumber {
+    _one: OneNumber;
+}
+
+class TsBoolean {
+    _one: OneBoolean;
+}

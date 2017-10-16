@@ -40,8 +40,6 @@ export namespace OneAst {
     export enum TypeKind { 
         Void = "void",
         Boolean = "boolean",
-        String = "string",
-        Number = "number",
         Null = "null",
         Any = "any",
         Class = "class",
@@ -72,8 +70,8 @@ export namespace OneAst {
         get isClass() { return this.typeKind === TypeKind.Class; }
         get isMethod() { return this.typeKind === TypeKind.Method; }
         get isGenerics() { return this.typeKind === TypeKind.Generics; }
-        get isNumber() { return this.typeKind === TypeKind.Number; }
-        get isString() { return this.typeKind === TypeKind.String; }
+        get isNumber() { return this.className === "OneNumber"; }
+        get isString() { return this.className === "OneString"; }
         get isOneArray() { return this.className === "OneArray"; }
         get isOneMap() { return this.className === "OneMap"; }
 
@@ -108,12 +106,9 @@ export namespace OneAst {
             }
         }
 
-        static PrimitiveTypeKinds = [TypeKind.Void, TypeKind.Boolean, TypeKind.String, TypeKind.Number, TypeKind.Null, TypeKind.Any];
+        static PrimitiveTypeKinds = [TypeKind.Void, TypeKind.Null, TypeKind.Any];
         
         static Void = new Type(TypeKind.Void);
-        static Boolean = new Type(TypeKind.Boolean);
-        static String = new Type(TypeKind.String);
-        static Number = new Type(TypeKind.Number);
         static Null = new Type(TypeKind.Null);
         static Any = new Type(TypeKind.Any);
         
@@ -275,6 +270,7 @@ export namespace OneAst {
 
     export interface Literal extends Expression {
         literalType: "numeric"|"string"|"boolean"|"null";
+        literalClassName: string;
         value: any;
     }
 
@@ -289,7 +285,7 @@ export namespace OneAst {
 
     export interface NewExpression extends Expression {
         cls: Identifier|ClassReference;
-        typeArguments: string[];
+        typeArguments: Type[];
         arguments: Expression[];
     }
 

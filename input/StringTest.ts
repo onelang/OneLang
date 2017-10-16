@@ -6,7 +6,9 @@ class TestClass {
         var z = "z";
         z += "Z";
         z += x;
+
+        //var a = "abcdef".substring(1,5);
         
-        return z + "|" + x + y;
+        return z + "|" + x + y + "|";
     }
 }
