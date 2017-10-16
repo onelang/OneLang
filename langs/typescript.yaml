@@ -8,6 +8,9 @@ primitiveTypes:
 classes:
   OneString:
     type: string
+    methods:
+      substring:
+        template: "{{self}}.substring({{start}}, {{end}})"
   OneNumber:
     type: number
   OneBoolean:

@@ -3,6 +3,10 @@ casing:
   class: pascal_case
   method: snake_case
 classes:
+  OneString:
+    methods:
+      substring:
+        template: "{{self}}[{{start}}...{{end}}]"
   OneConsole:
     methods:
       print:

@@ -22,6 +22,7 @@ declare class OneMap<K, V> {
 
 declare class OneString {
     length: number;
+    substring(start: number, end: number): OneString;
 }
 
 declare class OneNumber {

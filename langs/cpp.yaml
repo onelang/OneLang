@@ -7,6 +7,9 @@ primitiveTypes:
 classes:
   OneString:
     type: std::string
+    methods:
+      substring:
+        template: "{{self}}.substr({{start}}, {{end}} - {{start}})"
   OneNumber:
     type: int
   OneBoolean:

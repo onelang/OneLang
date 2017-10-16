@@ -6,6 +6,10 @@ primitiveTypes:
   void: void
   any: object
 classes:
+  OneString:
+    methods:
+      substring:
+        template: "{{self}}.substring({{start}}, {{end}})"  
   OneConsole:
     methods:
       print:

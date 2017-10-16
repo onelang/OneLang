@@ -58,7 +58,14 @@ class TsMap<K,V> {
 
 class TsString {
     _one: OneString;
-    get length() { return this._one.length; }
+    
+    get length() {
+        return this._one.length;
+    }
+    
+    substring(start: number, end: number) {
+        return this._one.substring(start, end);
+    }
 }
 
 class TsNumber {

@@ -8,6 +8,8 @@ import { OneCompiler } from "./OneCompiler";
 
 declare var YAML: any;
 
+const testPrgName = "StringTest";
+
 const qs = {};
 location.search.substr(1).split('&').map(x => x.split('=')).forEach(x => qs[x[0]] = x[1]);
 const localhost = location.hostname === "127.0.0.1" || location.hostname === "localhost";
@@ -159,7 +161,7 @@ function initLayout() {
 //runLangTests();
 
 async function setupTestProgram() {
-    const testPrg = await downloadTextFile("input/Test.ts");
+    const testPrg = await downloadTextFile(`input/${testPrgName}.ts`);
     layout.langs["typescript"].changeHandler.setContent(testPrg, true);
 }
 

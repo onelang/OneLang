@@ -3,6 +3,10 @@ casing:
   class: pascal_case
   method: camel_case
 classes:
+  OneString:
+    methods:
+      substring:
+        template: "substr({{self}}, {{start}}, {{end}} - {{start}})"
   OneConsole:
     methods:
       print:

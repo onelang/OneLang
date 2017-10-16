@@ -7,6 +7,9 @@ primitiveTypes:
 classes:
   OneString:
     type: String
+    methods:
+      substring:
+        template: "{{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{start}}) ..< {{self}}.index({{self}}.startIndex, offsetBy: {{end}})]"
   OneNumber:
     type: Int
   OneBoolean:

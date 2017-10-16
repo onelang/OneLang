@@ -139,7 +139,7 @@ class CodeGeneratorModel {
         const generatorName = `${className}.${methodName}`;
 
         const cls = this.generator.lang.classes[className];
-        const method = cls && cls.methods[methodName];
+        const method = cls && (cls.methods||{})[methodName];
         // if extraArgs was used then we only accept a method with extra args and vice versa
         if (!method || (!!method.extraArgs !== !!extraArgs)) return null;
 
@@ -181,7 +181,7 @@ class CodeGeneratorModel {
             const methodRef = <one.MethodReference> callExpr.method;
             const methodArgs = methodRef.methodRef.parameters;
             if (!methodArgs)
-                throw new Error(`Method implementation is not found: ${methodRef.methodRef.metaPath}`);
+                throw new Error(`Method implementation is not found: ${methodRef.methodRef.metaPath} for ${this.generator.lang.extension}`);
 
             if (methodArgs.length !== callExpr.arguments.length)
                 throw new Error(`Invalid argument count for '${methodRef.methodRef.metaPath}': expected: ${methodArgs.length}, actual: ${callExpr.arguments.length}.`);

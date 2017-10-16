@@ -8,6 +8,9 @@ primitiveTypes:
 classes:
   OneString:
     type: string
+    methods:
+      substring:
+        template: "{{self}}.Substring({{start}}, {{end}} - {{start}})"
   OneNumber:
     type: int
   OneBoolean:

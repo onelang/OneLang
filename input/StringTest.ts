@@ -7,8 +7,8 @@ class TestClass {
         z += "Z";
         z += x;
 
-        //var a = "abcdef".substring(1,5);
+        var a = "abcdef".substring(2,4);
         
-        return z + "|" + x + y + "|";
+        return z + "|" + x + y + "|" + a;
     }
 }
