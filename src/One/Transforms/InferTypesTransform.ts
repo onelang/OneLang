@@ -110,6 +110,12 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
 
     protected visitBinaryExpression(expr: one.BinaryExpression, context: Context) {
         super.visitBinaryExpression(expr, context);
+
+        // TODO: really big hack... 
+        if (expr.left.valueType.isNumber && expr.right.valueType.isNumber) 
+            expr.valueType = one.Type.Class("OneNumber");
+        else if (expr.left.valueType.isString && expr.right.valueType.isString) 
+            expr.valueType = one.Type.Class("OneString");
     }
 
     protected visitReturnStatement(stmt: one.ReturnStatement, context: Context) {
@@ -118,6 +124,9 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
 
     protected visitUnaryExpression(expr: one.UnaryExpression, context: Context) {
         this.visitExpression(expr.operand, context);
+
+        if (expr.operand.valueType.isNumber) 
+            expr.valueType = one.Type.Class("OneNumber");
     }
 
     protected visitElementAccessExpression(expr: one.ElementAccessExpression, context: Context) {
@@ -163,7 +172,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
 
     protected visitLiteral(expr: one.Literal, context: Context) {
         if (expr.valueType) return;
-        
+
         if (expr.literalType === "numeric" || expr.literalType === "string" || expr.literalType === "boolean")
             expr.valueType = one.Type.Class(expr.literalClassName);
         else if (expr.literalType === "null")
