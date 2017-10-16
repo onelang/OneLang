@@ -87,15 +87,25 @@ class CodeGeneratorModel {
     classes: CodeGeneratorModel.Class[] = [];
     operatorGenerators: { [name: string]: (left: one.Expression, right: one.Expression) => string } = {};
     expressionGenerators: { [name: string]: (expr: any, ...args: any[]) => string } = {};
-    internalMethodGenerators: { [name: string]: (expr: any, ...args: any[]) => string } = {};
+    classGenerators: { 
+        [className: string]: {
+            typeGenerator: (expr: any, ...args: any[]) => string,
+            methods: {
+                [methodName: string]: (expr: any, ...args: any[]) => string
+            },
+            fields: {
+                [fieldName: string]: (expr: any, ...args: any[]) => string
+            }
+        }
+    } = {};
 
     constructor(public generator: CodeGenerator) { }
 
     log(data: string) { console.log(`[CodeGeneratorModel] ${data}`); }
     
     typeName(type: one.Type) {
-        const gen = this.internalMethodGenerators[type.className];
-        const result = gen ? gen.apply(this, [null, type.typeArguments.map(x => this.typeName(x))]) : this.generator.getTypeName(type);
+        const cls = this.classGenerators[type.className];
+        const result = cls ? cls.typeGenerator.apply(this, [null, type.typeArguments.map(x => this.typeName(x))]) : this.generator.getTypeName(type);
         return result;
     }
 
@@ -128,7 +138,7 @@ class CodeGeneratorModel {
         const methodName = metaPathParts[1];
         const generatorName = `${className}.${methodName}`;
 
-        const method = this.generator.lang.functions[generatorName];
+        const method = this.generator.lang.classes[className].methods[methodName];
         // if extraArgs was used then we only accept a method with extra args and vice versa
         if (!method || (!!method.extraArgs !== !!extraArgs)) return null;
 
@@ -150,7 +160,7 @@ class CodeGeneratorModel {
             callExpr.arguments[i].paramName = methodArgs[i];
 
         const thisArg = methodRef.thisExpr ? this.gen(methodRef.thisExpr) : null;
-        const overlayFunc = this.internalMethodGenerators[generatorName];
+        const overlayFunc = this.classGenerators[className].methods[methodName];
         const typeArgs = methodRef.thisExpr && methodRef.thisExpr.valueType.typeArguments.map(x => this.typeName(x));
 
         const code = overlayFunc.apply(this, [thisArg, typeArgs, ...exprCallArgs, ...extraArgValues]);
@@ -181,10 +191,11 @@ class CodeGeneratorModel {
         } else if (type === one.ExpressionKind.VariableReference) {
             const varRef = <one.VariableRef> obj;
             if (varRef.varType === one.VariableRefType.InstanceField) {
-                const varPath = `${varRef.thisExpr.valueType.className}.${varRef.varRef.name}`;
-                const func = this.generator.lang.functions[varPath];
+                const className = varRef.thisExpr.valueType.className;
+                const fieldName = varRef.varRef.name;
+                const func = this.generator.lang.classes[className].fields[fieldName];
                 const thisArg = varRef.thisExpr ? this.gen(varRef.thisExpr) : null;
-                const gen = this.internalMethodGenerators[varPath];
+                const gen = this.classGenerators[className].fields[fieldName];
                 //this.log(varPath);
                 if (gen) {
                     const code = gen.apply(this, [thisArg]);
@@ -258,9 +269,9 @@ export class CodeGenerator {
     generatedCode: string;
 
     constructor(public schema: one.Schema, public stdlib: one.Schema, public lang: LangFileSchema.LangFile) {
+        this.compileTemplates();
         this.setupClasses();
         this.setupIncludes();
-        this.compileTemplates();
     }
 
     getName(name: string, type: "class"|"method"|"enum") {
@@ -277,8 +288,13 @@ export class CodeGenerator {
     }
 
     getTypeName(type: one.IType): string {
-        if (type.typeKind === one.TypeKind.Class)
-            return this.getName(type.className, "class");
+        if (type.typeKind === one.TypeKind.Class) {
+            const classGen = this.model.classGenerators[type.className];
+            if (classGen)
+                return classGen.typeGenerator(type.typeArguments.map(x => this.getTypeName(x)));
+            else
+                return this.getName(type.className, "class");
+        }
         else
             return this.lang.primitiveTypes ? this.lang.primitiveTypes[type.typeKind] : type.typeKind.toString();
     }
@@ -377,18 +393,36 @@ export class CodeGenerator {
 
     setupIncludes() {
         const includes = {};
-        for (const func of Object.values(this.lang.functions))
-            for (const include of func.includes || [])
+        for (const cls of Object.values(this.lang.classes)) {
+            for (const include of cls.includes || [])
                 includes[include] = true;
+
+            for (const method of Object.values(cls.methods||[]))
+                for (const include of method.includes || [])
+                    includes[include] = true;
+        }
+
         this.model.includes.push(...Object.keys(includes));
     }
 
+    genName(name: string) {
+        return /^[a-zA-Z]+$/.test(name) ? name : `"${name}"`;
+    }
+
     genTemplateMethodCode(name: string, args: string[], template: string) {
-        const newName = /^[a-z]+$/.test(name) ? name : `"${name}"`;
         return tmpl`
-            ${newName}(${[...args, "...args"].join(", ")}) {
+            ${this.genName(name)}(${[...args, "...args"].join(", ")}) {
                 ${this.genTemplate(template, [...args, "args"])}
             },`;
+    }
+
+    compileClassMethod(className: string, cls: LangFileSchema.Class, methodName: string) {
+        const funcInfo = cls.methods[methodName];
+        const stdMethod = this.stdlib.classes[className].methods[methodName];
+        const methodArgs = stdMethod ? stdMethod.parameters.map(x => x.name) : [];
+
+        const funcArgs = ["self", "typeArgs", ...methodArgs, ...funcInfo.extraArgs||[]];
+        return this.genTemplateMethodCode(methodName, funcArgs, funcInfo.template);
     }
 
     compileTemplates() {
@@ -399,19 +433,20 @@ export class CodeGenerator {
                         this.genTemplateMethodCode(name.ucFirst(), ["expr"], this.lang.expressions[name])).join("\n\n")}
                 },
 
-                internalMethodGenerators: {
-                    ${Object.keys(this.lang.functions).map(funcPath => {
-                        const funcInfo = this.lang.functions[funcPath];
+                classGenerators: {
+                    ${Object.keys(this.lang.classes).map(className => {
+                        const cls = this.lang.classes[className];
+                        return tmpl`
+                            ${this.genName(className)}: {
+                                ${this.genTemplateMethodCode("typeGenerator", ["typeArgs"], cls.type || className)}
 
-                        const funcPathParts = funcPath.split(".");
-                        const className = funcPathParts[0];
-                        const methodName = funcPathParts[1];
-                        const stdMethod = this.stdlib.classes[className].methods[methodName];
-                        const methodArgs = stdMethod ? stdMethod.parameters.map(x => x.name) : [];
-
-                        const funcArgs = ["self", "typeArgs", ...methodArgs, ...funcInfo.extraArgs||[]];
-                        return this.genTemplateMethodCode(funcPath, funcArgs, funcInfo.template);
-                    }).join("\n\n")}
+                                methods: {
+                                    ${Object.keys(cls.methods||[]).map(methodName => {
+                                        return this.compileClassMethod(className, cls, methodName);
+                                    }).join("\n\n")}
+                                }
+                            }`
+                    }).join(",\n\n")}
                 },
 
                 operatorGenerators: {
@@ -431,11 +466,10 @@ export class CodeGenerator {
             })`;
 
         this.templateObject = eval(this.templateObjectCode);
+        Object.assign(this.model, this.templateObject);
     }
 
     generate(callTestMethod: boolean) {
-        const model = Object.assign(this.model, this.templateObject);
-
         this.generatedCode = this.model.main();
         if (callTestMethod)
             this.generatedCode += "\n\n" + this.model.testGenerator(this.getName("test_class", "class"), this.getName("test_method", "method"));

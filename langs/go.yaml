@@ -4,45 +4,54 @@ casing:
   method: pascal_case
 primitiveTypes:
   void: ""
-  boolean: bool
-  string: string
-  number: int
-array: '[]{{type}}'
-functions:
-  OneConsole.print:
-    includes: [fmt]
-    template: "fmt.Println({{str}})"
-  OneArray.add:
-    template: "{{self}} = append({{self}}, {{item}})"
-  OneArray.length:
-    template: "len({{self}})"
-  OneArray.get:
-    template: "{{self}}[{{index}}]"
-  OneArray.set:
-    template: "{{self}}[{{index}}] = {{value}}"
-  OneMap.keys:
-    extraArgs: [result]
-    template: |-
-      {{result}} := make([]{{typeArgs[0]}}, 0, len({{self}}))
-      for  key, _ := range {{self}} {
-        {{result}} = append({{result}}, key)
-      }
-  OneMap.values:
-    extraArgs: [result]
-    template: |-
-      {{result}} := make([]{{typeArgs[1]}}, 0, len({{self}}))
-      for  _, value := range {{self}} {
-        {{result}} = append({{result}}, value)
-      }
-  OneMap.remove:
-    template: "delete({{self}}, {{key}})"
-  OneMap.hasKey:
-    extraArgs: [result]
-    template: "_, {{result}} := {{self}}[{{key}}]"
-  OneMap.get:
-    template: "{{self}}[{{key}}]"
-  OneMap.set:
-    template: "{{self}}[{{key}}] = {{value}}"
+classes:
+  OneString:
+    type: string
+  OneNumber:
+    type: int
+  OneBoolean:
+    type: bool
+  OneConsole:
+    methods:
+      print:
+        includes: [fmt]
+        template: "fmt.Println({{str}})"
+  OneArray:
+    fields:
+      length:
+        template: "len({{self}})"
+    methods:
+      add:
+        template: "{{self}} = append({{self}}, {{item}})"
+      get:
+        template: "{{self}}[{{index}}]"
+      set:
+        template: "{{self}}[{{index}}] = {{value}}"
+  OneMap:
+    methods:
+      keys:
+        extraArgs: [result]
+        template: |-
+          {{result}} := make([]{{typeArgs[0]}}, 0, len({{self}}))
+          for  key, _ := range {{self}} {
+            {{result}} = append({{result}}, key)
+          }
+      values:
+        extraArgs: [result]
+        template: |-
+          {{result}} := make([]{{typeArgs[1]}}, 0, len({{self}}))
+          for  _, value := range {{self}} {
+            {{result}} = append({{result}}, value)
+          }
+      remove:
+        template: "delete({{self}}, {{key}})"
+      hasKey:
+        extraArgs: [result]
+        template: "_, {{result}} := {{self}}[{{key}}]"
+      get:
+        template: "{{self}}[{{key}}]"
+      set:
+        template: "{{self}}[{{key}}] = {{value}}"
 templates:
   testGenerator: |-
     func main() {

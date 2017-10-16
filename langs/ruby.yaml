@@ -2,29 +2,36 @@ extension: rb
 casing:
   class: pascal_case
   method: snake_case
-functions:
-  OneConsole.print:
-    template: "puts {{str}}"
-  OneArray.add:
-    template: "{{self}} << {{item}}"
-  OneArray.length:
-    template: "{{self}}.length"
-  OneArray.get:
-    template: "{{self}}[{{index}}]"
-  OneArray.set:
-    template: "{{self}}[{{index}}] = {{value}}"
-  OneMap.keys:
-    template: "{{self}}.keys"
-  OneMap.values:
-    template: "{{self}}.values"
-  OneMap.remove:
-    template: "{{self}}.delete({{key}})"
-  OneMap.hasKey:
-    template: "{{self}}.has_key?({{key}})"
-  OneMap.get:
-    template: "{{self}}[{{key}}]"
-  OneMap.set:
-    template: "{{self}}[{{key}}] = {{value}}"
+classes:
+  OneConsole:
+    methods:
+      print:
+        template: "puts {{str}}"
+  OneArray:
+    fields:
+      length:
+        template: "{{self}}.length"
+    methods:
+      add:
+        template: "{{self}} << {{item}}"
+      get:
+        template: "{{self}}[{{index}}]"
+      set:
+        template: "{{self}}[{{index}}] = {{value}}"
+  OneMap:
+    methods:
+      keys:
+        template: "{{self}}.keys"
+      values:
+        template: "{{self}}.values"
+      remove:
+        template: "{{self}}.delete({{key}})"
+      hasKey:
+        template: "{{self}}.has_key?({{key}})"
+      get:
+        template: "{{self}}[{{key}}]"
+      set:
+        template: "{{self}}[{{key}}] = {{value}}"
 templates:
   testGenerator: |-
     puts {{class}}.new().{{method}}()

@@ -2,33 +2,40 @@ extension: pl
 casing:
   class: pascal_case
   method: camel_case
-functions:
-  OneConsole.print:
-    template: "print {{str}}"
-  OneArray.add:
-    template: "push {{self}}, {{item}}"
-  OneArray.length:
-    template: "scalar({{self}})"
-  OneArray.get:
-    template: "{{hackPerlToVar(self)}}[{{index}}]"
-  OneArray.set:
-    template: "{{hackPerlToVar(self)}}[{{index}}] = {{value}}"
-  OneMap.keys:
-    template: "keys {{self}}"
-  OneMap.values:
-    template: "values {{self}}"
-  OneMap.remove:
-    template: "delete {{hackPerlToVar(self)}}{{{key}}}"
-  OneMap.hasKey:
-    template: "exists {{hackPerlToVar(self)}}{{{key}}}"
-  OneMap.get:
-    template: "{{hackPerlToVar(self)}}{{{key}}}"
-  OneMap.set:
-    template: "{{hackPerlToVar(self)}}{{{key}}} = {{value}}"
+classes:
+  OneConsole:
+    methods:
+      print:
+        template: "print {{str}}"
+  OneArray:
+    fields:
+      length:
+        template: "scalar({{self}})"
+    methods:
+      add:
+        template: "push {{self}}, {{item}}"
+      get:
+        template: "{{hackPerlToVar(self)}}[{{index}}]"
+      set:
+        template: "{{hackPerlToVar(self)}}[{{index}}] = {{value}}"
+  OneMap:
+    methods:
+      keys:
+        template: "keys {{self}}"
+      values:
+        template: "values {{self}}"
+      remove:
+        template: "delete {{hackPerlToVar(self)}}{{{key}}}"
+      hasKey:
+        template: "exists {{hackPerlToVar(self)}}{{{key}}}"
+      get:
+        template: "{{hackPerlToVar(self)}}{{{key}}}"
+      set:
+        template: "{{hackPerlToVar(self)}}{{{key}}} = {{value}}"
 operators:
-  string + string:
+  OneString + OneString:
     template: "{{gen(left)}} . {{gen(right)}}"
-  string += string:
+  OneString += OneString:
     template: "{{gen(left)}} .= {{gen(right)}}"
 templates:
   testGenerator: |-

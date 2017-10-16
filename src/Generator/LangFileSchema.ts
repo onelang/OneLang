@@ -3,13 +3,6 @@ export namespace LangFileSchema {
         name: string;
     }
 
-    export interface Function {
-        extraArgs: string[];
-        includes: string[];
-        template: string;
-        mutates?: boolean;
-    }
-
     export enum Casing {
         PascalCase = "pascal_case",
         CamelCase = "camel_case",
@@ -43,8 +36,26 @@ export namespace LangFileSchema {
         operator?: string;
     }
 
+    export interface Method {
+        extraArgs: string[];
+        includes: string[];
+        template: string;
+        mutates?: boolean;
+    }
+
+    export interface Field {
+        template: string;
+    }
+
+    export interface Class {
+        type: string;
+        includes: string[];
+        fields: { [name: string]: Field };
+        methods: { [name: string]: Method };
+    }
+
     export interface LangFile {
-        functions: { [name: string]: Function };
+        classes: { [name: string]: Class };
         operators: { [name: string]: Operator };
         extension: string;
         casing: CasingOptions;

@@ -2,29 +2,36 @@ extension: py
 casing:
   class: pascal_case
   method: snake_case
-functions:
-  OneConsole.print:
-    template: "print {{str}}"
-  OneArray.add:
-    template: "{{self}}.append({{item}})"
-  OneArray.length:
-    template: "len({{self}})"
-  OneArray.get:
-    template: "{{self}}[{{index}}]"
-  OneArray.set:
-    template: "{{self}}[{{index}}] = {{value}}"
-  OneMap.keys:
-    template: "{{self}}.keys()"
-  OneMap.values:
-    template: "{{self}}.values()"
-  OneMap.remove:
-    template: "del {{self}}[{{key}}]"
-  OneMap.hasKey:
-    template: "{{key}} in {{self}}"
-  OneMap.get:
-    template: "{{self}}[{{key}}]"
-  OneMap.set:
-    template: "{{self}}[{{key}}] = {{value}}"
+classes:
+  OneConsole:
+    methods:
+      print:
+        template: "print {{str}}"
+  OneArray:
+    fields:
+      length:
+        template: "len({{self}})"
+    methods:
+      add:
+        template: "{{self}}.append({{item}})"
+      get:
+        template: "{{self}}[{{index}}]"
+      set:
+        template: "{{self}}[{{index}}] = {{value}}"
+  OneMap:
+    methods:
+      keys:
+        template: "{{self}}.keys()"
+      values:
+        template: "{{self}}.values()"
+      remove:
+        template: "del {{self}}[{{key}}]"
+      hasKey:
+        template: "{{key}} in {{self}}"
+      get:
+        template: "{{self}}[{{key}}]"
+      set:
+        template: "{{self}}[{{key}}] = {{value}}"
 templates:
   testGenerator: |-
     print {{class}}().{{method}}()

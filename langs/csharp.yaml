@@ -4,38 +4,42 @@ casing:
   method: pascal_case
 primitiveTypes:
   void: void
-  boolean: bool
-  string: string
-  number: int
   any: object
-array: '{{type}}[]'
-functions:
-  OneConsole.print:
-    includes: [System]
-    template: "Console.WriteLine({{str}})"
-  OneArray.add:
+classes:
+  OneString:
+    type: string
+  OneConsole:
+    methods:
+      print:
+        includes: [System]
+        template: "Console.WriteLine({{str}})"
+  OneArray:
     includes: [System.Collections.Generic]
-    template: "{{self}}.Add({{item}})"
-  OneArray.length:
-    template: "{{self}}.Count"
-  OneArray.get:
-    template: "{{self}}[{{index}}]"
-  OneArray.set:
-    template: "{{self}}[{{index}}] = {{value}}"
-  OneMap.keys:
+    fields:
+      length: 
+        template: "{{self}}.Count"
+    methods:
+      add: 
+        template: "{{self}}.Add({{item}})"
+      get: 
+        template: "{{self}}[{{index}}]"
+      set: 
+        template: "{{self}}[{{index}}] = {{value}}"
+  OneMap:
     includes: [System.Linq]
-    template: "{{self}}.Keys.ToArray()"
-  OneMap.values:
-    includes: [System.Linq]
-    template: "{{self}}.Values.ToArray()"
-  OneMap.remove:
-    template: "{{self}}.Remove({{key}})"
-  OneMap.hasKey:
-    template: "{{self}}.ContainsKey({{key}})"
-  OneMap.get:
-    template: "{{self}}[{{key}}]"
-  OneMap.set:
-    template: "{{self}}[{{key}}] = {{value}}"
+    methods:
+      keys: 
+        template: "{{self}}.Keys.ToArray()"
+      values: 
+        template: "{{self}}.Values.ToArray()"
+      remove: 
+        template: "{{self}}.Remove({{key}})"
+      hasKey: 
+        template: "{{self}}.ContainsKey({{key}})"
+      get: 
+        template: "{{self}}[{{key}}]"
+      set: 
+        template: "{{self}}[{{key}}] = {{value}}"
 templates:
   testGenerator: |-
     public class Program

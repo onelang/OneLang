@@ -16,8 +16,8 @@ export class FillVariableMutability extends AstVisitor<boolean> {
     protected visitCallExpression(callExpr: one.CallExpression, isMutable: boolean) {
         const methodRef = <one.MethodReference> callExpr.method;
         const metaPath = methodRef.methodRef.metaPath;
-        const methodPath = metaPath && metaPath.replace(/\//g, ".");
-        const method = this.lang.functions[methodPath];
+        const methodPathParts = metaPath && metaPath.split("/") || [];
+        const method = this.lang.classes[methodPathParts[0]].methods[methodPathParts[1]];
 
         this.visitExpression(callExpr.method, method && method.mutates);
         for (const arg of callExpr.arguments)

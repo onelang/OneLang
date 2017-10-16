@@ -4,33 +4,37 @@ casing:
   method: camel_case
 primitiveTypes:
   void: void
-  boolean: bool
-  string: string
-  number: number
   any: object
-functions:
-  OneConsole.print:
-    template: "console.log({{str}})"
-  OneArray.add:
-    template: "{{self}}.push({{item}})"
-  OneArray.length:
-    template: "{{self}}.length"
-  OneArray.get:
-    template: "{{self}}[{{index}}]"
-  OneArray.set:
-    template: "{{self}}[{{index}}] = {{value}}"
-  OneMap.keys:
-    template: "Object.keys({{self}})"
-  OneMap.values:
-    template: "Object.values({{self}})"
-  OneMap.remove:
-    template: "delete {{self}}[{{key}}]"
-  OneMap.hasKey:
-    template: "{{key}} in {{self}}"
-  OneMap.get:
-    template: "{{self}}[{{key}}]"
-  OneMap.set:
-    template: "{{self}}[{{key}}] = {{value}}"
+classes:
+  OneConsole:
+    methods:
+      print:
+        template: "console.log({{str}})"
+  OneArray:
+    fields:
+      length:
+        template: "{{self}}.length"
+    methods:
+      add:
+        template: "{{self}}.push({{item}})"
+      get:
+        template: "{{self}}[{{index}}]"
+      set:
+        template: "{{self}}[{{index}}] = {{value}}"
+  OneMap:
+    methods:
+      keys:
+        template: "Object.keys({{self}})"
+      values:
+        template: "Object.values({{self}})"
+      remove:
+        template: "delete {{self}}[{{key}}]"
+      hasKey:
+        template: "{{key}} in {{self}}"
+      get:
+        template: "{{self}}[{{key}}]"
+      set:
+        template: "{{self}}[{{key}}] = {{value}}"
 templates:
   testGenerator: |-
     console.log(new {{class}}().{{method}}());

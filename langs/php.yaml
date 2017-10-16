@@ -1,35 +1,42 @@
-functions:
-  OneConsole.print:
-    template: 'print({{str}} . "\\n")'
-  OneArray.add:
-    template: "{{self}}[] = {{item}}"
-  OneArray.length:
-    template: "count({{self}})"
-  OneArray.get:
-    template: "{{self}}[{{index}}]"
-  OneArray.set:
-    template: "{{self}}[{{index}}] = {{value}}"
-  OneMap.keys:
-    template: "array_keys({{self}})"
-  OneMap.values:
-    template: "array_values({{self}})"
-  OneMap.remove:
-    template: "unset({{self}}[{{key}}])"
-  OneMap.hasKey:
-    template: "array_key_exists({{key}}, {{self}})"
-  OneMap.get:
-    template: "{{self}}[{{key}}]"
-  OneMap.set:
-    template: "{{self}}[{{key}}] = {{value}}"
-operators:
-  string + string:
-    template: "{{gen(left)}} . {{gen(right)}}"
-  string += string:
-    template: "{{gen(left)}} .= {{gen(right)}}"
 extension: php
 casing:
   class: pascal_case
   method: camel_case
+classes:
+  OneConsole:
+    methods:
+      print:
+        template: 'print({{str}} . "\\n")'
+  OneArray:
+    fields:
+      length:
+        template: "count({{self}})"
+    methods:
+      add:
+        template: "{{self}}[] = {{item}}"
+      get:
+        template: "{{self}}[{{index}}]"
+      set:
+        template: "{{self}}[{{index}}] = {{value}}"
+  OneMap:
+    methods:
+      keys:
+        template: "array_keys({{self}})"
+      values:
+        template: "array_values({{self}})"
+      remove:
+        template: "unset({{self}}[{{key}}])"
+      hasKey:
+        template: "array_key_exists({{key}}, {{self}})"
+      get:
+        template: "{{self}}[{{key}}]"
+      set:
+        template: "{{self}}[{{key}}] = {{value}}"
+operators:
+  OneString + OneString:
+    template: "{{gen(left)}} . {{gen(right)}}"
+  OneString += OneString:
+    template: "{{gen(left)}} .= {{gen(right)}}"
 templates:
   testGenerator: |-
     $c = new {{class}}();

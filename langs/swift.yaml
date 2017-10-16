@@ -3,35 +3,45 @@ casing:
   class: pascal_case
   method: camel_case
 primitiveTypes:
-  string: String
-  number: Int
   void: Void
-  boolean: Bool
-functions:
-  OneConsole.print:
-    template: "print({{str}})"
-  OneArray.add:
-    mutates: true
-    template: "{{self}}.append({{item}})"
-  OneArray.length:
-    template: "{{self}}.count"
-  OneArray.get:
-    template: "{{self}}[{{index}}]"
-  OneArray.set:
-    template: "{{self}}[{{index}}] = {{value}}"
-  OneMap.keys:
-    template: "Array({{self}}.keys)"
-  OneMap.values:
-    template: "Array({{self}}.values)"
-  OneMap.remove:
-    mutates: true
-    template: "{{self}}[{{key}}] = nil"
-  OneMap.hasKey:
-    template: "{{self}}[{{key}}] != nil"
-  OneMap.get:
-    template: "{{self}}[{{key}}]!"
-  OneMap.set:
-    template: "{{self}}[{{key}}] = {{value}}"
+classes:
+  OneString:
+    type: String
+  OneNumber:
+    type: Int
+  OneBoolean:
+    type: Bool
+  OneConsole:
+    methods:
+      print:
+        template: "print({{str}})"
+  OneArray:
+    fields:
+      length:
+        template: "{{self}}.count"
+    methods:
+      add:
+        mutates: true
+        template: "{{self}}.append({{item}})"
+      get:
+        template: "{{self}}[{{index}}]"
+      set:
+        template: "{{self}}[{{index}}] = {{value}}"
+  OneMap:
+    methods:
+      keys:
+        template: "Array({{self}}.keys)"
+      values:
+        template: "Array({{self}}.values)"
+      remove:
+        mutates: true
+        template: "{{self}}[{{key}}] = nil"
+      hasKey:
+        template: "{{self}}[{{key}}] != nil"
+      get:
+        template: "{{self}}[{{key}}]!"
+      set:
+        template: "{{self}}[{{key}}] = {{value}}"
 templates:
   testGenerator: |-
     print({{class}}().{{method}}())

@@ -4,36 +4,40 @@ casing:
   method: camel_case
 primitiveTypes:
   void: void
-  boolean: bool
-  string: std::string
-  number: int
-array: '{{type}}[]'
-functions:
-  OneConsole.print:
+classes:
+  OneString:
+    type: std::string
+  OneArray:
+    includes: [vector]
+    fields:
+      length: 
+        template: "{{self}}->size()"
+    methods:
+      add: 
+        template: "{{self}}->push_back({{item}})"
+      get: 
+        template: "(*{{self}})[{{index}}]"
+      set: 
+        template: "(*{{self}})[{{index}}] = {{value}}"
+  OneMap:
+    methods:
+      keys: 
+        template: "MapHelper::keys(*{{self}})"
+      values: 
+        template: "MapHelper::values(*{{self}})"
+      remove: 
+        template: "{{self}}->erase({{key}})"
+      hasKey: 
+        template: "{{self}}->find({{key}}) != {{self}}->end()"
+      get: 
+        template: "(*{{self}})[{{key}}]"
+      set: 
+        template: "(*{{self}})[{{key}}] = {{value}}"
+  OneConsole:
     includes: [iostream]
-    template: "std::cout << {{str}} << std::endl"
-  OneArray.add:
-    includes: [vector]
-    template: "{{self}}->push_back({{item}})"
-  OneArray.length:
-    includes: [vector]
-    template: "{{self}}->size()"
-  OneArray.get:
-    template: "(*{{self}})[{{index}}]"
-  OneArray.set:
-    template: "(*{{self}})[{{index}}] = {{value}}"
-  OneMap.keys:
-    template: "MapHelper::keys(*{{self}})"
-  OneMap.values:
-    template: "MapHelper::values(*{{self}})"
-  OneMap.remove:
-    template: "{{self}}->erase({{key}})"
-  OneMap.hasKey:
-    template: "{{self}}->find({{key}}) != {{self}}->end()"
-  OneMap.get:
-    template: "(*{{self}})[{{key}}]"
-  OneMap.set:
-    template: "(*{{self}})[{{key}}] = {{value}}"
+    methods:
+      print:
+        template: "std::cout << {{str}} << std::endl"
 templates:
   testGenerator: |-
     int main()

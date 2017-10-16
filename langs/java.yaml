@@ -5,37 +5,44 @@ casing:
 primitiveTypes:
   any: Object
   void: void
-  boolean: boolean
-  string: String
-  number: Integer
-array: '{{type}}[]'
-functions:
-  OneConsole.print:
-    template: "System.out.println({{str}})"
-  OneArray.add:
-    template: "{{self}}.add({{item}})"
-  OneArray.length:
-    template: "{{self}}.size()"
+classes:
+  OneString:
+    type: String
+  OneNumber:
+    type: Integer
+  OneBoolean:
+    type: boolean
+  OneConsole:
+    methods:
+      print:
+        template: "System.out.println({{str}})"
   OneArray:
-    template: "ArrayList<{{typeArgs[0]}}>"
-  OneArray.get:
-    template: "{{self}}.get({{index}})"
-  OneArray.set:
-    template: "{{self}}.set({{index}}], {{value}})"
+    type: "ArrayList<{{typeArgs[0]}}>"
+    fields:
+      length:
+        template: "{{self}}.size()"
+    methods:
+      add:
+        template: "{{self}}.add({{item}})"
+      get:
+        template: "{{self}}.get({{index}})"
+      set:
+        template: "{{self}}.set({{index}}], {{value}})"
   OneMap:
-    template: "HashMap<{{typeArgs[0]}}, {{typeArgs[1]}}>"
-  OneMap.keys:
-    template: "new ArrayList({{self}}.keySet())"
-  OneMap.values:
-    template: "new ArrayList({{self}}.values())"
-  OneMap.remove:
-    template: "{{self}}.remove({{key}})"
-  OneMap.hasKey:
-    template: "{{self}}.containsKey({{key}})"
-  OneMap.get:
-    template: "{{self}}.get({{key}})"
-  OneMap.set:
-    template: "{{self}}.put({{key}}, {{value}})"
+    type: "HashMap<{{typeArgs[0]}}, {{typeArgs[1]}}>"
+    methods:
+      keys:
+        template: "new ArrayList({{self}}.keySet())"
+      values:
+        template: "new ArrayList({{self}}.values())"
+      remove:
+        template: "{{self}}.remove({{key}})"
+      hasKey:
+        template: "{{self}}.containsKey({{key}})"
+      get:
+        template: "{{self}}.get({{key}})"
+      set:
+        template: "{{self}}.put({{key}}, {{value}})"
 templates:
   testGenerator: ""
   main: |
