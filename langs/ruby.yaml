@@ -7,6 +7,8 @@ classes:
     methods:
       substring:
         template: "{{self}}[{{start}}...{{end}}]"
+      split:
+        template: "{{self}}.split(Regexp.new {{separator}})"
   OneConsole:
     methods:
       print:

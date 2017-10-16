@@ -5,7 +5,7 @@ declare class OneConsole {
 declare class OneArray<T> {
     length: number;
     add(item: T);
-    get(index: number);
+    get(index: number): T;
     set(index: number, value: T);
 }
 
@@ -23,6 +23,7 @@ declare class OneMap<K, V> {
 declare class OneString {
     length: number;
     substring(start: number, end: number): OneString;
+    split(separator: string): OneArray<OneString>;
 }
 
 declare class OneNumber {

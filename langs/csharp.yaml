@@ -11,6 +11,8 @@ classes:
     methods:
       substring:
         template: "{{self}}.Substring({{start}}, {{end}} - {{start}})"
+      split:
+        template: "{{self}}.Split(new[]{ {{separator}} }, StringSplitOptions.None)"
   OneNumber:
     type: int
   OneBoolean:

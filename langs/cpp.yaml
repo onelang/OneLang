@@ -10,6 +10,8 @@ classes:
     methods:
       substring:
         template: "{{self}}.substr({{start}}, {{end}} - {{start}})"
+      split:
+        template: "StringHelper::split({{self}}, {{separator}})"
   OneNumber:
     type: int
   OneBoolean:
@@ -23,7 +25,7 @@ classes:
       add: 
         template: "{{self}}->push_back({{item}})"
       get: 
-        template: "(*{{self}})[{{index}}]"
+        template: "{{self}}->at({{index}})"
       set: 
         template: "(*{{self}})[{{index}}] = {{value}}"
   OneMap:
@@ -75,6 +77,27 @@ templates:
             for(auto it = map.begin(); it != map.end(); ++it)
                 result.push_back(it->second);
             return std::make_shared<std::vector<V>>(result);
+        }
+    };
+
+    class StringHelper {
+      public:
+        static std::shared_ptr<std::vector<std::string>> split(const std::string& str, const std::string& delim)
+        {
+            std::vector<std::string> tokens;
+            
+            size_t prev = 0, pos = 0;
+            do
+            {
+                pos = str.find(delim, prev);
+                if (pos == std::string::npos) pos = str.length();
+                std::string token = str.substr(prev, pos - prev);
+                tokens.push_back(token);
+                prev = pos + delim.length();
+            }
+            while (pos < str.length() && prev < str.length());
+
+            return std::make_shared<std::vector<std::string>>(tokens);
         }
     };
 

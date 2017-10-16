@@ -66,6 +66,10 @@ class TsString {
     substring(start: number, end: number) {
         return this._one.substring(start, end);
     }
+
+    split(separator: string) {
+        return this._one.split(separator);
+    }
 }
 
 class TsNumber {

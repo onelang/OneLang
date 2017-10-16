@@ -11,6 +11,8 @@ classes:
     methods:
       substring:
         template: "{{self}}.substring({{start}}, {{end}})"
+      split:
+        template: "{{self}}.split({{separator}})"
   OneNumber:
     type: number
   OneBoolean:

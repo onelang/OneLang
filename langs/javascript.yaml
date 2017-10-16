@@ -10,6 +10,8 @@ classes:
     methods:
       substring:
         template: "{{self}}.substring({{start}}, {{end}})"  
+      split:
+        template: "{{self}}.split({{separator}})"
   OneConsole:
     methods:
       print:

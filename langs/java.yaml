@@ -11,6 +11,8 @@ classes:
     methods:
       substring:
         template: "{{self}}.substring({{start}}, {{end}})"
+      split:
+        template: "Arrays.asList({{self}}.split({{separator}}))"
   OneNumber:
     type: Integer
   OneBoolean:
@@ -20,7 +22,7 @@ classes:
       print:
         template: "System.out.println({{str}})"
   OneArray:
-    type: "ArrayList<{{typeArgs[0]}}>"
+    type: "List<{{typeArgs[0]}}>"
     fields:
       length:
         template: "{{self}}.size()"
@@ -50,6 +52,7 @@ templates:
   testGenerator: ""
   main: |
     import java.util.ArrayList; // TODO: hack
+    import java.util.List;
     import java.util.Arrays;
     import java.util.HashMap;
 

@@ -8,7 +8,8 @@ class TestClass {
         z += x;
 
         var a = "abcdef".substring(2,4);
+        var arr = "ab  cd ef".split(" ");
         
-        return z + "|" + x + y + "|" + a;
+        return z + "|" + x + y + "|" + a + "|" + arr[2];
     }
 }

@@ -7,6 +7,8 @@ classes:
     methods:
       substring:
         template: "{{self}}[{{start}}:{{end}}]"
+      split:
+        template: "{{self}}.split({{separator}})"
   OneConsole:
     methods:
       print:
