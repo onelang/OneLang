@@ -8,11 +8,16 @@ primitiveTypes:
 classes:
   OneString:
     type: string
+    fields:
+      length:
+        template: "{{self}}.Length"
     methods:
       substring:
         template: "{{self}}.Substring({{start}}, {{end}} - {{start}})"
       split:
         template: "{{self}}.Split(new[]{ {{separator}} }, StringSplitOptions.None)"
+      get:
+        template: "{{self}}[{{idx}}]"
   OneNumber:
     type: int
   OneBoolean:

@@ -7,11 +7,16 @@ primitiveTypes:
 classes:
   OneString:
     type: String
+    fields:
+      length:
+        template: "{{self}}.count"
     methods:
       substring:
         template: "{{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{start}}) ..< {{self}}.index({{self}}.startIndex, offsetBy: {{end}})]"
       split:
         template: "{{self}}.split(separator: {{separator}}, omittingEmptySubsequences: false)"
+      get:
+        template: "{{self}}[{{idx}}]"
   OneNumber:
     type: Int
   OneBoolean:

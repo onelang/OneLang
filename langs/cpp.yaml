@@ -7,11 +7,16 @@ primitiveTypes:
 classes:
   OneString:
     type: std::string
+    fields:
+      length:
+        template: "{{self}}.size()"
     methods:
       substring:
         template: "{{self}}.substr({{start}}, {{end}} - {{start}})"
       split:
         template: "StringHelper::split({{self}}, {{separator}})"
+      get:
+        template: "{{self}}.substr({{idx}}, 1)"
   OneNumber:
     type: int
   OneBoolean:

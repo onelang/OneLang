@@ -85,6 +85,8 @@ export class OverviewGenerator extends AstVisitor<void> {
             const stmt = <one.ForStatement> statement;
             addHdr(`For ("${stmt.itemVariable.name}")`);
             this.indent(1);
+            this.addLine(`Var`);
+            this.visitVariableDeclaration(stmt.itemVariable, null);
             this.addLine(`Condition`);
             this.visitExpression(stmt.condition);
             this.addLine(`Incrementor`);

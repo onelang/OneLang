@@ -4,11 +4,16 @@ casing:
   method: camel_case
 classes:
   OneString:
+    fields:
+      length:
+        template: "length({{self}})"
     methods:
       substring:
         template: "substr {{self}}, {{start}}, ({{end}} - {{start}})"
       split:
         template: "split({{separator}}, {{self}})"
+      get:
+        template: "substr {{self}}, {{idx}}, 1"
   OneConsole:
     methods:
       print:

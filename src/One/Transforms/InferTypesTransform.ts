@@ -135,7 +135,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         // TODO: use the return type of get() method
         const typeArgs = expr.object.valueType.typeArguments;
         if (typeArgs && typeArgs.length === 1)
-            expr.valueType = typeArgs[0];
+            expr.valueType = expr.valueType || typeArgs[0];
     }
 
     protected visitCallExpression(expr: one.CallExpression, context: Context) {

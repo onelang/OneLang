@@ -104,7 +104,7 @@ class ReplaceReferences extends AstVisitor<void> {
         if (expr.varType !== one.VariableRefType.InstanceField) return;
 
         const prop = <one.Property> expr.varRef;
-        if (!(prop.classRef.meta && prop.classRef.meta.overlay)) return;
+        if (!(prop.classRef && prop.classRef.meta && prop.classRef.meta.overlay)) return;
 
         const stmts = prop.getter.statements;
         if (!(stmts.length === 1 && stmts[0].stmtType === one.StatementType.Return)) {

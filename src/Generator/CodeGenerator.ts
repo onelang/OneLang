@@ -194,7 +194,7 @@ class CodeGeneratorModel {
             if (varRef.varType === one.VariableRefType.InstanceField) {
                 const className = varRef.thisExpr.valueType.className;
                 const fieldName = varRef.varRef.name;
-                const func = this.generator.lang.classes[className].fields[fieldName];
+                const func = (this.generator.lang.classes[className].fields||{})[fieldName];
                 const thisArg = varRef.thisExpr ? this.gen(varRef.thisExpr) : null;
                 const gen = (this.classGenerators[className].fields||{})[fieldName];
                 //this.log(varPath);

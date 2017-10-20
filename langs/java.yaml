@@ -8,11 +8,16 @@ primitiveTypes:
 classes:
   OneString:
     type: String
+    fields:
+      length:
+        template: "{{self}}.length()"
     methods:
       substring:
         template: "{{self}}.substring({{start}}, {{end}})"
       split:
         template: "Arrays.asList({{self}}.split({{separator}}))"
+      get:
+        template: "{{self}}[{{idx}}]"
   OneNumber:
     type: Integer
   OneBoolean:

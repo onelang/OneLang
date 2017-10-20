@@ -7,11 +7,16 @@ primitiveTypes:
   any: object
 classes:
   OneString:
+    fields:
+      length:
+        template: "{{self}}.length"
     methods:
       substring:
         template: "{{self}}.substring({{start}}, {{end}})"  
       split:
         template: "{{self}}.split({{separator}})"
+      get:
+        template: "{{self}}[{{idx}}]"
   OneConsole:
     methods:
       print:

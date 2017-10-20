@@ -62,6 +62,10 @@ class TsString {
     get length() {
         return this._one.length;
     }
+
+    get(idx: number): string {
+        return this._one.get(idx);
+    }
     
     substring(start: number, end: number) {
         return this._one.substring(start, end);

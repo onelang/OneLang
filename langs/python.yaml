@@ -4,11 +4,16 @@ casing:
   method: snake_case
 classes:
   OneString:
+    fields:
+      length:
+        template: "len({{self}})"
     methods:
       substring:
         template: "{{self}}[{{start}}:{{end}}]"
       split:
         template: "{{self}}.split({{separator}})"
+      get:
+        template: "{{self}}[{{idx}}]"
   OneConsole:
     methods:
       print:

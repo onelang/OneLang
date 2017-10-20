@@ -7,12 +7,17 @@ primitiveTypes:
 classes:
   OneString:
     type: string
+    fields:
+      length:
+        template: "len({{self}})"
     methods:
       substring:
         template: "{{self}}[{{start}}:{{end}}]"
       split:
         #includes: [strings]
         template: "strings.Split({{self}}, {{separator}})"
+      get:
+        template: "{{self}}[{{idx}}]"
   OneNumber:
     type: int
   OneBoolean:
