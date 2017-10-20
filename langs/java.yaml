@@ -49,8 +49,14 @@ classes:
       set:
         template: "{{self}}.put({{key}}, {{value}})"
 templates:
-  testGenerator: ""
-  main: |
+  testGenerator: |-
+    class Program {
+        public static void main(String[] args) {
+            System.out.println(new {{class}}().{{method}}());
+        }
+    }
+
+  main: |-
     import java.util.ArrayList; // TODO: hack
     import java.util.List;
     import java.util.Arrays;

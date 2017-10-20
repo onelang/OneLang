@@ -96,8 +96,8 @@ export const langConfigs: LangConfigs = {
                         return "Hello World!";
                     }
                 }`),
-            className: 'TestClass',
-            methodName: 'testMethod'
+            className: 'Program',
+            methodName: 'main'
         }
     },
     javascript: {

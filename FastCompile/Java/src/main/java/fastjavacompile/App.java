@@ -1,9 +1,13 @@
 package fastjavacompile;
 
 import java.lang.reflect.*;
+import java.io.ByteArrayOutputStream;
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
@@ -22,6 +26,7 @@ import java.util.Arrays;
 public class App
 {
     static JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
+    static PrintStream originalStdout = new PrintStream(new FileOutputStream(FileDescriptor.out));
 
     public static String exceptionToString(Throwable e) {
         StringWriter sw = new StringWriter();
@@ -97,12 +102,17 @@ public class App
                     response.exceptionText = writer.toString();
                 } else {
                     Class<?> testClass = cl.loadClass(request.className);
-                    Constructor<?> ctor = testClass.getDeclaredConstructor();
-                    ctor.setAccessible(true);
-                    Object instance = ctor.newInstance();
-                    Method testMethod = testClass.getMethod(request.methodName);
+                    Method testMethod = testClass.getMethod(request.methodName, String[].class);
                     testMethod.setAccessible(true);
-                    response.result = testMethod.invoke(instance);
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    System.setOut(new PrintStream(baos));
+                    try {
+                        testMethod.invoke(null, new Object[]{ new String[0] });
+                    } finally {
+                        System.setOut(originalStdout);
+                    }
+                    response.result = baos.toString();
                     response.elapsedMs = (System.nanoTime() - startTime) / 1000 / 1000;
                 }
             } catch(Throwable e) {
