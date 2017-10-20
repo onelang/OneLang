@@ -12,7 +12,7 @@ classes:
   OneConsole:
     methods:
       print:
-        template: "print {{str}}"
+        template: "print {{str}} . \"\\\\n\""
   OneArray:
     fields:
       length:
@@ -47,7 +47,7 @@ templates:
   testGenerator: |-
     package Program;
     my $c = new {{class}}();
-    print $c->{{method}}();
+    print $c->{{method}}() . "\\n";
 
   main: |-
     use strict;

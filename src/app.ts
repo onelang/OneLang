@@ -7,7 +7,7 @@ import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs"
 
 declare var YAML;
 
-const prgName = "StringTest";
+const prgName = "StdoutTest";
 
 const compiler = new OneCompiler();
 compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, data: string) => {
@@ -34,10 +34,15 @@ for (const lang of langs) {
 
 // run compiled codes
 async function executeCodes() {
-    await Promise.all(langs.map(async lang => {
+    console.log(" === START === ");
+    var promises = langs.map(async lang => {
         const result = await jsonRequest<CompileResult>(`http://127.0.0.1:${lang.port}/compile`, lang.request);
-        console.log(lang.name, result);
-    }));
+        console.log(`${lang.name}: ${JSON.stringify(result.result||result.exceptionText||"?")}`);
+        return true;
+    });
+    const results = await Promise.all(promises);
+    console.log(" === DONE === ", results.every(x => x));
+    debugger;
 }
 
-//executeCodes();
+executeCodes();
