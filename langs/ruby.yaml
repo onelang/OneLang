@@ -42,7 +42,7 @@ templates:
   testGenerator: |-
     puts {{class}}.new().{{method}}()
 
-  main: |
+  main: |-
     {{for inc in includes|sep=\n}}
       require '{{inc}}'
     {{/for}}

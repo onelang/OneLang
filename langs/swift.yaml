@@ -51,7 +51,7 @@ templates:
   testGenerator: |-
     print({{class}}().{{method}}())
 
-  main: |
+  main: |-
     {{for inc in includes|sep=\n}}
       import {{inc}}
     {{/for}}
