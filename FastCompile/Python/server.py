@@ -2,6 +2,9 @@
 import json
 import traceback
 import time
+import sys
+import threading
+from cStringIO import StringIO
 
 import SimpleHTTPServer
 from SocketServer import ThreadingMixIn
@@ -13,6 +16,10 @@ def log(text):
     print "[Python] %s" % text
 
 class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+    def __init__(self, request, client_address, server):
+        self.lock = threading.Lock()
+        SimpleHTTPServer.SimpleHTTPRequestHandler.__init__(self, request, client_address, server)
+
     def log_message(self, format, *args):
         pass
 
@@ -37,14 +44,19 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             fn = None
             try:
                 request = json.loads(self.rfile.read(int(self.headers.getheader('content-length'))))
-                #for key in request.keys()
-                code = request["code"] + "\n" + "result = %s().%s()" % (request["className"], request["methodName"])
-                #print code
-                start = time.time()
-                result = None
-                exec(code)
-                elapsedMs = int((time.time() - start) * 1000)
-                self.resp(200, { 'result': result, "elapsedMs": elapsedMs })
+
+                with self.lock:
+                    elapsedMs = None
+                    original_stdout = sys.stdout
+                    sys.stdout = result_stdout = StringIO()
+                    try:
+                        start = time.time()
+                        exec(request["code"])
+                        elapsedMs = int((time.time() - start) * 1000)
+                    finally:
+                        sys.stdout = original_stdout
+
+                self.resp(200, { "result": result_stdout.getvalue(), "elapsedMs": elapsedMs })
             except Exception as e:
                 #log(repr(e))
                 self.resp(400, { 'exceptionText': traceback.format_exc() })

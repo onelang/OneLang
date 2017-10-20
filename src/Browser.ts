@@ -92,7 +92,7 @@ class CompileHelper {
         const compiler = new OneCompiler();
         compiler.parseFromTS(programCode, this.overlayContent, this.stdlibContent, this.genericTransforms);
         const lang = this.langConfigs[langName];
-        const code = compiler.compile(lang.schemaYaml, langName, !lang.request.className);
+        const code = compiler.compile(lang.schemaYaml, langName, true);
         return code;
     }
 }
