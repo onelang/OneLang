@@ -6,7 +6,6 @@ import sys
 import threading
 from cStringIO import StringIO
 
-import SimpleHTTPServer
 from SocketServer import ThreadingMixIn
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
@@ -15,11 +14,7 @@ PORT = 8004
 def log(text):
     print "[Python] %s" % text
 
-class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
-    def __init__(self, request, client_address, server):
-        self.lock = threading.Lock()
-        SimpleHTTPServer.SimpleHTTPRequestHandler.__init__(self, request, client_address, server)
-
+class HTTPHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
@@ -34,10 +29,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def end_headers(self):
         self.send_header("Cache-Control", "no-cache, no-store")
-        SimpleHTTPServer.SimpleHTTPRequestHandler.end_headers(self)
-
-    def do_GET(self):
-        return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+        BaseHTTPRequestHandler.end_headers(self)
 
     def do_POST(self):
         if self.path == '/compile':
@@ -45,31 +37,26 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             try:
                 request = json.loads(self.rfile.read(int(self.headers.getheader('content-length'))))
 
-                with self.lock:
-                    elapsedMs = None
-                    original_stdout = sys.stdout
-                    sys.stdout = result_stdout = StringIO()
-                    try:
-                        start = time.time()
-                        exec(request["code"])
-                        elapsedMs = int((time.time() - start) * 1000)
-                    finally:
-                        sys.stdout = original_stdout
+                elapsedMs = None
+                original_stdout = sys.stdout
+                sys.stdout = result_stdout = StringIO()
+                try:
+                    start = time.time()
+                    exec(request["code"])
+                    elapsedMs = int((time.time() - start) * 1000)
+                finally:
+                    sys.stdout = original_stdout
 
                 self.resp(200, { "result": result_stdout.getvalue(), "elapsedMs": elapsedMs })
             except Exception as e:
                 #log(repr(e))
                 self.resp(400, { 'exceptionText': traceback.format_exc() })
         else:
-            return SimpleHTTPServer.SimpleHTTPRequestHandler.do_POST(self) 
+            self.resp(404, { "error": "unknown method" })
 
 log("server is listening on port %d" % PORT)
 
-class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
-    daemon_threads = True
-    """Handle requests in a separate thread."""
-
 try:
-    ThreadedHTTPServer(("127.0.0.1", PORT), HTTPHandler).serve_forever()
+    HTTPServer(("127.0.0.1", PORT), HTTPHandler).serve_forever()
 except KeyboardInterrupt:
     pass
