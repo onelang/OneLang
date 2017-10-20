@@ -2,6 +2,7 @@ const process = require("process");
 const http = require("http");
 const vm = require("vm");
 const ts = require("typescript");
+const util = require('util');
 
 function readRequestBody(request) {
     return new Promise((resolve, reject) => {
@@ -24,26 +25,26 @@ const server = http.createServer(async (request, response) => {
     try {
         const requestText = (await readRequestBody(request)).toString();
         const requestJson = JSON.parse(requestText);
-        //log(request.url, requestJson);
         
         let code = requestJson.code;
         if (requestJson.lang === "TypeScript")
             code = ts.transpileModule(code, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
 
-        //log("code", code);
+        let result = "";
+        const script = new vm.Script(code);
+        const context = new vm.createContext({ 
+            console: {
+                log: (...args) => result += (util.format(...args) + '\n'),
+            }
+        });
 
         const startTime = process.hrtime();
-        
-        const script = new vm.Script(code + `\n new ${requestJson.className}().${requestJson.methodName}()`);
-        const context = new vm.createContext({ });
-        const result = script.runInContext(context);
-
+        script.runInContext(context);
         const elapsedTime = process.hrtime(startTime);
         const elapsedMs = elapsedTime[0] * 1000 + Math.round(elapsedTime[1] / 1e6);
 
         response.end(JSON.stringify({ result, elapsedMs }));
     } catch(e) {
-        //console.error(e);
         response.end(JSON.stringify({ exceptionText: `${e}\n\n${e.stack}` }));
     }
 });
