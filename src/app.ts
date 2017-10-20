@@ -42,7 +42,6 @@ async function executeCodes() {
     });
     const results = await Promise.all(promises);
     console.log(" === DONE === ", results.every(x => x));
-    debugger;
 }
 
 executeCodes();
