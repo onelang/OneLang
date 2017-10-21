@@ -120,28 +120,36 @@ templates:
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
         public:
-          {{for field in class.publicFields|sep=\n}}
-            {{if field.static}}static {{/if}}{{getType(field)}} {{field.name}};
-          {{/for}}
+          {{genFields(class.publicFields)}}
           {{genMethods(class.publicMethods)}}
 
         private:
-          {{for field in class.privateFields|sep=\n}}
-            {{if field.static}}static {{/if}}{{getType(field)}} {{field.name}};
-          {{/for}}
+          {{genFields(class.privateFields)}}
           {{genMethods(class.privateMethods)}}
       };
-    {{/for}}
 
+      {{for field in class.fields|sep=\n}}
+        {{if field.static && field.initializer}}
+          {{getType(field)}} {{class.name}}::{{field.name}} = {{gen(field.initializer)}};
+        {{/if}}
+      {{/for}}
+    {{/for}}
+  genFields:
+    args:
+      - name: fields
+    template: |-
+      {{for field in fields|sep=\n}}
+        {{if field.static}}static {{/if}}{{getType(field)}} {{field.name}};
+      {{/for}}
   getType:
     args:
       - name: item
-    template: "{{item.type}}{{if item.typeInfo.isClass}}*{{/if}}"
+    template: "{{item.type}}{{if item.typeInfo.isClass && !item.typeInfo.isString}}*{{/if}}"
 
   getTypeX:
     args:
       - name: type
-    template: "{{typeName(type)}}{{if type.isClass}}*{{/if}}"
+    template: "{{typeName(type)}}{{if type.isClass && !type.isString}}*{{/if}}"
 
   genMethods:
     args:
