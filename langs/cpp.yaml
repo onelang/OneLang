@@ -53,6 +53,7 @@ classes:
     methods:
       print:
         template: "std::cout << {{str}} << std::endl"
+includes: [memory, fstream, vector, map, iostream]
 templates:
   testGenerator: |-
     int main()
@@ -63,8 +64,6 @@ templates:
     }
 
   main: |-
-    #include <memory>
-    #include <fstream>
     {{for inc in includes|sep=\n}}
       #include <{{inc}}>
     {{/for}}

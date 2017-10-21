@@ -5,9 +5,12 @@ import { AstHelper } from "../AstHelper";
 import { LangFileSchema } from "../../Generator/LangFileSchema";
 
 export class IncludesCollector extends AstVisitor<void> {
-    includes: Set<string> = new Set<string>();
+    includes: Set<string>;
 
-    constructor(public lang: LangFileSchema.LangFile) { super(); }
+    constructor(public lang: LangFileSchema.LangFile) { 
+        super();
+        this.includes = new Set<string>(lang.includes || []);
+    }
 
     useInclude(className: string, methodName?: string) {
         const cls = this.lang.classes[className];

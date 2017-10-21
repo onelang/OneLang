@@ -72,6 +72,7 @@ classes:
         template: |-
           file_content_bytes, _ := ioutil.ReadFile({{fn}})
           {{result}} := string(file_content_bytes)
+includes: [fmt]
 templates:
   testGenerator: |-
     func main() {

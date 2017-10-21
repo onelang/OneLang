@@ -66,8 +66,8 @@ export namespace LangFileSchema {
             number: string;
             any: string;
         };
-        array: string;
         templates: Templates;
+        includes: string[];
         expressions: string;
     }
 }
