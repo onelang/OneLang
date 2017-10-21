@@ -162,7 +162,7 @@ templates:
   genVar:
     args:
       - name: itemVar
-    template: "auto {{itemVar.name}} = {{gen(itemVar.initializer)}}"
+    template: "{{typeName(itemVar.type)}} {{itemVar.name}} = {{gen(itemVar.initializer)}}"
 expressions:
   call: |-
     {{gen(expr.method)}}(

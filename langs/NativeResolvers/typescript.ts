@@ -59,7 +59,7 @@ class TsMap<K,V> {
 class TsString {
     _one: OneString;
     
-    get length() {
+    get length(): number {
         return this._one.length;
     }
 

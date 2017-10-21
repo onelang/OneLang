@@ -9,7 +9,7 @@ export class SchemaContext {
     transformer: SchemaTransformer;
     tiContext = new TiContext();
 
-    constructor(public schema: one.Schema) {
+    constructor(public schema: one.Schema, public schemaType: "program"|"overlay"|"stdlib") {
         this.transformer = SchemaTransformer.instance;
     }
 
@@ -17,13 +17,16 @@ export class SchemaContext {
         this.transformer.ensure(this, ...transformNames);
     }
 
-    addDependencySchema(schema: one.Schema, type: "overlay"|"stdlib") {
-        for (const glob of Object.values(schema.globals))
+    addDependencySchema(schemaCtx: SchemaContext) {
+        if (!["overlay", "stdlib"].includes(schemaCtx.schemaType))
+            throw new Error("Only overlay and stdlib schemas are allowed as dependencies!");
+
+        for (const glob of Object.values(schemaCtx.schema.globals))
             this.tiContext.addLocalVar(glob);
         
-        for (const cls of Object.values(schema.classes)) {
+        for (const cls of Object.values(schemaCtx.schema.classes)) {
             cls.meta = cls.meta || {};
-            cls.meta[type] = true;
+            cls.meta[schemaCtx.schemaType] = true; // TODO: move this logic to somewhere else?
             this.tiContext.classes.addClass(cls);
         }
     }

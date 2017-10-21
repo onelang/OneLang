@@ -7,11 +7,14 @@ import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs"
 
 declare var YAML;
 
-const prgName = "StdoutTest";
+const prgName = "NumberUnaryIssue";
+const runPrg = false;
+
+global["debugOn"] = false;
 
 const compiler = new OneCompiler();
 compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, data: string) => {
-    writeFile(`tmp/${schemaType === "program" ? prgName : schemaType}_${name}.${type === "overviewText" ? "txt" : "json"}`, data); 
+    writeFile(`tmp/${schemaType === "program" ? prgName : schemaType}/schemaStates/${name}.${type === "overviewText" ? "txt" : "json"}`, data); 
 };
 
 const programCode = readFile(`input/${prgName}.ts`);
@@ -22,13 +25,13 @@ compiler.parseFromTS(programCode, overlayCode, stdlibCode, genericTransforms);
 
 const langs = Object.values(langConfigs);
 for (const lang of langs) {
-    //if (lang.name !== "go") continue;
+    if (lang.name !== "python") continue;
 
     const langYaml = readFile(`langs/${lang.name}.yaml`);
     const codeGen = compiler.getCodeGenerator(langYaml, lang.name);
     lang.request.code = codeGen.generate(true);
 
-    writeFile(`tmp/${prgName}.${codeGen.lang.extension}`, codeGen.generatedCode);
+    writeFile(`tmp/${prgName}/results/${prgName}.${codeGen.lang.extension}`, codeGen.generatedCode);
     writeFile(`tmp/TemplateGenerators_${lang.name}.js`, codeGen.templateObjectCode);
 }
 
@@ -44,4 +47,5 @@ async function executeCodes() {
     console.log(" === DONE === ", results.every(x => x));
 }
 
-executeCodes();
+if (runPrg)
+    executeCodes();

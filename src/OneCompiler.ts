@@ -66,20 +66,20 @@ export class OneCompiler {
         overlaySchema.sourceType = "overlay";
         stdlibSchema.sourceType = "stdlib";
 
-        this.stdlibCtx = new SchemaContext(stdlibSchema);
+        this.stdlibCtx = new SchemaContext(stdlibSchema, "stdlib");
         this.saveSchemaState(this.stdlibCtx, "0_Original");
 
         this.stdlibCtx.ensureTransforms("fillMetaPath", "inferTypes");
         this.saveSchemaState(this.stdlibCtx, "0_Converted");
         
-        this.overlayCtx = new SchemaContext(overlaySchema);
-        this.overlayCtx.addDependencySchema(stdlibSchema, "stdlib");
+        this.overlayCtx = new SchemaContext(overlaySchema, "overlay");
+        this.overlayCtx.addDependencySchema(this.stdlibCtx);
         this.saveSchemaState(this.overlayCtx, "0_Original");
 
         this.overlayCtx.ensureTransforms("convertInlineThisRef", "fillMetaPath");
         this.saveSchemaState(this.overlayCtx, "1_Converted");
         
-        this.schemaCtx = new SchemaContext(schema);
+        this.schemaCtx = new SchemaContext(schema, "program");
         // TODO: move to somewhere else...
         this.schemaCtx.arrayType = "TsArray";
         this.schemaCtx.mapType = "TsMap";
@@ -88,8 +88,8 @@ export class OneCompiler {
         this.genericTransformer.process(this.schemaCtx.schema);
         this.saveSchemaState(this.schemaCtx, `1_GenericTransforms`);
         
-        this.schemaCtx.addDependencySchema(overlaySchema, "overlay");
-        this.schemaCtx.addDependencySchema(stdlibSchema, "stdlib");
+        this.schemaCtx.addDependencySchema(this.overlayCtx);
+        this.schemaCtx.addDependencySchema(this.stdlibCtx);
         this.schemaCtx.ensureTransforms("inferTypes");
         this.saveSchemaState(this.schemaCtx, `2_TypesInferred`);
         
@@ -104,6 +104,7 @@ export class OneCompiler {
         this.schemaCtx.arrayType = "OneArray";
         this.schemaCtx.mapType = "OneMap";
 
+        global["debugOn"] = true;
         this.schemaCtx.ensureTransforms("inferTypes");
         this.saveSchemaState(this.schemaCtx, `5_TypesInferredAgain`);
     }

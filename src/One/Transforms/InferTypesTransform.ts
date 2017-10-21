@@ -255,16 +255,16 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
     }
 
     protected visitClassReference(expr: one.ClassReference, context: Context) {
-        expr.valueType = expr.classRef.type;
+        expr.valueType = expr.classRef.type || expr.valueType;
     }
     
     protected visitThisReference(expr: one.ThisReference, context: Context) {
-        expr.valueType = context.currClass.type;
+        expr.valueType = context.currClass.type || expr.valueType;
     }
 
     protected visitVariableRef(expr: one.VariableRef, context: Context) { 
         super.visitVariableRef(expr, context);
-        expr.valueType = expr.varRef.type;
+        expr.valueType = expr.varRef.type || expr.valueType;
     }
     
     protected visitMethodReference(expr: one.MethodReference, context: Context) {

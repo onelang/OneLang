@@ -17,7 +17,7 @@ classes:
         #includes: [strings]
         template: "strings.Split({{self}}, {{separator}})"
       get:
-        template: "{{self}}[{{idx}}]"
+        template: "{{self}}[{{idx}}:{{idx}}+1]"
   OneNumber:
     type: int
   OneBoolean:

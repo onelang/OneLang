@@ -17,7 +17,7 @@ classes:
       split:
         template: "Arrays.asList({{self}}.split({{separator}}))"
       get:
-        template: "{{self}}[{{idx}}]"
+        template: "{{self}}.substring({{idx}}, {{idx}} + 1)"
   OneNumber:
     type: Integer
   OneBoolean:
