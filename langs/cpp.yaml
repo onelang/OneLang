@@ -34,6 +34,7 @@ classes:
       set: 
         template: "(*{{self}})[{{index}}] = {{value}}"
   OneMap:
+    includes: [map]
     methods:
       keys: 
         template: "MapHelper::keys(*{{self}})"
@@ -62,7 +63,6 @@ templates:
     }
 
   main: |-
-    #include <map>
     #include <memory>
     #include <fstream>
     {{for inc in includes|sep=\n}}

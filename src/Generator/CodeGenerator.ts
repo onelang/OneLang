@@ -5,6 +5,7 @@ import { OverviewGenerator } from "../One/OverviewGenerator";
 import { LangFileSchema } from "./LangFileSchema";
 import { deindent } from "./Utils";
 import { CaseConverter } from "../One/Transforms/CaseConverter";
+import { IncludesCollector } from "../One/Transforms/IncludesCollector";
 
 function tmpl(literalParts: TemplateStringsArray, ...values: any[]) {
     interface TemplatePart { type: "text"|"value", value: any, block?: boolean };
@@ -84,7 +85,6 @@ namespace CodeGeneratorModel {
 
 class CodeGeneratorModel {
     includes: string[] = [];
-    absoluteIncludes: string[] = [];
     classes: CodeGeneratorModel.Class[] = [];
     operatorGenerators: { [name: string]: (left: one.Expression, right: one.Expression) => string } = {};
     expressionGenerators: { [name: string]: (expr: any, ...args: any[]) => string } = {};
@@ -103,7 +103,7 @@ class CodeGeneratorModel {
     constructor(public generator: CodeGenerator) { }
 
     log(data: string) { console.log(`[CodeGeneratorModel] ${data}`); }
-    
+
     typeName(type: one.Type) {
         const cls = this.classGenerators[type.className];
         const result = cls ? cls.typeGenerator.apply(this, [type.typeArguments.map(x => this.typeName(x))]) : this.generator.getTypeName(type);
@@ -278,15 +278,18 @@ export class CodeGenerator {
         this.caseConverter = new CaseConverter(lang.casing);
         this.compileTemplates();
         this.setupClasses();
-        this.setupIncludes();
+
+        const includesCollector = new IncludesCollector(lang);
+        includesCollector.process(this.schema);
+        this.model.includes = Array.from(includesCollector.includes);
     }
 
     getTypeName(type: one.IType): string {
         if (type.typeKind === one.TypeKind.Class) {
             const classGen = this.model.classGenerators[type.className];
-            if (classGen)
+            if (classGen) {
                 return classGen.typeGenerator(type.typeArguments.map(x => this.getTypeName(x)));
-            else
+            } else
                 return this.caseConverter.getName(type.className, "class");
         }
         else
@@ -370,20 +373,6 @@ export class CodeGenerator {
                 privateFields: fields.filter(x => x.visibility === "private"),
             };
         });
-    }
-
-    setupIncludes() {
-        const includes = {};
-        for (const cls of Object.values(this.lang.classes)) {
-            for (const include of cls.includes || [])
-                includes[include] = true;
-
-            for (const method of Object.values(cls.methods||[]))
-                for (const include of method.includes || [])
-                    includes[include] = true;
-        }
-
-        this.model.includes.push(...Object.keys(includes));
     }
 
     genName(name: string) {

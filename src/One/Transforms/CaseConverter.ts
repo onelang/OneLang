@@ -2,7 +2,6 @@ import { OneAst as one } from "../Ast";
 import { AstVisitor } from "../AstVisitor";
 import { ISchemaTransform } from "../SchemaTransformer";
 import { SchemaContext } from "../SchemaContext";
-import { OverviewGenerator } from "../OverviewGenerator";
 import { AstHelper } from "../AstHelper";
 import { LangFileSchema } from "../../Generator/LangFileSchema";
 

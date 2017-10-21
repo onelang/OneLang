@@ -17,6 +17,7 @@ import { CodeGenerator } from "./Generator/CodeGenerator";
 import { FillVariableMutability } from "./One/Transforms/FillVariableMutability";
 import { TriviaCommentTransform } from "./One/Transforms/TriviaCommentTransform";
 import { GenericTransformer, GenericTransformerFile } from "./One/Transforms/GenericTransformer";
+import { IncludesCollector } from "./One/Transforms/IncludesCollector";
 
 declare var YAML: any;
 

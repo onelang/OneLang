@@ -15,6 +15,7 @@ classes:
       substring:
         template: "{{self}}.substring({{start}}, {{end}})"
       split:
+        includes: [java.util.Arrays]
         template: "Arrays.asList({{self}}.split({{separator}}))"
       get:
         template: "{{self}}.substring({{idx}}, {{idx}} + 1)"
@@ -27,6 +28,7 @@ classes:
       print:
         template: "System.out.println({{str}})"
   OneArray:
+    includes: [java.util.List, java.util.Arrays] # TODO: java.util.Arrays only if array literal used
     type: "List<{{typeArgs[0]}}>"
     fields:
       length:
@@ -39,11 +41,14 @@ classes:
       set:
         template: "{{self}}.set({{index}}], {{value}})"
   OneMap:
+    includes: [java.util.HashMap]
     type: "HashMap<{{typeArgs[0]}}, {{typeArgs[1]}}>"
     methods:
       keys:
+        includes: [java.util.ArrayList]
         template: "new ArrayList({{self}}.keySet())"
       values:
+        includes: [java.util.ArrayList]
         template: "new ArrayList({{self}}.values())"
       remove:
         template: "{{self}}.remove({{key}})"
@@ -68,11 +73,6 @@ templates:
     }
 
   main: |-
-    import java.util.ArrayList; // TODO: hack
-    import java.util.List;
-    import java.util.Arrays;
-    import java.util.HashMap;
-
     {{for inc in includes|sep=\n}}
       import {{inc}};
     {{/for}}

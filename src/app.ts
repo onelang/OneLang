@@ -7,8 +7,8 @@ import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs"
 
 declare var YAML;
 
-const prgName = "FakeEnumTest";
-const runPrg = true;
+const prgName = "Test";
+const runPrg = false;
 const langFilter = "";
 
 global["debugOn"] = false;
