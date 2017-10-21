@@ -39,9 +39,9 @@ export class OneCompiler {
 
     parseFromTS(programCode: string, overlayCode: string, stdlibCode: string, genericTransformerYaml: string) {
         overlayCode = overlayCode.replace(/^[^\n]*<reference.*stdlib.d.ts[^\n]*\n/, "");
-        const schema = TypeScriptParser.parseFile(programCode);
-        const overlaySchema = TypeScriptParser.parseFile(overlayCode);
-        const stdlibSchema = TypeScriptParser.parseFile(stdlibCode);
+        const schema = TypeScriptParser.parseFile(programCode.replace(/\r\n/g, "\n"));
+        const overlaySchema = TypeScriptParser.parseFile(overlayCode.replace(/\r\n/g, "\n"));
+        const stdlibSchema = TypeScriptParser.parseFile(stdlibCode.replace(/\r\n/g, "\n"));
         this.genericTransformer = new GenericTransformer(<GenericTransformerFile>
             YAML.parse(genericTransformerYaml));
 
