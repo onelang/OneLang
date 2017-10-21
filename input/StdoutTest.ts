@@ -6,6 +6,13 @@ class TestClass {
         return result;
     }
 
+    /*reverseString2(str: string): string {
+        let result = "";
+        for (const c of str)
+            result += c;
+        return result;
+    }*/
+
     testMethod(): string {
         console.log(this.reverseString("print value"));
         return "return value";
