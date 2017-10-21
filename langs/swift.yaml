@@ -16,7 +16,7 @@ classes:
       split:
         template: "{{self}}.split(separator: {{separator}}, omittingEmptySubsequences: false)"
       get:
-        template: "{{self}}[{{idx}}]"
+        template: "String({{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{idx}})])"
   OneNumber:
     type: Int
   OneBoolean:
