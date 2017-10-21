@@ -219,7 +219,8 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
 
         const fieldOrProp = cls.fields[expr.propertyName] || cls.properties[expr.propertyName];
         if (fieldOrProp) {
-            const newValue = one.VariableRef.InstanceField(expr.object, fieldOrProp);
+            const newValue = fieldOrProp.static ? one.VariableRef.StaticField(expr.object, fieldOrProp) :
+                one.VariableRef.InstanceField(expr.object, fieldOrProp);
             const newExpr = AstHelper.replaceProperties(expr, newValue);
             newExpr.valueType = fieldOrProp.type;
             return;

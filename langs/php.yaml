@@ -67,7 +67,7 @@ templates:
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
           {{for field in class.fields|sep=\n}}
-            {{field.visibility}} ${{field.name}};
+            {{field.visibility}}\ {{if field.static}}static {{/if}}${{field.name}}{{if field.initializer}}\ = {{gen(field.initializer)}}{{/if}};
           {{/for}}
 
           {{for method in class.methods|sep=\n\n}}
@@ -111,7 +111,6 @@ expressions:
         {{gen(arg)}}
       {{/for}}
     )
-  propertyAccess: "{{gen(expr.object)}}->{{gen(expr.propertyName)}}"
   identifier: "${{expr.text}}"
   stringLiteral: "\"{{expr.value}}\""
   nullLiteral: "NULL"
@@ -137,6 +136,7 @@ expressions:
   localVar: "${{expr.varRef.name}}"
   methodArgument: "${{expr.varRef.name}}"
   instanceField: "{{gen(expr.thisExpr)}}->{{expr.varRef.name}}"
+  staticField: "{{gen(expr.thisExpr)}}::${{expr.varRef.name}}"
   falseLiteral: "FALSE"
   trueLiteral: "TRUE"
   elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"

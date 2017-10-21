@@ -341,7 +341,8 @@ export class CodeGenerator {
                             type: this.getTypeName(param.type)
                         };
                     }),
-                    visibility: method.visibility || "public"
+                    visibility: method.visibility || "public",
+                    static: method.static || false
                 };
             });
 
@@ -352,6 +353,7 @@ export class CodeGenerator {
                     typeInfo: field.type,                    
                     visibility: field.visibility || "public",
                     initializer: field.initializer,
+                    static: field.static || false
                 }
             });
 

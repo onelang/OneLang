@@ -150,6 +150,7 @@ expressions:
   localVar: "{{varName(expr.varRef, args[0])}}"
   methodArgument: "{{varName(expr.varRef)}}"
   instanceField: "{{gen(expr.thisExpr)}}->{{expr.varRef.name}}"
+  staticField: "{{gen(expr.thisExpr)}}::{{expr.varRef.name}}"
   trueLiteral: "1"
   falseLiteral: "0"
   elementAccess: "{{gen(expr.object, true)}}{{{gen(expr.elementExpr)}}}"

@@ -377,11 +377,13 @@ export class TypeScriptParser {
             this.currClass = classSchema;
             classSchema.typeArguments = tsClass.getTypeParameters().map(x => x.compilerNode.name.text);
 
-            for (const tsProp of tsClass.getInstanceProperties()) {
+            for (const tsProp of tsClass.getInstanceProperties().concat(tsClass.getStaticProperties())) {
+                const modifiers = tsProp.compilerNode.modifiers && tsProp.compilerNode.modifiers.map(x => x.kind) || [];
                 if (tsProp instanceof SimpleAst.PropertyDeclaration || tsProp instanceof SimpleAst.ParameterDeclaration) {
                     const fieldSchema = classSchema.fields[tsProp.getName()] = <one.Field> { 
                         type: this.convertTsType(tsProp.compilerNode.type),
-                        visibility: this.convertVisibility(tsProp)
+                        visibility: this.convertVisibility(tsProp),
+                        static: modifiers.includes(ts.SyntaxKind.StaticKeyword)
                     };
     
                     const initializer = tsProp.getInitializer();
@@ -392,6 +394,7 @@ export class TypeScriptParser {
                         type: this.convertTsType(tsProp.compilerNode.type),
                         visibility: this.convertVisibility(tsProp),
                         getter: this.convertBlock(tsProp.compilerNode.body),
+                        static: modifiers.includes(ts.SyntaxKind.StaticKeyword)                        
                     };
                 } else {
                     this.logNodeError(`Unknown property type`, tsProp.compilerNode);

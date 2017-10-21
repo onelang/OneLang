@@ -145,11 +145,13 @@ export namespace OneAst {
     export interface Field extends VariableDeclaration {
         classRef?: Class;
         visibility: Visibility;
+        static: boolean;
     }
 
     export interface Property extends VariableBase {
         classRef?: Class;
         visibility: Visibility;
+        static: boolean;
         getter: Block;
         setter: Block;
     }
@@ -213,6 +215,7 @@ export namespace OneAst {
     }
 
     export enum VariableRefType { 
+        StaticField = "StaticField",
         InstanceField = "InstanceField",
         MethodArgument = "MethodArgument",
         LocalVar = "LocalVar",
@@ -224,6 +227,10 @@ export namespace OneAst {
 
         static InstanceField(thisExpr: Expression, varRef: VariableBase) {
             return new VariableRef(VariableRefType.InstanceField, varRef, thisExpr);
+        }
+
+        static StaticField(thisExpr: Expression, varRef: VariableBase) {
+            return new VariableRef(VariableRefType.StaticField, varRef, thisExpr);
         }
 
         static MethodVariable(varRef: VariableBase) {
