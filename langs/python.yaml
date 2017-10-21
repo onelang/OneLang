@@ -66,6 +66,12 @@ templates:
           {{if class.methods.length == 0}}
               pass
           {{/if}}
+
+      {{for field in class.fields|sep=\n}}
+        {{if field.static && field.initializer}}
+          {{class.name}}.{{field.name}} = {{gen(field.initializer)}};
+        {{/if}}
+      {{/for}}
     {{/for}}
 
   genBody:

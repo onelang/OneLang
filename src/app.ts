@@ -9,7 +9,7 @@ declare var YAML;
 
 const prgName = "FakeEnumTest";
 const runPrg = true;
-const langFilter = "javascript";
+const langFilter = "";
 
 global["debugOn"] = false;
 

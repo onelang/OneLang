@@ -121,13 +121,13 @@ templates:
       class {{class.name}} {
         public:
           {{for field in class.publicFields|sep=\n}}
-            {{getType(field)}} {{field.name}};
+            {{if field.static}}static {{/if}}{{getType(field)}} {{field.name}};
           {{/for}}
           {{genMethods(class.publicMethods)}}
 
         private:
           {{for field in class.privateFields|sep=\n}}
-            {{getType(field)}} {{field.name}};
+            {{if field.static}}static {{/if}}{{getType(field)}} {{field.name}};
           {{/for}}
           {{genMethods(class.privateMethods)}}
       };
@@ -137,6 +137,11 @@ templates:
     args:
       - name: item
     template: "{{item.type}}{{if item.typeInfo.isClass}}*{{/if}}"
+
+  getTypeX:
+    args:
+      - name: type
+    template: "{{typeName(type)}}{{if type.isClass}}*{{/if}}"
 
   genMethods:
     args:
@@ -173,7 +178,7 @@ templates:
   genVar:
     args:
       - name: itemVar
-    template: "{{typeName(itemVar.type)}} {{itemVar.name}} = {{gen(itemVar.initializer)}}"
+    template: "{{getTypeX(itemVar.type)}} {{itemVar.name}} = {{gen(itemVar.initializer)}}"
 expressions:
   call: |-
     {{gen(expr.method)}}(

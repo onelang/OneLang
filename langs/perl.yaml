@@ -77,6 +77,12 @@ templates:
           return $self;
       }
 
+      {{for field in class.fields|sep=\n}}
+        {{if field.static}}
+          our ${{field.name}}{{if field.initializer}}\ = {{gen(field.initializer)}}{{/if}};
+        {{/if}}
+      {{/for}}
+
       {{for method in class.methods|sep=\n\n}}
         sub {{method.name}} {
             my ( $self{{for param in method.parameters}}, ${{param.name}}{{/for}} ) = @_;
@@ -150,7 +156,7 @@ expressions:
   localVar: "{{varName(expr.varRef, args[0])}}"
   methodArgument: "{{varName(expr.varRef)}}"
   instanceField: "{{gen(expr.thisExpr)}}->{{expr.varRef.name}}"
-  staticField: "{{gen(expr.thisExpr)}}::{{expr.varRef.name}}"
+  staticField: "${{gen(expr.thisExpr)}}::{{expr.varRef.name}}"
   trueLiteral: "1"
   falseLiteral: "0"
   elementAccess: "{{gen(expr.object, true)}}{{{gen(expr.elementExpr)}}}"

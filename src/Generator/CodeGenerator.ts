@@ -352,6 +352,7 @@ export class CodeGenerator {
                     type: this.getTypeName(field.type),
                     typeInfo: field.type,                    
                     visibility: field.visibility || "public",
+                    public: field.visibility ? field.visibility === "public" : true,
                     initializer: field.initializer,
                     static: field.static || false
                 }
@@ -386,7 +387,7 @@ export class CodeGenerator {
     }
 
     genName(name: string) {
-        return /^[a-zA-Z]+$/.test(name) ? name : `"${name}"`;
+        return /^[a-zA-Z0-9]+$/.test(name) ? name : `"${name}"`;
     }
 
     genTemplateMethodCode(name: string, args: string[], template: string) {

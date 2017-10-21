@@ -57,7 +57,11 @@ templates:
     {{/for}}
 
     {{for class in classes|sep=\n\n}}
-      class {{class.name}}
+      class {{class.name}}\ 
+        {{for field in class.fields|sep=\n}}
+          {{if field.static}}@@{{else}}@{{/if}}{{field.name}}\ = {{if field.initializer}}{{gen(field.initializer)}}{{else}}nil{{/if}}
+        {{/for}}
+
         {{for method in class.methods|sep=\n\n}}
             def {{method.name}}({{genArgs(method)}})
                 {{genBody(method.body)}}
