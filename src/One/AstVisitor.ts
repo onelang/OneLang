@@ -208,7 +208,7 @@ export abstract class AstVisitor<TContext> {
     }
  
     protected visitField(field: one.Field, context: TContext) {
-        this.visitVariable(field, context);
+        this.visitVariableDeclaration(field, context);
     }
  
     protected visitProperty(prop: one.Property, context: TContext) {

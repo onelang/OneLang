@@ -7,8 +7,9 @@ import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs"
 
 declare var YAML;
 
-const prgName = "FileTest";
-const runPrg = false;
+const prgName = "FakeEnumTest";
+const runPrg = true;
+const langFilter = "javascript";
 
 global["debugOn"] = false;
 
@@ -25,7 +26,7 @@ compiler.parseFromTS(programCode, overlayCode, stdlibCode, genericTransforms);
 
 const langs = Object.values(langConfigs);
 for (const lang of langs) {
-    //if (lang.name !== "python") continue;
+    if (langFilter && lang.name !== langFilter) continue;
 
     const langYaml = readFile(`langs/${lang.name}.yaml`);
     const codeGen = compiler.getCodeGenerator(langYaml, lang.name);
@@ -39,6 +40,8 @@ for (const lang of langs) {
 async function executeCodes() {
     console.log(" === START === ");
     var promises = langs.map(async lang => {
+        if (langFilter && lang.name !== langFilter) return true;
+
         const result = await jsonRequest<CompileResult>(`http://127.0.0.1:${lang.port}/compile`, lang.request);
         console.log(`${lang.name}: ${JSON.stringify(result.result||result.exceptionText||"?")}`);
         return true;

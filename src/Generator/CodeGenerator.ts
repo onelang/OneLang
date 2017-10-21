@@ -195,13 +195,16 @@ class CodeGeneratorModel {
             if (varRef.varType === one.VariableRefType.InstanceField) {
                 const className = varRef.thisExpr.valueType.className;
                 const fieldName = varRef.varRef.name;
-                const func = (this.generator.lang.classes[className].fields||{})[fieldName];
-                const thisArg = varRef.thisExpr ? this.gen(varRef.thisExpr) : null;
-                const gen = (this.classGenerators[className].fields||{})[fieldName];
-                //this.log(varPath);
-                if (gen) {
-                    const code = gen.apply(this, [thisArg]);
-                    return code;
+                const cls = this.generator.lang.classes[className];
+                if (cls) {
+                    const func = cls.fields && cls.fields[fieldName];
+                    const thisArg = varRef.thisExpr ? this.gen(varRef.thisExpr) : null;
+                    const gen = (this.classGenerators[className].fields||{})[fieldName];
+                    //this.log(varPath);
+                    if (gen) {
+                        const code = gen.apply(this, [thisArg]);
+                        return code;
+                    }
                 }
             }
         }
@@ -324,23 +327,6 @@ export class CodeGenerator {
         return `return tmpl\`${tmplCode}\`;`;
     }
 
-    setupNames() {
-        for (const enumName of Object.keys(this.schema.enums)) {
-            const enumObj = this.schema.enums[enumName];
-            enumObj.name = this.getName(enumName, "enum");
-        }
-
-        for (const className of Object.keys(this.schema.classes)) {
-            const cls = this.schema.classes[className];
-            cls.name = this.getName(className, "class");
-
-            for (const methodName of Object.keys(cls.methods)) {
-                const method = cls.methods[methodName];
-                method.name = this.getName(methodName, "method");
-            }
-        }
-    }
-
     setupClasses() {
         this.model.classes = Object.values(this.schema.classes).map(cls => {
             const methods = Object.values(cls.methods).map(method => {
@@ -364,7 +350,8 @@ export class CodeGenerator {
                     name: this.caseConverter.getName(field.name, "field"),
                     type: this.getTypeName(field.type),
                     typeInfo: field.type,                    
-                    visibility: field.visibility || "public"
+                    visibility: field.visibility || "public",
+                    initializer: field.initializer,
                 }
             });
 

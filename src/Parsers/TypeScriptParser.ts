@@ -45,6 +45,8 @@ export class TypeScriptParser {
             result = one.Type.Class("TsNumber");
         } else if (tsType.kind === ts.SyntaxKind.AnyKeyword) {
             result = one.Type.Any;
+        } else if (tsType.kind === ts.SyntaxKind.ArrayType) {
+            result = one.Type.Class("TsArray");
         } else if (tsType.kind === ts.SyntaxKind.TypeReference) {
             const typeRef = <ts.TypeReferenceNode> tsType;
             const typeText = typeRef.typeName.getText();
@@ -118,7 +120,7 @@ export class TypeScriptParser {
             return <one.NewExpression> {
                 exprKind: one.ExpressionKind.New,
                 cls: this.convertExpression(classIdentifier),
-                typeArguments: newExpr.typeArguments.map(arg => this.convertTsType(arg)),
+                typeArguments: newExpr.typeArguments && newExpr.typeArguments.map(arg => this.convertTsType(arg)) || [],
                 arguments: newExpr.arguments.map(arg => this.convertExpression(arg))
             };
         } else if (tsExpr.kind === ts.SyntaxKind.ConditionalExpression) {
@@ -384,7 +386,7 @@ export class TypeScriptParser {
     
                     const initializer = tsProp.getInitializer();
                     if (initializer)
-                        fieldSchema.defaultValue = initializer.getText();
+                        fieldSchema.initializer = this.convertExpression(initializer.compilerNode);
                 } else if (tsProp instanceof SimpleAst.GetAccessorDeclaration) {
                     const propSchema = classSchema.properties[tsProp.getName()] = <one.Property> { 
                         type: this.convertTsType(tsProp.compilerNode.type),

@@ -142,10 +142,9 @@ export namespace OneAst {
         isMutable?: boolean;
     }
 
-    export interface Field extends VariableBase {
+    export interface Field extends VariableDeclaration {
         classRef?: Class;
         visibility: Visibility;
-        defaultValue?: any;
     }
 
     export interface Property extends VariableBase {

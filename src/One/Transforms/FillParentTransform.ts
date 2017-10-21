@@ -33,7 +33,7 @@ export class FillParentTransform extends AstVisitor<any> implements ISchemaTrans
 
     protected visitProperty(prop: one.Property, parent: any) { 
         prop.classRef = parent;
-        super.visitField(prop, parent);
+        super.visitProperty(prop, parent);
     }
 
     protected visitClass(cls: one.Class, parent: any) {

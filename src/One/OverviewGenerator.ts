@@ -143,8 +143,7 @@ export class OverviewGenerator extends AstVisitor<void> {
             addHdr(`Identifier: ${expr.text}`);
         } else if (expression.exprKind === one.ExpressionKind.Literal) {
             const expr = <one.Literal> expression;
-            const value = expr.literalType === "string" ? `"${expr.value}"` : expr.value;
-            addHdr(`Literal (${expr.literalType}): ${value}`);
+            addHdr(`Literal (${expr.literalType}): ${JSON.stringify(expr.value)}`);
         } else if (expression.exprKind === one.ExpressionKind.Unary) {
             const expr = <one.UnaryExpression> expression;
             addHdr(`Unary (${expr.unaryType}): ${expr.operator}`);
@@ -204,8 +203,11 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.addLine(`global ${glob.name}: ${glob.type.repr()}`);
 
         for (const cls of Object.values(schemaCtx.schema.classes)) {
-            for (const field of Object.values(cls.fields))
+            for (const field of Object.values(cls.fields)) {
                 this.addLine(`${cls.name}::${field.name}: ${field.type.repr()}`);
+                if (field.initializer)
+                    this.visitVariableDeclaration(field, null);
+            }
 
             for (const prop of Object.values(cls.properties)) {
                 this.addLine(`${cls.name}::${prop.name}: ${prop.type.repr()}`);
