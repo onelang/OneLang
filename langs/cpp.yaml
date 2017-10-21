@@ -186,7 +186,9 @@ templates:
   genVar:
     args:
       - name: itemVar
-    template: "{{getTypeX(itemVar.type)}} {{itemVar.name}} = {{gen(itemVar.initializer)}}"
+    template: |-
+      {{if itemVar.type.isNumber}}int{{else}}auto{{/if}} {{itemVar.name}} = {{gen(itemVar.initializer)}}
+
 expressions:
   call: |-
     {{gen(expr.method)}}(
