@@ -25,7 +25,8 @@ export class CaseConverter extends AstVisitor<void> {
     getName(name: string, type: "class"|"method"|"field"|"property"|"variable"|"enum") {
         const snakeCase = this.toSnakeCase(name);
         const casing = this.casing[type];
-        if (!casing) return snakeCase; // TODO
+        if (!casing)
+            return snakeCase; // TODO
 
         const parts = snakeCase.split("_").map(x => x.toLowerCase());
         if (casing === LangFileSchema.Casing.CamelCase)
@@ -39,28 +40,28 @@ export class CaseConverter extends AstVisitor<void> {
     }
 
     protected visitMethod(method: one.Method) {
-        method.name = this.getName(method.name, "method");
         super.visitMethod(method, null);
+        method.name = this.getName(method.name, "method");
     }
  
     protected visitField(field: one.Field) {
-        field.name = this.getName(field.name, "field");
         super.visitField(field, null);
+        field.name = this.getName(field.name, "field");
     }
  
     protected visitProperty(prop: one.Property) {
-        prop.name = this.getName(prop.name, "property");
         super.visitProperty(prop, null);
+        prop.name = this.getName(prop.name, "property");
     }
 
     protected visitClass(cls: one.Class) {
-        cls.name = this.getName(cls.name, "class");
         super.visitClass(cls, null);
+        cls.name = this.getName(cls.name, "class");
     }
 
     protected visitVariableDeclaration(stmt: one.VariableDeclaration) {
-        stmt.name = this.getName(stmt.name, "variable");
         super.visitVariableDeclaration(stmt, null);
+        stmt.name = this.getName(stmt.name, "variable");
     }
 
     process(schema: one.Schema) {

@@ -4,6 +4,7 @@ import { ExpressionParser } from "./ExpressionLanguage/ExpressionParser";
 import { OverviewGenerator } from "../One/OverviewGenerator";
 import { LangFileSchema } from "./LangFileSchema";
 import { deindent } from "./Utils";
+import { CaseConverter } from "../One/Transforms/CaseConverter";
 
 function tmpl(literalParts: TemplateStringsArray, ...values: any[]) {
     interface TemplatePart { type: "text"|"value", value: any, block?: boolean };
@@ -265,27 +266,16 @@ class CodeGeneratorModel {
 
 export class CodeGenerator {
     model = new CodeGeneratorModel(this);
+    caseConverter: CaseConverter;
     templateObjectCode: string;
     templateObject: any;
     generatedCode: string;
 
     constructor(public schema: one.Schema, public stdlib: one.Schema, public lang: LangFileSchema.LangFile) {
+        this.caseConverter = new CaseConverter(lang.casing);
         this.compileTemplates();
         this.setupClasses();
         this.setupIncludes();
-    }
-
-    getName(name: string, type: "class"|"method"|"enum") {
-        const casing = this.lang.casing[type === "enum" ? "class" : type];
-        const parts = name.split("_").map(x => x.toLowerCase());
-        if (casing === LangFileSchema.Casing.CamelCase)
-            return parts[0] + parts.splice(1).map(x => x.ucFirst()).join("");
-        else if (casing === LangFileSchema.Casing.PascalCase)
-            return parts.map(x => x.ucFirst()).join("");
-        else if (casing === LangFileSchema.Casing.SnakeCase)
-            return parts.join("_");
-        else
-            throw new Error(`Unknown casing: ${casing}`);
     }
 
     getTypeName(type: one.IType): string {
@@ -294,7 +284,7 @@ export class CodeGenerator {
             if (classGen)
                 return classGen.typeGenerator(type.typeArguments.map(x => this.getTypeName(x)));
             else
-                return this.getName(type.className, "class");
+                return this.caseConverter.getName(type.className, "class");
         }
         else
             return this.lang.primitiveTypes ? this.lang.primitiveTypes[type.typeKind] : type.typeKind.toString();
@@ -371,7 +361,7 @@ export class CodeGenerator {
 
             const fields = Object.values(cls.fields).map(field => {
                 return {
-                    name: field.name,
+                    name: this.caseConverter.getName(field.name, "field"),
                     type: this.getTypeName(field.type),
                     typeInfo: field.type,                    
                     visibility: field.visibility || "public"
@@ -487,7 +477,9 @@ export class CodeGenerator {
     generate(callTestMethod: boolean) {
         this.generatedCode = this.model.main();
         if (callTestMethod)
-            this.generatedCode += "\n\n" + this.model.testGenerator(this.getName("test_class", "class"), this.getName("test_method", "method"));
+            this.generatedCode += "\n\n" + this.model.testGenerator(
+                this.caseConverter.getName("test_class", "class"), 
+                this.caseConverter.getName("test_method", "method"));
 
         this.generatedCode = this.generatedCode.replace(/\{space\}/g, " ");
 

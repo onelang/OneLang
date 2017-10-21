@@ -2,6 +2,8 @@ extension: js
 casing:
   class: pascal_case
   method: camel_case
+  field: camel_case
+  property: camel_case
 primitiveTypes:
   void: void
   any: object

@@ -2,6 +2,9 @@ extension: cs
 casing:
   class: pascal_case
   method: pascal_case
+  variable: camel_case
+  field: pascal_case
+  property: pascal_case
 primitiveTypes:
   void: void
   any: object
