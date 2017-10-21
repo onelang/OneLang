@@ -51,11 +51,20 @@ classes:
         template: "{{self}}[{{key}}]"
       set:
         template: "{{self}}[{{key}}] = {{value}}"
+  OneFile:
+    includes: [fs]
+    methods:
+      readText:
+        template: "fs.readFileSync({{fn}}, 'utf-8')"
 templates:
   testGenerator: |-
     console.log(new {{class}}().{{method}}());
 
   main: |-
+    {{for inc in includes|sep=\n}}
+      const {{inc}} = require('{{inc}}');
+    {{/for}}
+
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
         {{for field in class.fields|sep=\n}}

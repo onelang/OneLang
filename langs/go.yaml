@@ -63,6 +63,14 @@ classes:
         template: "{{self}}[{{key}}]"
       set:
         template: "{{self}}[{{key}}] = {{value}}"
+  OneFile:
+    includes: [io/ioutil]
+    methods:
+      readText:
+        extraArgs: [result]
+        template: |-
+          file_content_bytes, _ := ioutil.ReadFile({{fn}})
+          {{result}} := string(file_content_bytes)
 templates:
   testGenerator: |-
     func main() {

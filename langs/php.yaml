@@ -43,6 +43,10 @@ classes:
         template: "{{self}}[{{key}}]"
       set:
         template: "{{self}}[{{key}}] = {{value}}"
+  OneFile:
+    methods:
+      readText:
+        template: "file_get_contents({{fn}})"
 operators:
   OneString + OneString:
     template: "{{gen(left)}} . {{gen(right)}}"

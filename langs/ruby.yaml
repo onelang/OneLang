@@ -43,6 +43,10 @@ classes:
         template: "{{self}}[{{key}}]"
       set:
         template: "{{self}}[{{key}}] = {{value}}"
+  OneFile:
+    methods:
+      readText:
+        template: "IO.read({{fn}})"
 templates:
   testGenerator: |-
     puts {{class}}.new().{{method}}()

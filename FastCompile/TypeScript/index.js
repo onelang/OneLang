@@ -35,7 +35,8 @@ const server = http.createServer(async (request, response) => {
         const context = new vm.createContext({ 
             console: {
                 log: (...args) => result += (util.format(...args) + '\n'),
-            }
+            },
+            require: require
         });
 
         const startTime = process.hrtime();

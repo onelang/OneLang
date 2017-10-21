@@ -19,7 +19,8 @@ export class FillVariableMutability extends AstVisitor<boolean> {
         let mutates = false;
         if (metaPath) {
             const methodPathParts = metaPath.split("/");
-            const method = (this.lang.classes[methodPathParts[0]].methods||{})[methodPathParts[1]];
+            const cls = this.lang.classes[methodPathParts[0]];
+            const method = cls && cls.methods && cls.methods[methodPathParts[1]];
             mutates = method && method.mutates;
         }
 

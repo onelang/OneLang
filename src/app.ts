@@ -7,7 +7,7 @@ import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs"
 
 declare var YAML;
 
-const prgName = "NumberUnaryIssue";
+const prgName = "FileTest";
 const runPrg = false;
 
 global["debugOn"] = false;
@@ -25,7 +25,7 @@ compiler.parseFromTS(programCode, overlayCode, stdlibCode, genericTransforms);
 
 const langs = Object.values(langConfigs);
 for (const lang of langs) {
-    if (lang.name !== "python") continue;
+    //if (lang.name !== "python") continue;
 
     const langYaml = readFile(`langs/${lang.name}.yaml`);
     const codeGen = compiler.getCodeGenerator(langYaml, lang.name);

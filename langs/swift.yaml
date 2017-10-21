@@ -52,6 +52,11 @@ classes:
         template: "{{self}}[{{key}}]!"
       set:
         template: "{{self}}[{{key}}] = {{value}}"
+  OneFile:
+    methods:
+      readText:
+        includes: [Foundation]
+        template: "try! String(contentsOfFile: {{fn}}, encoding: String.Encoding.utf8)"
 templates:
   testGenerator: |-
     print({{class}}().{{method}}())

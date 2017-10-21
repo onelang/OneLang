@@ -64,6 +64,7 @@ templates:
   main: |-
     #include <map>
     #include <memory>
+    #include <fstream>
     {{for inc in includes|sep=\n}}
       #include <{{inc}}>
     {{/for}}
@@ -103,6 +104,16 @@ templates:
             while (pos < str.length() && prev < str.length());
 
             return std::make_shared<std::vector<std::string>>(tokens);
+        }
+    };
+
+    class OneFile {
+      public:
+        static std::string readText(const std::string& path)
+        {
+          std::ifstream file(path);
+          std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+          return content;
         }
     };
 

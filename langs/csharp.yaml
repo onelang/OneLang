@@ -54,6 +54,11 @@ classes:
         template: "{{self}}[{{key}}]"
       set: 
         template: "{{self}}[{{key}}] = {{value}}"
+  OneFile:
+    includes: [System.IO]
+    methods:
+      readText:
+        template: "File.ReadAllText({{fn}})"
 templates:
   testGenerator: |-
     public class Program

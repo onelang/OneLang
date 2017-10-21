@@ -2,6 +2,10 @@ declare class OneConsole {
     static print(str: any);
 }
 
+declare class OneFile {
+    static readText(fn: string): OneString;
+}
+
 declare class OneArray<T> {
     length: number;
     add(item: T);

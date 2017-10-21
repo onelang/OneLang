@@ -53,10 +53,16 @@ classes:
         template: "{{self}}.get({{key}})"
       set:
         template: "{{self}}.put({{key}}, {{value}})"
+  OneFile:
+    methods:
+      readText:
+        includes: [java.nio.file.Paths, java.nio.file.Files] # java.io.IOException
+        exceptions: [IOException]
+        template: "new String(Files.readAllBytes(Paths.get({{fn}})));"
 templates:
   testGenerator: |-
     class Program {
-        public static void main(String[] args) {
+        public static void main(String[] args) throws Exception {
             System.out.println(new {{class}}().{{method}}());
         }
     }
@@ -68,7 +74,7 @@ templates:
     import java.util.HashMap;
 
     {{for inc in includes|sep=\n}}
-      using {{inc}};
+      import {{inc}};
     {{/for}}
 
     {{for class in classes|sep=\n\n}}
@@ -78,7 +84,7 @@ templates:
           {{/for}}
 
           {{for method in class.methods|sep=\n\n}}
-              {{method.visibility}} {{method.returnType}} {{method.name}}({{genArgs(method)}})
+              {{method.visibility}} {{method.returnType}} {{method.name}}({{genArgs(method)}}) throws Exception
               {
                   {{genBody(method.body)}}
               }
