@@ -97,6 +97,8 @@ export class OverviewGenerator extends AstVisitor<void> {
         } else if (statement.stmtType === one.StatementType.ExpressionStatement) {
             addHdr(`ExpressionStatement`);
             super.visitStatement(statement, null);
+        } else if (statement.stmtType === one.StatementType.Break) {
+            addHdr(`Break`);
         } else {
             addHdr(`${statement.stmtType}`);
             super.visitStatement(statement, null);

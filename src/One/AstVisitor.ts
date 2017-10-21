@@ -55,6 +55,8 @@ export abstract class AstVisitor<TContext> {
         this.visitBlock(stmt.body, context);
     }
 
+    protected visitBreakStatement(stmt: one.Statement, context: TContext) { }
+
     protected visitUnknownStatement(stmt: one.Statement, context: TContext) {
         this.log(`Unknown statement type: ${stmt.stmtType}`);
     }
@@ -76,6 +78,8 @@ export abstract class AstVisitor<TContext> {
             return this.visitForStatement(<one.ForStatement> statement, context);
         } else if (statement.stmtType === one.StatementType.Foreach) {
             return this.visitForeachStatement(<one.ForeachStatement> statement, context);
+        } else if (statement.stmtType === one.StatementType.Break) {
+            return this.visitBreakStatement(statement, context);
         } else {
             return this.visitUnknownStatement(statement, context);
         }

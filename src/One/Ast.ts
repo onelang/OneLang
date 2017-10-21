@@ -331,6 +331,7 @@ export namespace OneAst {
         Throw = "Throw",
         Foreach = "Foreach",
         For = "For",
+        Break = "Break",
     }
 
     export interface Statement {

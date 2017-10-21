@@ -313,6 +313,8 @@ export class TypeScriptParser {
                 incrementor: this.convertExpression(stmt.incrementor),
                 body: this.convertBlock(stmt.statement)                
             };
+        } else if (tsStatement.kind === ts.SyntaxKind.BreakStatement) {
+            oneStmt = <one.Statement> { stmtType: one.StatementType.Break };
         } else
             this.logNodeError(`Unexpected statement kind.`, tsStatement);
 
