@@ -8,7 +8,7 @@ import { OneCompiler } from "./OneCompiler";
 
 declare var YAML: any;
 
-const testPrgName = "TernaryTest";
+const testPrgName = "Test";
 
 const qs = {};
 location.search.substr(1).split('&').map(x => x.split('=')).forEach(x => qs[x[0]] = x[1]);
@@ -117,7 +117,7 @@ async function runLangUi(langName: string, codeCallback: () => string) {
             if (result.endsWith("\n"))
                 result = result.substr(0, result.length - 1);
 
-            langUi.statusBar.attr("title", "");
+            langUi.statusBar.attr("title", result);
             html`<span class="label success">${respJson.elapsedMs}ms</span><span class="result">${result || "<no result>"}</span>`(langUi.statusBar);
             return result;
         }

@@ -102,11 +102,14 @@ class TestClass {
         return result;
     }*/
 
+    getBoolResult(value: boolean): boolean { return value; }
+
     testMethod() {
         this.arrayTest();
         console.log(this.mapTest());
         console.log(this.stringTest());
         console.log(this.reverseString("print value"));
+        console.log(this.getBoolResult(true) ? "true" : "false");
     }
 }
 

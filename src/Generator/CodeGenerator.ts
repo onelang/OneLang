@@ -4,7 +4,7 @@ import { ExpressionParser } from "./ExpressionLanguage/ExpressionParser";
 import { OverviewGenerator } from "../One/OverviewGenerator";
 import { LangFileSchema } from "./LangFileSchema";
 import { deindent } from "./Utils";
-import { CaseConverter } from "../One/Transforms/CaseConverter";
+import { SchemaCaseConverter, CaseConverter } from "../One/Transforms/CaseConverter";
 import { IncludesCollector } from "../One/Transforms/IncludesCollector";
 
 function tmpl(literalParts: TemplateStringsArray, ...values: any[]) {
@@ -83,7 +83,14 @@ namespace CodeGeneratorModel {
     }
 }
 
+class TempVariable {
+    constructor(public name: string, public code: string) { }
+}
+
 class CodeGeneratorModel {
+    result: string; // temporary variable's name
+    tmpVariables: TempVariable[] = [];
+
     includes: string[] = [];
     classes: CodeGeneratorModel.Class[] = [];
     operatorGenerators: { [name: string]: (left: one.Expression, right: one.Expression) => string } = {};
@@ -172,6 +179,7 @@ class CodeGeneratorModel {
     gen(obj: one.Statement|one.Expression, ...genArgs: any[]) {
         const objExpr = (<one.Expression> obj);
         const type = (<one.Statement>obj).stmtType || objExpr.exprKind;
+        const isStatement = !!(<one.Statement>obj).stmtType;
         
         if (type === one.ExpressionKind.Call) {
             const callExpr = <one.CallExpression> obj;
@@ -256,9 +264,21 @@ class CodeGeneratorModel {
         const genFunc = this.expressionGenerators[genName];
         if (!genFunc)
             throw new Error(`Expression template not found: ${genName}!`);
-        const result = genFunc.call(this, obj, ...genArgs);
 
-        //console.log("generate statement", obj, result);
+        // TODO (hack): using global "result" and "resultType" variables
+        const exprName = CaseConverter.convert(genName, "camel");
+        const usingResult = this.generator.lang.expressions[exprName].includes("{{result}}");
+        const tmpVarName = this.result = `tmp${this.tmpVariables.length}`;
+        let result = genFunc.call(this, obj, ...genArgs);
+        if (usingResult) {
+            this.tmpVariables.push(new TempVariable(tmpVarName, result));
+            return tmpVarName;
+        }
+
+        if (isStatement && this.tmpVariables.length > 0) {
+            result = this.tmpVariables.map(v => v.code).join("\n") + "\n" + result;
+            this.tmpVariables = [];
+        }
 
         return result;
     }
@@ -269,13 +289,13 @@ class CodeGeneratorModel {
 
 export class CodeGenerator {
     model = new CodeGeneratorModel(this);
-    caseConverter: CaseConverter;
+    caseConverter: SchemaCaseConverter;
     templateObjectCode: string;
     templateObject: any;
     generatedCode: string;
 
     constructor(public schema: one.Schema, public stdlib: one.Schema, public lang: LangFileSchema.LangFile) {
-        this.caseConverter = new CaseConverter(lang.casing);
+        this.caseConverter = new SchemaCaseConverter(lang.casing);
         this.compileTemplates();
         this.setupClasses();
 

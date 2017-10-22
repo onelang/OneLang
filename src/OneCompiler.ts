@@ -11,7 +11,7 @@ import { ConvertInlineThisRefTransform } from "./One/Transforms/ConvertInlineThi
 import { SchemaContext } from "./One/SchemaContext";
 import { OverviewGenerator } from "./One/OverviewGenerator";
 import { AstHelper } from "./One/AstHelper";
-import { CaseConverter } from "./One/Transforms/CaseConverter";
+import { SchemaCaseConverter } from "./One/Transforms/CaseConverter";
 import { LangFileSchema } from "./Generator/LangFileSchema";
 import { CodeGenerator } from "./Generator/CodeGenerator";
 import { FillVariableMutability } from "./One/Transforms/FillVariableMutability";
@@ -123,7 +123,7 @@ export class OneCompiler {
         const lang = <LangFileSchema.LangFile> YAML.parse(langCode.replace(/\\ /g, "{space}"));
 
         this.preprocessLangFile(lang);
-        new CaseConverter(lang.casing).process(this.schemaCtx.schema);
+        new SchemaCaseConverter(lang.casing).process(this.schemaCtx.schema);
         new FillVariableMutability(lang).process(this.schemaCtx.schema);
         this.saveSchemaState(this.schemaCtx, `10_${langName ? `${langName}_` : ""}Init`);
         

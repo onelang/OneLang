@@ -118,6 +118,14 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
             expr.valueType = one.Type.Class("OneString");
     }
 
+    protected visitConditionalExpression(expr: one.ConditionalExpression, context: Context) {
+        super.visitConditionalExpression(expr, context);
+        if (expr.whenTrue.valueType.equals(expr.whenFalse.valueType))
+            expr.valueType = expr.whenTrue.valueType;
+        else
+            this.log(`Could not determine type of conditional expression. Type when true: ${expr.whenTrue.valueType.repr()}, when false: ${expr.whenFalse.valueType.repr()}`);
+    }
+
     protected visitReturnStatement(stmt: one.ReturnStatement, context: Context) {
         super.visitReturnStatement(stmt, context);
     }

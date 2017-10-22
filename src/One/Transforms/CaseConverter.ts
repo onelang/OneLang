@@ -5,37 +5,54 @@ import { SchemaContext } from "../SchemaContext";
 import { AstHelper } from "../AstHelper";
 import { LangFileSchema } from "../../Generator/LangFileSchema";
 
-export class CaseConverter extends AstVisitor<void> {
-    constructor(public casing: LangFileSchema.CasingOptions) { super(); }
+export class CaseConverter {
+    static splitName(name: string, error?: (msg: string) => void) {
+        let parts: string[] = [];
+        let currPart = "";
 
-    toSnakeCase(name: string) { 
-        let result = "";
         for (let c of name) {
-            if ("A" <= c && c <= "Z")
-                result += (result === "" ? "" : "_") + c.toLowerCase();
-            else if("a" <= c && c <= "z" || c === "_" || "0" <= c && c <= "9")
-                result += c;
-            else
-                this.log(`Invalid character ('${c}') in name: ${name}.`);
+            if (("A" <= c && c <= "Z") || c === "_") {
+                if (currPart !== "") {
+                    parts.push(currPart);
+                    currPart = "";
+                }
+
+                if (c !== "_")
+                    currPart += c.toLowerCase();
+            } else if("a" <= c && c <= "z" || "0" <= c && c <= "9") {
+                currPart += c;
+            } else {
+                error && error(`Invalid character ('${c}') in name: ${name}.`);
+            }
         }
-        return result;
+
+        if (currPart !== "")
+            parts.push(currPart);
+
+        return parts;
     }
 
-    getName(name: string, type: "class"|"method"|"field"|"property"|"variable"|"enum") {
-        const snakeCase = this.toSnakeCase(name);
-        const casing = this.casing[type];
-        if (!casing)
-            return snakeCase; // TODO
+    static convert(name: string, newCasing: "snake"|"pascal"|"camel", error?: (msg: string) => void) {
+        const parts = CaseConverter.splitName(name);
 
-        const parts = snakeCase.split("_").map(x => x.toLowerCase());
-        if (casing === LangFileSchema.Casing.CamelCase)
+        if (newCasing === "camel")
             return parts[0] + parts.splice(1).map(x => x.ucFirst()).join("");
-        else if (casing === LangFileSchema.Casing.PascalCase)
+        else if (newCasing === "pascal")
             return parts.map(x => x.ucFirst()).join("");
-        else if (casing === LangFileSchema.Casing.SnakeCase)
+        else if (newCasing === "snake")
             return parts.join("_");
         else
-            this.log(`Unknown casing: ${casing}`);
+            error(`Unknown casing: ${newCasing}`);
+    }
+}
+
+export class SchemaCaseConverter extends AstVisitor<void> {
+    constructor(public casing: LangFileSchema.CasingOptions) { super(); }
+
+    getName(name: string, type: "class"|"method"|"field"|"property"|"variable"|"enum") {
+        // TODO: throw exception instead of using default snake_case?
+        return CaseConverter.convert(name, this.casing[type] === LangFileSchema.Casing.PascalCase ? "pascal" : 
+            this.casing[type] === LangFileSchema.Casing.CamelCase ? "camel" : "snake", this.log);
     }
 
     protected visitMethod(method: one.Method) {
