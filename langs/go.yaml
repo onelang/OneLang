@@ -188,6 +188,10 @@ expressions:
     for {{genVar(expr.itemVariable)}}; {{gen(expr.condition)}}; {{gen(expr.incrementor)}} {
         {{genBody(expr.body)}}
     }
+  while: |-
+    while {{gen(expr.condition)}} {
+        {{genBody(expr.body)}}
+    }
   if: |-
     if {{gen(expr.condition)}} {
         {{genBody(expr.then)}}

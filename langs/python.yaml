@@ -151,6 +151,9 @@ expressions:
   foreach: |-
     for {{expr.itemVariable.name}} in {{gen(expr.items)}}:
         {{genBody(expr.body)}}
+  while: |-
+    while {{gen(expr.condition)}}:
+        {{genBody(expr.body)}}
   for: |-
     {{genVar(expr.itemVariable)}}
     while {{gen(expr.condition)}}:

@@ -7,7 +7,7 @@ import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs"
 
 declare var YAML;
 
-const prgName = "TernaryTest";
+const prgName = "OneLang";
 const runPrg = false;
 const langFilter = "go";
 

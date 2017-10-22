@@ -155,6 +155,10 @@ expressions:
         {{genBody(expr.body)}}
         {{gen(expr.incrementor)}}
     }
+  while: |-
+    while {{gen(expr.condition)}} {
+        {{genBody(expr.body)}}
+    }
   if: |-
     if {{gen(expr.condition)}} {
         {{genBody(expr.then)}}
