@@ -67,10 +67,12 @@ export namespace OneAst {
 
         get isPrimitiveType() { return Type.PrimitiveTypeKinds.includes(this.typeKind); }
         get isClass() { return this.typeKind === TypeKind.Class; }
+        get isComplexClass() { return this.typeKind === TypeKind.Class && !this.isNumber && !this.isString && !this.isBoolean; }
         get isMethod() { return this.typeKind === TypeKind.Method; }
         get isGenerics() { return this.typeKind === TypeKind.Generics; }
         get isNumber() { return this.className === "OneNumber"; }
         get isString() { return this.className === "OneString"; }
+        get isBoolean() { return this.className === "OneBoolean"; }
         get isOneArray() { return this.className === "OneArray"; }
         get isOneMap() { return this.className === "OneMap"; }
 
@@ -277,6 +279,7 @@ export namespace OneAst {
         literalType: "numeric"|"string"|"boolean"|"null";
         literalClassName: string;
         value: any;
+        escapedText: string;
     }
 
     export interface ArrayLiteral extends Expression {

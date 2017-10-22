@@ -9,7 +9,7 @@ declare var YAML;
 
 const prgName = "OneLang";
 const runPrg = false;
-const langFilter = "go";
+const langFilter = "";
 
 global["debugOn"] = false;
 

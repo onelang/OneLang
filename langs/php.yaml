@@ -50,6 +50,8 @@ classes:
 operators:
   OneString + OneString:
     template: "{{gen(left)}} . {{gen(right)}}"
+  OneString + OneNumber:
+    template: "{{gen(left)}} . {{gen(right)}}"
   OneString += OneString:
     template: "{{gen(left)}} .= {{gen(right)}}"
 templates:
@@ -112,7 +114,7 @@ expressions:
       {{/for}}
     )
   identifier: "${{expr.text}}"
-  stringLiteral: "\"{{expr.value}}\""
+  stringLiteral: "{{expr.escapedText}}"
   nullLiteral: "NULL"
   return: "return {{gen(expr.expression)}};"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
@@ -142,6 +144,7 @@ expressions:
   elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
   thisReference: "$this"
   conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : {{gen(expr.whenFalse)}}"
+  break: break;
   foreach: |-
     foreach ({{gen(expr.items)}} as ${{expr.itemVariable.name}}) {
         {{genBody(expr.body)}}

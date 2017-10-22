@@ -26,6 +26,7 @@ classes:
       print:
         template: "print({{str}})"
   OneArray:
+    type: "[{{typeArgs[0]}}]"
     fields:
       length:
         template: "{{self}}.count"
@@ -113,7 +114,7 @@ expressions:
         {{arg.paramName}}: {{gen(arg)}}
       {{/for}}
     )
-  stringLiteral: "\"{{expr.value}}\""
+  stringLiteral: "{{expr.escapedText}}"
   return: "return {{gen(expr.expression)}}"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
@@ -145,6 +146,7 @@ expressions:
   elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
   thisReference: self
   conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : {{gen(expr.whenFalse)}}"
+  break: break
   foreach: |-
     for {{expr.itemVariable.name}} in {{gen(expr.items)}} {
         {{genBody(expr.body)}}

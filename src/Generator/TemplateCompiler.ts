@@ -218,7 +218,7 @@ export class Template {
                 const childrenText = this.getChildren(node, vars, [varName]).replace(/\n/g, "\n    ");
                 result += `\${tmpl.Block((${forArray}||[]).map(${varName} => tmpl\`${childrenText}\`).join("${sep}"))}`;
             } else if (node.value.type === "if") {
-                result += `\${tmpl.Block(${this.exprToJS(node.value.if.condition, vars, false)} ? tmpl\`${this.getChildren(node.ifTrue, vars)}\` : tmpl\`${this.getChildren(node.ifFalse, vars)}\`)}`;
+                result += `\${tmpl.Block((${this.exprToJS(node.value.if.condition, vars, false)}) ? tmpl\`${this.getChildren(node.ifTrue, vars)}\` : tmpl\`${this.getChildren(node.ifFalse, vars)}\`)}`;
             } else if (node.value.type === "template") {
                 result += `\${${this.exprToJS(node.value.template.expr, vars, false)}}`;
             } else {

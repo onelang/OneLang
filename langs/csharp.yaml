@@ -20,7 +20,7 @@ classes:
       split:
         template: "{{self}}.Split(new[]{ {{separator}} }, StringSplitOptions.None)"
       get:
-        template: "{{self}}[{{idx}}]"
+        template: "{{self}}.Substring({{idx}}, 1)"
   OneNumber:
     type: int
   OneBoolean:
@@ -31,6 +31,7 @@ classes:
         includes: [System]
         template: "Console.WriteLine({{str}})"
   OneArray:
+    type: "List<{{typeArgs[0]}}>"
     includes: [System.Collections.Generic]
     fields:
       length:
@@ -121,7 +122,7 @@ expressions:
   call: "{{gen(expr.method)}}({{genParams(expr.arguments)}})"
   propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
   identifier: "{{expr.text}}"
-  stringLiteral: "\"{{expr.value}}\""
+  stringLiteral: "{{expr.escapedText}}"
   numericLiteral: "{{expr.value}}"
   nullLiteral: "null"
   return: "return {{gen(expr.expression)}};"
@@ -151,16 +152,20 @@ expressions:
   elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
   thisReference: this
   conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : {{gen(expr.whenFalse)}}"
+  break: break;
   foreach: |-
-    foreach (var {{expr.itemVariable.name}} in {{gen(expr.items)}}) {
+    foreach (var {{expr.itemVariable.name}} in {{gen(expr.items)}})
+    {
         {{genBody(expr.body)}}
     }
   for: |-
-    for ({{genVar(expr.itemVariable)}}; {{gen(expr.condition)}}; {{gen(expr.incrementor)}}) {
+    for ({{genVar(expr.itemVariable)}}; {{gen(expr.condition)}}; {{gen(expr.incrementor)}})
+    {
         {{genBody(expr.body)}}
     }
   while: |-
-    while ({{gen(expr.condition)}}) {
+    while ({{gen(expr.condition)}})
+    {
         {{genBody(expr.body)}}
     }
   if: |-

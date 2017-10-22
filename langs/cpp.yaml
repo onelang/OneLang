@@ -23,6 +23,7 @@ classes:
     type: bool
   OneArray:
     includes: [vector]
+    type: "std::vector<{{typeArgs[0]}}>"
     fields:
       length: 
         template: "{{self}}->size()"
@@ -120,10 +121,12 @@ templates:
       class {{class.name}} {
         public:
           {{genFields(class.publicFields)}}
+
           {{genMethods(class.publicMethods)}}
 
         private:
           {{genFields(class.privateFields)}}
+          
           {{genMethods(class.privateMethods)}}
       };
 
@@ -143,12 +146,12 @@ templates:
   getType:
     args:
       - name: item
-    template: "{{item.type}}{{if item.typeInfo.isClass && !item.typeInfo.isString}}*{{/if}}"
+    template: "{{item.type}}{{if item.typeInfo.isComplexClass}}*{{/if}}"
 
   getTypeX:
     args:
       - name: type
-    template: "{{typeName(type)}}{{if type.isClass && !type.isString}}*{{/if}}"
+    template: "{{typeName(type)}}{{if type.isComplexClass}}*{{/if}}"
 
   genMethods:
     args:
@@ -197,7 +200,7 @@ expressions:
     )
   propertyAccess: "{{gen(expr.object)}}->{{gen(expr.propertyName)}}"
   identifier: "{{expr.text}}"
-  stringLiteral: "std::string(\"{{expr.value}}\")"
+  stringLiteral: "std::string({{expr.escapedText}})"
   return: "return {{gen(expr.expression)}};"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
@@ -240,6 +243,7 @@ expressions:
     while ({{gen(expr.condition)}}) {
         {{genBody(expr.body)}}
     }
+  break: break
   if: |-
     if ({{gen(expr.condition)}}) {
         {{genBody(expr.then)}}

@@ -12,17 +12,18 @@ class Token
 }
 
 class StringHelper {
-    static startsWithAtIndex(str: string, substr: string, idx: number) {
+    static startsWithAtIndex(str: string, substr: string, idx: number): boolean {
+        return true;
     }
 }
 
 export class Tokenizer
 {
-    offset = 0;
+    offset: number = 0;
 
-    protected constructor(public text: string, public operators: string[]) { }
+    constructor(public text: string, public operators: string[]) { }
 
-    getType() {
+    getTokenType(): string {
         if (this.offset >= this.text.length)
             return TokenType.EndToken;
 
@@ -38,15 +39,15 @@ export class Tokenizer
 
         while (this.offset < this.text.length)
         {
-            const charType = this.getType();
+            const charType = this.getTokenType();
 
             if (charType == TokenType.Whitespace)
-                while (this.getType() == TokenType.Whitespace)
+                while (this.getTokenType() == TokenType.Whitespace)
                     this.offset++;
             else if (charType == TokenType.Identifier)
             {
                 const startOffset = this.offset;
-                while (this.getType() == TokenType.Identifier)
+                while (this.getTokenType() == TokenType.Identifier)
                     this.offset++;
                 const identifier = this.text.substring(startOffset, this.offset);
                 result.push(new Token(identifier, false));
@@ -55,7 +56,7 @@ export class Tokenizer
             {
                 let op: string = null;
                 for (const currOp of this.operators)
-                    if(this.text.startsWith(currOp, this.offset)) {
+                    if(StringHelper.startsWithAtIndex(this.text, currOp, this.offset)) {
                         op = currOp;
                         break;
                     }
@@ -69,5 +70,21 @@ export class Tokenizer
         }
 
         return result;
+    }
+}
+
+class TestClass {
+    testMethod() {
+        const operators = ["<<", ">>", "++", "--", "==", "!=", "!", "<", ">", "=", "(", ")", 
+            "[", "]", "{", "}", ";", "+", "-", "*", "/", "&&", "&", "%", "||", "|", "^", ",", "."];
+
+        const input = "hello * 5";
+        const tokenizer = new Tokenizer(input, operators);
+        const result = tokenizer.tokenize();
+
+        console.log("token count:");
+        console.log(result.length);
+        for (const item of result)
+            console.log(item.value + "(" + (item.isOperator ? "op" : "id") + ")");
     }
 }

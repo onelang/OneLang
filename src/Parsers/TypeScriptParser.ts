@@ -36,7 +36,7 @@ export class TypeScriptParser {
         let result: one.Type;
 
         if (!tsType) {
-            result = one.Type.Void;
+            result = null;
         } else if (tsType.kind === ts.SyntaxKind.StringKeyword) {
             result = one.Type.Class("TsString");
         } else if (tsType.kind === ts.SyntaxKind.BooleanKeyword) {
@@ -46,7 +46,8 @@ export class TypeScriptParser {
         } else if (tsType.kind === ts.SyntaxKind.AnyKeyword) {
             result = one.Type.Any;
         } else if (tsType.kind === ts.SyntaxKind.ArrayType) {
-            result = one.Type.Class("TsArray");
+            const arrayNode = <ts.ArrayTypeNode> tsType;
+            result = one.Type.Class("TsArray", [this.convertTsType(arrayNode.elementType)]);
         } else if (tsType.kind === ts.SyntaxKind.TypeReference) {
             const typeRef = <ts.TypeReferenceNode> tsType;
             const typeText = typeRef.typeName.getText();
@@ -61,7 +62,7 @@ export class TypeScriptParser {
             this.logNodeError(`Unknown type node`, tsType);
         }
 
-        return result || one.Type.Any;
+        return result;
     }
 
     convertParameter(tsParam: SimpleAst.ParameterDeclaration) {
@@ -236,11 +237,14 @@ export class TypeScriptParser {
     }
 
     convertVariableDeclaration(varDecl: ts.VariableDeclaration|ts.PropertyAssignment): one.VariableDeclaration {
-        return <one.VariableDeclaration> {
+        const type = (<ts.VariableDeclaration> varDecl).type;
+        const result = <one.VariableDeclaration> {
             stmtType: one.StatementType.VariableDeclaration,
             name: varDecl.name.getText(),
-            initializer: this.convertExpression(varDecl.initializer)
+            initializer: this.convertExpression(varDecl.initializer),
+            type: type && this.convertTsType(type)
         };
+        return result;
     }
 
     convertInitializer(initializer: ts.ForInitializer): one.VariableDeclaration {
@@ -407,7 +411,7 @@ export class TypeScriptParser {
                 this.currMethod = methodSchema;
                 methodSchema.typeArguments = tsMethod.getTypeParameters().map(x => x.compilerNode.name.text);
                 methodSchema.static = tsMethod.isStatic();
-                methodSchema.returns = this.convertTsType(tsMethod.compilerNode.type);
+                methodSchema.returns = this.convertTsType(tsMethod.compilerNode.type) || one.Type.Void;
                 methodSchema.parameters = tsMethod.getParameters().map(tsParam => this.convertParameter(tsParam));
                 const tsBody = tsMethod.getBody();
                 methodSchema.body = tsBody && this.convertBlock(<ts.BlockLike> tsBody.compilerNode);

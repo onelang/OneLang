@@ -87,9 +87,39 @@ class TempVariable {
     constructor(public name: string, public code: string) { }
 }
 
+class TempVarHandler {
+    prefix = "tmp";
+    variables: TempVariable[] = [];
+    stack: string[] = [];
+    nextIndex = 0;
+
+    get empty() { return this.variables.length === 0; }
+    get current() { return this.stack.last(); }
+
+    create() {
+        const name = `${this.prefix}${this.nextIndex++}`;
+        this.stack.push(name);
+        return name;
+    }
+
+    finish(code: string) {
+        const name = this.stack.pop();
+        this.variables.push(new TempVariable(name, code));
+        return name;
+    }
+
+    reset() {
+        const result = this.variables;
+        this.stack = [];
+        this.variables = [];
+        return result;
+    }
+}
+
 class CodeGeneratorModel {
-    result: string; // temporary variable's name
-    tmpVariables: TempVariable[] = [];
+    tempVarHandler = new TempVarHandler();
+    // temporary variable's name
+    get result() { return this.tempVarHandler.current; }
 
     includes: string[] = [];
     classes: CodeGeneratorModel.Class[] = [];
@@ -224,6 +254,9 @@ class CodeGeneratorModel {
                 genName = `${literalExpr.value ? "True" : "False"}Literal`;
             } else {
                 genName = `${literalExpr.literalType.ucFirst()}Literal`;
+                if (literalExpr.literalType === "string") {
+                    literalExpr.escapedText = JSON.stringify(literalExpr.value);
+                }
             }
         } else if (type === one.ExpressionKind.VariableReference) {
             const varRef = <one.VariableRef> obj;
@@ -268,19 +301,19 @@ class CodeGeneratorModel {
         // TODO (hack): using global "result" and "resultType" variables
         const exprName = CaseConverter.convert(genName, "camel");
         const usingResult = this.generator.lang.expressions[exprName].includes("{{result}}");
-        const tmpVarName = this.result = `tmp${this.tmpVariables.length}`;
-        let result = genFunc.call(this, obj, ...genArgs);
-        if (usingResult) {
-            this.tmpVariables.push(new TempVariable(tmpVarName, result));
-            return tmpVarName;
-        }
+        
+        if (usingResult)
+            this.tempVarHandler.create();
 
-        if (isStatement && this.tmpVariables.length > 0) {
-            result = this.tmpVariables.map(v => v.code).join("\n") + "\n" + result;
-            this.tmpVariables = [];
-        }
+        let genResult = genFunc.call(this, obj, ...genArgs);
 
-        return result;
+        if (usingResult)
+            return this.tempVarHandler.finish(genResult);
+
+        if (isStatement && !this.tempVarHandler.empty)
+            genResult = this.tempVarHandler.reset().map(v => v.code).join("\n") + "\n" + genResult;
+
+        return genResult;
     }
 
     main(): string { return null; }

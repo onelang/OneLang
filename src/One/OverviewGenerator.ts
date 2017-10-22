@@ -34,7 +34,7 @@ export class OverviewGenerator extends AstVisitor<void> {
     }
 
     protected visitVariable(stmt: one.VariableBase) {
-        this.addLine(`- Variable: ${stmt.name}`);
+        this.addLine(`- Variable: ${stmt.name} [${stmt.type.repr()}]`);
     }
 
     visitStatement(statement: one.Statement) {
@@ -62,7 +62,7 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.indent(-1);
         } else if (statement.stmtType === one.StatementType.VariableDeclaration) {
             const stmt = <one.VariableDeclaration> statement;
-            addHdr(`Variable: ${stmt.name}`);
+            addHdr(`Variable: ${stmt.name}${stmt.type ? ` [${stmt.type.repr()}]` : ""}`);
             this.visitExpression(stmt.initializer);
         } else if (statement.stmtType === one.StatementType.While) {
             const stmt = <one.WhileStatement> statement;

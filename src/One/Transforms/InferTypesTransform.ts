@@ -89,7 +89,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
     protected visitVariableDeclaration(stmt: one.VariableDeclaration, context: Context) {
         super.visitVariableDeclaration(stmt, context);
         if (stmt.initializer)
-            stmt.type = stmt.initializer.valueType;
+            stmt.type = stmt.type || stmt.initializer.valueType;
     }
 
     protected visitForeachStatement(stmt: one.ForeachStatement, context: Context) {
@@ -168,7 +168,8 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         const thisExpr = (<one.MethodReference> expr.method).thisExpr;
         if (thisExpr) {
             const genMap = GenericsMapping.create(cls, thisExpr.valueType);
-            expr.valueType = genMap.replace(expr.valueType);
+            if (genMap)
+                expr.valueType = genMap.replace(expr.valueType);
         }
     }
 
