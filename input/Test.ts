@@ -102,11 +102,11 @@ class TestClass {
         return result;
     }*/
 
-    testMethod(): string {
+    testMethod() {
         this.arrayTest();
         console.log(this.mapTest());
         console.log(this.stringTest());
-        return this.reverseString("print value");
+        console.log(this.reverseString("print value"));
     }
 }
 

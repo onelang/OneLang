@@ -1,13 +1,19 @@
 class TokenType { 
-    static EndToken = "EndToken";
-    static Whitespace = "Whitespace";
-    static Identifier = "Identifier";
-    static Operator = "Operator";
+    static EndToken: string = "EndToken";
+    static Whitespace: string = "Whitespace";
+    static Identifier: string = "Identifier";
+    static OperatorX: string = "Operator";
+    static NoInitializer: string;
 }
 
 class Token
 {
     constructor(public value: string, public isOperator: boolean) { }
+}
+
+class StringHelper {
+    static startsWithAtIndex(str: string, substr: string, idx: number) {
+    }
 }
 
 export class Tokenizer
@@ -23,7 +29,7 @@ export class Tokenizer
         var c = this.text[this.offset];
         return c == ' ' || c == '\n' || c == '\t' || c == '\r' ? TokenType.Whitespace :
             ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || ('0' <= c && c <= '9') || c == '_' ? TokenType.Identifier :
-                TokenType.Operator;
+                TokenType.OperatorX;
     }
 
     tokenize(): Token[]

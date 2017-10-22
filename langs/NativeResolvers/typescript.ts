@@ -74,6 +74,10 @@ class TsString {
     split(separator: string) {
         return this._one.split(separator);
     }
+
+    startsWith(str: string) {
+        return this._one.startsWith(str);
+    }
 }
 
 class TsNumber {

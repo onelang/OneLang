@@ -50,7 +50,7 @@ classes:
         template: "with open({{fn}}, 'r') as f: {{result}} = f.read()"
 templates:
   testGenerator: |-
-    print {{class}}().{{method}}()
+    {{class}}().{{method}}()
 
   main: |-
     {{for inc in includes|sep=\n}}

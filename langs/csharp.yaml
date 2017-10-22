@@ -62,14 +62,13 @@ classes:
     methods:
       readText:
         template: "File.ReadAllText({{fn}})"
-includes: [System]
 templates:
   testGenerator: |-
     public class Program
     {
         static public void Main()
         {
-            Console.WriteLine(new {{class}}().{{method}}());
+            new {{class}}().{{method}}();
         }
     }
 

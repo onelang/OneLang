@@ -55,7 +55,7 @@ operators:
 templates:
   testGenerator: |-
     $c = new {{class}}();
-    print($c->{{method}}() . "\\n");
+    $c->{{method}}();
 
   main: |-
     <?php

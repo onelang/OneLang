@@ -7,7 +7,7 @@ import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs"
 
 declare var YAML;
 
-const prgName = "Test";
+const prgName = "StringHelperTest";
 const runPrg = false;
 const langFilter = "";
 

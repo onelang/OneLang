@@ -49,7 +49,7 @@ classes:
         template: "IO.read({{fn}})"
 templates:
   testGenerator: |-
-    puts {{class}}.new().{{method}}()
+    {{class}}.new().{{method}}()
 
   main: |-
     {{for inc in includes|sep=\n}}

@@ -60,7 +60,7 @@ templates:
   testGenerator: |-
     package Program;
     my $c = new {{class}}();
-    print $c->{{method}}() . "\\n";
+    $c->{{method}}();
 
   main: |-
     use strict;

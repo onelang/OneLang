@@ -29,6 +29,7 @@ declare class OneString {
     substring(start: number, end: number): OneString;
     split(separator: string): OneArray<OneString>;
     get(idx: number): OneString;
+    startsWith(str: string): OneBoolean;
 }
 
 declare class OneNumber {

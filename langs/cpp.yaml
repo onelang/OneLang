@@ -14,7 +14,7 @@ classes:
       substring:
         template: "{{self}}.substr({{start}}, {{end}} - {{start}})"
       split:
-        template: "StringHelper::split({{self}}, {{separator}})"
+        template: "OneStringHelper::split({{self}}, {{separator}})"
       get:
         template: "{{self}}.substr({{idx}}, 1)"
   OneNumber:
@@ -37,9 +37,9 @@ classes:
     includes: [map]
     methods:
       keys: 
-        template: "MapHelper::keys(*{{self}})"
+        template: "OneMapHelper::keys(*{{self}})"
       values: 
-        template: "MapHelper::values(*{{self}})"
+        template: "OneMapHelper::values(*{{self}})"
       remove: 
         template: "{{self}}->erase({{key}})"
       hasKey: 
@@ -53,13 +53,13 @@ classes:
     methods:
       print:
         template: "std::cout << {{str}} << std::endl"
-includes: [memory, fstream, vector, map, iostream]
+includes: [memory, fstream, vector, map]
 templates:
   testGenerator: |-
     int main()
     {
         {{class}} c;
-        std::cout << c.{{method}}() << std::endl;
+        c.{{method}}();
         return 0;
     }
 
@@ -68,7 +68,7 @@ templates:
       #include <{{inc}}>
     {{/for}}
 
-    class MapHelper {
+    class OneMapHelper {
       public:
         template<typename K, typename V> static std::shared_ptr<std::vector<K>> keys(const std::map<K,V>& map) {
             std::vector<K> result;
@@ -85,7 +85,7 @@ templates:
         }
     };
 
-    class StringHelper {
+    class OneStringHelper {
       public:
         static std::shared_ptr<std::vector<std::string>> split(const std::string& str, const std::string& delim)
         {

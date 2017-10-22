@@ -68,7 +68,7 @@ templates:
   testGenerator: |-
     class Program {
         public static void main(String[] args) throws Exception {
-            System.out.println(new {{class}}().{{method}}());
+            new {{class}}().{{method}}();
         }
     }
 

@@ -59,7 +59,7 @@ classes:
         template: "try! String(contentsOfFile: {{fn}}, encoding: String.Encoding.utf8)"
 templates:
   testGenerator: |-
-    print({{class}}().{{method}}())
+    {{class}}().{{method}}()
 
   main: |-
     {{for inc in includes|sep=\n}}
