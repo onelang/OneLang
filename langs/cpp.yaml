@@ -52,7 +52,7 @@ classes:
     includes: [iostream]
     methods:
       print:
-        template: "std::cout << {{str}} << std::endl"
+        template: "std::cout << ({{str}}) << std::endl"
 includes: [memory, fstream, vector, map]
 templates:
   testGenerator: |-
@@ -226,6 +226,7 @@ expressions:
   trueLiteral: "true"
   elementAccess: "(*{{gen(expr.object)}})[{{gen(expr.elementExpr)}}]"
   thisReference: this
+  conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : {{gen(expr.whenFalse)}}"
   foreach: |-
     for (auto it = {{gen(expr.items)}}->begin(); it != {{gen(expr.items)}}->end(); ++it) {
         auto {{expr.itemVariable.name}} = *it;

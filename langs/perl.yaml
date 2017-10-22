@@ -17,7 +17,7 @@ classes:
   OneConsole:
     methods:
       print:
-        template: "print {{str}} . \"\\\\n\""
+        template: "print({{str}} . \"\\\\n\")"
   OneArray:
     fields:
       length:
@@ -161,6 +161,7 @@ expressions:
   falseLiteral: "0"
   elementAccess: "{{gen(expr.object, true)}}{{{gen(expr.elementExpr)}}}"
   thisReference: $self
+  conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : {{gen(expr.whenFalse)}}"
   foreach: |-
     foreach my ${{expr.itemVariable.name}} ({{gen(expr.items)}}) {
         {{genBody(expr.body)}}

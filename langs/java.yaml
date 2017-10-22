@@ -155,6 +155,7 @@ expressions:
   trueLiteral: "true"
   elementAccess: "{{gen(expr.object)}}.get({{gen(expr.elementExpr)}})"
   thisReference: this
+  conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : {{gen(expr.whenFalse)}}"
   foreach: |-
     for ({{typeName(expr.itemVariable.type)}} {{expr.itemVariable.name}} : {{gen(expr.items)}}) {
         {{genBody(expr.body)}}
