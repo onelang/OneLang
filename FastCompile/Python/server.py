@@ -47,7 +47,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
                     sys.stdout = result_stdout = StringIO()
                     try:
                         start = time.time()
-                        exec(request["code"])
+                        exec(request["code"], {})
                         elapsedMs = int((time.time() - start) * 1000)
                     finally:
                         sys.stdout = original_stdout
@@ -64,6 +64,7 @@ log("server is listening on port %d" % PORT)
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer): 
     daemon_threads = True 
     """Handle requests in a separate thread.""" 
+
 try:
     ThreadedHTTPServer(("127.0.0.1", PORT), HTTPHandler).serve_forever()
 except KeyboardInterrupt:
