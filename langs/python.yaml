@@ -48,6 +48,11 @@ classes:
       readText:
         extraArgs: [result]
         template: "with open({{fn}}, 'r') as f: {{result}} = f.read()"
+operators:
+  OneString + OneNumber:
+    template: "{{gen(left)}} + str({{gen(right)}})"
+  OneString + OneBoolean:
+    template: '{{gen(left)}} + ("true" if {{gen(right)}} else "false")'
 templates:
   testGenerator: |-
     {{class}}().{{method}}()

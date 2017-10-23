@@ -54,6 +54,10 @@ classes:
 operators:
   OneString + OneString:
     template: "{{gen(left)}} . {{gen(right)}}"
+  OneString + OneNumber:
+    template: "{{gen(left)}} . {{gen(right)}}"
+  OneString + OneBoolean:
+    template: '{{gen(left)}} . (({{gen(right)}}) ? "true" : "false")'
   OneString += OneString:
     template: "{{gen(left)}} .= {{gen(right)}}"
 templates:

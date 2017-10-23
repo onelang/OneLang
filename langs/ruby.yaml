@@ -47,6 +47,11 @@ classes:
     methods:
       readText:
         template: "IO.read({{fn}})"
+operators:
+  OneString + OneNumber:
+    template: "{{gen(left)}} + ({{gen(right)}}).to_s"
+  OneString + OneBoolean:
+    template: "{{gen(left)}} + ({{gen(right)}}).to_s"
 templates:
   testGenerator: |-
     {{class}}.new().{{method}}()

@@ -7,7 +7,7 @@ import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs"
 
 declare var YAML;
 
-const prgName = "ExplicitGenericTypeTest";
+const prgName = "TemplateString";
 const runPrg = false;
 const langFilter = "";
 

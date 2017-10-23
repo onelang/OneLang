@@ -72,6 +72,13 @@ classes:
         template: |-
           file_content_bytes, _ := ioutil.ReadFile({{fn}})
           {{result}} := string(file_content_bytes)
+operators:
+  OneString + OneNumber:
+    includes: [strconv]
+    template: "{{gen(left)}} + strconv.Itoa({{gen(right)}})"
+  OneString + OneBoolean:
+    includes: [strconv]
+    template: "{{gen(left)}} + strconv.FormatBool({{gen(right)}})"
 templates:
   testGenerator: |-
     func main() {

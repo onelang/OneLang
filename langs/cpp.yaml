@@ -54,6 +54,12 @@ classes:
     methods:
       print:
         template: "std::cout << ({{str}}) << std::endl"
+operators:
+  OneString + OneNumber:
+    includes: [string]
+    template: "{{gen(left)}} + std::to_string({{gen(right)}})"
+  OneString + OneBoolean:
+    template: '{{gen(left)}} + ({{gen(right)}} ? "true" : "false")'
 includes: [memory, fstream, vector, map]
 templates:
   testGenerator: |-

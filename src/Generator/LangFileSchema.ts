@@ -30,6 +30,7 @@ export namespace LangFileSchema {
     }
 
     export interface Operator {
+        includes?: string[];
         template: string;
         leftType?: string;
         rightType?: string;

@@ -19,6 +19,20 @@ export class IncludesCollector extends AstVisitor<void> {
         for (const include of includes)
             this.includes.add(include);
     }
+
+    protected visitBinaryExpression(expr: one.BinaryExpression) {
+        super.visitBinaryExpression(expr, null);
+
+        // TODO: code duplicated from code generator -> unify these logics into one
+        const leftType = expr.left.valueType.repr();
+        const rightType = expr.right.valueType.repr();
+        const opName = `${leftType} ${expr.operator} ${rightType}`;
+        const op = this.lang.operators && this.lang.operators[opName];
+        if (!op) return;
+
+        for (const include of op.includes || [])
+            this.includes.add(include);
+    }
     
     protected visitMethodReference(methodRef: one.MethodReference) {
         super.visitMethodReference(methodRef, null);

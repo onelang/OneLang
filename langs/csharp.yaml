@@ -63,6 +63,9 @@ classes:
     methods:
       readText:
         template: "File.ReadAllText({{fn}})"
+operators:
+  OneString + OneBoolean:
+    template: '{{gen(left)}} + ({{gen(right)}} ? "true" : "false")'
 templates:
   testGenerator: |-
     public class Program
