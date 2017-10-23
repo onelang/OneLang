@@ -70,7 +70,7 @@ templates:
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
         {{for field in class.fields|sep=\n}}
-            {{if field.static}}static {{/if}}var {{field.name}}: {{field.type}}?{{if field.initializer}}\ = {{gen(field.initializer)}}{{/if}}
+            {{if field.static}}static {{/if}}var {{field.name}}: {{field.type}}{{if field.type.isComplexClass}}?{{/if}}{{if field.initializer}}\ = {{gen(field.initializer)}}{{/if}}
         {{/for}}
 
         {{if class.constructor}}
@@ -147,8 +147,8 @@ expressions:
   staticMethod: "{{expr.methodRef.classRef.name}}.{{expr.methodRef.name}}"
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
-  instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}!"
-  staticField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}!"
+  instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}{{if expr.valueType.isComplexClass}}!{{/if}}"
+  staticField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}{{if expr.valueType.isComplexClass}}!{{/if}}"
   falseLiteral: "false"
   trueLiteral: "true"
   elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
