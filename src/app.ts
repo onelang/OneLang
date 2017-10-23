@@ -7,9 +7,9 @@ import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs"
 
 declare var YAML;
 
-const prgName = "ConstructorTest";
+const prgName = "MapKeyTest";
 const runPrg = false;
-const langFilter = "";
+const langFilter = "java";
 
 global["debugOn"] = false;
 
@@ -33,7 +33,7 @@ for (const lang of langs) {
     lang.request.code = codeGen.generate(true);
 
     writeFile(`tmp/${prgName}/results/${prgName}.${codeGen.lang.extension}`, codeGen.generatedCode);
-    writeFile(`tmp/TemplateGenerators_${lang.name}.js`, codeGen.templateObjectCode);
+    writeFile(`tmp/TemplateGenerators/${lang.name}.js`, codeGen.templateObjectCode);
 }
 
 // run compiled codes

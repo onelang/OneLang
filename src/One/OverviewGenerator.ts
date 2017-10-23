@@ -34,7 +34,7 @@ export class OverviewGenerator extends AstVisitor<void> {
     }
 
     protected visitVariable(stmt: one.VariableBase) {
-        this.addLine(`- Variable: ${stmt.name} [${stmt.type.repr()}]`);
+        this.addLine(`- Variable: ${stmt.name}${stmt.type ? ` [${stmt.type.repr()}]` : ""}`);
     }
 
     visitStatement(statement: one.Statement) {

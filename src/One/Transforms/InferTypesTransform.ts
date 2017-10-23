@@ -89,7 +89,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
     protected visitVariableDeclaration(stmt: one.VariableDeclaration, context: Context) {
         super.visitVariableDeclaration(stmt, context);
         if (stmt.initializer)
-            stmt.type = stmt.type || stmt.initializer.valueType;
+            stmt.type = stmt.initializer.valueType || stmt.type;
     }
 
     protected visitForeachStatement(stmt: one.ForeachStatement, context: Context) {

@@ -133,7 +133,7 @@ class CodeGeneratorModel {
     expressionGenerators: { [name: string]: (expr: any, ...args: any[]) => string } = {};
     classGenerators: { 
         [className: string]: {
-            typeGenerator: (expr: any, ...args: any[]) => string,
+            typeGenerator: (typeArgs: string[], ...args: any[]) => string,
             methods: {
                 [methodName: string]: (expr: any, ...args: any[]) => string
             },
