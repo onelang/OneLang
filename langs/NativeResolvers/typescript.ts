@@ -59,23 +59,23 @@ class TsMap<K,V> {
 class TsString {
     _one: OneString;
     
-    get length(): number {
+    get length(): OneNumber {
         return this._one.length;
     }
 
-    get(idx: number): string {
+    get(idx: number): OneString {
         return this._one.get(idx);
     }
     
-    substring(start: number, end: number) {
+    substring(start: number, end: number): OneString {
         return this._one.substring(start, end);
     }
 
-    split(separator: string) {
+    split(separator: string): OneArray<OneString> {
         return this._one.split(separator);
     }
 
-    startsWith(str: string) {
+    startsWith(str: string): OneBoolean {
         return this._one.startsWith(str);
     }
 }
