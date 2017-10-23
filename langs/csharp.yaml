@@ -86,7 +86,8 @@ templates:
           {{/for}}
 
           {{if class.constructor}}
-            public {{class.name}}({{genArgs(class.constructor)}}) {
+            public {{class.name}}({{genArgs(class.constructor)}})
+            {
                 {{genBody(class.constructor.body)}}
             }
           {{/if}}
@@ -141,7 +142,8 @@ expressions:
   classReference: "{{expr.classRef.name}}"
   arrayLiteral: "new List<{{expr.typeArgs[0]}}> { {{genParams(expr.items)}} }"
   mapLiteral: |- 
-    new Dictionary<{{expr.typeArgs[0]}}, {{expr.typeArgs[1]}}> {
+    new Dictionary<{{expr.typeArgs[0]}}, {{expr.typeArgs[1]}}>
+    {
       {{for prop in expr.properties|sep=",\n"}}
         { "{{prop.name}}", {{gen(prop.initializer)}} }
       {{/for}}
