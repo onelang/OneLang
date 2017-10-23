@@ -64,6 +64,12 @@ templates:
 
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
+        {{if class.constructor}}
+          constructor({{genArgs(class.constructor)}}) {
+              {{genBody(class.constructor.body)}}
+          }
+        {{/if}}
+
         {{for method in class.methods|sep=\n\n}}
           {{method.name}}({{genArgs(method)}}) {
             {{genBody(method.body)}}

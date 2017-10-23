@@ -74,6 +74,10 @@ templates:
           my $class = shift;
           my $self = {};
           bless $self, $class;
+          {{if class.constructor}}
+            my ( {{for param in class.constructor.parameters|sep=,}}${{param.name}}{{/for}} ) = @_;
+            {{genBody(class.constructor.body)}}
+          {{/if}}
           return $self;
       }
 
@@ -155,7 +159,7 @@ expressions:
   staticMethod: "{{expr.methodRef.classRef.name}}::{{expr.methodRef.name}}"
   localVar: "{{varName(expr.varRef, args[0])}}"
   methodArgument: "{{varName(expr.varRef)}}"
-  instanceField: "{{gen(expr.thisExpr)}}->{{expr.varRef.name}}"
+  instanceField: "{{gen(expr.thisExpr)}}->{{{expr.varRef.name}}}"
   staticField: "${{gen(expr.thisExpr)}}::{{expr.varRef.name}}"
   trueLiteral: "1"
   falseLiteral: "0"

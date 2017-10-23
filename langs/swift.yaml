@@ -73,6 +73,12 @@ templates:
             {{if field.static}}static {{/if}}var {{field.name}}: {{field.type}}?{{if field.initializer}}\ = {{gen(field.initializer)}}{{/if}}
         {{/for}}
 
+        {{if class.constructor}}
+          init({{genArgs(class.constructor)}}) {
+              {{genBody(class.constructor.body)}}
+          }
+        {{/if}}
+
         {{for method in class.methods|sep=\n\n}}
             func {{method.name}}({{genArgs(method)}}) -> {{method.returnType}} {
                 {{genBody(method.body)}}
@@ -107,13 +113,15 @@ templates:
     args:
       - name: itemVar
     template: "{{if itemVar.isMutable}}var{{else}}let{{/if}} {{if itemVar.isUnused}}_{{else}}{{itemVar.name}}{{/if}} = {{gen(itemVar.initializer)}}"
-expressions:
-  call: |-
-    {{gen(expr.method)}}(
-      {{for arg in expr.arguments|sep=", " inline}}
+  genMethodArgs:
+    args: 
+      - name: methodArgs
+    template: |-
+      {{for arg in methodArgs|sep=", " inline}}
         {{arg.paramName}}: {{gen(arg)}}
       {{/for}}
-    )
+expressions:
+  call: "{{gen(expr.method)}}({{genMethodArgs(expr.arguments)}})"
   stringLiteral: "{{expr.escapedText}}"
   return: "return {{gen(expr.expression)}}"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
@@ -125,7 +133,7 @@ expressions:
   numericLiteral: "{{expr.value}}"
   nullLiteral: "nil"
   variableDeclaration: "{{genVar(expr)}}"
-  new: "{{gen(expr.class)}}({{genParams(expr.arguments)}})"
+  new: "{{gen(expr.class)}}({{genMethodArgs(expr.arguments)}})"
   classReference: "{{expr.classRef.name}}"
   arrayLiteral: "[{{genParams(expr.items)}}]"
   mapLiteral: |- 

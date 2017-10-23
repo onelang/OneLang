@@ -21,9 +21,9 @@ export class FillParentTransform extends AstVisitor<any> implements ISchemaTrans
         super.visitBlock(block, block);
     }
 
-    protected visitMethod(method: one.Method, parent: any) { 
+    protected visitMethodLike(method: one.Method|one.Constructor, parent: any) { 
         method.classRef = parent;
-        super.visitMethod(method, method);
+        super.visitMethodLike(method, method);
     }
 
     protected visitField(field: one.Field, parent: any) { 

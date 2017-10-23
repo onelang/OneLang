@@ -75,6 +75,12 @@ namespace CodeGeneratorModel {
         body: one.Block;
     }
 
+    export interface Constructor {
+        visibility: "public"|"protected"|"private";
+        parameters: MethodParameter[];
+        body: one.Block;
+    }
+
     export interface Class {
         name: string;
         methods: Method[];
@@ -224,6 +230,21 @@ class CodeGeneratorModel {
 
             if (methodArgs.length !== callExpr.arguments.length)
                 throw new Error(`Invalid argument count for '${methodRef.methodRef.metaPath}': expected: ${methodArgs.length}, actual: ${callExpr.arguments.length}.`);
+
+            // TODO: move this to AST visitor
+            for (let i = 0; i < methodArgs.length; i++)
+                callExpr.arguments[i].paramName = methodArgs[i].name;
+        } else if (type === one.ExpressionKind.New) {
+            const callExpr = <one.NewExpression> obj;
+
+            const cls = <one.ClassReference> callExpr.cls;
+            const methodRef = cls.classRef.constructor;
+            const methodArgs = methodRef.parameters;
+            if (!methodArgs)
+                throw new Error(`Method implementation is not found: ${methodRef.metaPath} for ${this.generator.lang.extension}`);
+
+            if (methodArgs.length !== callExpr.arguments.length)
+                throw new Error(`Invalid argument count for '${methodRef.metaPath}': expected: ${methodArgs.length}, actual: ${callExpr.arguments.length}.`);
 
             // TODO: move this to AST visitor
             for (let i = 0; i < methodArgs.length; i++)
@@ -383,6 +404,14 @@ export class CodeGenerator {
         return `return tmpl\`${tmplCode}\`;`;
     }
 
+    genParameters(method: one.Method|one.Constructor) {
+        return method.parameters.map((param, idx) => <CodeGeneratorModel.MethodParameter> {
+            idx,
+            name: param.name,
+            type: this.getTypeName(param.type)
+        });
+    }
+
     setupClasses() {
         this.model.classes = Object.values(this.schema.classes).map(cls => {
             const methods = Object.values(cls.methods).map(method => {
@@ -390,18 +419,17 @@ export class CodeGenerator {
                     name: method.name,
                     returnType: this.getTypeName(method.returns),
                     body: method.body,
-                    parameters: method.parameters.map((param, idx) => {
-                        return <CodeGeneratorModel.MethodParameter> {
-                            idx,
-                            name: param.name,
-                            type: this.getTypeName(param.type)
-                        };
-                    }),
+                    parameters: this.genParameters(method),
                     visibility: method.visibility || "public",
                     static: method.static || false
                 };
             });
 
+            const constructor = cls.constructor ? <CodeGeneratorModel.Constructor> {
+                body: cls.constructor.body,
+                parameters: this.genParameters(cls.constructor),
+            } : null;
+            
             const fields = Object.values(cls.fields).map(field => {
                 return {
                     name: this.caseConverter.getName(field.name, "field"),
@@ -417,6 +445,7 @@ export class CodeGenerator {
             return <CodeGeneratorModel.Class> {
                 name: cls.name,
                 methods: methods,
+                constructor,
                 publicMethods: methods.filter(x => x.visibility === "public"),
                 protectedMethods: methods.filter(x => x.visibility === "protected"),
                 privateMethods: methods.filter(x => x.visibility === "private"),

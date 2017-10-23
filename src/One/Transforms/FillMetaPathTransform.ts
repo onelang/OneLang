@@ -61,8 +61,8 @@ export class FillMetaPathTransform extends AstVisitor<Context> implements ISchem
         super.visitForeachStatement(stmt, this.subContext(context, stmt, "foreach"));
     }
 
-    protected visitMethod(method: one.Method, context: Context) {
-        super.visitMethod(method, this.subContext(context, method));
+    protected visitMethodLike(method: one.Method|one.Constructor, context: Context) {
+        super.visitMethodLike(method, this.subContext(context, method));
     }
 
     protected visitClass(cls: one.Class, context: Context) {

@@ -72,6 +72,12 @@ templates:
             {{field.visibility}}\ {{if field.static}}static {{/if}}${{field.name}}{{if field.initializer}}\ = {{gen(field.initializer)}}{{/if}};
           {{/for}}
 
+          {{if class.constructor}}
+            function __construct({{genArgs(class.constructor)}}) {
+                {{genBody(class.constructor.body)}}
+            }
+          {{/if}}
+
           {{for method in class.methods|sep=\n\n}}
               function {{method.name}}({{genArgs(method)}}) {
                   {{genBody(method.body)}}

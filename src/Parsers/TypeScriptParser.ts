@@ -65,10 +65,10 @@ export class TypeScriptParser {
         return result;
     }
 
-    convertParameter(tsParam: SimpleAst.ParameterDeclaration) {
+    convertParameter(tsParam: ts.ParameterDeclaration) {
         return <one.MethodParameter> {
-            name: tsParam.getName(),
-            type: this.convertTsType(tsParam.compilerNode.type)
+            name: tsParam.name.getText(),
+            type: this.convertTsType(tsParam.type)
         };
     }
 
@@ -412,17 +412,44 @@ export class TypeScriptParser {
                 methodSchema.typeArguments = tsMethod.getTypeParameters().map(x => x.compilerNode.name.text);
                 methodSchema.static = tsMethod.isStatic();
                 methodSchema.returns = this.convertTsType(tsMethod.compilerNode.type) || one.Type.Void;
-                methodSchema.parameters = tsMethod.getParameters().map(tsParam => this.convertParameter(tsParam));
+                methodSchema.parameters = tsMethod.compilerNode.parameters.map(tsParam => this.convertParameter(tsParam));
                 const tsBody = tsMethod.getBody();
                 methodSchema.body = tsBody && this.convertBlock(<ts.BlockLike> tsBody.compilerNode);
             }
 
             const constructors = tsClass.getConstructors();
-            if (constructors.length > 0)
-                classSchema.constructor = { 
-                    parameters: constructors[0].getParameters().map(tsParam => this.convertParameter(tsParam)),
-                    body: this.convertBlock(<ts.BlockLike> constructors[0].getBody().compilerNode),
-                };
+            classSchema.constructor = null;
+            if (constructors.length > 0) {
+                const constr = classSchema.constructor = <one.Constructor> {};
+                const params = constructors[0].compilerNode.parameters;
+                constr.parameters = params.map(tsParam => this.convertParameter(tsParam));
+                constr.body = this.convertBlock(<ts.BlockLike> constructors[0].getBody().compilerNode);
+
+                const publicParams = params.filter(p => p.modifiers.some(m => m.kind === ts.SyntaxKind.PublicKeyword));
+                for (const publicParam of publicParams) {
+                    const paramName = publicParam.name.getText();
+                    const stmt = <one.ExpressionStatement> {
+                        stmtType: one.StatementType.ExpressionStatement,
+                        expression: <one.BinaryExpression> {
+                            exprKind: one.ExpressionKind.Binary,
+                            operator: "=",
+                            left: <one.PropertyAccessExpression> {
+                                exprKind: one.ExpressionKind.PropertyAccess,
+                                object: <one.Identifier> {
+                                    exprKind: one.ExpressionKind.Identifier,
+                                    text: "this"
+                                },
+                                propertyName: paramName
+                            },
+                            right: <one.Identifier> {
+                                exprKind: one.ExpressionKind.Identifier,
+                                text: paramName
+                            },
+                        }
+                    }
+                    constr.body.statements.unshift(stmt);
+                }
+            }
         }
 
         return this.schema = schema;

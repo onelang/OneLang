@@ -65,32 +65,30 @@ export class ResolveIdentifiersTransform extends AstVisitor<Context> implements 
         newContext.addLocalVar(stmt.itemVariable); 
     
         this.visitBlock(stmt.body, newContext); 
-    }     
+    }
 
+    protected visitMethodLike(method: one.Method|one.Constructor, classContext: Context) {
+        const methodContext = classContext.inherit();
+
+        for (const param of method.parameters)
+            methodContext.variables.add(param.name, one.VariableRef.MethodArgument(param));
+        
+        if (method.body)
+            this.visitBlock(method.body, methodContext);
+    }
+
+    protected visitClass(cls: one.Class, globalContext: Context) {
+        const classContext = globalContext.inherit();
+        classContext.variables.add("this", new one.ThisReference());
+        super.visitClass(cls, classContext);
+    }
+        
     transform(schemaCtx: SchemaContext) {
         const globalContext = schemaCtx.tiContext.inherit();
         
-        const classes = Object.values(schemaCtx.schema.classes);
-
-        for (const cls of classes)
+        for (const cls of Object.values(schemaCtx.schema.classes))
             globalContext.classes.addClass(cls);
         
-        for (const cls of classes) {
-            const classContext = globalContext.inherit();
-            classContext.variables.add("this", new one.ThisReference());
-
-            for (const prop of Object.values(cls.properties)) {
-                this.visitBlock(prop.getter, classContext);
-            }
-
-            for (const method of Object.values(cls.methods)) {
-                const methodContext = classContext.inherit();
-                for (const param of method.parameters)
-                    methodContext.variables.add(param.name, one.VariableRef.MethodArgument(param));
-                
-                if (method.body)
-                    this.visitBlock(method.body, methodContext);
-            }
-        }
+        this.visitSchema(schemaCtx.schema, globalContext);
     }
 }

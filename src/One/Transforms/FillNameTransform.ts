@@ -18,6 +18,9 @@ export class FillNameTransform implements ISchemaTransform {
             const cls = schema.classes[className];
             cls.name = className;
 
+            if (cls.constructor)
+                cls.constructor.name = "constructor";
+
             for (const propName of Object.keys(cls.properties))
                 cls.properties[propName].name = propName;
 

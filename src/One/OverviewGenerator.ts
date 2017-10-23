@@ -178,7 +178,7 @@ export class OverviewGenerator extends AstVisitor<void> {
         } else if (expression.exprKind === one.ExpressionKind.New) {
             const expr = <one.NewExpression> expression;
             const className = (<one.Identifier> expr.cls).text || (<one.ClassReference> expr.cls).classRef.name;
-            const typeArgsText = expr.typeArguments ? `<${expr.typeArguments.join(", ")}>` : "";
+            const typeArgsText = expr.typeArguments && expr.typeArguments.length > 0 ? `<${expr.typeArguments.join(", ")}>` : "";
             addHdr(`New ${className}${typeArgsText}`);
         } else if (expression.exprKind === one.ExpressionKind.MapLiteral) {
             const expr = <one.MapLiteral> expression;

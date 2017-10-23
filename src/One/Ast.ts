@@ -160,7 +160,8 @@ export namespace OneAst {
 
     export interface MethodParameter extends VariableDeclaration { }
 
-    export interface Constructor {
+    export interface Constructor extends NamedItem {
+        classRef?: Class;
         parameters: MethodParameter[];
         body: Block;
     }
@@ -294,7 +295,7 @@ export namespace OneAst {
     export interface NewExpression extends Expression {
         cls: Identifier|ClassReference;
         typeArguments: Type[];
-        arguments: Expression[];
+        arguments: CallArgument[];
     }
 
     export interface BinaryExpression extends Expression {

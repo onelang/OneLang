@@ -83,6 +83,12 @@ templates:
             {{field.visibility}}\ {{if field.static}}static {{/if}}{{field.type}} {{field.name}}{{if field.initializer}}\ = {{gen(field.initializer)}}{{/if}};
           {{/for}}
 
+          {{if class.constructor}}
+            public {{class.name}}({{genArgs(class.constructor)}}) {
+                {{genBody(class.constructor.body)}}
+            }
+          {{/if}}
+
           {{for method in class.methods|sep=\n\n}}
               {{method.visibility}}\ {{if method.static}}static {{/if}}{{method.returnType}} {{method.name}}({{genArgs(method)}}) throws Exception
               {
@@ -156,7 +162,7 @@ expressions:
   elementAccess: "{{gen(expr.object)}}.get({{gen(expr.elementExpr)}})"
   thisReference: this
   conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : {{gen(expr.whenFalse)}}"
-  break: break
+  break: break;
   foreach: |-
     for ({{typeName(expr.itemVariable.type)}} {{expr.itemVariable.name}} : {{gen(expr.items)}}) {
         {{genBody(expr.body)}}

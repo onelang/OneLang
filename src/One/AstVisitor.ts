@@ -199,12 +199,20 @@ export abstract class AstVisitor<TContext> {
         }
     }
 
-    protected visitMethod(method: one.Method, context: TContext) {
+    protected visitMethodLike(method: one.Method|one.Constructor, context: TContext) {
         if (method.body)
             this.visitBlock(method.body, context);
 
         for (const param of method.parameters)
             this.visitVariableDeclaration(param, context);
+    }
+
+    protected visitMethod(method: one.Method, context: TContext) {
+        this.visitMethodLike(method, context);
+    }
+ 
+    protected visitConstructor(constructor: one.Constructor, context: TContext) {
+        this.visitMethodLike(constructor, context);
     }
  
     protected visitField(field: one.Field, context: TContext) {
@@ -217,6 +225,9 @@ export abstract class AstVisitor<TContext> {
     }
  
     protected visitClass(cls: one.Class, context: TContext) {
+        if (cls.constructor)
+            this.visitConstructor(cls.constructor, context);
+
         for (const method of Object.values(cls.methods))
             this.visitMethod(method, context);
 

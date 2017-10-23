@@ -122,6 +122,12 @@ templates:
         public:
           {{genFields(class.publicFields)}}
 
+          {{if class.constructor}}
+            {{class.name}}({{genArgs(class.constructor)}}) {
+                {{genBody(class.constructor.body)}}
+            }
+          {{/if}}
+
           {{genMethods(class.publicMethods)}}
 
         private:
