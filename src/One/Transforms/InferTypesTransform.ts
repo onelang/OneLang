@@ -83,13 +83,35 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
     dependencies = ["fillName", "fillParent", "resolveIdentifiers"];
 
     protected visitIdentifier(id: one.Identifier, context: Context) {
-        console.log(`No identifier should be here!`);
+        this.log(`No identifier should be here!`);
+    }
+
+    protected syncTypes(type1: one.Type, type2: one.Type) {
+        if (!type1 || type1.isAny || type1.isGenerics) return type2;
+        if (!type2 || type2.isAny || type2.isGenerics) return type1;
+
+        const errorPrefix = `Cannot sync types (${type1.repr()} <=> ${type2.repr()})`;
+        if (type1.typeKind !== type2.typeKind) {
+            this.log(`${errorPrefix}: kind mismatch!`);
+        } else if (type1.isClass) {
+            if (type1.className !== type2.className) {
+                this.log(`${errorPrefix}: class name mismatch!`);
+            } else if (type1.typeArguments.length !== type2.typeArguments.length) {
+                this.log(`${errorPrefix}: type argument length mismatch!`);
+            } else {
+                for (let i = 0; i < type1.typeArguments.length; i++)
+                    type1.typeArguments[i] = type2.typeArguments[i] = 
+                        this.syncTypes(type1.typeArguments[i], type2.typeArguments[i]);
+            }
+        }
+
+        return type1;
     }
 
     protected visitVariableDeclaration(stmt: one.VariableDeclaration, context: Context) {
         super.visitVariableDeclaration(stmt, context);
         if (stmt.initializer)
-            stmt.type = stmt.initializer.valueType || stmt.type;
+            stmt.type = this.syncTypes(stmt.type, stmt.initializer.valueType);
     }
 
     protected visitForeachStatement(stmt: one.ForeachStatement, context: Context) {
@@ -185,9 +207,9 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         if (expr.literalType === "numeric" || expr.literalType === "string" || expr.literalType === "boolean")
             expr.valueType = one.Type.Class(expr.literalClassName);
         else if (expr.literalType === "null")
-            expr.valueType = one.Type.Null;
+            expr.valueType = one.Type.Any;
         else
-            this.log(`Could not inter literal type: ${expr.literalType}`);
+            this.log(`Could not infer literal type: ${expr.literalType}`);
     }
 
     protected visitParenthesizedExpression(expr: one.ParenthesizedExpression, context: Context) {
