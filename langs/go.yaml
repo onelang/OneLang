@@ -93,6 +93,14 @@ templates:
           {{/for}}
       }
 
+      func New{{class.name}}({{if class.constructor}}{{genArgs(class.constructor)}}{{/if}}) *{{class.name}} {
+          this := new({{class.name}})
+          {{if class.constructor}}
+            {{genBody(class.constructor.body)}}
+          {{/if}}
+          return this
+      }
+
       {{for method in class.methods|sep=\n\n}}
         func (this *{{class.name}}) {{method.name}}({{genArgs(method)}}) {{method.returnType}} {
             {{genBody(method.body)}}
@@ -107,7 +115,7 @@ templates:
   getType:
     args:
       - name: item
-    template: "{{if item.typeInfo.isClass}}*{{/if}}{{item.type}}"
+    template: "{{if item.typeInfo.isComplexClass}}*{{/if}}{{item.type}}"
 
   genBody:
     args:
@@ -153,7 +161,7 @@ expressions:
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
   variableDeclaration: "{{genVar(expr)}}"
-  new: "{{gen(expr.class)}}{{{genParams(expr.arguments)}}}"
+  new: "New{{gen(expr.class)}}({{genParams(expr.arguments)}})"
   classReference: "{{expr.classRef.name}}"
   arrayLiteral: "[]{{expr.typeArgs[0]}}{{{genParams(expr.items)}}}"
   mapLiteral: |- 
