@@ -116,6 +116,11 @@ export abstract class AstVisitor<TContext> {
 
     protected visitLiteral(expr: one.Literal, context: TContext) { }
 
+    protected visitTemplateString(expr: one.TemplateString, context: TContext) {
+        for (const part of expr.parts.filter(x => x.expr))
+            this.visitExpression(part.expr, context);
+    }
+    
     protected visitParenthesizedExpression(expr: one.ParenthesizedExpression, context: TContext) {
         this.visitExpression(expr.expression, context);
     }
@@ -174,6 +179,8 @@ export abstract class AstVisitor<TContext> {
             return this.visitNewExpression(<one.NewExpression> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.Literal) {
             return this.visitLiteral(<one.Literal> expression, context);
+        } else if (expression.exprKind === one.ExpressionKind.TemplateString) {
+            return this.visitTemplateString(<one.TemplateString> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.Parenthesized) {
             return this.visitParenthesizedExpression(<one.ParenthesizedExpression> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.Unary) {

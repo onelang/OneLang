@@ -108,6 +108,21 @@ export class Template {
     constructor(public template: string, public args: string[] = []) {
         this.treeRoot = this.generateTree();
         this.fixIndent(this.treeRoot);
+        this.convertInlinedNodes(this.treeRoot);
+    }
+
+    convertInlinedNodes(node: TemplateNode) {
+        if (node.value && node.value.params.inline && node.children.length > 0) {
+            const first = node.children[0].value;
+            const last = node.children.last().value;
+            if (first.textValue)
+                first.textValue = this.trimStart(first.textValue);
+            if (last.textValue)
+                last.textValue = this.trimEnd(last.textValue);
+        }
+
+        for (const child of node.children)
+            this.convertInlinedNodes(child);
     }
 
     convertIdentifier(name: string, vars: string[], type: "variable"|"field"|"declaration") { return name; }
@@ -143,12 +158,14 @@ export class Template {
             } else if (part.type === "else") {
                 const ifTag = current.parent;
                 current = ifTag.ifFalse = new TemplateNode(part, ifTag);
+                ifTag.children.push(current);
             } else {
                 const newNode = new TemplateNode(part, current);
                 current.children.push(newNode);
 
                 if (part.type === "if") {
                     current = newNode.ifTrue = new TemplateNode(part, newNode);
+                    newNode.children.push(current);
                 } else if (part.type === "for") {
                     current = newNode;
                 }
@@ -191,6 +208,9 @@ export class Template {
             throw new Error(`Unhandled AST type: ${ast.type}!`);
     }
 
+    trimStart(str: string) { return str.replace(/^(\s|\n)*/, ""); }
+    trimEnd(str: string) { return str.replace(/(\s|\n)*$/, ""); }
+
     getChildren(node: TemplateNode, vars: string[], newVars: string[] = []) {
         if (!node) return "";
 
@@ -198,9 +218,9 @@ export class Template {
         const childTexts = (node.children||[]).map(child => this.templateToJS(child, allVars));
         for (let i = 0; i < childTexts.length; i++)
             if (node.children[i].value.params.inline === true) {
-                childTexts[i - 1] = childTexts[i - 1].replace(/(\s|\n)*$/, ""); // trim end
+                childTexts[i - 1] = this.trimEnd(childTexts[i - 1]); // trim end
                 childTexts[i] = childTexts[i].trim(); // trim start and end
-                childTexts[i + 1] = childTexts[i + 1].replace(/^(\s|\n)*/, ""); // trim start
+                childTexts[i + 1] = this.trimStart(childTexts[i + 1]); // trim start
             }
         return childTexts.join("");
     }
@@ -210,7 +230,7 @@ export class Template {
 
         if (node.value) {
             if (node.value.type === "text") {
-                result += node.value.textValue;
+                result += node.value.textValue.replace(/\\/g, "\\\\").replace(/\$/g, "\\$").replace(/`/g, "\\`");
             } else if (node.value.type === "for") {
                 const varName = this.convertIdentifier(node.value.for.itemName, vars, "declaration");
                 const forArray = this.exprToJS(node.value.for.array, vars, false);
@@ -218,7 +238,10 @@ export class Template {
                 const childrenText = this.getChildren(node, vars, [varName]).replace(/\n/g, "\n    ");
                 result += `\${tmpl.Block((${forArray}||[]).map(${varName} => tmpl\`${childrenText}\`).join("${sep}"))}`;
             } else if (node.value.type === "if") {
-                result += `\${tmpl.Block((${this.exprToJS(node.value.if.condition, vars, false)}) ? tmpl\`${this.getChildren(node.ifTrue, vars)}\` : tmpl\`${this.getChildren(node.ifFalse, vars)}\`)}`;
+                const conditionCode = this.exprToJS(node.value.if.condition, vars, false);
+                const trueCode = this.getChildren(node.ifTrue, vars);
+                const falseCode = this.getChildren(node.ifFalse, vars);
+                result += `\${tmpl.Block((${conditionCode}) ? tmpl\`${trueCode}\` : tmpl\`${falseCode}\`)}`;
             } else if (node.value.type === "template") {
                 result += `\${${this.exprToJS(node.value.template.expr, vars, false)}}`;
             } else {

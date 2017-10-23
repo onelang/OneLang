@@ -242,6 +242,23 @@ expressions:
   elementAccess: "(*{{gen(expr.object)}})[{{gen(expr.elementExpr)}}]"
   thisReference: this
   conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : {{gen(expr.whenFalse)}}"
+  templateString: |-
+    std::string()\ +\ 
+    {{for part in expr.parts|sep=" + " inline}}
+      {{if part.literal|inline}}
+        "{{part.text}}"
+      {{else}}
+        {{if part.expr.valueType.isNumber|inline}}
+          std::to_string({{gen(part.expr)}})
+        {{else}}
+          {{if part.expr.valueType.isBoolean|inline}}
+            (({{gen(part.expr)}}) ? "true" : "false")
+          {{else}}
+            {{gen(part.expr)}}
+          {{/if}}
+        {{/if}}
+      {{/if}}
+    {{/for}}
   foreach: |-
     for (auto it = {{gen(expr.items)}}->begin(); it != {{gen(expr.items)}}->end(); ++it) {
         auto {{expr.itemVariable.name}} = *it;

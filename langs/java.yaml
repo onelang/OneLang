@@ -163,6 +163,14 @@ expressions:
   thisReference: this
   conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : {{gen(expr.whenFalse)}}"
   break: break;
+  templateString: |-
+    {{for part in expr.parts|sep=" + " inline}}
+      {{if part.literal|inline}}
+        "{{part.text}}"
+      {{else}}
+        {{gen(part.expr)}}
+      {{/if}}
+    {{/for}}
   foreach: |-
     for ({{typeName(expr.itemVariable.type)}} {{expr.itemVariable.name}} : {{gen(expr.items)}}) {
         {{genBody(expr.body)}}

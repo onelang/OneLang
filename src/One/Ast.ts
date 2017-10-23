@@ -189,6 +189,7 @@ export namespace OneAst {
         New = "New",
         Conditional = "Conditional",
         Literal = "Literal",
+        TemplateString = "TemplateString",
         Parenthesized = "Parenthesized",
         Unary = "Unary",
         ArrayLiteral = "ArrayLiteral",
@@ -280,6 +281,16 @@ export namespace OneAst {
         literalClassName: string;
         value: any;
         escapedText: string;
+    }
+
+    export interface TemplateStringPart {
+        literal: boolean;
+        text?: string;
+        expr?: Expression;
+    }
+
+    export interface TemplateString extends Expression {
+        parts: TemplateStringPart[];
     }
 
     export interface ArrayLiteral extends Expression {

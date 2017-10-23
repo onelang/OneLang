@@ -189,6 +189,22 @@ expressions:
   elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
   thisReference: this
   break: break
+  templateString: |-
+    fmt.Sprintf("
+    {{for part in expr.parts|inline}}
+      {{if part.literal|inline}}
+        {{part.text}}
+      {{else}}
+        %v
+      {{/if}}
+    {{/for}}
+    "
+    {{for part in expr.parts|inline}}
+      {{if part.expr|inline}}
+        , {{gen(part.expr)}}
+      {{/if}}
+    {{/for}}
+    )
   conditional: |-
     var {{result}} {{typeName(expr.valueType)}}
     if {{gen(expr.condition)}} {

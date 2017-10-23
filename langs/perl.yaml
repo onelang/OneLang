@@ -17,7 +17,7 @@ classes:
   OneConsole:
     methods:
       print:
-        template: "print({{str}} . \"\\\\n\")"
+        template: 'print({{str}} . "\n")'
   OneArray:
     fields:
       length:
@@ -171,6 +171,20 @@ expressions:
   thisReference: $self
   conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : {{gen(expr.whenFalse)}}"
   break: last;
+  templateString: |-
+    "
+    {{for part in expr.parts|inline}}
+      {{if part.literal|inline}}
+        {{part.text}}
+      {{else}}
+        {{if part.expr.valueType.isBoolean|inline}}
+          @{[({{gen(part.expr)}}) ? 'true' : 'false']}
+        {{else}}
+          @{[{{gen(part.expr)}}]}
+        {{/if}}
+      {{/if}}
+    {{/for}}
+    "
   foreach: |-
     foreach my ${{expr.itemVariable.name}} ({{gen(expr.items)}}) {
         {{genBody(expr.body)}}

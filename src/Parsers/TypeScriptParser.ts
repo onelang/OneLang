@@ -140,6 +140,16 @@ export class TypeScriptParser {
                 literalClassName: "TsString",
                 value: literalExpr.text
             };
+        } else if (tsExpr.kind === ts.SyntaxKind.TemplateExpression) {
+            const templateExpr = <ts.TemplateExpression> tsExpr;
+
+            const parts: one.TemplateStringPart[] = [{ literal: true, text: templateExpr.head.text }];
+            for (const span of templateExpr.templateSpans) {
+                parts.push({ literal: false, expr: this.convertExpression(span.expression) });
+                parts.push({ literal: true, text: span.literal.text });
+            }
+
+            return <one.TemplateString> { exprKind: one.ExpressionKind.TemplateString, parts };
         } else if (tsExpr.kind === ts.SyntaxKind.NumericLiteral) {
             const literalExpr = <ts.NumericLiteral> tsExpr;
             return <one.Literal> {

@@ -7,6 +7,8 @@ export function deindent(str: string) {
     }
 
     const lines = str.split("\n");
+    if (lines.length === 1) return str;
+
     if (getPadLen(lines[0]) === -1)
         lines.shift();
 

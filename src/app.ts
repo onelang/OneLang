@@ -4,12 +4,15 @@ const fs = require("fs");
 import { writeFile, readFile, jsonRequest } from "./Utils/NodeUtils";
 import { OneCompiler } from "./OneCompiler";
 import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs";
+import { LangFileSchema } from "./Generator/LangFileSchema";
+import { Template } from "./Generator/TemplateCompiler";
+import { deindent } from "./Generator/Utils";
 
 declare var YAML;
 
 const prgName = "TemplateString";
 const runPrg = false;
-const langFilter = "";
+const langFilter = "javascript";
 
 global["debugOn"] = false;
 
@@ -23,6 +26,10 @@ const overlayCode = readFile(`langs/NativeResolvers/typescript.ts`);
 const stdlibCode = readFile(`langs/StdLibs/stdlib.d.ts`);
 const genericTransforms = readFile(`langs/NativeResolvers/GenericTransforms.yaml`);
 compiler.parseFromTS(programCode, overlayCode, stdlibCode, genericTransforms);
+
+//const csharpLang = <LangFileSchema.LangFile> YAML.parse(readFile(`langs/csharp.yaml`));
+//const template = new Template(csharpLang.expressions["templateString"]);
+//const compiled = template.templateToJS(template.treeRoot, ["testValue"]);
 
 const langs = Object.values(langConfigs);
 for (const lang of langs) {
