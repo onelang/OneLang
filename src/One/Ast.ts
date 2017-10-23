@@ -39,7 +39,6 @@ export namespace OneAst {
     
     export enum TypeKind { 
         Void = "void",
-        Null = "null",
         Any = "any",
         Class = "class",
         Method = "method",
@@ -70,6 +69,7 @@ export namespace OneAst {
         get isComplexClass() { return this.typeKind === TypeKind.Class && !this.isNumber && !this.isString && !this.isBoolean; }
         get isMethod() { return this.typeKind === TypeKind.Method; }
         get isGenerics() { return this.typeKind === TypeKind.Generics; }
+        get isAny() { return this.typeKind === TypeKind.Any; }
         get isNumber() { return this.className === "OneNumber"; }
         get isString() { return this.className === "OneString"; }
         get isBoolean() { return this.className === "OneBoolean"; }
@@ -107,10 +107,9 @@ export namespace OneAst {
             }
         }
 
-        static PrimitiveTypeKinds = [TypeKind.Void, TypeKind.Null, TypeKind.Any];
+        static PrimitiveTypeKinds = [TypeKind.Void, TypeKind.Any];
         
         static Void = new Type(TypeKind.Void);
-        static Null = new Type(TypeKind.Null);
         static Any = new Type(TypeKind.Any);
         
         static Class(className: string, generics: Type[] = []) {

@@ -13,7 +13,7 @@ class Token
 
 class StringHelper {
     static startsWithAtIndex(str: string, substr: string, idx: number): boolean {
-        return true;
+        return str.substr(idx, substr.length) == substr;
     }
 }
 
@@ -54,14 +54,14 @@ export class Tokenizer
             }
             else
             {
-                let op: string = null;
+                let op = "";
                 for (const currOp of this.operators)
                     if(StringHelper.startsWithAtIndex(this.text, currOp, this.offset)) {
                         op = currOp;
                         break;
                     }
 
-                if (!op)
+                if (op == "")
                     return null;
 
                 this.offset += op.length;

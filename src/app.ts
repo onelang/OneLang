@@ -7,9 +7,9 @@ import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs"
 
 declare var YAML;
 
-const prgName = "MapKeyTest";
+const prgName = "ExplicitGenericTypeTest";
 const runPrg = false;
-const langFilter = "java";
+const langFilter = "";
 
 global["debugOn"] = false;
 

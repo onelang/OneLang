@@ -71,6 +71,10 @@ class TsString {
         return this._one.substring(start, end);
     }
 
+    substr(start: number, length: number): OneString {
+        return this._one.substring(start, start + length);
+    }
+
     split(separator: string): OneArray<OneString> {
         return this._one.split(separator);
     }

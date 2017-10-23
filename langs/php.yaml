@@ -79,7 +79,7 @@ templates:
           {{/if}}
 
           {{for method in class.methods|sep=\n\n}}
-              function {{method.name}}({{genArgs(method)}}) {
+              {{if method.static}}static {{/if}}function {{method.name}}({{genArgs(method)}}) {
                   {{genBody(method.body)}}
               }
           {{/for}}

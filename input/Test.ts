@@ -11,6 +11,11 @@ class TestClass {
         return mapObj["z"];
     }
 
+    explicitTypeTest() {
+        let op: string = "";
+        console.log(op.length);
+    }
+
     ifTest(x: number): string {
         let result = "<unk>";
 

@@ -214,6 +214,11 @@ export class OverviewGenerator extends AstVisitor<void> {
                 this.visitBlock(prop.getter);
             }
 
+            if (cls.constructor) {
+                this.addLine(`${cls.name}::constructor`);
+                this.visitBlock(cls.constructor.body);
+            }
+
             for (const method of Object.values(cls.methods)) {
                 const argList = method.parameters.map(arg => `${arg.name}: ${arg.type.repr()}`).join(", ");
                 this.addLine(`${cls.name}::${method.name}(${argList}): ${method.returns.repr()}${method.static ? " [static]" : ""}`);
