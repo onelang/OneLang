@@ -37,7 +37,7 @@ class Tokenizer {
         return TokenType.endToken!;
     }
     
-    let c = this.text[this.offset];
+    const c = this.text[this.offset];
     return c == " " || c == "\n" || c == "\t" || c == "\r" ? TokenType.whitespace! : ("A" <= c && c <= "Z") || ("a" <= c && c <= "z") || ("0" <= c && c <= "9") || c == "_" ? TokenType.identifier! : TokenType.operatorX!;
   }
   
@@ -45,7 +45,7 @@ class Tokenizer {
     const result = [];
     
     while (this.offset < this.text.length) {
-        let char_type = this.getTokenType();
+        const char_type = this.getTokenType();
         
         if (char_type == TokenType.whitespace!) {
             while (this.getTokenType() == TokenType.whitespace!) {

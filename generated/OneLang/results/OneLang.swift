@@ -37,7 +37,7 @@ class Tokenizer {
           return TokenType.end_token
       }
       
-      var c = String(self.text[self.text.index(self.text.startIndex, offsetBy: self.offset)])
+      let c = String(self.text[self.text.index(self.text.startIndex, offsetBy: self.offset)])
       return c == " " || c == "\n" || c == "\t" || c == "\r" ? TokenType.whitespace : ("A" <= c && c <= "Z") || ("a" <= c && c <= "z") || ("0" <= c && c <= "9") || c == "_" ? TokenType.identifier : TokenType.operator_x
   }
   
@@ -45,7 +45,7 @@ class Tokenizer {
       var result = []
       
       while self.offset < self.text.count {
-          var char_type = self.getTokenType()
+          let char_type = self.getTokenType()
           
           if char_type == TokenType.whitespace {
               while self.getTokenType() == TokenType.whitespace {
