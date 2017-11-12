@@ -1,0 +1,14 @@
+TestClass::getResult(): TsBoolean
+  - Return
+    - Literal (boolean): true [TsBoolean]
+
+TestClass::testMethod(): void
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - Conditional [TsString]
+        - Call [TsBoolean]
+          - MethodReference (this) [TestClass::getResult]
+        - Literal (string): "true" [TsString]
+        - Literal (string): "false" [TsString]
+

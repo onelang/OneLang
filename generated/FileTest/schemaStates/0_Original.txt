@@ -1,0 +1,9 @@
+TestClass::testMethod(): TsString
+  - Variable: fileContent
+    - Call
+      - PropertyAccess (.readText)
+        - Identifier: OneFile
+      - Literal (string): "../../input/test.txt"
+  - Return
+    - Identifier: fileContent
+

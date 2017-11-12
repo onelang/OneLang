@@ -1,0 +1,22 @@
+TestClass::testMethod(): void
+  - Variable: a [TsBoolean]
+    - Literal (boolean): true [TsBoolean]
+  - Variable: b [TsBoolean]
+    - Literal (boolean): false [TsBoolean]
+  - Variable: c [any]
+    - Binary: && [any]
+      - LocalVar: a [TsBoolean]
+      - LocalVar: b [TsBoolean]
+  - Variable: d [any]
+    - Binary: || [any]
+      - LocalVar: a [TsBoolean]
+      - LocalVar: b [TsBoolean]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - TemplateString [any]
+        - LocalVar: a [TsBoolean]
+        - LocalVar: b [TsBoolean]
+        - LocalVar: c [any]
+        - LocalVar: d [any]
+

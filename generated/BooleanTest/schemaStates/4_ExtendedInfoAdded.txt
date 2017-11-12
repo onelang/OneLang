@@ -1,0 +1,22 @@
+TestClass::testMethod(): void
+  - Variable: a [OneBoolean]
+    - Literal (boolean): true [OneBoolean]
+  - Variable: b [OneBoolean]
+    - Literal (boolean): false [OneBoolean]
+  - Variable: c [any]
+    - Binary: && [any]
+      - LocalVar: a [OneBoolean]
+      - LocalVar: b [OneBoolean]
+  - Variable: d [any]
+    - Binary: || [any]
+      - LocalVar: a [OneBoolean]
+      - LocalVar: b [OneBoolean]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [OneConsole::print]
+      - TemplateString [any]
+        - LocalVar: a [OneBoolean]
+        - LocalVar: b [OneBoolean]
+        - LocalVar: c [any]
+        - LocalVar: d [any]
+

@@ -1,0 +1,46 @@
+TestClass::testMethod(): void
+  - Variable: strVal
+    - Literal (string): "str"
+  - Variable: num
+    - Literal (numeric): "1337"
+  - Variable: b
+    - Literal (boolean): true
+  - Variable: result
+    - TemplateString
+      - Identifier: strVal
+      - Identifier: num
+      - Identifier: b
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - Identifier: result
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - TemplateString
+        - Identifier: strVal
+        - Identifier: num
+        - Identifier: b
+  - Comment: "\n"
+  - Variable: result2
+    - Binary: +
+      - Binary: +
+        - Binary: +
+          - Binary: +
+            - Binary: +
+              - Binary: +
+                - Literal (string): "before "
+                - Identifier: strVal
+              - Literal (string): ", num: "
+            - Identifier: num
+          - Literal (string): ", true: "
+        - Identifier: b
+      - Literal (string): " after"
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - Identifier: result2
+

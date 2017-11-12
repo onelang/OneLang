@@ -1,0 +1,47 @@
+OneConsole::print(str: any): void [static]
+  <no body>
+
+OneFile::readText(fn: TsString): OneString [static]
+  <no body>
+
+OneArray::length: TsNumber
+OneArray::add(item: T): void
+  <no body>
+
+OneArray::get(index: TsNumber): T
+  <no body>
+
+OneArray::set(index: TsNumber, value: T): void
+  <no body>
+
+OneMap::get(key: K): V
+  <no body>
+
+OneMap::set(key: K, value: V): void
+  <no body>
+
+OneMap::remove(key: K): void
+  <no body>
+
+OneMap::hasKey(key: K): TsBoolean
+  <no body>
+
+OneMap::keys(): OneArray<K>
+  <no body>
+
+OneMap::values(): OneArray<V>
+  <no body>
+
+OneString::length: OneNumber
+OneString::substring(start: TsNumber, end: TsNumber): OneString
+  <no body>
+
+OneString::split(separator: TsString): OneArray<OneString>
+  <no body>
+
+OneString::get(idx: TsNumber): OneString
+  <no body>
+
+OneString::startsWith(str: TsString): OneBoolean
+  <no body>
+

@@ -1,0 +1,9 @@
+TestClass::testMethod(): void
+  - Variable: map
+    - MapLiteral
+  - Variable: keys
+    - Call
+      - PropertyAccess (.keys)
+        - Identifier: Object
+      - Identifier: map
+

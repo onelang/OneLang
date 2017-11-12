@@ -1,0 +1,8 @@
+ArrayTestClass::arrayTest(): void
+  - Variable: constantArr [TsArray<TsNumber>]
+    - ArrayLiteral [TsArray<TsNumber>]
+      - Literal (numeric): "5" [TsNumber]
+  - Return
+    - InstanceField: length [TsNumber]
+      - LocalVar: constantArr [TsArray<TsNumber>]
+

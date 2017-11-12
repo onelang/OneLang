@@ -1,0 +1,40 @@
+TestClass::reverseString(str: TsString): TsString
+  - Variable: result
+    - Literal (string): ""
+  - For ("i")
+    Var
+    - Variable: i
+      - Binary: -
+        - PropertyAccess (.length)
+          - Identifier: str
+        - Literal (numeric): "1"
+    Condition
+      - Binary: >=
+        - Identifier: i
+        - Literal (numeric): "0"
+    Incrementor
+      - Unary (postfix): --
+        - Identifier: i
+    Body
+      - ExpressionStatement
+        - Binary: +=
+          - Identifier: result
+          - Call
+            - PropertyAccess (.get)
+              - Identifier: str
+            - Identifier: i
+  - Return
+    - Identifier: result
+
+TestClass::testMethod(): TsString
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - Call
+        - PropertyAccess (.reverseString)
+          - Identifier: this
+        - Literal (string): "print value"
+  - Return
+    - Literal (string): "return value"
+

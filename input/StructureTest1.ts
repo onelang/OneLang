@@ -3,9 +3,9 @@ class List<T> {
 }
 
 class Item {
-    offset = 5;
-    strTest = 'test' + 'test2';
-    constructor(public strConstr = "constr") { }
+    offset: number = 5;
+    strTest: string = 'test' + 'test2';
+    constructor(public strConstr: string = "constr") { }
 }
 
 class Container {
@@ -13,5 +13,5 @@ class Container {
     stringList: List<string>;
 
     method0(){}
-    method1(str = "x"){ return str; }
+    method1(str: string = "x"){ return str; }
 }

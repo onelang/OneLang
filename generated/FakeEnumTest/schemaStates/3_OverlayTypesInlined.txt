@@ -1,0 +1,20 @@
+TokenType::EndToken: OneString
+- Variable: EndToken [OneString]
+  - Literal (string): "EndToken" [OneString]
+TokenType::Whitespace: OneString
+- Variable: Whitespace [OneString]
+  - Literal (string): "Whitespace" [OneString]
+TokenType::Identifier: OneString
+- Variable: Identifier [OneString]
+  - Literal (string): "Identifier" [OneString]
+TokenType::OperatorX: OneString
+- Variable: OperatorX [OneString]
+  - Literal (string): "Operator" [OneString]
+TokenType::NoInitializer: OneString
+TestClass::testMethod(): OneString
+  - Variable: casingTest [OneString]
+    - StaticField: EndToken [OneString]
+      - ClassReference [TokenType]
+  - Return
+    - LocalVar: casingTest [OneString]
+

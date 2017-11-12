@@ -1,0 +1,10 @@
+TestClass::testMethod(): void
+  - Variable: op [TsString]
+    - Literal (null): "null"
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - PropertyAccess (.length)
+        - Identifier: op
+

@@ -1,0 +1,273 @@
+TestClass::mapTest(): TsNumber
+  - Variable: mapObj [TsMap<OneString, TsNumber>]
+    - MapLiteral [TsMap<OneString, TsNumber>]
+      - Variable: x [TsNumber]
+        - Literal (numeric): "5" [TsNumber]
+      - Variable: y [TsNumber]
+        - Literal (numeric): "3" [TsNumber]
+  - Comment: "\n//let containsX = "x" in mapObj;\n"
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference [TsMap<OneString, TsNumber>::set]
+        - LocalVar: mapObj [TsMap<OneString, TsNumber>]
+      - Literal (string): "z" [TsString]
+      - Literal (numeric): "9" [TsNumber]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference [TsMap<OneString, TsNumber>::delete]
+        - LocalVar: mapObj [TsMap<OneString, TsNumber>]
+      - Literal (string): "x" [TsString]
+  - Comment: "\n"
+  - Variable: keysVar [OneArray<K>]
+    - Call [OneArray<K>]
+      - MethodReference (static) [Object::keys]
+      - LocalVar: mapObj [TsMap<OneString, TsNumber>]
+  - Variable: valuesVar [OneArray<V>]
+    - Call [OneArray<V>]
+      - MethodReference (static) [Object::values]
+      - LocalVar: mapObj [TsMap<OneString, TsNumber>]
+  - Return
+    - Call [void]
+      - MethodReference [TsMap<OneString, TsNumber>::get]
+        - LocalVar: mapObj [TsMap<OneString, TsNumber>]
+      - Literal (string): "z" [TsString]
+
+TestClass::explicitTypeTest(): void
+  - Variable: op [TsString]
+    - Literal (string): "" [TsString]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - InstanceField: length [OneNumber]
+        - LocalVar: op [TsString]
+
+TestClass::ifTest(x: TsNumber): TsString
+  - Variable: result [TsString]
+    - Literal (string): "<unk>" [TsString]
+  - Comment: "\n"
+  - If
+    - Binary: > [any]
+      - MethodArgument: x [TsNumber]
+      - Literal (numeric): "3" [TsNumber]
+    Then
+      - ExpressionStatement
+        - Binary: = [any]
+          - LocalVar: result [TsString]
+          - Literal (string): "hello" [TsString]
+    Else
+      - If
+        - Binary: < [any]
+          - MethodArgument: x [TsNumber]
+          - Literal (numeric): "1" [TsNumber]
+        Then
+          - ExpressionStatement
+            - Binary: = [any]
+              - LocalVar: result [TsString]
+              - Literal (string): "bello" [TsString]
+        Else
+          - If
+            - Binary: < [any]
+              - MethodArgument: x [TsNumber]
+              - Literal (numeric): "0" [TsNumber]
+            Then
+              - ExpressionStatement
+                - Binary: = [any]
+                  - LocalVar: result [TsString]
+                  - Literal (string): "bello2" [TsString]
+            Else
+              - ExpressionStatement
+                - Binary: = [any]
+                  - LocalVar: result [TsString]
+                  - Literal (string): "???" [TsString]
+  - Comment: "\n"
+  - If
+    - Binary: > [any]
+      - MethodArgument: x [TsNumber]
+      - Literal (numeric): "3" [TsNumber]
+    Then
+      - ExpressionStatement
+        - Binary: = [any]
+          - LocalVar: result [TsString]
+          - Literal (string): "z" [TsString]
+    Else
+  - Comment: "\n"
+  - If
+    - Binary: > [any]
+      - MethodArgument: x [TsNumber]
+      - Literal (numeric): "3" [TsNumber]
+    Then
+      - ExpressionStatement
+        - Binary: = [any]
+          - LocalVar: result [TsString]
+          - Literal (string): "x" [TsString]
+    Else
+      - ExpressionStatement
+        - Binary: = [any]
+          - LocalVar: result [TsString]
+          - Literal (string): "y" [TsString]
+  - Comment: "\n"
+  - Return
+    - LocalVar: result [TsString]
+
+TestClass::arrayTest(): void
+  - Comment: "//const c2 = new Class2();\n\n"
+  - Variable: mutableArr [TsArray<TsNumber>]
+    - ArrayLiteral [TsArray<TsNumber>]
+      - Literal (numeric): "1" [TsNumber]
+      - Literal (numeric): "2" [TsNumber]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference [TsArray<TsNumber>::push]
+        - LocalVar: mutableArr [TsArray<TsNumber>]
+      - Literal (numeric): "3" [TsNumber]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference [TsArray<TsNumber>::push]
+        - LocalVar: mutableArr [TsArray<TsNumber>]
+      - Literal (numeric): "4" [TsNumber]
+  - Comment: "// mutableArr.push(c2.property);\n// mutableArr.push(c2.child.property);\n// mutableArr.push(c2.child.child.property);\n\n"
+  - Variable: constantArr [TsArray<TsNumber>]
+    - ArrayLiteral [TsArray<TsNumber>]
+      - Literal (numeric): "5" [TsNumber]
+      - Literal (numeric): "6" [TsNumber]
+  - Comment: "\n// some comment\n//   some comment line 2\n"
+  - Foreach item: TsNumber
+    Items
+      - LocalVar: mutableArr [TsArray<TsNumber>]
+    Body
+      - ExpressionStatement
+        - Call [void]
+          - MethodReference (static) [console::log]
+          - LocalVar: item [TsNumber]
+  - Comment: "\n/* some other comment\n   multiline and stuff\n*/\n"
+  - For ("i")
+    Var
+    - Variable: i [TsNumber]
+      - Literal (numeric): "0" [TsNumber]
+    Condition
+      - Binary: < [any]
+        - LocalVar: i [TsNumber]
+        - InstanceField: length [TsNumber]
+          - LocalVar: constantArr [TsArray<TsNumber>]
+    Incrementor
+      - Unary (postfix): ++ [any]
+        - LocalVar: i [TsNumber]
+    Body
+      - ExpressionStatement
+        - Call [void]
+          - MethodReference (static) [console::log]
+          - Call [void]
+            - MethodReference [TsArray<TsNumber>::get]
+              - LocalVar: constantArr [TsArray<TsNumber>]
+            - LocalVar: i [TsNumber]
+
+TestClass::calc(): TsNumber
+  - Return
+    - Binary: * [any]
+      - Parenthesized [any]
+        - Binary: + [any]
+          - Literal (numeric): "1" [TsNumber]
+          - Literal (numeric): "2" [TsNumber]
+      - Literal (numeric): "3" [TsNumber]
+
+TestClass::methodWithArgs(arg1: TsNumber, arg2: TsNumber, arg3: TsNumber): TsNumber
+  - Variable: stuff [any]
+    - Binary: + [any]
+      - Binary: + [any]
+        - MethodArgument: arg1 [TsNumber]
+        - MethodArgument: arg2 [TsNumber]
+      - Binary: * [any]
+        - MethodArgument: arg3 [TsNumber]
+        - Call [TsNumber]
+          - MethodReference (this) [TestClass::calc]
+  - Return
+    - LocalVar: stuff [any]
+
+TestClass::stringTest(): TsString
+  - Variable: x [TsString]
+    - Literal (string): "x" [TsString]
+  - Variable: y [TsString]
+    - Literal (string): "y" [TsString]
+  - Comment: "\n"
+  - Variable: z [TsString]
+    - Literal (string): "z" [TsString]
+  - ExpressionStatement
+    - Binary: += [any]
+      - LocalVar: z [TsString]
+      - Literal (string): "Z" [TsString]
+  - ExpressionStatement
+    - Binary: += [any]
+      - LocalVar: z [TsString]
+      - LocalVar: x [TsString]
+  - Comment: "\n"
+  - Return
+    - Binary: + [any]
+      - Binary: + [any]
+        - Binary: + [any]
+          - LocalVar: z [TsString]
+          - Literal (string): "|" [TsString]
+        - LocalVar: x [TsString]
+      - LocalVar: y [TsString]
+
+TestClass::reverseString(str: TsString): TsString
+  - Variable: result [TsString]
+    - Literal (string): "" [TsString]
+  - For ("i")
+    Var
+    - Variable: i [any]
+      - Binary: - [any]
+        - InstanceField: length [OneNumber]
+          - MethodArgument: str [TsString]
+        - Literal (numeric): "1" [TsNumber]
+    Condition
+      - Binary: >= [any]
+        - LocalVar: i [any]
+        - Literal (numeric): "0" [TsNumber]
+    Incrementor
+      - Unary (postfix): -- [any]
+        - LocalVar: i [any]
+    Body
+      - ExpressionStatement
+        - Binary: += [any]
+          - LocalVar: result [TsString]
+          - Call [OneString]
+            - MethodReference [TsString::get]
+              - MethodArgument: str [TsString]
+            - LocalVar: i [any]
+  - Return
+    - LocalVar: result [TsString]
+
+TestClass::getBoolResult(value: TsBoolean): TsBoolean
+  - Return
+    - MethodArgument: value [TsBoolean]
+
+TestClass::testMethod(): void
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (this) [TestClass::arrayTest]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - Call [TsNumber]
+        - MethodReference (this) [TestClass::mapTest]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - Call [TsString]
+        - MethodReference (this) [TestClass::stringTest]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - Call [TsString]
+        - MethodReference (this) [TestClass::reverseString]
+        - Literal (string): "print value" [TsString]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - Conditional [TsString]
+        - Call [TsBoolean]
+          - MethodReference (this) [TestClass::getBoolResult]
+          - Literal (boolean): true [TsBoolean]
+        - Literal (string): "true" [TsString]
+        - Literal (string): "false" [TsString]
+

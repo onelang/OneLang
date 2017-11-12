@@ -1,0 +1,5 @@
+NumberUnaryIssue::test(num: TsNumber): void
+  - ExpressionStatement
+    - Unary (postfix): -- [any]
+      - MethodArgument: num [TsNumber]
+

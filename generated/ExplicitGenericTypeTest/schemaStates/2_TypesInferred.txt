@@ -1,0 +1,20 @@
+TestClass::testMethod(): void
+  - Variable: result [TsArray<TsString>]
+    - ArrayLiteral [TsArray<TsString>]
+  - Variable: map [TsMap<OneString, TsNumber>]
+    - MapLiteral [TsMap<OneString, TsNumber>]
+      - Variable: x [TsNumber]
+        - Literal (numeric): "5" [TsNumber]
+  - Variable: keys [OneArray<K>]
+    - Call [OneArray<K>]
+      - MethodReference (static) [Object::keys]
+      - LocalVar: map [TsMap<OneString, TsNumber>]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - LocalVar: result [TsArray<TsString>]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - LocalVar: keys [OneArray<K>]
+

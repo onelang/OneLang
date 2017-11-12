@@ -1,0 +1,21 @@
+MapX::set(key: K, value: V): void
+
+MapX::get(key: K): V
+  - Return
+    - Literal (null): "null"
+
+Main::test(): void
+  - Variable: map
+    - New MapX<[object Object], [object Object]>
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.set)
+        - Identifier: map
+      - Literal (string): "hello"
+      - Literal (numeric): "3"
+  - Variable: numValue
+    - Call
+      - PropertyAccess (.get)
+        - Identifier: map
+      - Literal (string): "hello2"
+

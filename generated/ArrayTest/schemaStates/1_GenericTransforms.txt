@@ -1,0 +1,8 @@
+ArrayTestClass::arrayTest(): void
+  - Variable: constantArr
+    - ArrayLiteral
+      - Literal (numeric): "5"
+  - Return
+    - PropertyAccess (.length)
+      - Identifier: constantArr
+

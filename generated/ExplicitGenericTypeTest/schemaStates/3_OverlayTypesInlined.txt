@@ -1,0 +1,20 @@
+TestClass::testMethod(): void
+  - Variable: result [OneArray<OneString>]
+    - ArrayLiteral [OneArray<OneString>]
+  - Variable: map [OneMap<OneString, OneNumber>]
+    - MapLiteral [OneMap<OneString, OneNumber>]
+      - Variable: x [OneNumber]
+        - Literal (numeric): "5" [OneNumber]
+  - Variable: keys [OneArray<K>]
+    - Call [OneArray<K>]
+      - MethodReference [OneMap<K, V>::keys]
+        - LocalVar: map [OneMap<OneString, OneNumber>]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [OneConsole::print]
+      - LocalVar: result [OneArray<OneString>]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [OneConsole::print]
+      - LocalVar: keys [OneArray<K>]
+

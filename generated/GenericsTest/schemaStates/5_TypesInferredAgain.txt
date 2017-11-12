@@ -1,0 +1,21 @@
+MapX::set(key: K, value: V): void
+
+MapX::get(key: K): V
+  - Return
+    - Literal (null): "null" [any]
+
+Main::test(): void
+  - Variable: map [MapX<OneString, OneNumber>]
+    - New MapX<[object Object], [object Object]> [MapX<OneString, OneNumber>]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference [MapX<K, V>::set]
+        - LocalVar: map [MapX<OneString, OneNumber>]
+      - Literal (string): "hello" [OneString]
+      - Literal (numeric): "3" [OneNumber]
+  - Variable: numValue [OneNumber]
+    - Call [OneNumber]
+      - MethodReference [MapX<K, V>::get]
+        - LocalVar: map [MapX<OneString, OneNumber>]
+      - Literal (string): "hello2" [OneString]
+

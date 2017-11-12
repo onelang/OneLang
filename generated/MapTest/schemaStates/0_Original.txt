@@ -1,0 +1,17 @@
+MapTestClass::mapTest(): void
+  - Variable: mapObj
+    - MapLiteral
+      - Variable: x
+        - Literal (numeric): "5"
+  - Comment: "//let containsX = "x" in mapObj;\n//delete mapObj["x"];\n"
+  - ExpressionStatement
+    - Binary: =
+      - ElementAccess
+        - Identifier: mapObj
+        - Literal (string): "x"
+      - Literal (numeric): "3"
+  - Return
+    - ElementAccess
+      - Identifier: mapObj
+      - Literal (string): "x"
+

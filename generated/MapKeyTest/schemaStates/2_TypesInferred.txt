@@ -1,0 +1,8 @@
+TestClass::testMethod(): void
+  - Variable: map [TsMap<OneString, any>]
+    - MapLiteral [TsMap<OneString, any>]
+  - Variable: keys [OneArray<K>]
+    - Call [OneArray<K>]
+      - MethodReference (static) [Object::keys]
+      - LocalVar: map [TsMap<OneString, any>]
+

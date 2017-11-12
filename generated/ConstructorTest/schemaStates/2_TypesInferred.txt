@@ -1,0 +1,24 @@
+ConstructorTest::field2: TsNumber
+ConstructorTest::field1: TsNumber
+ConstructorTest::constructor
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): field1 [TsNumber]
+      - MethodArgument: field1 [TsNumber]
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): field2 [TsNumber]
+      - Binary: * [any]
+        - Binary: * [any]
+          - MethodArgument: field1 [TsNumber]
+          - InstanceField (this): field1 [TsNumber]
+        - Literal (numeric): "5" [TsNumber]
+TestClass::testMethod(): void
+  - Variable: test [ConstructorTest]
+    - New ConstructorTest [ConstructorTest]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - InstanceField: field2 [TsNumber]
+        - LocalVar: test [ConstructorTest]
+

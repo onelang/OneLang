@@ -1,0 +1,16 @@
+TestClass::getResult(): TsBoolean
+  - Return
+    - Literal (boolean): true
+
+TestClass::testMethod(): void
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - Conditional
+        - Call
+          - PropertyAccess (.getResult)
+            - Identifier: this
+        - Literal (string): "true"
+        - Literal (string): "false"
+

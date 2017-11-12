@@ -1,0 +1,18 @@
+MapTestClass::mapTest(): void
+  - Variable: mapObj [TsMap<OneString, TsNumber>]
+    - MapLiteral [TsMap<OneString, TsNumber>]
+      - Variable: x [TsNumber]
+        - Literal (numeric): "5" [TsNumber]
+  - Comment: "//let containsX = "x" in mapObj;\n//delete mapObj["x"];\n"
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference [TsMap<OneString, TsNumber>::set]
+        - LocalVar: mapObj [TsMap<OneString, TsNumber>]
+      - Literal (string): "x" [TsString]
+      - Literal (numeric): "3" [TsNumber]
+  - Return
+    - Call [void]
+      - MethodReference [TsMap<OneString, TsNumber>::get]
+        - LocalVar: mapObj [TsMap<OneString, TsNumber>]
+      - Literal (string): "x" [TsString]
+

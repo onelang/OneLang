@@ -1,0 +1,60 @@
+TestClass::testMethod(): void
+  - Variable: str
+    - Literal (string): "a1A"
+  - For ("i")
+    Var
+    - Variable: i
+      - Literal (numeric): "0"
+    Condition
+      - Binary: <
+        - Identifier: i
+        - PropertyAccess (.length)
+          - Identifier: str
+    Incrementor
+      - Unary (postfix): ++
+        - Identifier: i
+    Body
+      - Variable: c
+        - Call
+          - PropertyAccess (.get)
+            - Identifier: str
+          - Identifier: i
+      - Variable: isUpper
+        - Binary: &&
+          - Binary: <=
+            - Literal (string): "A"
+            - Identifier: c
+          - Binary: <=
+            - Identifier: c
+            - Literal (string): "Z"
+      - Variable: isLower
+        - Binary: &&
+          - Binary: <=
+            - Literal (string): "a"
+            - Identifier: c
+          - Binary: <=
+            - Identifier: c
+            - Literal (string): "z"
+      - Variable: isNumber
+        - Binary: &&
+          - Binary: <=
+            - Literal (string): "0"
+            - Identifier: c
+          - Binary: <=
+            - Identifier: c
+            - Literal (string): "9"
+      - ExpressionStatement
+        - Call
+          - PropertyAccess (.log)
+            - Identifier: console
+          - Conditional
+            - Identifier: isUpper
+            - Literal (string): "upper"
+            - Conditional
+              - Identifier: isLower
+              - Literal (string): "lower"
+              - Conditional
+                - Identifier: isNumber
+                - Literal (string): "number"
+                - Literal (string): "other"
+

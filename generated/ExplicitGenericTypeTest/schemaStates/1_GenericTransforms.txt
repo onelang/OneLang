@@ -1,0 +1,23 @@
+TestClass::testMethod(): void
+  - Variable: result [TsArray<TsString>]
+    - ArrayLiteral
+  - Variable: map
+    - MapLiteral
+      - Variable: x
+        - Literal (numeric): "5"
+  - Variable: keys
+    - Call
+      - PropertyAccess (.keys)
+        - Identifier: Object
+      - Identifier: map
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - Identifier: result
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - Identifier: keys
+

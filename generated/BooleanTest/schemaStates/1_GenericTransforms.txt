@@ -1,0 +1,23 @@
+TestClass::testMethod(): void
+  - Variable: a
+    - Literal (boolean): true
+  - Variable: b
+    - Literal (boolean): false
+  - Variable: c
+    - Binary: &&
+      - Identifier: a
+      - Identifier: b
+  - Variable: d
+    - Binary: ||
+      - Identifier: a
+      - Identifier: b
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - TemplateString
+        - Identifier: a
+        - Identifier: b
+        - Identifier: c
+        - Identifier: d
+

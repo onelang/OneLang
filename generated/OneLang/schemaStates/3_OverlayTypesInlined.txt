@@ -1,0 +1,299 @@
+TokenType::EndToken: OneString
+- Variable: EndToken [OneString]
+  - Literal (string): "EndToken" [OneString]
+TokenType::Whitespace: OneString
+- Variable: Whitespace [OneString]
+  - Literal (string): "Whitespace" [OneString]
+TokenType::Identifier: OneString
+- Variable: Identifier [OneString]
+  - Literal (string): "Identifier" [OneString]
+TokenType::OperatorX: OneString
+- Variable: OperatorX [OneString]
+  - Literal (string): "Operator" [OneString]
+TokenType::NoInitializer: OneString
+Token::value: OneString
+Token::isOperator: OneBoolean
+Token::constructor
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): isOperator [OneBoolean]
+      - MethodArgument: isOperator [OneBoolean]
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): value [OneString]
+      - MethodArgument: value [OneString]
+StringHelper::startsWithAtIndex(str: OneString, substr: OneString, idx: OneNumber): OneBoolean [static]
+  - Return
+    - Binary: == [OneString]
+      - Call [OneString]
+        - MethodReference [OneString::substring]
+          - MethodArgument: str [OneString]
+        - MethodArgument: idx [OneNumber]
+        - Binary: + [any]
+          - MethodArgument: idx [OneNumber]
+          - InstanceField: length [OneNumber]
+            - MethodArgument: substr [OneString]
+      - MethodArgument: substr [OneString]
+
+Tokenizer::offset: OneNumber
+- Variable: offset [OneNumber]
+  - Literal (numeric): "0" [OneNumber]
+Tokenizer::text: OneString
+Tokenizer::operators: OneArray<OneString>
+Tokenizer::constructor
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): operators [OneArray<OneString>]
+      - MethodArgument: operators [OneArray<OneString>]
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): text [OneString]
+      - MethodArgument: text [OneString]
+Tokenizer::getTokenType(): OneString
+  - If
+    - Binary: >= [any]
+      - InstanceField (this): offset [OneNumber]
+      - InstanceField: length [OneNumber]
+        - InstanceField (this): text [OneString]
+    Then
+      - Return
+        - StaticField: EndToken [OneString]
+          - ClassReference [TokenType]
+    Else
+  - Comment: "\n"
+  - Variable: c [OneString]
+    - Call [OneString]
+      - MethodReference [OneString::get]
+        - InstanceField (this): text [OneString]
+      - InstanceField (this): offset [OneNumber]
+  - Return
+    - Conditional [OneString]
+      - Binary: || [OneString]
+        - Binary: || [OneString]
+          - Binary: || [OneString]
+            - Binary: == [OneString]
+              - LocalVar: c [OneString]
+              - Literal (string): " " [OneString]
+            - Binary: == [OneString]
+              - LocalVar: c [OneString]
+              - Literal (string): "\n" [OneString]
+          - Binary: == [OneString]
+            - LocalVar: c [OneString]
+            - Literal (string): "\t" [OneString]
+        - Binary: == [OneString]
+          - LocalVar: c [OneString]
+          - Literal (string): "\r" [OneString]
+      - StaticField: Whitespace [OneString]
+        - ClassReference [TokenType]
+      - Conditional [OneString]
+        - Binary: || [any]
+          - Binary: || [any]
+            - Binary: || [any]
+              - Parenthesized [any]
+                - Binary: && [any]
+                  - Binary: <= [any]
+                    - Literal (string): "A" [OneString]
+                    - LocalVar: c [OneString]
+                  - Binary: <= [OneString]
+                    - LocalVar: c [OneString]
+                    - Literal (string): "Z" [OneString]
+              - Parenthesized [any]
+                - Binary: && [any]
+                  - Binary: <= [any]
+                    - Literal (string): "a" [OneString]
+                    - LocalVar: c [OneString]
+                  - Binary: <= [OneString]
+                    - LocalVar: c [OneString]
+                    - Literal (string): "z" [OneString]
+            - Parenthesized [any]
+              - Binary: && [any]
+                - Binary: <= [any]
+                  - Literal (string): "0" [OneString]
+                  - LocalVar: c [OneString]
+                - Binary: <= [OneString]
+                  - LocalVar: c [OneString]
+                  - Literal (string): "9" [OneString]
+          - Binary: == [OneString]
+            - LocalVar: c [OneString]
+            - Literal (string): "_" [OneString]
+        - StaticField: Identifier [OneString]
+          - ClassReference [TokenType]
+        - StaticField: OperatorX [OneString]
+          - ClassReference [TokenType]
+
+Tokenizer::tokenize(): OneArray<Token>
+  - Variable: result [OneArray<Token>]
+    - ArrayLiteral [OneArray<Token>]
+  - Comment: "\n"
+  - While
+      - Binary: < [any]
+        - InstanceField (this): offset [OneNumber]
+        - InstanceField: length [OneNumber]
+          - InstanceField (this): text [OneString]
+    Body
+      - Variable: charType [OneString]
+        - Call [OneString]
+          - MethodReference (this) [Tokenizer::getTokenType]
+      - Comment: "\n"
+      - If
+        - Binary: == [any]
+          - LocalVar: charType [OneString]
+          - StaticField: Whitespace [OneString]
+            - ClassReference [TokenType]
+        Then
+          - While
+              - Binary: == [any]
+                - Call [OneString]
+                  - MethodReference (this) [Tokenizer::getTokenType]
+                - StaticField: Whitespace [OneString]
+                  - ClassReference [TokenType]
+            Body
+              - ExpressionStatement
+                - Unary (postfix): ++ [any]
+                  - InstanceField (this): offset [OneNumber]
+        Else
+          - If
+            - Binary: == [any]
+              - LocalVar: charType [OneString]
+              - StaticField: Identifier [OneString]
+                - ClassReference [TokenType]
+            Then
+              - Variable: startOffset [OneNumber]
+                - InstanceField (this): offset [OneNumber]
+              - While
+                  - Binary: == [any]
+                    - Call [OneString]
+                      - MethodReference (this) [Tokenizer::getTokenType]
+                    - StaticField: Identifier [OneString]
+                      - ClassReference [TokenType]
+                Body
+                  - ExpressionStatement
+                    - Unary (postfix): ++ [any]
+                      - InstanceField (this): offset [OneNumber]
+              - Variable: identifier [OneString]
+                - Call [OneString]
+                  - MethodReference [OneString::substring]
+                    - InstanceField (this): text [OneString]
+                  - LocalVar: startOffset [OneNumber]
+                  - InstanceField (this): offset [OneNumber]
+              - ExpressionStatement
+                - Call [void]
+                  - MethodReference [OneArray<T>::add]
+                    - LocalVar: result [OneArray<Token>]
+                  - New Token [Token]
+            Else
+              - Variable: op [OneString]
+                - Literal (string): "" [OneString]
+              - Foreach currOp: OneString
+                Items
+                  - InstanceField (this): operators [OneArray<OneString>]
+                Body
+                  - If
+                    - Call [OneBoolean]
+                      - MethodReference (static) [StringHelper::startsWithAtIndex]
+                      - InstanceField (this): text [OneString]
+                      - LocalVar: currOp [OneString]
+                      - InstanceField (this): offset [OneNumber]
+                    Then
+                      - ExpressionStatement
+                        - Binary: = [any]
+                          - LocalVar: op [OneString]
+                          - LocalVar: currOp [OneString]
+                      - Break
+                    Else
+              - Comment: "\n"
+              - If
+                - Binary: == [any]
+                  - LocalVar: op [OneString]
+                  - Literal (string): "" [OneString]
+                Then
+                  - Return
+                    - Literal (null): "null" [any]
+                Else
+              - Comment: "\n"
+              - ExpressionStatement
+                - Binary: += [any]
+                  - InstanceField (this): offset [OneNumber]
+                  - InstanceField: length [OneNumber]
+                    - LocalVar: op [OneString]
+              - ExpressionStatement
+                - Call [void]
+                  - MethodReference [OneArray<T>::add]
+                    - LocalVar: result [OneArray<Token>]
+                  - New Token [Token]
+  - Comment: "\n"
+  - Return
+    - LocalVar: result [OneArray<Token>]
+
+TestClass::testMethod(): void
+  - Variable: operators [OneArray<OneString>]
+    - ArrayLiteral [OneArray<OneString>]
+      - Literal (string): "<<" [OneString]
+      - Literal (string): ">>" [OneString]
+      - Literal (string): "++" [OneString]
+      - Literal (string): "--" [OneString]
+      - Literal (string): "==" [OneString]
+      - Literal (string): "!=" [OneString]
+      - Literal (string): "!" [OneString]
+      - Literal (string): "<" [OneString]
+      - Literal (string): ">" [OneString]
+      - Literal (string): "=" [OneString]
+      - Literal (string): "(" [OneString]
+      - Literal (string): ")" [OneString]
+      - Literal (string): "[" [OneString]
+      - Literal (string): "]" [OneString]
+      - Literal (string): "{" [OneString]
+      - Literal (string): "}" [OneString]
+      - Literal (string): ";" [OneString]
+      - Literal (string): "+" [OneString]
+      - Literal (string): "-" [OneString]
+      - Literal (string): "*" [OneString]
+      - Literal (string): "/" [OneString]
+      - Literal (string): "&&" [OneString]
+      - Literal (string): "&" [OneString]
+      - Literal (string): "%" [OneString]
+      - Literal (string): "||" [OneString]
+      - Literal (string): "|" [OneString]
+      - Literal (string): "^" [OneString]
+      - Literal (string): "," [OneString]
+      - Literal (string): "." [OneString]
+  - Comment: "\n"
+  - Variable: input [OneString]
+    - Literal (string): "hello * 5" [OneString]
+  - Variable: tokenizer [Tokenizer]
+    - New Tokenizer [Tokenizer]
+  - Variable: result [OneArray<Token>]
+    - Call [OneArray<Token>]
+      - MethodReference [Tokenizer::tokenize]
+        - LocalVar: tokenizer [Tokenizer]
+  - Comment: "\n"
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [OneConsole::print]
+      - Literal (string): "token count:" [OneString]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [OneConsole::print]
+      - InstanceField: length [OneNumber]
+        - LocalVar: result [OneArray<Token>]
+  - Foreach item: Token
+    Items
+      - LocalVar: result [OneArray<Token>]
+    Body
+      - ExpressionStatement
+        - Call [void]
+          - MethodReference (static) [OneConsole::print]
+          - Binary: + [any]
+            - Binary: + [any]
+              - Binary: + [any]
+                - InstanceField: value [OneString]
+                  - LocalVar: item [Token]
+                - Literal (string): "(" [OneString]
+              - Parenthesized [OneString]
+                - Conditional [OneString]
+                  - InstanceField: isOperator [OneBoolean]
+                    - LocalVar: item [Token]
+                  - Literal (string): "op" [OneString]
+                  - Literal (string): "id" [OneString]
+            - Literal (string): ")" [OneString]
+

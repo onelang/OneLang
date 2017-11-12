@@ -1,0 +1,285 @@
+TestClass::mapTest(): TsNumber
+  - Variable: mapObj
+    - MapLiteral
+      - Variable: x
+        - Literal (numeric): "5"
+      - Variable: y
+        - Literal (numeric): "3"
+  - Comment: "\n//let containsX = "x" in mapObj;\n"
+  - ExpressionStatement
+    - Binary: =
+      - ElementAccess
+        - Identifier: mapObj
+        - Literal (string): "z"
+      - Literal (numeric): "9"
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.delete)
+        - Identifier: mapObj
+      - Literal (string): "x"
+  - Comment: "\n"
+  - Variable: keysVar
+    - Call
+      - PropertyAccess (.keys)
+        - Identifier: Object
+      - Identifier: mapObj
+  - Variable: valuesVar
+    - Call
+      - PropertyAccess (.values)
+        - Identifier: Object
+      - Identifier: mapObj
+  - Return
+    - ElementAccess
+      - Identifier: mapObj
+      - Literal (string): "z"
+
+TestClass::explicitTypeTest(): void
+  - Variable: op [TsString]
+    - Literal (string): ""
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - PropertyAccess (.length)
+        - Identifier: op
+
+TestClass::ifTest(x: TsNumber): TsString
+  - Variable: result
+    - Literal (string): "<unk>"
+  - Comment: "\n"
+  - If
+    - Binary: >
+      - Identifier: x
+      - Literal (numeric): "3"
+    Then
+      - ExpressionStatement
+        - Binary: =
+          - Identifier: result
+          - Literal (string): "hello"
+    Else
+      - If
+        - Binary: <
+          - Identifier: x
+          - Literal (numeric): "1"
+        Then
+          - ExpressionStatement
+            - Binary: =
+              - Identifier: result
+              - Literal (string): "bello"
+        Else
+          - If
+            - Binary: <
+              - Identifier: x
+              - Literal (numeric): "0"
+            Then
+              - ExpressionStatement
+                - Binary: =
+                  - Identifier: result
+                  - Literal (string): "bello2"
+            Else
+              - ExpressionStatement
+                - Binary: =
+                  - Identifier: result
+                  - Literal (string): "???"
+  - Comment: "\n"
+  - If
+    - Binary: >
+      - Identifier: x
+      - Literal (numeric): "3"
+    Then
+      - ExpressionStatement
+        - Binary: =
+          - Identifier: result
+          - Literal (string): "z"
+    Else
+  - Comment: "\n"
+  - If
+    - Binary: >
+      - Identifier: x
+      - Literal (numeric): "3"
+    Then
+      - ExpressionStatement
+        - Binary: =
+          - Identifier: result
+          - Literal (string): "x"
+    Else
+      - ExpressionStatement
+        - Binary: =
+          - Identifier: result
+          - Literal (string): "y"
+  - Comment: "\n"
+  - Return
+    - Identifier: result
+
+TestClass::arrayTest(): void
+  - Comment: "//const c2 = new Class2();\n\n"
+  - Variable: mutableArr
+    - ArrayLiteral
+      - Literal (numeric): "1"
+      - Literal (numeric): "2"
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.push)
+        - Identifier: mutableArr
+      - Literal (numeric): "3"
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.push)
+        - Identifier: mutableArr
+      - Literal (numeric): "4"
+  - Comment: "// mutableArr.push(c2.property);\n// mutableArr.push(c2.child.property);\n// mutableArr.push(c2.child.child.property);\n\n"
+  - Variable: constantArr
+    - ArrayLiteral
+      - Literal (numeric): "5"
+      - Literal (numeric): "6"
+  - Comment: "\n// some comment\n//   some comment line 2\n"
+  - Foreach item: undefined
+    Items
+      - Identifier: mutableArr
+    Body
+      - ExpressionStatement
+        - Call
+          - PropertyAccess (.log)
+            - Identifier: console
+          - Identifier: item
+  - Comment: "\n/* some other comment\n   multiline and stuff\n*/\n"
+  - For ("i")
+    Var
+    - Variable: i
+      - Literal (numeric): "0"
+    Condition
+      - Binary: <
+        - Identifier: i
+        - PropertyAccess (.length)
+          - Identifier: constantArr
+    Incrementor
+      - Unary (postfix): ++
+        - Identifier: i
+    Body
+      - ExpressionStatement
+        - Call
+          - PropertyAccess (.log)
+            - Identifier: console
+          - ElementAccess
+            - Identifier: constantArr
+            - Identifier: i
+
+TestClass::calc(): TsNumber
+  - Return
+    - Binary: *
+      - Parenthesized
+        - Binary: +
+          - Literal (numeric): "1"
+          - Literal (numeric): "2"
+      - Literal (numeric): "3"
+
+TestClass::methodWithArgs(arg1: TsNumber, arg2: TsNumber, arg3: TsNumber): TsNumber
+  - Variable: stuff
+    - Binary: +
+      - Binary: +
+        - Identifier: arg1
+        - Identifier: arg2
+      - Binary: *
+        - Identifier: arg3
+        - Call
+          - PropertyAccess (.calc)
+            - Identifier: this
+  - Return
+    - Identifier: stuff
+
+TestClass::stringTest(): TsString
+  - Variable: x
+    - Literal (string): "x"
+  - Variable: y
+    - Literal (string): "y"
+  - Comment: "\n"
+  - Variable: z
+    - Literal (string): "z"
+  - ExpressionStatement
+    - Binary: +=
+      - Identifier: z
+      - Literal (string): "Z"
+  - ExpressionStatement
+    - Binary: +=
+      - Identifier: z
+      - Identifier: x
+  - Comment: "\n"
+  - Return
+    - Binary: +
+      - Binary: +
+        - Binary: +
+          - Identifier: z
+          - Literal (string): "|"
+        - Identifier: x
+      - Identifier: y
+
+TestClass::reverseString(str: TsString): TsString
+  - Variable: result
+    - Literal (string): ""
+  - For ("i")
+    Var
+    - Variable: i
+      - Binary: -
+        - PropertyAccess (.length)
+          - Identifier: str
+        - Literal (numeric): "1"
+    Condition
+      - Binary: >=
+        - Identifier: i
+        - Literal (numeric): "0"
+    Incrementor
+      - Unary (postfix): --
+        - Identifier: i
+    Body
+      - ExpressionStatement
+        - Binary: +=
+          - Identifier: result
+          - ElementAccess
+            - Identifier: str
+            - Identifier: i
+  - Return
+    - Identifier: result
+
+TestClass::getBoolResult(value: TsBoolean): TsBoolean
+  - Return
+    - Identifier: value
+
+TestClass::testMethod(): void
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.arrayTest)
+        - Identifier: this
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - Call
+        - PropertyAccess (.mapTest)
+          - Identifier: this
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - Call
+        - PropertyAccess (.stringTest)
+          - Identifier: this
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - Call
+        - PropertyAccess (.reverseString)
+          - Identifier: this
+        - Literal (string): "print value"
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - Conditional
+        - Call
+          - PropertyAccess (.getBoolResult)
+            - Identifier: this
+          - Literal (boolean): true
+        - Literal (string): "true"
+        - Literal (string): "false"
+

@@ -1,0 +1,8 @@
+TestClass::testMethod(): void
+  - Variable: map [OneMap<OneString, any>]
+    - MapLiteral [OneMap<OneString, any>]
+  - Variable: keys [OneArray<OneString>]
+    - Call [OneArray<OneString>]
+      - MethodReference [OneMap<K, V>::keys]
+        - LocalVar: map [OneMap<OneString, any>]
+

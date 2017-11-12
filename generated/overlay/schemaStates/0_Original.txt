@@ -1,0 +1,136 @@
+TsMapOperators::op_in(left: K, right: TsMap<K, V>): TsBoolean
+  - Return
+    - Call
+      - PropertyAccess (.hasKey)
+        - PropertyAccess (._one)
+          - Identifier: right
+      - Identifier: left
+
+console::log(data: any): void [static]
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.print)
+        - Identifier: OneConsole
+      - Identifier: data
+
+Object::keys(map: OneMap<K, V>): OneArray<K> [static]
+  - Return
+    - Call
+      - PropertyAccess (.keys)
+        - Identifier: map
+
+Object::values(map: OneMap<K, V>): OneArray<V> [static]
+  - Return
+    - Call
+      - PropertyAccess (.values)
+        - Identifier: map
+
+TsArray::_one: OneArray<T>
+TsArray::length: TsNumber
+  - Return
+    - PropertyAccess (.length)
+      - PropertyAccess (._one)
+        - Identifier: this
+TsArray::push(item: T): void
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.add)
+        - PropertyAccess (._one)
+          - Identifier: this
+      - Identifier: item
+
+TsArray::get(index: TsNumber): void
+  - Return
+    - Call
+      - PropertyAccess (.get)
+        - PropertyAccess (._one)
+          - Identifier: this
+      - Identifier: index
+
+TsArray::set(index: TsNumber, value: T): void
+  - Return
+    - Call
+      - PropertyAccess (.set)
+        - PropertyAccess (._one)
+          - Identifier: this
+      - Identifier: index
+      - Identifier: value
+
+TsMap::_one: OneMap<K, V>
+TsMap::get(key: K): void
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.get)
+        - PropertyAccess (._one)
+          - Identifier: this
+      - Identifier: key
+
+TsMap::set(key: K, value: V): void
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.set)
+        - PropertyAccess (._one)
+          - Identifier: this
+      - Identifier: key
+      - Identifier: value
+
+TsMap::delete(key: K): void
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.remove)
+        - PropertyAccess (._one)
+          - Identifier: this
+      - Identifier: key
+
+TsString::_one: OneString
+TsString::length: OneNumber
+  - Return
+    - PropertyAccess (.length)
+      - PropertyAccess (._one)
+        - Identifier: this
+TsString::get(idx: TsNumber): OneString
+  - Return
+    - Call
+      - PropertyAccess (.get)
+        - PropertyAccess (._one)
+          - Identifier: this
+      - Identifier: idx
+
+TsString::substring(start: TsNumber, end: TsNumber): OneString
+  - Return
+    - Call
+      - PropertyAccess (.substring)
+        - PropertyAccess (._one)
+          - Identifier: this
+      - Identifier: start
+      - Identifier: end
+
+TsString::substr(start: TsNumber, length: TsNumber): OneString
+  - Return
+    - Call
+      - PropertyAccess (.substring)
+        - PropertyAccess (._one)
+          - Identifier: this
+      - Identifier: start
+      - Binary: +
+        - Identifier: start
+        - Identifier: length
+
+TsString::split(separator: TsString): OneArray<OneString>
+  - Return
+    - Call
+      - PropertyAccess (.split)
+        - PropertyAccess (._one)
+          - Identifier: this
+      - Identifier: separator
+
+TsString::startsWith(str: TsString): OneBoolean
+  - Return
+    - Call
+      - PropertyAccess (.startsWith)
+        - PropertyAccess (._one)
+          - Identifier: this
+      - Identifier: str
+
+TsNumber::_one: OneNumber
+TsBoolean::_one: OneBoolean

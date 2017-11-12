@@ -1,0 +1,38 @@
+TestClass::reverseString(str: TsString): TsString
+  - Variable: result [TsString]
+    - Literal (string): "" [TsString]
+  - For ("i")
+    Var
+    - Variable: i [any]
+      - Binary: - [any]
+        - InstanceField: length [OneNumber]
+          - MethodArgument: str [TsString]
+        - Literal (numeric): "1" [TsNumber]
+    Condition
+      - Binary: >= [any]
+        - LocalVar: i [any]
+        - Literal (numeric): "0" [TsNumber]
+    Incrementor
+      - Unary (postfix): -- [any]
+        - LocalVar: i [any]
+    Body
+      - ExpressionStatement
+        - Binary: += [any]
+          - LocalVar: result [TsString]
+          - Call [OneString]
+            - MethodReference [TsString::get]
+              - MethodArgument: str [TsString]
+            - LocalVar: i [any]
+  - Return
+    - LocalVar: result [TsString]
+
+TestClass::testMethod(): TsString
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - Call [TsString]
+        - MethodReference (this) [TestClass::reverseString]
+        - Literal (string): "print value" [TsString]
+  - Return
+    - Literal (string): "return value" [TsString]
+

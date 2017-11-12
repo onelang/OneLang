@@ -1,0 +1,8 @@
+ArrayTestClass::arrayTest(): void
+  - Variable: constantArr [OneArray<OneNumber>]
+    - ArrayLiteral [OneArray<OneNumber>]
+      - Literal (numeric): "5" [OneNumber]
+  - Return
+    - InstanceField: length [OneNumber]
+      - LocalVar: constantArr [OneArray<OneNumber>]
+

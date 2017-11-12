@@ -1,0 +1,48 @@
+TestClass::testMethod(): TsString
+  - Variable: x
+    - Literal (string): "x"
+  - Variable: y
+    - Literal (string): "y"
+  - Comment: "\n"
+  - Variable: z
+    - Literal (string): "z"
+  - ExpressionStatement
+    - Binary: +=
+      - Identifier: z
+      - Literal (string): "Z"
+  - ExpressionStatement
+    - Binary: +=
+      - Identifier: z
+      - Identifier: x
+  - Comment: "\n"
+  - Variable: a
+    - Call
+      - PropertyAccess (.substring)
+        - Literal (string): "abcdef"
+      - Literal (numeric): "2"
+      - Literal (numeric): "4"
+  - Variable: arr
+    - Call
+      - PropertyAccess (.split)
+        - Literal (string): "ab  cd ef"
+      - Literal (string): " "
+  - Comment: "\n"
+  - Return
+    - Binary: +
+      - Binary: +
+        - Binary: +
+          - Binary: +
+            - Binary: +
+              - Binary: +
+                - Binary: +
+                  - Identifier: z
+                  - Literal (string): "|"
+                - Identifier: x
+              - Identifier: y
+            - Literal (string): "|"
+          - Identifier: a
+        - Literal (string): "|"
+      - ElementAccess
+        - Identifier: arr
+        - Literal (numeric): "2"
+

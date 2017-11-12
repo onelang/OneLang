@@ -1,0 +1,18 @@
+MapTestClass::mapTest(): void
+  - Variable: mapObj [OneMap<OneString, OneNumber>]
+    - MapLiteral [OneMap<OneString, OneNumber>]
+      - Variable: x [OneNumber]
+        - Literal (numeric): "5" [OneNumber]
+  - Comment: "//let containsX = "x" in mapObj;\n//delete mapObj["x"];\n"
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference [OneMap<K, V>::set]
+        - LocalVar: mapObj [OneMap<OneString, OneNumber>]
+      - Literal (string): "x" [OneString]
+      - Literal (numeric): "3" [OneNumber]
+  - Return
+    - Call [V]
+      - MethodReference [OneMap<K, V>::get]
+        - LocalVar: mapObj [OneMap<OneString, OneNumber>]
+      - Literal (string): "x" [OneString]
+

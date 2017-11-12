@@ -1,0 +1,9 @@
+TestClass::testMethod(): void
+  - Variable: op [OneString]
+    - Literal (null): "null" [any]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [OneConsole::print]
+      - InstanceField: length [OneNumber]
+        - LocalVar: op [OneString]
+
