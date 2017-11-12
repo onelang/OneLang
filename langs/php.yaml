@@ -17,7 +17,7 @@ classes:
   OneConsole:
     methods:
       print:
-        template: 'print({{str}} . "\n")'
+        template: 'print(({{str}}) . "\n")'
   OneArray:
     fields:
       length:

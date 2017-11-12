@@ -239,7 +239,7 @@ class CodeGeneratorModel {
 
             const cls = <one.ClassReference> callExpr.cls;
             const methodRef = cls.classRef.constructor;
-            const methodArgs = methodRef.parameters;
+            const methodArgs = methodRef ? methodRef.parameters : [];
             if (!methodArgs)
                 throw new Error(`Method implementation is not found: ${methodRef.metaPath} for ${this.generator.lang.extension}`);
 

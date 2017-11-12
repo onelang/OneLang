@@ -52,7 +52,7 @@ export class TypeScriptParser {
             const typeRef = <ts.TypeReferenceNode> tsType;
             const typeText = typeRef.typeName.getText();
             
-            if (this.currClass.typeArguments.includes(typeText) || this.currMethod.typeArguments.includes(typeText)) {
+            if (this.currClass.typeArguments.includes(typeText) || (this.currMethod && this.currMethod.typeArguments.includes(typeText))) {
                 result = one.Type.Generics(typeText);
             } else {
                 const typeArgs = typeRef.typeArguments;
