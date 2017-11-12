@@ -136,6 +136,8 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         // TODO: really big hack... 
         if (expr.left.valueType.isNumber && expr.right.valueType.isNumber) 
             expr.valueType = one.Type.Class("OneNumber");
+        else if (expr.left.valueType.isBoolean && expr.right.valueType.isBoolean)
+            expr.valueType = one.Type.Class("OneBoolean");
         else if (expr.left.valueType.isString) 
             expr.valueType = one.Type.Class("OneString");
     }

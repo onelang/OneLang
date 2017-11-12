@@ -298,6 +298,10 @@ class CodeGeneratorModel {
             const opGen = this.operatorGenerators[opGenName];
             if (opGen)
                 return opGen.call(this, binaryExpr.left, binaryExpr.right);
+
+            const fullName = `Binary${binaryExpr.operator}`;
+            if (this.expressionGenerators[fullName])
+                genName = fullName;
         } else if (type === one.StatementType.VariableDeclaration) {
             const varDecl = <one.VariableDeclaration> obj;
             const initType = varDecl.initializer.exprKind;

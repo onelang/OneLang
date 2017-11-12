@@ -130,6 +130,8 @@ expressions:
   nullLiteral: "None"
   return: "return {{gen(expr.expression)}}"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
+  binary&&: "{{gen(expr.left)}} and {{gen(expr.right)}}"
+  binary||: "{{gen(expr.left)}} or {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
   postfix++: "{{gen(expr.operand)}} += 1"
   postfix--: "{{gen(expr.operand)}} -= 1"
