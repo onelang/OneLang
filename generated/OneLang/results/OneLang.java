@@ -20,14 +20,14 @@ class Token {
 }
 
 class StringHelper {
-    public static boolean startsWithAtIndex(String str, String substr, Integer idx) throws Exception
+    public static boolean startsWithAtIndex(String str, String substr, int idx) throws Exception
     {
         return str.substring(idx, idx + substr.length()) == substr;
     }
 }
 
 class Tokenizer {
-    public Integer offset = 0;
+    public int offset = 0;
     public String text;
     public List<String> operators;
 
@@ -58,7 +58,7 @@ class Tokenizer {
                     this.offset++;
                 }
             } else if (char_type == TokenType.identifier) {
-                Integer start_offset = this.offset;
+                int start_offset = this.offset;
                 while (this.getTokenType() == TokenType.identifier) {
                     this.offset++;
                 }

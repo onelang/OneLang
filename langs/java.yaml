@@ -22,7 +22,7 @@ classes:
       get:
         template: "{{self}}.charAt({{idx}})"
   OneNumber:
-    type: Integer
+    type: int
   OneBoolean:
     type: boolean
   OneConsole:

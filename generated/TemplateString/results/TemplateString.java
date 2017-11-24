@@ -2,7 +2,7 @@ class TestClass {
     public void testMethod() throws Exception
     {
         String str_val = "str";
-        Integer num = 1337;
+        int num = 1337;
         boolean b = true;
         Object result = "before " + str_val + ", num: " + num + ", true: " + b + " after";
         System.out.println(result);

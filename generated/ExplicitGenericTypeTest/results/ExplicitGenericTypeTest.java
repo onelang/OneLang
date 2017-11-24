@@ -5,7 +5,7 @@ class TestClass {
     public void testMethod() throws Exception
     {
         List<String> result = new ArrayList<String>(Arrays.asList());
-        HashMap<String, Integer> map = new HashMap<String, Integer>();
+        HashMap<String, int> map = new HashMap<String, int>();
         map.put("x", 5);
         List<String> keys = new ArrayList(map.keySet());
         System.out.println(result);

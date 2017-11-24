@@ -3,7 +3,7 @@ import java.util.HashMap;
 class MapTestClass {
     public void mapTest() throws Exception
     {
-        HashMap<String, Integer> map_obj = new HashMap<String, Integer>();
+        HashMap<String, int> map_obj = new HashMap<String, int>();
         map_obj.put("x", 5);
         //let containsX = "x" in mapObj;
         //delete mapObj["x"];

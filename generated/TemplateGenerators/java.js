@@ -201,7 +201,7 @@
         
         OneNumber: {
             typeGenerator(typeArgs, ...args) {
-                return tmpl`Integer`;
+                return tmpl`int`;
             },
         
             methods: {

@@ -2,7 +2,7 @@ class TestClass {
     public void testMethod() throws Exception
     {
         String str = "a1A";
-        for (Integer i = 0; i < str.length(); i++) {
+        for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
             String is_upper = "A" <= c && c <= "Z";
             String is_lower = "a" <= c && c <= "z";

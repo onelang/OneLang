@@ -2,7 +2,7 @@ class TestClass {
     public String reverseString(String str) throws Exception
     {
         String result = "";
-        for (Integer i = str.length() - 1; i >= 0; i--) {
+        for (int i = str.length() - 1; i >= 0; i--) {
             result += str.charAt(i);
         }
         return result;
