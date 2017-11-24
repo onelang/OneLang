@@ -7,7 +7,7 @@ public class TestClass
         var str = "a1A";
         for (var i = 0; i < str.Length; i++)
         {
-            var c = str.Substring(i, 1);
+            var c = str[i];
             var isUpper = "A" <= c && c <= "Z";
             var isLower = "a" <= c && c <= "z";
             var isNumber = "0" <= c && c <= "9";

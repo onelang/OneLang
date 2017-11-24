@@ -8,7 +8,7 @@ class TestClass {
             $is_upper = "A" <= $c && $c <= "Z";
             $is_lower = "a" <= $c && $c <= "z";
             $is_number = "0" <= $c && $c <= "9";
-            print(($is_upper ? "upper" : $is_lower ? "lower" : $is_number ? "number" : "other") . "\n");
+            print(($is_upper ? "upper" : ($is_lower ? "lower" : ($is_number ? "number" : ("other")))) . "\n");
         }
     }
 }

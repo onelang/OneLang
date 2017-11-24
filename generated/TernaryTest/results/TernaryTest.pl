@@ -19,7 +19,7 @@ sub getResult {
 
 sub testMethod {
     my ( $self ) = @_;
-    print($self->getResult() ? "true" : "false" . "\n");
+    print(($self->getResult() ? "true" : "false") . "\n");
 }
 
 package Program;

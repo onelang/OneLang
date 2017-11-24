@@ -109,7 +109,7 @@
         },
         
         Conditional(expr, ...args) {
-            return tmpl`${this.gen(expr.condition)} ? ${this.gen(expr.whenTrue)} : ${this.gen(expr.whenFalse)}`;
+            return tmpl`${this.gen(expr.condition)} ? ${this.gen(expr.whenTrue)} : (${this.gen(expr.whenFalse)})`;
         },
         
         Break(expr, ...args) {

@@ -6,7 +6,7 @@ class TestClass {
     }
     
     function testMethod() {
-        print(($this->getResult() ? "true" : "false") . "\n");
+        print(($this->getResult() ? "true" : ("false")) . "\n");
     }
 }
 

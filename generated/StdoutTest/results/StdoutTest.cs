@@ -7,7 +7,7 @@ public class TestClass
         var result = "";
         for (var i = str.Length - 1; i >= 0; i--)
         {
-            result += str.Substring(i, 1);
+            result += str[i];
         }
         return result;
     }

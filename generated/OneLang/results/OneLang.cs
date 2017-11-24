@@ -50,7 +50,7 @@ public class Tokenizer
         }
         
         
-        var c = this.Text.Substring(this.Offset, 1);
+        var c = this.Text[this.Offset];
         return c == " " || c == "\n" || c == "\t" || c == "\r" ? TokenType.Whitespace : ("A" <= c && c <= "Z") || ("a" <= c && c <= "z") || ("0" <= c && c <= "9") || c == "_" ? TokenType.Identifier : TokenType.OperatorX;
     }
     

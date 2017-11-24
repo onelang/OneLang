@@ -183,7 +183,7 @@
                 },
                 
                 get(self, typeArgs, idx, ...args) {
-                    return tmpl`${self}.Substring(${idx}, 1)`;
+                    return tmpl`${self}[${idx}]`;
                 },
             },
         

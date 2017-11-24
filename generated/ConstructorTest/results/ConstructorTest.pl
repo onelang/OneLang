@@ -31,7 +31,7 @@ sub new
 sub testMethod {
     my ( $self ) = @_;
     my $test = new ConstructorTest(3);
-    print($test->{field2} . "\n");
+    print(($test->{field2}) . "\n");
 }
 
 package Program;

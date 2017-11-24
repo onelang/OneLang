@@ -230,7 +230,7 @@ TestClass::reverseString(str: TsString): TsString
       - ExpressionStatement
         - Binary: += [any]
           - LocalVar: result [TsString]
-          - Call [OneString]
+          - Call [OneCharacter]
             - MethodReference [TsString::get]
               - MethodArgument: str [TsString]
             - LocalVar: i [any]

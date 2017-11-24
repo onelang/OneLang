@@ -24,11 +24,14 @@ declare class OneMap<K, V> {
     values(): OneArray<V>;
 }
 
+declare class OneCharacter {
+}
+
 declare class OneString {
     length: OneNumber;
     substring(start: number, end: number): OneString;
     split(separator: string): OneArray<OneString>;
-    get(idx: number): OneString;
+    get(idx: number): OneCharacter;
     startsWith(str: string): OneBoolean;
 }
 

@@ -42,7 +42,7 @@ class Tokenizer {
             return TokenType.end_token;
         }
         
-        String c = this.text.substring(this.offset, this.offset + 1);
+        char c = this.text.charAt(this.offset);
         return c == " " || c == "\n" || c == "\t" || c == "\r" ? TokenType.whitespace : ("A" <= c && c <= "Z") || ("a" <= c && c <= "z") || ("0" <= c && c <= "9") || c == "_" ? TokenType.identifier : TokenType.operator_x;
     }
     

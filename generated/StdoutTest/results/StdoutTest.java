@@ -3,7 +3,7 @@ class TestClass {
     {
         String result = "";
         for (Integer i = str.length() - 1; i >= 0; i--) {
-            result += str.substring(i, i + 1);
+            result += str.charAt(i);
         }
         return result;
     }

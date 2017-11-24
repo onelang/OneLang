@@ -19,8 +19,8 @@ sub testMethod {
       x => 5,
     );
     my @keys = keys %map;
-    print(@result . "\n");
-    print(@keys . "\n");
+    print((@result) . "\n");
+    print((@keys) . "\n");
 }
 
 package Program;

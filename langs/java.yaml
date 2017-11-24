@@ -6,6 +6,8 @@ primitiveTypes:
   any: Object
   void: void
 classes:
+  OneCharacter:
+    type: char
   OneString:
     type: String
     fields:
@@ -18,7 +20,7 @@ classes:
         includes: [java.util.Arrays]
         template: "Arrays.asList({{self}}.split({{separator}}))"
       get:
-        template: "{{self}}.substring({{idx}}, {{idx}} + 1)"
+        template: "{{self}}.charAt({{idx}})"
   OneNumber:
     type: Integer
   OneBoolean:

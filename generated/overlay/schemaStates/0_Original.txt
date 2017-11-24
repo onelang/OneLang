@@ -88,7 +88,7 @@ TsString::length: OneNumber
     - PropertyAccess (.length)
       - PropertyAccess (._one)
         - Identifier: this
-TsString::get(idx: TsNumber): OneString
+TsString::get(idx: TsNumber): OneCharacter
   - Return
     - Call
       - PropertyAccess (.get)

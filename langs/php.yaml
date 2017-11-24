@@ -151,7 +151,7 @@ expressions:
   trueLiteral: "TRUE"
   elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
   thisReference: "$this"
-  conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : {{gen(expr.whenFalse)}}"
+  conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : ({{gen(expr.whenFalse)}})"
   break: break;
   templateString: |-
     "

@@ -70,9 +70,9 @@ TsString::_one: OneString
 TsString::length: OneNumber
   - Return
     - InstanceField (this): length [OneNumber]
-TsString::get(idx: TsNumber): OneString
+TsString::get(idx: TsNumber): OneCharacter
   - Return
-    - Call [OneString]
+    - Call [OneCharacter]
       - MethodReference (this) [OneString::get]
       - MethodArgument: idx [TsNumber]
 

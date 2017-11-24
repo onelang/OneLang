@@ -159,6 +159,20 @@
     },
 
     classGenerators: {
+        OneCharacter: {
+            typeGenerator(typeArgs, ...args) {
+                return tmpl`char`;
+            },
+        
+            methods: {
+                
+            },
+        
+            fields: {
+                
+            }
+        },
+        
         OneString: {
             typeGenerator(typeArgs, ...args) {
                 return tmpl`String`;
@@ -174,7 +188,7 @@
                 },
                 
                 get(self, typeArgs, idx, ...args) {
-                    return tmpl`${self}.substring(${idx}, ${idx} + 1)`;
+                    return tmpl`${self}.charAt(${idx})`;
                 },
             },
         

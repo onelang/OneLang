@@ -15,7 +15,7 @@ sub new
 sub testMethod {
     my ( $self ) = @_;
     my $op = undef;
-    print(length($op) . "\n");
+    print((length($op)) . "\n");
 }
 
 package Program;

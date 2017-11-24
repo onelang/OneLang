@@ -194,7 +194,7 @@
         
             methods: {
                 print(self, typeArgs, str, ...args) {
-                    return tmpl`print(${str} . "\\n")`;
+                    return tmpl`print((${str}) . "\\n")`;
                 },
             },
         
@@ -288,6 +288,14 @@
     operatorGenerators: {
         "OneString + OneString"(left, right, ...args) {
             return tmpl`${this.gen(left)} . ${this.gen(right)}`;
+        },
+        
+        "OneString <= OneCharacter"(left, right, ...args) {
+            return tmpl`${this.gen(left)} le ${this.gen(right)}`;
+        },
+        
+        "OneCharacter <= OneString"(left, right, ...args) {
+            return tmpl`${this.gen(left)} le ${this.gen(right)}`;
         },
         
         "OneString + OneNumber"(left, right, ...args) {

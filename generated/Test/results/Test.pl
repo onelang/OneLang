@@ -31,7 +31,7 @@ sub mapTest {
 sub explicitTypeTest {
     my ( $self ) = @_;
     my $op = "";
-    print(length($op) . "\n");
+    print((length($op)) . "\n");
 }
 
 sub ifTest {
@@ -79,13 +79,13 @@ sub arrayTest {
     # some comment
     #   some comment line 2
     foreach my $item (@mutable_arr) {
-        print($item . "\n");
+        print(($item) . "\n");
     }
     
     # some other comment
     # multiline and stuff
     for (my $i = 0; $i < scalar(@constant_arr); $i++) {
-        print($constant_arr[$i] . "\n");
+        print(($constant_arr[$i]) . "\n");
     }
 }
 
@@ -116,7 +116,7 @@ sub reverseString {
     my ( $self, $str ) = @_;
     my $result = "";
     for (my $i = length($str) - 1; $i >= 0; $i--) {
-        $result .= substr $str, $i, 1;
+        $result += substr $str, $i, 1;
     }
     return $result;
 }
@@ -129,10 +129,10 @@ sub getBoolResult {
 sub testMethod {
     my ( $self ) = @_;
     $self->arrayTest();
-    print($self->mapTest() . "\n");
-    print($self->stringTest() . "\n");
-    print($self->reverseString("print value") . "\n");
-    print($self->getBoolResult(1) ? "true" : "false" . "\n");
+    print(($self->mapTest()) . "\n");
+    print(($self->stringTest()) . "\n");
+    print(($self->reverseString("print value")) . "\n");
+    print(($self->getBoolResult(1) ? "true" : "false") . "\n");
 }
 
 package Program;

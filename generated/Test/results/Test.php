@@ -96,7 +96,7 @@ class TestClass {
     function reverseString($str) {
         $result = "";
         for ($i = strlen($str) - 1; $i >= 0; $i--) {
-            $result .= $str[$i];
+            $result += $str[$i];
         }
         return $result;
     }
@@ -110,7 +110,7 @@ class TestClass {
         print(($this->mapTest()) . "\n");
         print(($this->stringTest()) . "\n");
         print(($this->reverseString("print value")) . "\n");
-        print(($this->getBoolResult(TRUE) ? "true" : "false") . "\n");
+        print(($this->getBoolResult(TRUE) ? "true" : ("false")) . "\n");
     }
 }
 

@@ -15,9 +15,9 @@ global["debugOn"] = false;
 let prgNames = ["CharacterTest"];
 const runPrg = false;
 const langFilter = "";
-const runAll = true;
+const compileAll = true;
 
-if (runAll)
+if (compileAll)
     prgNames = fs.readdirSync("input").filter(x => x.endsWith(".ts")).map(x => x.replace(".ts", ""));
 
 for (const prgName of prgNames) {
@@ -62,7 +62,7 @@ for (const prgName of prgNames) {
         console.log(" === DONE === ", results.every(x => x));
     }
     
-    if (runPrg && !runAll)
+    if (runPrg && !compileAll)
         executeCodes();
 }
 

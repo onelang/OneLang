@@ -20,7 +20,7 @@ classes:
       split:
         template: "{{self}}.Split(new[]{ {{separator}} }, StringSplitOptions.None)"
       get:
-        template: "{{self}}.Substring({{idx}}, 1)"
+        template: "{{self}}[{{idx}}]"
   OneNumber:
     type: int
   OneBoolean:

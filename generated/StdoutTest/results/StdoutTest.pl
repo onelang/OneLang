@@ -16,14 +16,14 @@ sub reverseString {
     my ( $self, $str ) = @_;
     my $result = "";
     for (my $i = length($str) - 1; $i >= 0; $i--) {
-        $result .= substr $str, $i, 1;
+        $result += substr $str, $i, 1;
     }
     return $result;
 }
 
 sub testMethod {
     my ( $self ) = @_;
-    print($self->reverseString("print value") . "\n");
+    print(($self->reverseString("print value")) . "\n");
     return "return value";
 }
 

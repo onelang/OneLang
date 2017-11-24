@@ -17,7 +17,7 @@ classes:
   OneConsole:
     methods:
       print:
-        template: 'print({{str}} . "\n")'
+        template: 'print(({{str}}) . "\n")'
   OneArray:
     fields:
       length:
@@ -54,6 +54,10 @@ classes:
 operators:
   OneString + OneString:
     template: "{{gen(left)}} . {{gen(right)}}"
+  OneString <= OneCharacter:
+    template: "{{gen(left)}} le {{gen(right)}}"
+  OneCharacter <= OneString:
+    template: "{{gen(left)}} le {{gen(right)}}"
   OneString + OneNumber:
     template: "{{gen(left)}} . {{gen(right)}}"
   OneString + OneBoolean:

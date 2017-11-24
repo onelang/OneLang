@@ -39,7 +39,7 @@ OneString::substring(start: TsNumber, end: TsNumber): OneString
 OneString::split(separator: TsString): OneArray<OneString>
   <no body>
 
-OneString::get(idx: TsNumber): OneString
+OneString::get(idx: TsNumber): OneCharacter
   <no body>
 
 OneString::startsWith(str: TsString): OneBoolean

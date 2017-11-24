@@ -74,7 +74,7 @@ sub getTokenType {
     }
     
     my $c = substr $self->{text}, $self->{offset}, 1;
-    return $c == " " || $c == "\n" || $c == "\t" || $c == "\r" ? $TokenType::whitespace : ("A" <= $c && $c <= "Z") || ("a" <= $c && $c <= "z") || ("0" <= $c && $c <= "9") || $c == "_" ? $TokenType::identifier : $TokenType::operator_x;
+    return $c == " " || $c == "\n" || $c == "\t" || $c == "\r" ? $TokenType::whitespace : ("A" le $c && $c le "Z") || ("a" le $c && $c le "z") || ("0" le $c && $c le "9") || $c == "_" ? $TokenType::identifier : $TokenType::operator_x;
 }
 
 sub tokenize {
@@ -133,10 +133,10 @@ sub testMethod {
     my $tokenizer = new Tokenizer($input, @operators);
     my @result = $tokenizer->tokenize();
     
-    print("token count:" . "\n");
-    print(scalar(@result) . "\n");
+    print(("token count:") . "\n");
+    print((scalar(@result)) . "\n");
     foreach my $item (@result) {
-        print($item->{value} . "(" . ($item->{is_operator} ? "op" : "id") . ")" . "\n");
+        print(($item->{value} . "(" . ($item->{is_operator} ? "op" : "id") . ")") . "\n");
     }
 }
 

@@ -18,7 +18,7 @@ sub testMethod {
     my $b = 0;
     my $c = $a && $b;
     my $d = $a || $b;
-    print("a: @{[($a) ? 'true' : 'false']}, b: @{[($b) ? 'true' : 'false']}, c: @{[($c) ? 'true' : 'false']}, d: @{[($d) ? 'true' : 'false']}" . "\n");
+    print(("a: @{[($a) ? 'true' : 'false']}, b: @{[($b) ? 'true' : 'false']}, c: @{[($c) ? 'true' : 'false']}, d: @{[($d) ? 'true' : 'false']}") . "\n");
 }
 
 package Program;

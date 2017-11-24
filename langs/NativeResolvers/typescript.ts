@@ -63,7 +63,7 @@ class TsString {
         return this._one.length;
     }
 
-    get(idx: number): OneString {
+    get(idx: number): OneCharacter {
         return this._one.get(idx);
     }
     

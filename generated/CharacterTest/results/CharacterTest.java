@@ -3,7 +3,7 @@ class TestClass {
     {
         String str = "a1A";
         for (Integer i = 0; i < str.length(); i++) {
-            String c = str.substring(i, i + 1);
+            char c = str.charAt(i);
             String is_upper = "A" <= c && c <= "Z";
             String is_lower = "a" <= c && c <= "z";
             String is_number = "0" <= c && c <= "9";
