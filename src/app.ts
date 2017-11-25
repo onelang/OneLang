@@ -12,10 +12,10 @@ declare var YAML;
 
 global["debugOn"] = false;
 
-let prgNames = ["CharacterTest"];
+let prgNames = ["Test"];
 const runPrg = false;
 const langFilter = "";
-const compileAll = true;
+const compileAll = false;
 
 if (compileAll)
     prgNames = fs.readdirSync("input").filter(x => x.endsWith(".ts")).map(x => x.replace(".ts", ""));

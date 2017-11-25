@@ -79,6 +79,8 @@ operators:
   OneString + OneBoolean:
     includes: [strconv]
     template: "{{gen(left)}} + strconv.FormatBool({{gen(right)}})"
+  OneString += OneCharacter:
+    template: "{{gen(left)}} += string({{gen(right)}})"
 templates:
   testGenerator: |-
     func main() {

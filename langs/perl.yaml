@@ -70,7 +70,11 @@ operators:
     template: "{{gen(left)}} . {{gen(right)}}"
   OneString + OneBoolean:
     template: '{{gen(left)}} . (({{gen(right)}}) ? "true" : "false")'
+  OneString + OneCharacter:
+    template: "{{gen(left)}} . {{gen(right)}}"
   OneString += OneString:
+    template: "{{gen(left)}} .= {{gen(right)}}"
+  OneString += OneCharacter:
     template: "{{gen(left)}} .= {{gen(right)}}"
 templates:
   testGenerator: |-

@@ -134,7 +134,7 @@ export class TypeScriptParser {
             };
         } else if (tsExpr.kind === ts.SyntaxKind.StringLiteral) {
             const literalExpr = <ts.StringLiteral> tsExpr;
-            const isCharacter = literalExpr.text.length === 1;
+            const isCharacter = false; // literalExpr.text.length === 1;
             return <one.Literal> {
                 exprKind: one.ExpressionKind.Literal,
                 literalType: isCharacter ? "character" : "string",
