@@ -8,6 +8,10 @@
             return tmpl`${expr.escapedText}`;
         },
         
+        CharacterLiteral(expr, ...args) {
+            return tmpl`${expr.escapedText}`;
+        },
+        
         Return(expr, ...args) {
             return tmpl`return ${this.gen(expr.expression)}`;
         },

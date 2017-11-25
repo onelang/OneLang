@@ -15,10 +15,10 @@ func NewTestClass() *TestClass {
 func (this *TestClass) TestMethod()  {
     str := "a1A"
     for i := 0; i < len(str); i++ {
-        c := str[i:i+1]
-        is_upper := "A" <= c && c <= "Z"
-        is_lower := "a" <= c && c <= "z"
-        is_number := "0" <= c && c <= "9"
+        c := str[i]
+        is_upper := 'A' <= c && c <= 'Z'
+        is_lower := 'a' <= c && c <= 'z'
+        is_number := '0' <= c && c <= '9'
         var tmp2 string
         if is_number {
           tmp2 = "number"

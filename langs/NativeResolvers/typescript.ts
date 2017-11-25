@@ -88,6 +88,10 @@ class TsNumber {
     _one: OneNumber;
 }
 
+class TsCharacter {
+    _one: OneCharacter;
+}
+
 class TsBoolean {
     _one: OneBoolean;
 }

@@ -18,7 +18,7 @@ classes:
         #includes: [strings]
         template: "strings.Split({{self}}, {{separator}})"
       get:
-        template: "{{self}}[{{idx}}:{{idx}}+1]"
+        template: "{{self}}[{{idx}}]"
   OneNumber:
     type: int
   OneBoolean:
@@ -160,6 +160,7 @@ expressions:
   propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
   identifier: "{{expr.text}}"
   stringLiteral: "{{expr.escapedText}}"
+  characterLiteral: "'{{expr.value}}'"
   nullLiteral: "nil"
   return: "return {{gen(expr.expression)}}"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"

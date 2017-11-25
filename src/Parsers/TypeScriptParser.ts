@@ -134,10 +134,11 @@ export class TypeScriptParser {
             };
         } else if (tsExpr.kind === ts.SyntaxKind.StringLiteral) {
             const literalExpr = <ts.StringLiteral> tsExpr;
+            const isCharacter = literalExpr.text.length === 1;
             return <one.Literal> {
                 exprKind: one.ExpressionKind.Literal,
-                literalType: "string",
-                literalClassName: "TsString",
+                literalType: isCharacter ? "character" : "string",
+                literalClassName: isCharacter ? "TsCharacter" : "TsString",
                 value: literalExpr.text
             };
         } else if (tsExpr.kind === ts.SyntaxKind.TemplateExpression) {
@@ -408,7 +409,7 @@ export class TypeScriptParser {
                         type: this.convertTsType(tsProp.compilerNode.type),
                         visibility: this.convertVisibility(tsProp),
                         getter: this.convertBlock(tsProp.compilerNode.body),
-                        static: modifiers.includes(ts.SyntaxKind.StaticKeyword)                        
+                        static: modifiers.includes(ts.SyntaxKind.StaticKeyword)
                     };
                 } else {
                     this.logNodeError(`Unknown property type`, tsProp.compilerNode);

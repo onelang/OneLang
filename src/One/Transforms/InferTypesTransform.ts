@@ -134,7 +134,9 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         super.visitBinaryExpression(expr, context);
 
         // TODO: really big hack... 
-        if (expr.left.valueType.isNumber && expr.right.valueType.isNumber) 
+        if (["<=", ">=", "===", "==", "!==", "!="].includes(expr.operator))
+            expr.valueType = one.Type.Class("OneBoolean");
+        else if (expr.left.valueType.isNumber && expr.right.valueType.isNumber)
             expr.valueType = one.Type.Class("OneNumber");
         else if (expr.left.valueType.isBoolean && expr.right.valueType.isBoolean)
             expr.valueType = one.Type.Class("OneBoolean");
@@ -206,7 +208,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
     protected visitLiteral(expr: one.Literal, context: Context) {
         if (expr.valueType) return;
 
-        if (expr.literalType === "numeric" || expr.literalType === "string" || expr.literalType === "boolean")
+        if (expr.literalType === "numeric" || expr.literalType === "string" || expr.literalType === "boolean" || expr.literalType === "character")
             expr.valueType = one.Type.Class(expr.literalClassName);
         else if (expr.literalType === "null")
             expr.valueType = one.Type.Any;

@@ -16,6 +16,10 @@
             return tmpl`std::string(${expr.escapedText})`;
         },
         
+        CharacterLiteral(expr, ...args) {
+            return tmpl`'${expr.value}'`;
+        },
+        
         Return(expr, ...args) {
             return tmpl`return ${this.gen(expr.expression)};`;
         },
@@ -176,7 +180,7 @@
                 },
                 
                 get(self, typeArgs, idx, ...args) {
-                    return tmpl`${self}.substr(${idx}, 1)`;
+                    return tmpl`${self}[${idx}]`;
                 },
             },
         

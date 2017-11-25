@@ -123,6 +123,7 @@ expressions:
     )
   identifier: "${{expr.text}}"
   stringLiteral: "{{expr.escapedText}}"
+  characterLiteral: "{{expr.escapedText}}"
   nullLiteral: "NULL"
   return: "return {{gen(expr.expression)}};"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"

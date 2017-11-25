@@ -16,6 +16,10 @@
             return tmpl`${expr.escapedText}`;
         },
         
+        CharacterLiteral(expr, ...args) {
+            return tmpl`'${expr.value}'`;
+        },
+        
         NullLiteral(expr, ...args) {
             return tmpl`nil`;
         },
@@ -181,7 +185,7 @@
                 },
                 
                 get(self, typeArgs, idx, ...args) {
-                    return tmpl`${self}[${idx}:${idx}+1]`;
+                    return tmpl`${self}[${idx}]`;
                 },
             },
         

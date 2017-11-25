@@ -58,6 +58,14 @@ operators:
     template: "{{gen(left)}} le {{gen(right)}}"
   OneCharacter <= OneString:
     template: "{{gen(left)}} le {{gen(right)}}"
+  OneCharacter <= OneCharacter:
+    template: "{{gen(left)}} le {{gen(right)}}"
+  OneString >= OneCharacter:
+    template: "{{gen(left)}} gt {{gen(right)}}"
+  OneCharacter >= OneString:
+    template: "{{gen(left)}} gt {{gen(right)}}"
+  OneCharacter >= OneCharacter:
+    template: "{{gen(left)}} gt {{gen(right)}}"
   OneString + OneNumber:
     template: "{{gen(left)}} . {{gen(right)}}"
   OneString + OneBoolean:
@@ -145,6 +153,7 @@ expressions:
   propertyAccess: "{{gen(expr.object)}}->{{gen(expr.propertyName)}}"
   identifier: "${{expr.text}}"
   stringLiteral: "{{expr.escapedText}}"
+  characterLiteral: "{{expr.escapedText}}"
   nullLiteral: "undef" # ???
   return: "return {{gen(expr.expression)}};"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"

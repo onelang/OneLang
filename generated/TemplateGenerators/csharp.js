@@ -16,6 +16,10 @@
             return tmpl`${expr.escapedText}`;
         },
         
+        CharacterLiteral(expr, ...args) {
+            return tmpl`'${expr.value}'`;
+        },
+        
         NumericLiteral(expr, ...args) {
             return tmpl`${expr.value}`;
         },

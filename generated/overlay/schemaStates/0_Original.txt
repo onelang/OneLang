@@ -133,4 +133,5 @@ TsString::startsWith(str: TsString): OneBoolean
       - Identifier: str
 
 TsNumber::_one: OneNumber
+TsCharacter::_one: OneCharacter
 TsBoolean::_one: OneBoolean

@@ -275,7 +275,7 @@ class CodeGeneratorModel {
                 genName = `${literalExpr.value ? "True" : "False"}Literal`;
             } else {
                 genName = `${literalExpr.literalType.ucFirst()}Literal`;
-                if (literalExpr.literalType === "string") {
+                if (literalExpr.literalType === "string" || literalExpr.literalType === "character") {
                     literalExpr.escapedText = JSON.stringify(literalExpr.value);
                 }
             }

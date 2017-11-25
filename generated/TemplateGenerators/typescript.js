@@ -16,6 +16,10 @@
             return tmpl`${expr.escapedText}`;
         },
         
+        CharacterLiteral(expr, ...args) {
+            return tmpl`${expr.escapedText}`;
+        },
+        
         NullLiteral(expr, ...args) {
             return tmpl`null`;
         },

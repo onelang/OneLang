@@ -105,4 +105,5 @@ TsString::startsWith(str: TsString): OneBoolean
       - MethodArgument: str [TsString]
 
 TsNumber::_one: OneNumber
+TsCharacter::_one: OneCharacter
 TsBoolean::_one: OneBoolean

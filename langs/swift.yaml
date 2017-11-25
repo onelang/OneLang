@@ -123,6 +123,7 @@ templates:
 expressions:
   call: "{{gen(expr.method)}}({{genMethodArgs(expr.arguments)}})"
   stringLiteral: "{{expr.escapedText}}"
+  characterLiteral: "{{expr.escapedText}}"
   return: "return {{gen(expr.expression)}}"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"

@@ -8,9 +8,9 @@ public class TestClass
         for (var i = 0; i < str.Length; i++)
         {
             var c = str[i];
-            var isUpper = "A" <= c && c <= "Z";
-            var isLower = "a" <= c && c <= "z";
-            var isNumber = "0" <= c && c <= "9";
+            var isUpper = 'A' <= c && c <= 'Z';
+            var isLower = 'a' <= c && c <= 'z';
+            var isNumber = '0' <= c && c <= '9';
             Console.WriteLine(isUpper ? "upper" : isLower ? "lower" : isNumber ? "number" : "other");
         }
     }
