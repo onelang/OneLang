@@ -83,9 +83,9 @@ class TestClass {
             result = std::string("bello");
         } else if (x < 0) {
             result = std::string("bello2");
-        }   else {
-        result = std::string("???");
-          }
+        } else {
+            result = std::string("???");
+        }
         
         if (x > 3) {
             result = std::string("z");
@@ -93,9 +93,9 @@ class TestClass {
         
         if (x > 3) {
             result = std::string("x");
-        }   else {
-        result = std::string("y");
-          }
+        } else {
+            result = std::string("y");
+        }
         
         return result;
     }
@@ -150,7 +150,7 @@ class TestClass {
     std::string reverseString(std::string str) {
         auto result = std::string("");
         for (int i = str.size() - 1; i >= 0; i--) {
-            result += str.substr(i, 1);
+            result += str[i];
         }
         return result;
     }

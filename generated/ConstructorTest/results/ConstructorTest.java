@@ -1,8 +1,8 @@
 class ConstructorTest {
-    public int field2;
-    public int field1;
+    public Integer field2;
+    public Integer field1;
 
-    public ConstructorTest(int field1) {
+    public ConstructorTest(Integer field1) {
         this.field1 = field1;
         this.field2 = field1 * this.field1 * 5;
     }

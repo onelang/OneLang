@@ -47,9 +47,9 @@ func (this *TestClass) IfTest(x int) string {
         result = "bello"
     } else if x < 0 {
         result = "bello2"
-    }   else {
-    result = "???"
-      }
+    } else {
+        result = "???"
+    }
     
     if x > 3 {
         result = "z"
@@ -57,9 +57,9 @@ func (this *TestClass) IfTest(x int) string {
     
     if x > 3 {
         result = "x"
-    }   else {
-    result = "y"
-      }
+    } else {
+        result = "y"
+    }
     
     return result
 }
@@ -113,7 +113,7 @@ func (this *TestClass) StringTest() string {
 func (this *TestClass) ReverseString(str string) string {
     result := ""
     for i := len(str) - 1; i >= 0; i-- {
-        result += str[i:i+1]
+        result += string(str[i])
     }
     return result
 }

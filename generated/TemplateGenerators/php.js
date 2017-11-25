@@ -9,11 +9,11 @@
         },
         
         StringLiteral(expr, ...args) {
-            return tmpl`${expr.escapedText}`;
+            return tmpl`"${expr.escapedText}"`;
         },
         
         CharacterLiteral(expr, ...args) {
-            return tmpl`${expr.escapedText}`;
+            return tmpl`"${expr.escapedText}"`;
         },
         
         NullLiteral(expr, ...args) {
@@ -154,7 +154,7 @@
                 }${tmpl.Block((expr.else) ? tmpl`${tmpl.Block((this.isIfBlock(expr.else)) ? tmpl`
                     {space}else${this.genBody(expr.else)}` : tmpl`
                     {space}else {
-                  ${this.genBody(expr.else)}
+                    {space}   ${this.genBody(expr.else)}
                     }`)}` : tmpl``)}`;
         },
     },
@@ -286,6 +286,10 @@
             return tmpl`${this.gen(left)} . ${this.gen(right)}`;
         },
         
+        "OneString + OneCharacter"(left, right, ...args) {
+            return tmpl`${this.gen(left)} . ${this.gen(right)}`;
+        },
+        
         "OneString + OneNumber"(left, right, ...args) {
             return tmpl`${this.gen(left)} . ${this.gen(right)}`;
         },
@@ -295,6 +299,10 @@
         },
         
         "OneString += OneString"(left, right, ...args) {
+            return tmpl`${this.gen(left)} .= ${this.gen(right)}`;
+        },
+        
+        "OneString += OneCharacter"(left, right, ...args) {
             return tmpl`${this.gen(left)} .= ${this.gen(right)}`;
         },
     },

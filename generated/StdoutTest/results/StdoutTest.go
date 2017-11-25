@@ -15,7 +15,7 @@ func NewTestClass() *TestClass {
 func (this *TestClass) ReverseString(str string) string {
     result := ""
     for i := len(str) - 1; i >= 0; i-- {
-        result += str[i:i+1]
+        result += string(str[i])
     }
     return result
 }

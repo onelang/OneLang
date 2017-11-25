@@ -58,8 +58,8 @@ class Tokenizer {
             }
             const identifier = this.text.substring(start_offset, this.offset);
             result.push(new Token(identifier, false));
-        }   else {
-        let op = "";
+        } else {
+            let op = "";
         for (const curr_op of this.operators) {
             if (StringHelper.startsWithAtIndex(this.text, curr_op, this.offset)) {
                 op = curr_op;
@@ -73,7 +73,7 @@ class Tokenizer {
         
         this.offset += op.length;
         result.push(new Token(op, true));
-          }
+        }
     }
     
     return result;

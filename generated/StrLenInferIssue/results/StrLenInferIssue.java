@@ -1,5 +1,5 @@
 class StrLenInferIssue {
-    public int test(String str) throws Exception
+    public Integer test(String str) throws Exception
     {
         return str.length();
     }

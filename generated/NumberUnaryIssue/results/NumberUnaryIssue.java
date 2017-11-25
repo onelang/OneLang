@@ -1,5 +1,5 @@
 class NumberUnaryIssue {
-    public void test(int num) throws Exception
+    public void test(Integer num) throws Exception
     {
         num--;
     }

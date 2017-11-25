@@ -3,7 +3,7 @@ class List {
 }
 
 class Item {
-    public int offset = 5;
+    public Integer offset = 5;
     public String str_test = "test" + "test2";
     public String str_constr = "constr";
 

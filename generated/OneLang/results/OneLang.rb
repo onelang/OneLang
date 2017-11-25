@@ -87,8 +87,8 @@ class Tokenizer
               end
               identifier = self.text[start_offset...self.offset]
               result << Token.new(identifier, false)
-            else
-          op = ""
+          else
+              op = ""
           for curr_op in self.operators
               if StringHelper.starts_with_at_index(self.text, curr_op, self.offset)
                   op = curr_op
@@ -100,7 +100,7 @@ class Tokenizer
           end
           self.offset += op.length
           result << Token.new(op, true)
-            end
+          end
           
           
           

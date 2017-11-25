@@ -16,7 +16,7 @@ sub reverseString {
     my ( $self, $str ) = @_;
     my $result = "";
     for (my $i = length($str) - 1; $i >= 0; $i--) {
-        $result += substr $str, $i, 1;
+        $result .= substr $str, $i, 1;
     }
     return $result;
 }

@@ -34,9 +34,9 @@ class TestClass
           result = "bello"
       elsif x < 0
           result = "bello2"
-        else
-      result = "???"
-        end
+      else
+          result = "???"
+      end
       
       
       
@@ -49,9 +49,9 @@ class TestClass
       
       if x > 3
           result = "x"
-        else
-      result = "y"
-        end
+      else
+          result = "y"
+      end
       
       
       return result

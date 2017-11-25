@@ -123,8 +123,8 @@ class Tokenizer {
             return TokenType::end_token;
         }
         
-        auto c = this->text.substr(this->offset, 1);
-        return c == std::string(" ") || c == std::string("\n") || c == std::string("\t") || c == std::string("\r") ? TokenType::whitespace : (std::string("A") <= c && c <= std::string("Z")) || (std::string("a") <= c && c <= std::string("z")) || (std::string("0") <= c && c <= std::string("9")) || c == std::string("_") ? TokenType::identifier : TokenType::operator_x;
+        auto c = this->text[this->offset];
+        return c == ' ' || c == '\n' || c == '\t' || c == '\r' ? TokenType::whitespace : ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || ('0' <= c && c <= '9') || c == '_' ? TokenType::identifier : TokenType::operator_x;
     }
     
     std::vector<Token> tokenize() {
@@ -144,8 +144,8 @@ class Tokenizer {
                 }
                 auto identifier = this->text.substr(start_offset, this->offset - start_offset);
                 result->push_back(std::make_shared<Token>(identifier, false));
-            }   else {
-            auto op = std::string("");
+            } else {
+                auto op = std::string("");
             for (auto it = this->operators->begin(); it != this->operators->end(); ++it) {
                 auto curr_op = *it;
                 if (StringHelper::startsWithAtIndex(this->text, curr_op, this->offset)) {
@@ -160,7 +160,7 @@ class Tokenizer {
             
             this->offset += op.size();
             result->push_back(std::make_shared<Token>(op, true));
-              }
+            }
         }
         
         return result;

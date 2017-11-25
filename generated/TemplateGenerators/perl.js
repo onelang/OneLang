@@ -13,11 +13,11 @@
         },
         
         StringLiteral(expr, ...args) {
-            return tmpl`${expr.escapedText}`;
+            return tmpl`"${expr.escapedText}"`;
         },
         
         CharacterLiteral(expr, ...args) {
-            return tmpl`${expr.escapedText}`;
+            return tmpl`"${expr.escapedText}"`;
         },
         
         NullLiteral(expr, ...args) {
@@ -159,7 +159,7 @@
                     {space}els${this.genBody(expr.else)}
                   ` : tmpl`
                     {space}else {
-                  ${this.genBody(expr.else)}
+                    {space}   ${this.genBody(expr.else)}
                     }`)}` : tmpl``)}`;
         },
     },
@@ -302,6 +302,22 @@
             return tmpl`${this.gen(left)} le ${this.gen(right)}`;
         },
         
+        "OneCharacter <= OneCharacter"(left, right, ...args) {
+            return tmpl`${this.gen(left)} le ${this.gen(right)}`;
+        },
+        
+        "OneString >= OneCharacter"(left, right, ...args) {
+            return tmpl`${this.gen(left)} gt ${this.gen(right)}`;
+        },
+        
+        "OneCharacter >= OneString"(left, right, ...args) {
+            return tmpl`${this.gen(left)} gt ${this.gen(right)}`;
+        },
+        
+        "OneCharacter >= OneCharacter"(left, right, ...args) {
+            return tmpl`${this.gen(left)} gt ${this.gen(right)}`;
+        },
+        
         "OneString + OneNumber"(left, right, ...args) {
             return tmpl`${this.gen(left)} . ${this.gen(right)}`;
         },
@@ -310,7 +326,15 @@
             return tmpl`${this.gen(left)} . ((${this.gen(right)}) ? "true" : "false")`;
         },
         
+        "OneString + OneCharacter"(left, right, ...args) {
+            return tmpl`${this.gen(left)} . ${this.gen(right)}`;
+        },
+        
         "OneString += OneString"(left, right, ...args) {
+            return tmpl`${this.gen(left)} .= ${this.gen(right)}`;
+        },
+        
+        "OneString += OneCharacter"(left, right, ...args) {
             return tmpl`${this.gen(left)} .= ${this.gen(right)}`;
         },
     },

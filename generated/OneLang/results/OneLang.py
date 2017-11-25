@@ -43,8 +43,8 @@ class Tokenizer:
                     self.offset += 1
                 identifier = self.text[start_offset:self.offset]
                 result.append(Token(identifier, False))
-              else:
-            op = ""
+            else:
+                op = ""
             for curr_op in self.operators:
                 if StringHelper.starts_with_at_index(self.text, curr_op, self.offset):
                     op = curr_op

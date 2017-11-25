@@ -9,7 +9,7 @@ TestClass::reverseString(str: TsString): TsString
           - MethodArgument: str [TsString]
         - Literal (numeric): "1" [TsNumber]
     Condition
-      - Binary: >= [any]
+      - Binary: >= [OneBoolean]
         - LocalVar: i [any]
         - Literal (numeric): "0" [TsNumber]
     Incrementor

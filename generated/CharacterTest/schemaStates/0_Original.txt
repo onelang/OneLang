@@ -21,27 +21,27 @@ TestClass::testMethod(): void
       - Variable: isUpper
         - Binary: &&
           - Binary: <=
-            - Literal (character): "A"
+            - Literal (string): "A"
             - Identifier: c
           - Binary: <=
             - Identifier: c
-            - Literal (character): "Z"
+            - Literal (string): "Z"
       - Variable: isLower
         - Binary: &&
           - Binary: <=
-            - Literal (character): "a"
+            - Literal (string): "a"
             - Identifier: c
           - Binary: <=
             - Identifier: c
-            - Literal (character): "z"
+            - Literal (string): "z"
       - Variable: isNumber
         - Binary: &&
           - Binary: <=
-            - Literal (character): "0"
+            - Literal (string): "0"
             - Identifier: c
           - Binary: <=
             - Identifier: c
-            - Literal (character): "9"
+            - Literal (string): "9"
       - ExpressionStatement
         - Call
           - PropertyAccess (.log)

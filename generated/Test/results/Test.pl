@@ -44,9 +44,9 @@ sub ifTest {
         $result = "bello";
     } elsif ($x < 0) {
         $result = "bello2";
-    }   else {
-    $result = "???";
-      }
+    } else {
+        $result = "???";
+    }
     
     
     
@@ -56,9 +56,9 @@ sub ifTest {
     
     if ($x > 3) {
         $result = "x";
-    }   else {
-    $result = "y";
-      }
+    } else {
+        $result = "y";
+    }
     
     return $result;
 }
@@ -116,7 +116,7 @@ sub reverseString {
     my ( $self, $str ) = @_;
     my $result = "";
     for (my $i = length($str) - 1; $i >= 0; $i--) {
-        $result += substr $str, $i, 1;
+        $result .= substr $str, $i, 1;
     }
     return $result;
 }

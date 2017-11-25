@@ -94,8 +94,8 @@ sub tokenize {
             }
             my $identifier = substr $self->{text}, $start_offset, ($self->{offset} - $start_offset);
             push @result, new Token($identifier, 0);
-        }   else {
-        my $op = "";
+        } else {
+            my $op = "";
         foreach my $curr_op ($self->{operators}) {
             if (StringHelper::startsWithAtIndex($self->{text}, $curr_op, $self->{offset})) {
                 $op = $curr_op;
@@ -107,7 +107,7 @@ sub tokenize {
         }
         $self->{offset} += length($op);
         push @result, new Token($op, 1);
-          }
+        }
         
     }
     

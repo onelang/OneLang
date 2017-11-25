@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Arrays;
 
 class TestClass {
-    public int mapTest() throws Exception
+    public Integer mapTest() throws Exception
     {
-        HashMap<String, int> map_obj = new HashMap<String, int>();
+        HashMap<String, Integer> map_obj = new HashMap<String, Integer>();
         map_obj.put("x", 5);
         map_obj.put("y", 3);
         
@@ -15,7 +15,7 @@ class TestClass {
         map_obj.remove("x");
         
         List<String> keys_var = new ArrayList(map_obj.keySet());
-        List<int> values_var = new ArrayList(map_obj.values());
+        List<Integer> values_var = new ArrayList(map_obj.values());
         return map_obj.get("z");
     }
     
@@ -25,7 +25,7 @@ class TestClass {
         System.out.println(op.length());
     }
     
-    public String ifTest(int x) throws Exception
+    public String ifTest(Integer x) throws Exception
     {
         String result = "<unk>";
         
@@ -35,9 +35,9 @@ class TestClass {
             result = "bello";
         } else if (x < 0) {
             result = "bello2";
-        }   else {
-        result = "???";
-          }
+        } else {
+            result = "???";
+        }
         
         if (x > 3) {
             result = "z";
@@ -45,9 +45,9 @@ class TestClass {
         
         if (x > 3) {
             result = "x";
-        }   else {
-        result = "y";
-          }
+        } else {
+            result = "y";
+        }
         
         return result;
     }
@@ -56,14 +56,14 @@ class TestClass {
     {
         //const c2 = new Class2();
         
-        List<int> mutable_arr = new ArrayList<int>(Arrays.asList(1, 2));
+        List<Integer> mutable_arr = new ArrayList<Integer>(Arrays.asList(1, 2));
         mutable_arr.add(3);
         mutable_arr.add(4);
         // mutableArr.push(c2.property);
         // mutableArr.push(c2.child.property);
         // mutableArr.push(c2.child.child.property);
         
-        List<int> constant_arr = new ArrayList<int>(Arrays.asList(5, 6));
+        List<Integer> constant_arr = new ArrayList<Integer>(Arrays.asList(5, 6));
         
         // some comment
         //   some comment line 2
@@ -74,19 +74,19 @@ class TestClass {
         /* some other comment
            multiline and stuff
         */
-        for (int i = 0; i < constant_arr.size(); i++) {
+        for (Integer i = 0; i < constant_arr.size(); i++) {
             System.out.println(constant_arr.get(i));
         }
     }
     
-    public int calc() throws Exception
+    public Integer calc() throws Exception
     {
         return (1 + 2) * 3;
     }
     
-    public int methodWithArgs(int arg1, int arg2, int arg3) throws Exception
+    public Integer methodWithArgs(Integer arg1, Integer arg2, Integer arg3) throws Exception
     {
-        int stuff = arg1 + arg2 + arg3 * this.calc();
+        Integer stuff = arg1 + arg2 + arg3 * this.calc();
         return stuff;
     }
     
@@ -105,7 +105,7 @@ class TestClass {
     public String reverseString(String str) throws Exception
     {
         String result = "";
-        for (int i = str.length() - 1; i >= 0; i--) {
+        for (Integer i = str.length() - 1; i >= 0; i--) {
             result += str.charAt(i);
         }
         return result;

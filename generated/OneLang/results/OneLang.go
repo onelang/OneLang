@@ -69,15 +69,15 @@ func (this *Tokenizer) GetTokenType() string {
         return TokenTypeEndToken
     }
     
-    c := this.Text[this.Offset:this.Offset+1]
+    c := this.Text[this.Offset]
     var tmp1 string
-    if ("A" <= c && c <= "Z") || ("a" <= c && c <= "z") || ("0" <= c && c <= "9") || c == "_" {
+    if ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || ('0' <= c && c <= '9') || c == '_' {
       tmp1 = TokenTypeIdentifier
     } else {
       tmp1 = TokenTypeOperatorX
     }
     var tmp0 string
-    if c == " " || c == "\n" || c == "\t" || c == "\r" {
+    if c == ' ' || c == '\n' || c == '\t' || c == '\r' {
       tmp0 = TokenTypeWhitespace
     } else {
       tmp0 = tmp1
@@ -102,8 +102,8 @@ func (this *Tokenizer) Tokenize() OneArray {
             }
             identifier := this.Text[start_offset:this.Offset]
             result = append(result, NewToken(identifier, false))
-        }   else {
-        op := ""
+        } else {
+            op := ""
         for _, curr_op := range this.Operators {
             if StringHelper.StartsWithAtIndex(this.Text, curr_op, this.Offset) {
                 op = curr_op
@@ -117,7 +117,7 @@ func (this *Tokenizer) Tokenize() OneArray {
         
         this.Offset += len(op)
         result = append(result, NewToken(op, true))
-          }
+        }
     }
     
     return result

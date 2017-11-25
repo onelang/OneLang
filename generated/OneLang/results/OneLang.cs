@@ -51,7 +51,7 @@ public class Tokenizer
         
         
         var c = this.Text[this.Offset];
-        return c == " " || c == "\n" || c == "\t" || c == "\r" ? TokenType.Whitespace : ("A" <= c && c <= "Z") || ("a" <= c && c <= "z") || ("0" <= c && c <= "9") || c == "_" ? TokenType.Identifier : TokenType.OperatorX;
+        return c == ' ' || c == '\n' || c == '\t' || c == '\r' ? TokenType.Whitespace : ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || ('0' <= c && c <= '9') || c == '_' ? TokenType.Identifier : TokenType.OperatorX;
     }
     
     public List<Token> Tokenize()
@@ -79,9 +79,9 @@ public class Tokenizer
                 var identifier = this.Text.Substring(startOffset, this.Offset - startOffset);
                 result.Add(new Token(identifier, false));
             }
-              else
-              {
-            var op = "";
+            else
+            {
+                var op = "";
             foreach (var currOp in this.Operators)
             {
                 if (StringHelper.StartsWithAtIndex(this.Text, currOp, this.Offset))
@@ -100,7 +100,7 @@ public class Tokenizer
             
             this.Offset += op.Length;
             result.Add(new Token(op, true));
-              }
+            }
         }
         
         return result;

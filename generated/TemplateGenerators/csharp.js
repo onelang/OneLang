@@ -13,11 +13,11 @@
         },
         
         StringLiteral(expr, ...args) {
-            return tmpl`${expr.escapedText}`;
+            return tmpl`"${expr.escapedText}"`;
         },
         
         CharacterLiteral(expr, ...args) {
-            return tmpl`'${expr.value}'`;
+            return tmpl`'${expr.escapedText}'`;
         },
         
         NumericLiteral(expr, ...args) {
@@ -166,7 +166,7 @@
                     else{space}${this.genBody(expr.else)}` : tmpl`
                     else
                     {
-                  ${this.genBody(expr.else)}
+                    {space}   ${this.genBody(expr.else)}
                     }`)}` : tmpl``)}`;
         },
     },

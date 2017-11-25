@@ -57,7 +57,7 @@ class TestClass {
     std::string reverseString(std::string str) {
         auto result = std::string("");
         for (int i = str.size() - 1; i >= 0; i--) {
-            result += str.substr(i, 1);
+            result += str[i];
         }
         return result;
     }

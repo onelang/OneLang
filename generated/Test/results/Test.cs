@@ -43,10 +43,10 @@ public class TestClass
         {
             result = "bello2";
         }
-          else
-          {
-        result = "???";
-          }
+        else
+        {
+            result = "???";
+        }
         
         if (x > 3)
         {
@@ -58,10 +58,10 @@ public class TestClass
         {
             result = "x";
         }
-          else
-          {
-        result = "y";
-          }
+        else
+        {
+            result = "y";
+        }
         
         return result;
     }

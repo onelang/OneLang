@@ -30,9 +30,9 @@ class TestClass {
             $result = "bello";
         } elseif ($x < 0) {
             $result = "bello2";
-        }   else {
-        $result = "???";
-          }
+        } else {
+            $result = "???";
+        }
         
         if ($x > 3) {
             $result = "z";
@@ -40,9 +40,9 @@ class TestClass {
         
         if ($x > 3) {
             $result = "x";
-        }   else {
-        $result = "y";
-          }
+        } else {
+            $result = "y";
+        }
         
         return $result;
     }
@@ -96,7 +96,7 @@ class TestClass {
     function reverseString($str) {
         $result = "";
         for ($i = strlen($str) - 1; $i >= 0; $i--) {
-            $result += $str[$i];
+            $result .= $str[$i];
         }
         return $result;
     }

@@ -13,11 +13,11 @@
         },
         
         StringLiteral(expr, ...args) {
-            return tmpl`${expr.escapedText}`;
+            return tmpl`"${expr.escapedText}"`;
         },
         
         CharacterLiteral(expr, ...args) {
-            return tmpl`${expr.escapedText}`;
+            return tmpl`"${expr.escapedText}"`;
         },
         
         NullLiteral(expr, ...args) {
@@ -175,7 +175,7 @@
                   ${tmpl.Block((this.isIfBlock(expr.else)) ? tmpl`
                     el${this.genBody(expr.else)}` : tmpl`
                     else:
-                  ${this.genBody(expr.else)}`)}` : tmpl``)}`;
+                    {space}   ${this.genBody(expr.else)}`)}` : tmpl``)}`;
         },
     },
 

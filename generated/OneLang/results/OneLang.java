@@ -20,14 +20,14 @@ class Token {
 }
 
 class StringHelper {
-    public static boolean startsWithAtIndex(String str, String substr, int idx) throws Exception
+    public static boolean startsWithAtIndex(String str, String substr, Integer idx) throws Exception
     {
         return str.substring(idx, idx + substr.length()) == substr;
     }
 }
 
 class Tokenizer {
-    public int offset = 0;
+    public Integer offset = 0;
     public String text;
     public List<String> operators;
 
@@ -43,7 +43,7 @@ class Tokenizer {
         }
         
         char c = this.text.charAt(this.offset);
-        return c == " " || c == "\n" || c == "\t" || c == "\r" ? TokenType.whitespace : ("A" <= c && c <= "Z") || ("a" <= c && c <= "z") || ("0" <= c && c <= "9") || c == "_" ? TokenType.identifier : TokenType.operator_x;
+        return c == ' ' || c == '\n' || c == '\t' || c == '\r' ? TokenType.whitespace : ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || ('0' <= c && c <= '9') || c == '_' ? TokenType.identifier : TokenType.operator_x;
     }
     
     public List<Token> tokenize() throws Exception
@@ -58,14 +58,14 @@ class Tokenizer {
                     this.offset++;
                 }
             } else if (char_type == TokenType.identifier) {
-                int start_offset = this.offset;
+                Integer start_offset = this.offset;
                 while (this.getTokenType() == TokenType.identifier) {
                     this.offset++;
                 }
                 String identifier = this.text.substring(start_offset, this.offset);
                 result.add(new Token(identifier, false));
-            }   else {
-            String op = "";
+            } else {
+                String op = "";
             for (Object curr_op : this.operators) {
                 if (StringHelper.startsWithAtIndex(this.text, curr_op, this.offset)) {
                     op = curr_op;
@@ -79,7 +79,7 @@ class Tokenizer {
             
             this.offset += op.length();
             result.add(new Token(op, true));
-              }
+            }
         }
         
         return result;

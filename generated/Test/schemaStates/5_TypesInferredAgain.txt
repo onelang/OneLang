@@ -220,7 +220,7 @@ TestClass::reverseString(str: OneString): OneString
           - MethodArgument: str [OneString]
         - Literal (numeric): "1" [OneNumber]
     Condition
-      - Binary: >= [OneNumber]
+      - Binary: >= [OneBoolean]
         - LocalVar: i [OneNumber]
         - Literal (numeric): "0" [OneNumber]
     Incrementor

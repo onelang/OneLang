@@ -58,8 +58,8 @@ class Tokenizer {
               }
               let identifier = self.text[self.text.index(self.text.startIndex, offsetBy: start_offset) ..< self.text.index(self.text.startIndex, offsetBy: self.offset)]
               result.append(Token(value: identifier, is_operator: false))
-          }   else {
-          var op = ""
+          } else {
+              var op = ""
           for curr_op in self.operators! {
               if StringHelper.startsWithAtIndex(str: self.text, substr: curr_op, idx: self.offset) {
                   op = curr_op
@@ -73,7 +73,7 @@ class Tokenizer {
           
           self.offset += op.count
           result.append(Token(value: op, is_operator: true))
-            }
+          }
       }
       
       return result

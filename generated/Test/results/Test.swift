@@ -28,9 +28,9 @@ class TestClass {
           result = "bello"
       } else if x < 0 {
           result = "bello2"
-      }   else {
-      result = "???"
-        }
+      } else {
+          result = "???"
+      }
       
       if x > 3 {
           result = "z"
@@ -38,9 +38,9 @@ class TestClass {
       
       if x > 3 {
           result = "x"
-      }   else {
-      result = "y"
-        }
+      } else {
+          result = "y"
+      }
       
       return result
   }

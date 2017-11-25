@@ -60,8 +60,8 @@ class Tokenizer {
                 }
                 $identifier = substr($this->text, $start_offset, $this->offset - $start_offset);
                 $result[] = new Token($identifier, FALSE);
-            }   else {
-            $op = "";
+            } else {
+                $op = "";
             foreach ($this->operators as $curr_op) {
                 if (StringHelper::startsWithAtIndex($this->text, $curr_op, $this->offset)) {
                     $op = $curr_op;
@@ -75,7 +75,7 @@ class Tokenizer {
             
             $this->offset += strlen($op);
             $result[] = new Token($op, TRUE);
-              }
+            }
         }
         
         return $result;
