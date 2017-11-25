@@ -122,8 +122,8 @@ expressions:
       {{/for}}
     )
   identifier: "${{expr.text}}"
-  stringLiteral: "{{expr.escapedText}}"
-  characterLiteral: "{{expr.escapedText}}"
+  stringLiteral: '"{{expr.escapedText}}"'
+  characterLiteral: '"{{expr.escapedText}}"'
   nullLiteral: "NULL"
   return: "return {{gen(expr.expression)}};"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
@@ -189,7 +189,7 @@ expressions:
         \ else {{genBody(expr.else)|inline}}
       {{else}}
         \ else {
-            {{genBody(expr.else)}}
+        \    {{genBody(expr.else)}}
         }
       {{/if}}
     {{/if}}

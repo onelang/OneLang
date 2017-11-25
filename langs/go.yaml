@@ -159,8 +159,8 @@ expressions:
     )
   propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
   identifier: "{{expr.text}}"
-  stringLiteral: "{{expr.escapedText}}"
-  characterLiteral: "'{{expr.value}}'"
+  stringLiteral: '"{{expr.escapedText}}"'
+  characterLiteral: "'{{expr.escapedText}}'"
   nullLiteral: "nil"
   return: "return {{gen(expr.expression)}}"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
@@ -234,7 +234,7 @@ expressions:
         \ else\ {{genBody(expr.else)|inline}}
       {{else}}
         \ else {
-            {{genBody(expr.else)}}
+        \    {{genBody(expr.else)}}
         }
       {{/if}}
     {{/if}}

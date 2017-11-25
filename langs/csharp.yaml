@@ -132,8 +132,8 @@ expressions:
   call: "{{gen(expr.method)}}({{genParams(expr.arguments)}})"
   propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
   identifier: "{{expr.text}}"
-  stringLiteral: "{{expr.escapedText}}"
-  characterLiteral: "'{{expr.value}}'"
+  stringLiteral: '"{{expr.escapedText}}"'
+  characterLiteral: "'{{expr.escapedText}}'"
   numericLiteral: "{{expr.value}}"
   nullLiteral: "null"
   return: "return {{gen(expr.expression)}};"
@@ -205,7 +205,7 @@ expressions:
       {{else}}
         else
         {
-            {{genBody(expr.else)}}
+        \    {{genBody(expr.else)}}
         }
       {{/if}}
     {{/if}}

@@ -212,8 +212,8 @@ expressions:
     )
   propertyAccess: "{{gen(expr.object)}}->{{gen(expr.propertyName)}}"
   identifier: "{{expr.text}}"
-  stringLiteral: "std::string({{expr.escapedText}})"
-  characterLiteral: "'{{expr.value}}'"
+  stringLiteral: '"std::string({{expr.escapedText}})"'
+  characterLiteral: "'{{expr.escapedText}}'"
   return: "return {{gen(expr.expression)}};"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
@@ -283,7 +283,7 @@ expressions:
         \ else\ {{genBody(expr.else)|inline}}
       {{else}}
         \ else {
-            {{genBody(expr.else)}}
+        \    {{genBody(expr.else)}}
         }
       {{/if}}
     {{/if}}

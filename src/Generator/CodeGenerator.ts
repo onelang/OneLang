@@ -276,7 +276,8 @@ class CodeGeneratorModel {
             } else {
                 genName = `${literalExpr.literalType.ucFirst()}Literal`;
                 if (literalExpr.literalType === "string" || literalExpr.literalType === "character") {
-                    literalExpr.escapedText = JSON.stringify(literalExpr.value);
+                    const escapedJson = JSON.stringify(literalExpr.value);
+                    literalExpr.escapedText = escapedJson.substr(1, escapedJson.length - 2).replace(/'/g, "\\'");
                 }
             }
         } else if (type === one.ExpressionKind.VariableReference) {

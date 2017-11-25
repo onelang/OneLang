@@ -122,8 +122,8 @@ templates:
       {{/for}}
 expressions:
   call: "{{gen(expr.method)}}({{genMethodArgs(expr.arguments)}})"
-  stringLiteral: "{{expr.escapedText}}"
-  characterLiteral: "{{expr.escapedText}}"
+  stringLiteral: '"{{expr.escapedText}}"'
+  characterLiteral: '"{{expr.escapedText}}"'
   return: "return {{gen(expr.expression)}}"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
@@ -189,7 +189,7 @@ expressions:
         \ else\ {{genBody(expr.else)|inline}}
       {{else}}
         \ else {
-            {{genBody(expr.else)}}
+        \    {{genBody(expr.else)}}
         }
       {{/if}}
     {{/if}}
