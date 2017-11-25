@@ -72,6 +72,7 @@ export namespace OneAst {
         get isAny() { return this.typeKind === TypeKind.Any; }
         get isNumber() { return this.className === "OneNumber"; }
         get isString() { return this.className === "OneString"; }
+        get isCharacter() { return this.className === "OneCharacter"; }
         get isBoolean() { return this.className === "OneBoolean"; }
         get isOneArray() { return this.className === "OneArray"; }
         get isOneMap() { return this.className === "OneMap"; }

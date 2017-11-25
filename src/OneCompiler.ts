@@ -8,6 +8,7 @@ import { ResolveIdentifiersTransform } from "./One/Transforms/ResolveIdentifiers
 import { InferTypesTransform } from "./One/Transforms/InferTypesTransform";
 import { InlineOverlayTypesTransform } from "./One/Transforms/InlineOverlayTypesTransform";
 import { ConvertInlineThisRefTransform } from "./One/Transforms/ConvertInlineThisRefTransform";
+import { InferCharacterTypes } from "./One/Transforms/InferCharacterTypes";
 import { SchemaContext } from "./One/SchemaContext";
 import { OverviewGenerator } from "./One/OverviewGenerator";
 import { AstHelper } from "./One/AstHelper";
@@ -29,6 +30,7 @@ SchemaTransformer.instance.addTransform(new InferTypesTransform());
 SchemaTransformer.instance.addTransform(new InlineOverlayTypesTransform());
 SchemaTransformer.instance.addTransform(new ConvertInlineThisRefTransform());
 SchemaTransformer.instance.addTransform(new TriviaCommentTransform());
+SchemaTransformer.instance.addTransform(new InferCharacterTypes());
 
 export class OneCompiler {
     schemaCtx: SchemaContext;
@@ -106,7 +108,7 @@ export class OneCompiler {
         this.schemaCtx.mapType = "OneMap";
 
         global["debugOn"] = true;
-        this.schemaCtx.ensureTransforms("inferTypes");
+        this.schemaCtx.ensureTransforms("inferTypes", "inferCharacterTypes");
         this.saveSchemaState(this.schemaCtx, `5_TypesInferredAgain`);
     }
 
