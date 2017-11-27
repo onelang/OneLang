@@ -170,6 +170,7 @@ templates:
       - name: methods
     template: |-
       {{for method in methods|sep=\n\n}}
+        {{if method.static}}static {{/if}}
         {{method.returnType}} {{method.name}}({{genArgs(method)}}) {
             {{genBody(method.body)}}
         }
@@ -273,7 +274,7 @@ expressions:
     while ({{gen(expr.condition)}}) {
         {{genBody(expr.body)}}
     }
-  break: break
+  break: break;
   if: |-
     if ({{gen(expr.condition)}}) {
         {{genBody(expr.then)}}

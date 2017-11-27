@@ -3,7 +3,6 @@ class TokenType {
     static Whitespace: string = "Whitespace";
     static Identifier: string = "Identifier";
     static OperatorX: string = "Operator";
-    static NoInitializer: string;
 }
 
 class Token
@@ -19,9 +18,11 @@ class StringHelper {
 
 export class Tokenizer
 {
-    offset: number = 0;
+    offset: number;
 
-    constructor(public text: string, public operators: string[]) { }
+    constructor(public text: string, public operators: string[]) {
+        this.offset = 0;
+    }
 
     getTokenType(): string {
         if (this.offset >= this.text.length)

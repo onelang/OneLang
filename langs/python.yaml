@@ -70,6 +70,9 @@ templates:
           {{/if}}
 
           {{for method in class.methods|sep=\n\n}}
+              {{if method.static}}
+                @staticmethod
+              {{/if}}
               def {{method.name}}({{genArgs(method)}}):
                   {{genBody(method.body)}}
           {{/for}}
@@ -99,10 +102,14 @@ templates:
     args:
       - name: method
     template: |-
-      self
-      {{for param in method.parameters|inline}}
-        , {{param.name}}
-      {{/for}}
+      {{if method.static}}
+        {{for param in method.parameters|sep=", " inline}}
+          {{param.name}}
+        {{/for}}
+      {{else}}
+        self
+        {{for param in method.parameters|inline}}, {{param.name}}{{/for}}
+      {{/if}}
 
   genParams:
     args:

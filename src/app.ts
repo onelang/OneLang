@@ -12,7 +12,7 @@ declare var YAML;
 
 global["debugOn"] = false;
 
-let prgNames = ["CharacterTest"];
+let prgNames = ["OneLang"];
 const runPrg = false;
 const langFilter = "";
 const compileAll = true;
