@@ -6,9 +6,9 @@ class UnknownTokenException extends Error
     }
 }
 
-enum TokenType { EndToken = "EndToken", Whitespace = "Whitespace", Identifier = "Identifier", Operator = "Operator" }
+export enum TokenType { EndToken = "EndToken", Whitespace = "Whitespace", Identifier = "Identifier", Operator = "Operator" }
 
-class Token
+export class Token
 {
     constructor(public value: string, public isOperator: boolean) { }
 }
@@ -46,7 +46,8 @@ export class Tokenizer
                 while (this.getType() == TokenType.Identifier)
                     this.offset++;
                 const identifier = this.text.substring(startOffset, this.offset);
-                result.push(new Token(identifier, false));
+                const isOperator = this.operators.includes(identifier);
+                result.push(new Token(identifier, isOperator));
             }
             else
             {

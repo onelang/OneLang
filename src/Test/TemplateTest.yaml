@@ -1,0 +1,69 @@
+tokenizerTests:
+  '2+3': [{n:"2"}, {op:+}, {n:"3"}]
+  'not true': [{op:"not"}, {i:"true"}]
+  '!true': [{op:"!"}, {i:"true"}]
+  'f(1,2)': [{i:"f"}, {op:"("}, {n:"1"}, {op:","}, {n:"2"}, {op:")"}]
+  'not o.a and o.b or o.c': [
+    {op:"not"}, {i:"o"}, {op:"."}, {i:"a"},
+    {op:"and"}, {i:"o"}, {op:"."}, {i:"b"},
+    {op:"or"},  {i:"o"}, {op:"."}, {i:"c"}]
+  'a || b && c': [{i:"a"}, {op:"||"}, {i:"b"}, {op:"&&"}, {i:"c"}]
+  '-3': [{n:"-3"}]
+  '.123': [{n:".123"}]
+  '123.456': [{n:"123.456"}]
+  '0x1a2b': [{n:"0x1a2b"}]
+  '0b0101': [{n:"0b0101"}]
+  '-a': [{op:"-"}, {i:"a"}]
+  '- 5': [{op:"-"}, {n:"5"}]
+  '+ -5': [{op:"+"}, {n:"-5"}]
+  'a + -5': [{i:"a"}, {op:"+"}, {n:"-5"}]
+  'a + + -5': [{i:"a"}, {op:"+"}, {op:"+"}, {n:"-5"}]
+  '0b01z': {errorOffset:4, message:"invalid character in number"}
+  '0b01 z': {errorOffset:5, message:"expected operator here"}
+  '0x01 + z': [{n:"0x01"}, {op:"+"}, {i:"z"}]
+  '- -0x01 + z': [{op:"-"}, {n:"-0x01"}, {op:"+"}, {i:"z"}]
+  '/': [{op:"/"}]
+  '"alma"': [{s:"alma"}]
+  "'alma'": [{s:"alma"}]
+  "'a'+'b'": [{s:"a"}, {op:"+"}, {s:"b"}]
+  "'A\\'B'": [{s:"A'B"}]
+expressionTests:
+  '2+3':
+    kind: binary
+    op: +
+    left: { kind: literal, type: number, value: 2 }
+    right: { kind: literal, type: number, value: 3 }
+  '!condition':
+    kind: unary
+    op: !
+    expr: { kind: variable, varName: condition }
+templateTests:
+  simple_expression:
+    tmpl: 'BEFORE {{expr}} AFTER'
+    model: { expr: 42 }
+    expected: 'BEFORE 42 AFTER'
+  property_access:
+    tmpl: 'BEFORE {{obj.field}} AFTER'
+    model: { obj: { field: 43 } }
+    expected: 'BEFORE 43 AFTER'
+  multiline1:
+    tmpl: |-
+      line1
+        line2
+      line3
+    expected: 'line1\n  line2\nline3'
+  expr1:
+    tmpl: 'A {{ 4 * 5 / 2 + 1 }} B'
+    expected: 'A 11 B'
+  simple_if_true:
+    tmpl: 'A {{if condition}}true{{/if}} B'
+    model: { condition: true }
+    expected: 'A true B'
+  simple_if_else:
+    tmpl: 'A {{if condition}}true{{else}}false{{/if}} B'
+    model: { condition: false }
+    expected: 'A false B'
+  simple_if_not:
+    tmpl: 'A {{if !condition}}false{{else}}true{{/if}} B'
+    model: { condition: false }
+    expected: 'A true B'
