@@ -1,13 +1,16 @@
 import { writeFile, readFile, jsonRequest } from "../Utils/NodeUtils";
 import { ObjectComparer } from "./ObjectComparer";
-import { ExprLangAst } from "./ExprLangAst";
+import { ExprLangAst as Ast } from "./ExprLangAst";
 import { execFileSync } from "child_process";
 import { Tokenizer, Token, TokenizerException } from "./Tokenizer";
+import { operators, ExpressionParser } from "./ExpressionParser";
+import { AstPrinter } from "./AstPrinter";
 const YAML = require('yamljs');
 
 interface TestFile {
     templateTests: { [name: string]: TemplateTest; };
-    expressionTests: { [expression: string]: ExprLangAst.Expression; };
+    expressionTests: { [expression: string]: string; };
+    expressionAstTests: { [expression: string]: Ast.Expression; };
     tokenizerTests: { [expression: string]: { op?: string, i?: string, n?: string, s?: string }[]; };
 }
 
@@ -20,52 +23,6 @@ interface TemplateTest {
 // http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
 
 const testFile = <TestFile>YAML.parse(readFile("src/Test/TemplateTest.yaml"));
-const operators = ["+", "-", "*", "/", "<<", ">>", "(", ")", ",", ".", "not", "!", "or", "||", "and", "&&"];
-
-type OperatorKind = "binary";
-
-class OperatorInfo {
-    text: string;
-    kind: OperatorKind;
-    precendence: number;
-}
-
-function getOperators() {
-    const operatorKinds = {
-        'binary': ['+', '-', '*', '/', '**', '<<', '>>', 'or', '||', 'and', '&&'],
-    };
-
-    const operatorPrecendences = [
-        ['='],
-        ['?:'],
-        ['+', '-'],
-        ['*', '/'],
-        ['**'],
-        ['+', '-'],
-    ];
-}
-
-
-class ExpressionParser {
-    tokens: Token[];
-
-    constructor(public expression: string) {
-        this.tokens = new Tokenizer(expression, operators).tokens;
-    }
-
-    consume() { return this.tokens.shift(); }
-
-    parse() {
-        //const token = this.consume();
-        //if (!token.isOperator) {
-        //    return <ExprLangAst.IdentifierExpression> { 
-        //        kind: "identifier",
-        //        identifier: token.value
-        //    };
-        //} else if (token.value === 
-        return null;
-    }
-}
 
 class TestRunner {
     constructor(public testFile: TestFile) { }
@@ -100,6 +57,26 @@ class TestRunner {
         console.log('============== Expression tests ==============');
         for (const expr of Object.keys(testFile.expressionTests)) {
             const expected = testFile.expressionTests[expr];
+            try {
+                const parsed = new ExpressionParser(expr).parse();
+                const repr = AstPrinter.removeOuterParen(AstPrinter.print(parsed));
+                if (repr.replace(/\s*/g, "") === expected.replace(/\s*/g, "")) {
+                    console.log(`${expr}: OK`);
+                } else {
+                    console.log(`${expr}:`);
+                    console.log(`  expected: ${expected}`);
+                    console.log(`  got:      ${repr}`);
+                }
+            } catch(e) {
+                console.log(`${expr}: parse error: ${e}`);
+            }
+        }
+    }
+
+    runExpressionAstTests() {
+        console.log('============== Expression AST tests ==============');
+        for (const expr of Object.keys(testFile.expressionAstTests)) {
+            const expected = testFile.expressionAstTests[expr];
             const summary = ObjectComparer.getFullSummary(expected,
                 () => new ExpressionParser(expr).parse());
             console.log(`${expr}: ${summary}`);
@@ -107,10 +84,11 @@ class TestRunner {
     }
 }
 
-console.log(new Tokenizer("'alma'", ["(",")",","]).tokens);
+//new ExpressionParser("obj.subObj.method").parse();
 const testRunner = new TestRunner(testFile);
 testRunner.runTokenizerTests();
-//testRunner.runExpressionTests();
+testRunner.runExpressionAstTests();
+testRunner.runExpressionTests();
 
 //for (const testName of Object.keys(testFile.expressionTests)) {
 //    const exprTest = testFile.expressionTests[testName];

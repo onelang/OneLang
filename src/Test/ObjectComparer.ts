@@ -29,11 +29,11 @@ export class ObjectComparer {
 
             const unexpectedKeys = _.except(valueKeys, expectedKeys);
             if (unexpectedKeys.length > 0)
-                this.addIssue(path, `the following keys were not expected: ${unexpectedKeys.join(', ')}`);
+                this.addIssue(path, `the following keys are not expected: ${unexpectedKeys.join(', ')}`);
 
             const missingKeys = _.except(expectedKeys, valueKeys);
             if (missingKeys.length > 0)
-                this.addIssue(path, `the following keys were not missing: ${missingKeys.join(', ')}`);
+                this.addIssue(path, `the following keys missing: ${missingKeys.join(', ')}`);
 
             for (const key of _.intersect(expectedKeys, valueKeys))
                 this.compare([...path, key], expected[key], value[key]);
