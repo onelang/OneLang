@@ -21,6 +21,25 @@ export class Tokenizer {
     offset = 0;
     tokens: Token[] = [];
 
+    constructor(public expression: string, public operators: string[]) {
+        if (!this.tryToReadNumber()) {
+            this.tryToReadOperator();
+            this.tryToReadLiteral();
+        }
+
+        while(this.hasMoreToken()) {
+            if (!this.tryToReadOperator())
+                this.fail("expected operator here");
+
+            this.tryToReadLiteral();
+        }
+    }
+
+    hasMoreToken() {
+        this.skipWhitespace();
+        return !this.eof;
+    }
+
     addIf(kind: TokenKind, value: string) {
         if (value) {
             this.tokens.push(new Token(kind, value));
@@ -90,20 +109,6 @@ export class Tokenizer {
 
     fail(message: string) {
         throw new TokenizerException(this, message);
-    }
-
-    constructor(public expression: string, public operators: string[]) {
-        if (!this.tryToReadNumber()) {
-            this.tryToReadOperator();
-            this.tryToReadLiteral();
-        }
-
-        while(!this.eof) {
-            if (!this.tryToReadOperator())
-                this.fail("expected operator here");
-
-            this.tryToReadLiteral();
-        }
     }
 }
 
