@@ -6,6 +6,9 @@ import { Tokenizer, Token, TokenizerException } from "./Tokenizer";
 import { operators, ExpressionParser } from "./ExpressionParser";
 import { AstPrinter } from "./AstPrinter";
 import { ExprLangVM } from "./ExprLangVM";
+import { ParamParser } from "./ParamParser";
+import { TemplatePart, TemplatePartType } from "./TemplatePart";
+import { TemplateParser } from "./TemplateParser";
 const YAML = require('yamljs');
 
 interface TestFile {
@@ -111,6 +114,8 @@ testRunner.runTokenizerTests();
 testRunner.runExpressionAstTests();
 testRunner.runExpressionTests();
 testRunner.runVmTests();
+new TemplateParser(testFile.templateTests["test"].tmpl);
+new TemplateParser(testFile.templateTests["complex"].tmpl);
 
 //for (const testName of Object.keys(testFile.expressionTests)) {
 //    const exprTest = testFile.expressionTests[testName];

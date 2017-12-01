@@ -113,3 +113,34 @@ templateTests:
     tmpl: 'A {{if !condition}}false{{else}}true{{/if}} B'
     model: { condition: false }
     expected: 'A true B'
+  test:
+    tmpl: |-
+      L2A {{if cond1}}true{{/if}} L2B
+  complex:
+    tmpl: |-
+      L0
+      L1A {{ 42 }} L1B
+      L2A {{if cond1}}true{{/if}} L2B
+      L3A {{if cond2}}true{{else}}false{{/if}} L3B
+      L4A {{if cond1}}true{{/if}} L4B {{ 12 }} L4C
+      L5
+      {{for item in array}}
+        L6A {{item.name}} L6B
+        {{if item.cond1}}
+          L7 COND1 TRUE
+        {{elif item.cond2}}
+          L7 COND2 TRUE
+          {{if item.cond3}}
+            L8 COND3 TRUE
+          {{/if}}
+        {{else}}
+          L7 FALSE
+        {{/if}}
+      {{else}}
+        FOR ELSE
+      {{/for}}
+      L9
+      {{for item in array|sep=,}}
+        {{item.name}}
+      {{/for}}
+      L10
