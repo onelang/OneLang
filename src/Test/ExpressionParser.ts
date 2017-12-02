@@ -65,7 +65,7 @@ export class ExpressionParser {
         if (token.kind === "identifier") {
             left = <Ast.IdentifierExpression> { kind: "identifier", text: token.value };
         } else if (token.kind === "string") {
-            left = <Ast.LiteralExpression> { kind: "literal", type: "string", value: token.value };
+            left = <Ast.LiteralExpression> { kind: "literal", type: "string", value: token.value.replace(/\\n/g, "\n") };
         } else if (token.kind === "number") {
             const value = parseInt(token.value);
             left = <Ast.LiteralExpression> { kind: "literal", type: "number", value };

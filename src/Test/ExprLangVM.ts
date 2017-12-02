@@ -30,8 +30,14 @@ export class ExprLangVM {
             return litExpr.value;
         } else if (expr.kind === "identifier") {
             const identifier = <Ast.IdentifierExpression> expr;
-            const result = ExprLangVM.accessMember(model, identifier.text);
-            return result;
+            if (identifier.text === "true")
+                return true;
+            else if (identifier.text === "false")
+                return false;
+            else {
+                const result = ExprLangVM.accessMember(model, identifier.text);
+                return result;
+            }
         } else if (expr.kind === "unary") {
             const unaryExpr = <Ast.UnaryExpression> expr;
             const exprValue = this.evaluate(unaryExpr.expr, model);
