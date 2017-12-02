@@ -2,6 +2,19 @@ import { ExprLangAst as ExprAst } from "./ExprLangAst";
 import { ExprLangVM } from "./ExprLangVM";
 import { TemplateAst as TmplAst } from "./TemplateAst";
 
+/**
+ * Some important notes:
+ *  - nodes DON'T include trailing '\n', it's only added when they are included into somewhere else
+ *  - the AST usually contains all the newline ('\n') characters, except for "for" and "if" constructs,
+ *    because those are not always generate _any_ result (not even a newline), eg:
+ *      - for: no items and {{else}} is not specified
+ *      - if: condition is not true and {{else}} is not specified
+ *    so we have to add that '\n' here in the generator based on runtime data 
+ *    (but only if it's not an inline construct & it's not the last node -> no trailing '\n' is allowed)
+ *  - empty string ("") and <null> are different: <null> is created when an if or for does not match any item
+ *    <null> does not generate code, not counts as a valid item in for (so no separator included)
+ *    empty string ("") can generate code (eg. new line, separator in for loop, etc)
+ */
 export class TemplateGenerator {
     constructor(public template: TmplAst.Node, public model: any) { }
 

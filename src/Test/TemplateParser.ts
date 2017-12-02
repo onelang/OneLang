@@ -1,6 +1,19 @@
 import { TemplatePart, TemplatePartType } from "./TemplatePart";
 import { TemplateAst as Ast } from "./TemplateAst";
 
+/**
+ * Some info about this AST:
+ *  - It's a line based parser, a line can be: template or control line
+ *    - control line: can be "if", "elif", "else", "for", "endif" ("/if"), "endfor" ("/for")
+ *    - template line: array of string literals, template expressions and inline ifs
+ *  - There is no inline for (this is invalid: "{{for item in array}}{{item.something}}{{/for}}")
+ *  - Template line generates an "\n" at the end
+ *  - Control line does not generate an "\n" (it's added by the TemplateGenerator at run-time if needed)
+ *  - If a template line contains only one inline "if" then it is converted into a control line type "if"
+ *  - If the "inline" template argument specified for an "if" or "for" then it's inlined into the text
+ *    (the previous and next "\n" character will be removed)
+ */
+
 class LineInfo {
     parts: TemplatePart[];
     controlPart: TemplatePart;
@@ -200,6 +213,8 @@ export class TemplateParser {
                 this.deindentLine();
                 const items = new TemplateLineParser(this.currLine).root.items;
 
+                // if the whole line is a standalone "inline if" (eg "{{if cond}}something{{/if}}"),
+                //   then it converts it to a "control if" (newline only added if generates code)
                 const ifLine = items.length === 1 && items[0] instanceof Ast.IfNode;
                 if (!ifLine)
                     items.push(this.nl);
