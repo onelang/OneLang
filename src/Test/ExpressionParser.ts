@@ -133,5 +133,9 @@ export class ExpressionParser {
 
         return left;
     }
+
+    static parse(expression: string) {
+        return new ExpressionParser(expression).parse();
+    }
 }
 

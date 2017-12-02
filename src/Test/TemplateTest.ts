@@ -10,11 +10,17 @@ import { ParamParser } from "./ParamParser";
 import { TemplatePart, TemplatePartType } from "./TemplatePart";
 import { TemplateParser } from "./TemplateParser";
 import { TemplateAst as TmplAst } from "./TemplateAst";
-import { TemplateGenerator } from "./TemplateGenerator";
+import { TemplateGenerator, TemplateMethod } from "./TemplateGenerator";
 const YAML = require('yamljs');
 
 interface TestFile {
-    templateTests: { [name: string]: { tmpl: string; model: object; expected: string; }; };
+    templateTests: { [name: string]: { 
+        tmpl: string;
+        model: object;
+        expected: string;
+        methods: { [name: string]: string };
+    }; };
+
     expressionTests: { [expression: string]: string; };
     expressionAstTests: { [expression: string]: ExprAst.Expression; };
     vmTests: { [expression: string]: { expected: any; model?: any; }; };
@@ -100,10 +106,11 @@ class TestRunner {
                 method(c) { return this.a + this.b + c; }
             }
         };
+        const vm = new ExprLangVM();
 
         this.runTests(testFile.vmTests, (exprStr, test) => {
             const expr = new ExpressionParser(exprStr).parse();
-            const result = ExprLangVM.evaluate(expr, Object.assign({}, model, test.model));
+            const result = vm.evaluate(expr, Object.assign({}, model, test.model));
             const ok = result === test.expected;
             console.log(`${exprStr}: ${ok ? "OK" : "FAIL"} (${ok ? result : `got: ${result}, expected: ${test.expected}`})`);
         });
@@ -113,8 +120,13 @@ class TestRunner {
         console.log('============== Template tests ==============');
 
         this.runTests(testFile.templateTests, (name, test) => {
-            const tmplAst = new TemplateParser(test.tmpl).root;
-            const result = new TemplateGenerator(tmplAst, test.model).generate();
+            const tmplAst = TemplateParser.parse(test.tmpl);
+            const tmplGen = new TemplateGenerator(tmplAst, test.model);
+            for (const signature of Object.keys(test.methods || [])) {
+                const method = new TemplateMethod(signature, test.methods[signature]);
+                tmplGen.addMethod(method);
+            }
+            const result = tmplGen.generate();
             const expected = (test.expected || "").replace(/\\n/g, "\n");
             const ok = result === expected;
             if (result.includes("\n") || expected.includes("\n")) {

@@ -1,6 +1,8 @@
 import { ExprLangAst as ExprAst } from "./ExprLangAst";
-import { ExprLangVM } from "./ExprLangVM";
-import { TemplateAst as TmplAst } from "./TemplateAst";
+import { ExprLangVM, IMethodHandler } from "./ExprLangVM";
+import { TemplateAst as TmplAst, TemplateAst } from "./TemplateAst";
+import { TemplateParser } from "./TemplateParser";
+import { ExpressionParser } from "./ExpressionParser";
 
 /**
  * Some important notes:
@@ -15,11 +17,54 @@ import { TemplateAst as TmplAst } from "./TemplateAst";
  *    <null> does not generate code, not counts as a valid item in for (so no separator included)
  *    empty string ("") can generate code (eg. new line, separator in for loop, etc)
  */
-export class TemplateGenerator {
-    constructor(public template: TmplAst.Node, public model: any) { }
 
-    evaluate(expr: ExprAst.Expression, model: any) {
-        return ExprLangVM.evaluate(expr, model);
+export class TemplateMethod {
+    name: string;
+    arguments: string[];
+    body: TemplateAst.Block;
+
+    constructor(signature: string, template: string) {
+        const signatureAst = ExpressionParser.parse(signature);
+        if (signatureAst.kind === "call") {
+            const callExpr = <ExprAst.CallExpression> signatureAst;
+            this.name = (<ExprAst.IdentifierExpression> callExpr.method).text;
+            this.arguments = callExpr.arguments.map(x => (<ExprAst.IdentifierExpression> x).text);
+        } else if (signatureAst.kind === "identifier") {
+            const idExpr = <ExprAst.IdentifierExpression> signatureAst;
+            this.name = idExpr.text;
+            this.arguments = [];
+        } else {
+            throw new Error(`Could not parse method signature: '${signature}'`);
+        }
+
+        this.body = TemplateParser.parse(template);
+    }
+}
+
+export class TemplateGenerator implements IMethodHandler {
+    vm = new ExprLangVM();
+
+    constructor(public template: TmplAst.Node, public model: any) {
+        this.vm.methodHandler = this;
+    }
+
+    addMethod(method: TemplateMethod) {
+        this.model[method.name] = method;
+    }
+
+    call(method: any, args: any[], thisObj: any, parentModel: any) {
+        if (!(method instanceof TemplateMethod))
+            throw new Error(`Expected TemplateMethod, got ${method}`);
+
+        if (args.length !== method.arguments.length)
+            throw new Error(`Method '${method.name}' called with ${args.length} arguments, but expected ${method.arguments.length}`);
+        
+        const model = Object.assign({}, parentModel);
+        for (let i = 0; i < args.length; i++)
+            model[method.arguments[i]] = args[i];
+
+        const result = this.generateNode(method.body, model);
+        return result;
     }
 
     generateNode(node: TmplAst.Node, model: any) {
@@ -28,7 +73,7 @@ export class TemplateGenerator {
         if (node instanceof TmplAst.TextNode) {
             result = node.value;
         } else if (node instanceof TmplAst.TemplateNode) {
-            result = this.evaluate(node.expr, model);
+            result = this.vm.evaluate(node.expr, model);
         } else if (node instanceof TmplAst.Block) {
             const lines = [];
             for (let itemIdx = 0; itemIdx < node.items.length; itemIdx++) {
@@ -47,7 +92,7 @@ export class TemplateGenerator {
 
             for (const item of node.items)
             {
-                const condValue = this.evaluate(item.condition, model);
+                const condValue = this.vm.evaluate(item.condition, model);
                 if (condValue) {
                     resultBlock = item.body;
                     break;
@@ -56,7 +101,7 @@ export class TemplateGenerator {
 
             result = resultBlock ? this.generateNode(resultBlock, model) : null;
         } else if (node instanceof TmplAst.ForNode) {
-            const array = <any[]> this.evaluate(node.arrayExpr, model);
+            const array = <any[]> this.vm.evaluate(node.arrayExpr, model);
             if (array.length === 0) {
                 result = node.else ? this.generateNode(node.else, model) : null;
             } else {

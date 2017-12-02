@@ -233,4 +233,8 @@ export class TemplateParser {
         this.indentLevel--;
         return block;
     }
+
+    static parse(template: string) {
+        return new TemplateParser(template).root;
+    }
 }

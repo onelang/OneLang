@@ -287,3 +287,20 @@ templateTests:
             LINE5-INDENT6
       LINE6
     model: { cond: true }
+  call_test:
+    tmpl: |-
+      {{main()}}(
+        {{for item in array|inline sep=", "}}
+          {{genItem(item)}}
+        {{/for}}
+      )
+    methods:
+      genItem(item): |-
+        {{item.name}}: {{item.type}}
+      main: |-
+        main
+    model:
+      array:
+        - { name: arg1, type: number }
+        - { name: arg2, type: string }
+    expected: 'main(arg1: number, arg2: string)'
