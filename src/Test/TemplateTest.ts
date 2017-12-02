@@ -5,7 +5,7 @@ import { execFileSync } from "child_process";
 import { Tokenizer, Token, TokenizerException } from "./Tokenizer";
 import { operators, ExpressionParser } from "./ExpressionParser";
 import { AstPrinter } from "./AstPrinter";
-import { ExprLangVM } from "./ExprLangVM";
+import { ExprLangVM, JSMethodHandler } from "./ExprLangVM";
 import { ParamParser } from "./ParamParser";
 import { TemplatePart, TemplatePartType } from "./TemplatePart";
 import { TemplateParser } from "./TemplateParser";
@@ -107,6 +107,7 @@ class TestRunner {
             }
         };
         const vm = new ExprLangVM();
+        vm.methodHandler = new JSMethodHandler();
 
         this.runTests(testFile.vmTests, (exprStr, test) => {
             const expr = new ExpressionParser(exprStr).parse();
@@ -120,8 +121,12 @@ class TestRunner {
         console.log('============== Template tests ==============');
 
         this.runTests(testFile.templateTests, (name, test) => {
+            const model = {
+                hasKey(obj, key) { return typeof obj[key] !== "undefined"; },
+            };
+
             const tmplAst = TemplateParser.parse(test.tmpl);
-            const tmplGen = new TemplateGenerator(tmplAst, test.model);
+            const tmplGen = new TemplateGenerator(tmplAst, Object.assign({}, model, test.model));
             for (const signature of Object.keys(test.methods || [])) {
                 const method = new TemplateMethod(signature, test.methods[signature]);
                 tmplGen.addMethod(method);

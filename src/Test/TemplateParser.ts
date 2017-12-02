@@ -17,6 +17,7 @@ import { TemplateAst as Ast } from "./TemplateAst";
 class LineInfo {
     parts: TemplatePart[];
     controlPart: TemplatePart;
+    indentLen = 0;
 
     constructor(public line: string, public lineIdx: number) {
         this.parts = this.line.split(/\{\{([^{}]*?)\}\}/).map((x,i) => new TemplatePart(x, i % 2 === 0))
@@ -25,6 +26,12 @@ class LineInfo {
         const nonWs = this.parts.filter(x => !x.isWhitespace);
         this.controlPart = nonWs.length === 1 && (nonWs[0].type !== "text" 
             && nonWs[0].type !== "template") ? nonWs[0] : null;
+
+        for (const c of line)
+            if (c === " ")
+                this.indentLen++;
+            else
+                break;
     }
 
     match(...types: TemplatePartType[]) {
@@ -110,12 +117,13 @@ export class TemplateParser {
     lines: LineInfo[];
     lineIdx = -1;
     root: Ast.Block;
-    indentLevel = -1;
+    indentLen = 0;
+    levelIndent = 2;
     nl = new Ast.TextNode("\n");
 
     constructor(public template: string) {
         this.lines = template.split("\n").map((line, lineIdx) => new LineInfo(line, lineIdx));
-        this.root = this.readBlock();
+        this.root = this.readBlock(true);
     }
 
     get currLine() { return this.lines[this.lineIdx]; }
@@ -174,29 +182,27 @@ export class TemplateParser {
     }
 
     deindentLine() {
-        if (this.currLine.parts.length === 0 || this.indentLevel === 0) return;
-        const part0 = this.currLine.parts[0];
+        if (this.currLine.parts.length === 0 || this.indentLen === 0) return;
 
-        const indentLen = this.indentLevel * 2;
-        if (part0.type !== "text") {
-            this.currLine.fail(`Expected line start with text node, got '${part0.type}'.`);
-        } else if (!this.atleastIndent(part0.textValue, indentLen)) {
-            this.currLine.fail(`Expected at least ${indentLen} indentation`);
-        } else {
-            part0.textValue = part0.textValue.substr(indentLen);
-        }
+        if (this.currLine.indentLen < this.indentLen)
+            this.currLine.fail(`Expected at least ${this.indentLen} indentation`);
+
+        const part0 = this.currLine.parts[0];
+        part0.textValue = part0.textValue.substr(this.indentLen);
     }
 
-    readBlock(skipCurrent = true) {
+    readBlock(rootBlock = false) {
         const block = new Ast.Block();
-        this.indentLevel++;
-
+        
+        const prevIndentLen = this.indentLen;
+        this.indentLen = rootBlock ? 0 : this.currLine.indentLen + this.levelIndent;
+        this.lineIdx++;
+        
         const removeLastNl = () => {
             if (block.items[block.items.length - 1] === this.nl)
                 block.items.pop();
         };
 
-        this.lineIdx++;
         for (; this.lineIdx < this.lines.length; this.lineIdx++) {
             let newNodes: Ast.Node[] = [];
 
@@ -229,8 +235,8 @@ export class TemplateParser {
             block.items.push(...newNodes);
         }
 
+        this.indentLen = prevIndentLen;
         removeLastNl();
-        this.indentLevel--;
         return block;
     }
 

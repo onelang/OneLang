@@ -281,10 +281,10 @@ templateTests:
       LINE6
     expected: |-
       LINE1
-          LINE2-INDENT4
-            LINE3-INDENT6
-          LINE4-INDENT4
-            LINE5-INDENT6
+        LINE2-INDENT4
+          LINE3-INDENT6
+      LINE4-INDENT4
+        LINE5-INDENT6
       LINE6
     model: { cond: true }
   call_test:
@@ -304,3 +304,49 @@ templateTests:
         - { name: arg1, type: number }
         - { name: arg2, type: string }
     expected: 'main(arg1: number, arg2: string)'
+  call_indent:
+    tmpl: |-
+      LINE1
+          {{multiLine()}}
+    methods:
+      multiLine: |-
+        LINE2
+        LINE3
+    expected: |-
+      LINE1
+          LINE2
+          LINE3
+  python_complex_if:
+    tmpl: |-
+      BEGIN
+      {{if(expr)}}
+      END
+    methods:
+      if(expr): |-
+        if {{expr.cond}}:
+            {{expr.then}}
+        {{if expr.else}}
+          {{if hasKey(expr.else, "cond")}}
+            el{{if(expr.else)}}
+          {{else}}
+            else:
+                {{expr.else}}
+          {{/if}}
+        {{/if}}
+    model:
+      expr:
+        cond: COND1
+        then: COND1_BODY
+        else:
+          cond: ELIF_COND
+          then: ELIF_BODY
+          else: ELSE_BODY
+    expected: |-
+      BEGIN
+      if COND1:
+          COND1_BODY
+      elif ELIF_COND:
+          ELIF_BODY
+      else:
+          ELSE_BODY
+      END

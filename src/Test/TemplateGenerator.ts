@@ -45,6 +45,7 @@ export class TemplateGenerator implements IMethodHandler {
     vm = new ExprLangVM();
 
     constructor(public template: TmplAst.Node, public model: any) {
+        this.model = this.model || {};
         this.vm.methodHandler = this;
     }
 
@@ -53,18 +54,30 @@ export class TemplateGenerator implements IMethodHandler {
     }
 
     call(method: any, args: any[], thisObj: any, parentModel: any) {
-        if (!(method instanceof TemplateMethod))
-            throw new Error(`Expected TemplateMethod, got ${method}`);
+        if (method instanceof TemplateMethod) {
+            if (args.length !== method.arguments.length)
+                throw new Error(`Method '${method.name}' called with ${args.length} arguments, but expected ${method.arguments.length}`);
+            
+            const model = Object.assign({}, parentModel);
+            for (let i = 0; i < args.length; i++)
+                model[method.arguments[i]] = args[i];
 
-        if (args.length !== method.arguments.length)
-            throw new Error(`Method '${method.name}' called with ${args.length} arguments, but expected ${method.arguments.length}`);
-        
-        const model = Object.assign({}, parentModel);
-        for (let i = 0; i < args.length; i++)
-            model[method.arguments[i]] = args[i];
+            const result = this.generateNode(method.body, model);
+            return result;
+        } else if (typeof method === "function") {
+            const result = method.apply(thisObj, args);
+            return result;
+        } else {
+            throw new Error(`Expected TemplateMethod or function, but got ${method}`);
+        }
+    }
 
-        const result = this.generateNode(method.body, model);
-        return result;
+    getLastLineIndent(text: string) {
+        const lastNewLine = text.lastIndexOf("\n");
+        let indentLen = 0;
+        for (let i = lastNewLine + 1; i < text.length && text[i] === " "; i++)
+            indentLen++;
+        return indentLen;
     }
 
     generateNode(node: TmplAst.Node, model: any) {
@@ -75,18 +88,26 @@ export class TemplateGenerator implements IMethodHandler {
         } else if (node instanceof TmplAst.TemplateNode) {
             result = this.vm.evaluate(node.expr, model);
         } else if (node instanceof TmplAst.Block) {
-            const lines = [];
+            result = null;
+
             for (let itemIdx = 0; itemIdx < node.items.length; itemIdx++) {
                 const item = node.items[itemIdx];
                 const isLastNode = itemIdx === node.items.length - 1;
                 const line = this.generateNode(item, model);
                 if (line !== null) {
-                    lines.push(line);
+                    if (result === null) result = "";
+
+                    if (item instanceof TmplAst.TemplateNode) {
+                        const indent = this.getLastLineIndent(result);
+                        result += line.toString().replace(/\n/g, "\n" + " ".repeat(indent));
+                    } else {
+                        result += line;
+                    }
+
                     if (!isLastNode && (item instanceof TmplAst.ForNode || item instanceof TmplAst.IfNode) && !item.inline)
-                        lines.push("\n");
+                        result += "\n";
                 }
             }
-            result = lines.length === 0 ? null : lines.join("");
         } else if (node instanceof TmplAst.IfNode) {
             let resultBlock = node.else;
 
