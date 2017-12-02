@@ -110,12 +110,20 @@ templateTests:
     model: { condition: false }
     expected: 'A false B'
   simple_if_not:
-    tmpl: 'A {{if !condition}}false{{else}}true{{/if}} B'
+    tmpl: 'A {{if !condition}}true{{else}}false{{/if}} B'
     model: { condition: false }
     expected: 'A true B'
-  test:
+  foreach:
     tmpl: |-
-      L2A {{if cond1}}true{{/if}} L2B
+      {{for item in array|sep=,}}
+        {{item.name}}
+      {{/for}}
+    model:
+      array:
+        - name: item1
+        - name: item2
+        - name: item3
+    expected: 'item1,item2,item3'
   complex:
     tmpl: |-
       L0
@@ -132,6 +140,8 @@ templateTests:
           L7 COND2 TRUE
           {{if item.cond3}}
             L8 COND3 TRUE
+              L8 plus indent
+            L8 indent back
           {{/if}}
         {{else}}
           L7 FALSE
@@ -144,3 +154,136 @@ templateTests:
         {{item.name}}
       {{/for}}
       L10
+      {{if cond1}}
+        L11 COND1
+      {{/if}}
+      {{if cond2}}
+        L12 COND2
+      {{/if}}
+      L13
+    model:
+      cond1: true
+      cond2: false
+      array:
+        - { name: item1, cond1: false, cond2: true, cond3: true }
+        - { name: item2, cond1: true, cond2: true, cond3: false }
+        - { name: item3, cond1: true, cond2: false, cond3: false }
+        - { name: item4, cond1: false, cond2: false, cond3: false }
+    expected: |-
+      L0
+      L1A 42 L1B
+      L2A true L2B
+      L3A false L3B
+      L4A true L4B 12 L4C
+      L5
+      L6A item1 L6B
+      L7 COND2 TRUE
+      L8 COND3 TRUE
+        L8 plus indent
+      L8 indent back
+      L6A item2 L6B
+      L7 COND1 TRUE
+      L6A item3 L6B
+      L7 COND1 TRUE
+      L6A item4 L6B
+      L7 FALSE
+      L9
+      item1,item2,item3,item4
+      L10
+      L11 COND1
+      L13
+  csharp_template_str:
+    tmpl: |-
+      $"
+      {{for part in parts|inline}}
+        {{if part.literal}}
+          {{part.text}}
+        {{else}}
+          {{if part.isBoolean}}
+            {(({{part.expr}}) ? "true" : "false")}
+          {{else}}
+            {{{part.expr}}}
+          {{/if}}
+        {{/if}}
+      {{/for}}
+      "
+    expected: $"hello_{((a == 5) ? "true" : "false")}_and_{str}_bello"
+    model:
+      parts:
+        - { literal: true, text: hello_ }
+        - { isBoolean: true, expr: "a == 5", literal: false }
+        - { literal: true, text: _and_ }
+        - { expr: "str", literal: false, isBoolean: false }
+        - { literal: true, text: _bello }
+  empty_for:
+    tmpl: |-
+      A
+      {{for item in items}}
+        BAD
+      {{/for}}
+      B
+    expected: "A\nB"
+    model: { items: [] }
+  inline_if_true:
+    tmpl: |-
+      A
+      {{if cond}}B{{/if}}
+      C
+    expected: "A\nB\nC"
+    model: { cond: true }
+  inline_if_false:
+    tmpl: |-
+      A
+      {{if cond}}B{{/if}}
+      C
+    expected: "A\nC"
+    model: { cond: false }
+  python_template_str:
+    tmpl: |-
+      "
+      {{for part in parts|inline}}
+        {{if part.literal}}
+          {{part.text}}
+        {{else}}
+          %s
+        {{/if}}
+      {{/for}}
+      " % (
+      {{for part in parts|inline sep=", "}}
+        {{if part.expr}}
+          {{if part.isBoolean}}
+            "true" if {{part.expr}} else "false"
+          {{else}}
+            {{part.expr}}
+          {{/if}}
+        {{/if}}
+      {{/for}}
+      )
+    expected: '"hello_%s_and_%s_bello" % ("true" if a == 5 else "false", str)'
+    model:
+      parts:
+        - { literal: true, text: hello_, expr: null }
+        - { isBoolean: true, expr: "a == 5", literal: false }
+        - { literal: true, text: _and_, expr: null }
+        - { expr: "str", literal: false, isBoolean: false }
+        - { literal: true, text: _bello, expr: null }
+  control_indent:
+    tmpl: |-
+      LINE1
+        {{if cond}}
+            LINE2-INDENT4
+              LINE3-INDENT6
+        {{/if}}
+          {{if cond}}
+            LINE4-INDENT4
+              LINE5-INDENT6
+          {{/if}}
+      LINE6
+    expected: |-
+      LINE1
+          LINE2-INDENT4
+            LINE3-INDENT6
+          LINE4-INDENT4
+            LINE5-INDENT6
+      LINE6
+    model: { cond: true }

@@ -1,6 +1,6 @@
 import { writeFile, readFile, jsonRequest } from "../Utils/NodeUtils";
 import { ObjectComparer } from "./ObjectComparer";
-import { ExprLangAst as Ast } from "./ExprLangAst";
+import { ExprLangAst as ExprAst } from "./ExprLangAst";
 import { execFileSync } from "child_process";
 import { Tokenizer, Token, TokenizerException } from "./Tokenizer";
 import { operators, ExpressionParser } from "./ExpressionParser";
@@ -9,12 +9,14 @@ import { ExprLangVM } from "./ExprLangVM";
 import { ParamParser } from "./ParamParser";
 import { TemplatePart, TemplatePartType } from "./TemplatePart";
 import { TemplateParser } from "./TemplateParser";
+import { TemplateAst as TmplAst } from "./TemplateAst";
+import { TemplateGenerator } from "./TemplateGenerator";
 const YAML = require('yamljs');
 
 interface TestFile {
     templateTests: { [name: string]: { tmpl: string; model: object; expected: string; }; };
     expressionTests: { [expression: string]: string; };
-    expressionAstTests: { [expression: string]: Ast.Expression; };
+    expressionAstTests: { [expression: string]: ExprAst.Expression; };
     vmTests: { [expression: string]: { expected: any; model?: any; }; };
     tokenizerTests: { [expression: string]: { op?: string, i?: string, n?: string, s?: string }[]; };
 }
@@ -106,19 +108,31 @@ class TestRunner {
             console.log(`${exprStr}: ${ok ? "OK" : "FAIL"} (${ok ? result : `got: ${result}, expected: ${test.expected}`})`);
         });
     }
+
+    runTemplateTests() {
+        console.log('============== Template tests ==============');
+
+        this.runTests(testFile.templateTests, (name, test) => {
+            const tmplAst = new TemplateParser(test.tmpl).root;
+            const result = new TemplateGenerator(tmplAst, test.model).generate();
+            const expected = (test.expected || "").replace(/\\n/g, "\n");
+            const ok = result === expected;
+            if (result.includes("\n") || expected.includes("\n")) {
+                if (ok) {
+                    console.log(`${name}: OK ('${result.replace(/\n/g, "\\n")}')`);
+                } else {
+                    console.log(`${name}: FAIL\n  Got:\n    ${result.replace(/\n/g, "\n    ")}\n  Expected:\n    ${expected.replace(/\n/g, "\n    ")}`);
+                }
+            } else {
+                console.log(`${name}: ${ok ? "OK" : "FAIL"} (${ok ? `'${result}'` : `got: '${result}', expected: '${expected}'`})`);
+            }
+        });
+    }
 }
 
-//new ExpressionParser("obj.subObj.method").parse();
 const testRunner = new TestRunner(testFile);
 testRunner.runTokenizerTests();
 testRunner.runExpressionAstTests();
 testRunner.runExpressionTests();
 testRunner.runVmTests();
-new TemplateParser(testFile.templateTests["test"].tmpl);
-new TemplateParser(testFile.templateTests["complex"].tmpl);
-
-//for (const testName of Object.keys(testFile.expressionTests)) {
-//    const exprTest = testFile.expressionTests[testName];
-//    const parsedExpr = parseExpression(exprTest.expr);
-//    console.log(`${testName}`, parsedExpr, exprTest.expected);
-//}
+testRunner.runTemplateTests();

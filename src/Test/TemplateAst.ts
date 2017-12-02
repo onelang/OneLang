@@ -19,7 +19,7 @@ export namespace TemplateAst {
         body: Block;
         else: Block;
     
-        constructor(public itemName: string, public arrayExpr: ExprAst.Expression) { }
+        constructor(public itemName: string, public arrayExpr: ExprAst.Expression, public inline: boolean, public separator = "") { }
     }
     
     export class IfItem {
@@ -29,5 +29,6 @@ export namespace TemplateAst {
     export class IfNode implements Node {
         items: IfItem[] = [];
         else: Block;
+        inline: boolean;
     }
 }

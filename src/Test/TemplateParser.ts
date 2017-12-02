@@ -21,6 +21,13 @@ class LineInfo {
     fail(msg: string) {
         throw new Error(`${msg} (lineIdx: ${this.lineIdx}, line: '${this.line}'`);
     }
+
+    get inline() { return this.controlPart && !!this.controlPart.params["inline"] }
+    get sep() {
+        return !this.controlPart ? null :
+            "sep" in this.controlPart.params ? <string>this.controlPart.params["sep"] :
+            (this.inline ? "" : "\n");
+    }
 }
 
 class TemplateLineParser {
@@ -37,6 +44,7 @@ class TemplateLineParser {
 
     readIf() {
         const ifNode = new Ast.IfNode();
+        ifNode.inline = true;
 
         const ifItem = new Ast.IfItem(this.currPart.if.condition);
         ifItem.body = this.readBlock();
@@ -89,6 +97,8 @@ export class TemplateParser {
     lines: LineInfo[];
     lineIdx = -1;
     root: Ast.Block;
+    indentLevel = -1;
+    nl = new Ast.TextNode("\n");
 
     constructor(public template: string) {
         this.lines = template.split("\n").map((line, lineIdx) => new LineInfo(line, lineIdx));
@@ -104,7 +114,8 @@ export class TemplateParser {
 
     readIf() {
         const ifNode = new Ast.IfNode();
-
+        ifNode.inline = this.currLine.inline;
+        
         const ifItem = new Ast.IfItem(this.currLine.controlPart.if.condition, this.readBlock());
         ifNode.items.push(ifItem);
 
@@ -126,8 +137,8 @@ export class TemplateParser {
     }
 
     readFor() {
-        const forPart = this.currLine.controlPart.for;
-        const forNode = new Ast.ForNode(forPart.itemName, forPart.array);
+        const part = this.currLine.controlPart;
+        const forNode = new Ast.ForNode(part.for.itemName, part.for.array, this.currLine.inline, this.currLine.sep);
         forNode.body = this.readBlock();
         
         if (this.currLine.match("else")) {
@@ -139,20 +150,63 @@ export class TemplateParser {
         return forNode;
     }
 
+    atleastIndent(str: string, len: number) {
+        if (len > str.length) return false;
+
+        for (let i = 0; i < len; i++)
+            if (str[i] !== " ")
+                return false;
+
+        return true;
+    }
+
+    deindentLine() {
+        if (this.currLine.parts.length === 0 || this.indentLevel === 0) return;
+        const part0 = this.currLine.parts[0];
+
+        const indentLen = this.indentLevel * 2;
+        if (part0.type !== "text") {
+            this.currLine.fail(`Expected line start with text node, got '${part0.type}'.`);
+        } else if (!this.atleastIndent(part0.textValue, indentLen)) {
+            this.currLine.fail(`Expected at least ${indentLen} indentation`);
+        } else {
+            part0.textValue = part0.textValue.substr(indentLen);
+        }
+    }
+
     readBlock(skipCurrent = true) {
         const block = new Ast.Block();
-        
+        this.indentLevel++;
+
+        const removeLastNl = () => {
+            if (block.items[block.items.length - 1] === this.nl)
+                block.items.pop();
+        };
+
         this.lineIdx++;
         for (; this.lineIdx < this.lines.length; this.lineIdx++) {
-            let newNodes: Ast.Node[];
+            let newNodes: Ast.Node[] = [];
 
             const line = this.currLine;
+
+            if (line.inline)
+                removeLastNl();
+
             if (line.match("if")) {
-                newNodes = [this.readIf()];
+                newNodes.push(this.readIf());
             } else if (line.match("for")) {
-                newNodes = [this.readFor()];
+                newNodes.push(this.readFor());
             } else if (!line.controlPart) {
-                newNodes = new TemplateLineParser(this.currLine).root.items;
+                this.deindentLine();
+                const items = new TemplateLineParser(this.currLine).root.items;
+
+                const ifLine = items.length === 1 && items[0] instanceof Ast.IfNode;
+                if (!ifLine)
+                    items.push(this.nl);
+                else
+                    (<Ast.IfNode>items[0]).inline = false;
+
+                newNodes.push(...items);
             } else {
                 break;
             }
@@ -160,6 +214,8 @@ export class TemplateParser {
             block.items.push(...newNodes);
         }
 
+        removeLastNl();
+        this.indentLevel--;
         return block;
     }
 }
