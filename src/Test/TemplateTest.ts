@@ -30,23 +30,27 @@ interface TestFile {
 const testFile = <TestFile>YAML.parse(readFile("src/Test/TemplateTest.yaml"));
 
 class TestRunner {
+    failedTests = [];
+
     constructor(public testFile: TestFile) { }
 
-    runTests<T>(tests: { [name: string]: T }, callback: (name: string, test: T) => void) {
+    runTests<T>(tests: { [name: string]: T }, callback: (name: string, test: T) => boolean) {
         if (!tests) return;
 
         for (const name of Object.keys(tests)) {
             const test = tests[name];
             try {
-                callback(name, test);
+                if (!callback(name, test))
+                    this.failedTests.push(name);
             } catch(e) {
                 console.log(`${name}: ERROR: ${e}`);
+                this.failedTests.push(name);
             }
         }
     }
 
     runTokenizerTests() {
-        console.log('============== Tokenizer tests ==============');
+        console.log('\n============== Tokenizer tests ==============');
         this.runTests(testFile.tokenizerTests, (expr, expectedDesc) => {
             const expected = Array.isArray(expectedDesc) ? expectedDesc.map(x => 
                 x.op ? new Token("operator", x.op) :
@@ -67,16 +71,18 @@ class TestRunner {
             });
 
             console.log(`${expr}: ${summary}`);
+            return summary === "OK";
         });
     }
 
     runExpressionTests() {
-        console.log('============== Expression tests ==============');
+        console.log('\n============== Expression tests ==============');
         this.runTests(testFile.expressionTests, (expr, expected) => {
             const parsed = new ExpressionParser(expr).parse();
             const repr = AstPrinter.removeOuterParen(AstPrinter.print(parsed));
             if (repr.replace(/\s*/g, "") === expected.replace(/\s*/g, "")) {
                 console.log(`${expr}: OK`);
+                return true;
             } else {
                 console.log(`${expr}:`);
                 console.log(`  expected: ${expected}`);
@@ -86,17 +92,17 @@ class TestRunner {
     }
 
     runExpressionAstTests() {
-        console.log('============== Expression AST tests ==============');
-        for (const expr of Object.keys(testFile.expressionAstTests)) {
-            const expected = testFile.expressionAstTests[expr];
+        console.log('\n============== Expression AST tests ==============');
+        this.runTests(testFile.expressionAstTests, (expr, expected) => {
             const summary = ObjectComparer.getFullSummary(expected,
                 () => new ExpressionParser(expr).parse());
             console.log(`${expr}: ${summary}`);
-        }
+            return summary === "OK";
+        });
     }
 
     runVmTests() {
-        console.log('============== Expression VM tests ==============');
+        console.log('\n============== Expression VM tests ==============');
 
         const model = {
             sum(a,b) { return a + b; },
@@ -114,11 +120,12 @@ class TestRunner {
             const result = vm.evaluate(expr, Object.assign({}, model, test.model));
             const ok = result === test.expected;
             console.log(`${exprStr}: ${ok ? "OK" : "FAIL"} (${ok ? result : `got: ${result}, expected: ${test.expected}`})`);
+            return ok;
         });
     }
 
     runTemplateTests() {
-        console.log('============== Template tests ==============');
+        console.log('\n============== Template tests ==============');
 
         this.runTests(testFile.templateTests, (name, test) => {
             const model = {
@@ -126,6 +133,7 @@ class TestRunner {
             };
 
             const tmplAst = TemplateParser.parse(test.tmpl);
+            const tmplAstJson = JSON.stringify(tmplAst, null, 4);
             const tmplGen = new TemplateGenerator(tmplAst, Object.assign({}, model, test.model));
             for (const signature of Object.keys(test.methods || [])) {
                 const method = new TemplateMethod(signature, test.methods[signature]);
@@ -143,6 +151,7 @@ class TestRunner {
             } else {
                 console.log(`${name}: ${ok ? "OK" : "FAIL"} (${ok ? `'${result}'` : `got: '${result}', expected: '${expected}'`})`);
             }
+            return ok;
         });
     }
 }
@@ -153,3 +162,6 @@ testRunner.runExpressionAstTests();
 testRunner.runExpressionTests();
 testRunner.runVmTests();
 testRunner.runTemplateTests();
+
+console.log(`\nTest summary: ${testRunner.failedTests.length === 0 ? "ALL SUCCESS" : 
+    `FAIL (${testRunner.failedTests.join(", ")})`}`);
