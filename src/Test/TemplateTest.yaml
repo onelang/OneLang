@@ -281,10 +281,10 @@ templateTests:
       LINE6
     expected: |-
       LINE1
-        LINE2-INDENT4
-          LINE3-INDENT6
-      LINE4-INDENT4
-        LINE5-INDENT6
+          LINE2-INDENT4
+            LINE3-INDENT6
+          LINE4-INDENT4
+            LINE5-INDENT6
       LINE6
     model: { cond: true }
   call_test:
@@ -350,3 +350,86 @@ templateTests:
       else:
           ELSE_BODY
       END
+  body_test:
+    tmpl: |-
+      function test() {
+          {{genBody()}}
+          if (condition) {
+              {{genBody()}}
+          }
+      }
+    methods:
+      genBody: |-
+        statement1;
+        statement2;
+    expected: |-
+      function test() {
+          statement1;
+          statement2;
+          if (condition) {
+              statement1;
+              statement2;
+          }
+      }    
+  multiline_inline_if:
+    tmpl: |-
+      YamlIndent
+        BEGIN3 {{if true}}{{"L1\nL2"}}{{/if}} END3
+    expected: |-
+      YamlIndent
+        BEGIN3 L1
+        L2 END3
+  if_position_indent:
+    tmpl: |-
+      YamlIndent
+        BEGIN4
+        {{if true}}
+          {{"L1\nL2"}}
+        {{/if}}
+        END4
+    expected: |-
+      YamlIndent
+        BEGIN4
+        L1
+        L2
+        END4
+  multiline_test:
+    tmpl: |-
+      BEGIN1 {{"L1\nL2"}} END1
+
+        BEGIN2 {{"L1\nL2"}} END2
+     
+        BEGIN3 {{if true}}{{"L1\nL2"}}{{/if}} END3
+
+        BEGIN4
+        {{if true}}
+          {{"L1\nL2"}}
+        {{/if}}
+        END4
+     
+        BEGIN5
+          {{"L1\nL2"}}
+        END5
+     
+        BEGIN6 {{if false}}{{"L1\nL2"}}{{else}}ELSE{{/if}} END6
+    expected: |-
+      BEGIN1 L1
+      L2 END1
+
+        BEGIN2 L1
+        L2 END2
+
+        BEGIN3 L1
+        L2 END3
+
+        BEGIN4
+        L1
+        L2
+        END4
+      
+        BEGIN5
+          L1
+          L2
+        END5
+      
+        BEGIN6 ELSE END6

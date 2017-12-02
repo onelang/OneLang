@@ -114,11 +114,12 @@ class TemplateLineParser {
 }
 
 export class TemplateParser {
+    levelIndent = 2;
+
     lines: LineInfo[];
     lineIdx = -1;
     root: Ast.Block;
-    indentLen = 0;
-    levelIndent = 2;
+    indentLen = -this.levelIndent;
     nl = new Ast.TextNode("\n");
 
     constructor(public template: string) {
@@ -192,10 +193,12 @@ export class TemplateParser {
     }
 
     readBlock(rootBlock = false) {
+        // whitespace DOES NOT matter before *inline* "if"s / "for"s
+        // but whitespace DOES matter before non-inline "if"s / "for"s
+        const prevIndent = this.indentLen;
+        this.indentLen = (this.currLine && this.currLine.inline ? this.currLine.indentLen : this.indentLen) + this.levelIndent;
+
         const block = new Ast.Block();
-        
-        const prevIndentLen = this.indentLen;
-        this.indentLen = rootBlock ? 0 : this.currLine.indentLen + this.levelIndent;
         this.lineIdx++;
         
         const removeLastNl = () => {
@@ -235,8 +238,8 @@ export class TemplateParser {
             block.items.push(...newNodes);
         }
 
-        this.indentLen = prevIndentLen;
         removeLastNl();
+        this.indentLen = prevIndent;
         return block;
     }
 

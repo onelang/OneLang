@@ -97,7 +97,7 @@ export class TemplateGenerator implements IMethodHandler {
                 if (line !== null) {
                     if (result === null) result = "";
 
-                    if (item instanceof TmplAst.TemplateNode) {
+                    if (!(item instanceof TmplAst.TextNode)) {
                         const indent = this.getLastLineIndent(result);
                         result += line.toString().replace(/\n/g, "\n" + " ".repeat(indent));
                     } else {
