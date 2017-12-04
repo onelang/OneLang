@@ -117,7 +117,7 @@ templates:
       {{/for}}
 
       {{for field in class.fields|sep=\n}}
-        var {{class.name}}{{field.name}} {{field.type}}{{if field.initializer}}\ = {{gen(field.initializer)}}{{/if}};
+        var {{class.name}}{{field.name}} {{field.type}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}};
       {{/for}}
     {{/for}}
 
@@ -233,10 +233,10 @@ expressions:
     }
     {{if expr.else|inline}}
       {{if isIfBlock(expr.else)}}
-        \ else\ {{genBody(expr.else)|inline}}
+         else {{genBody(expr.else)|inline}}
       {{else}}
-        \ else {
-        \    {{genBody(expr.else)}}
+         else {
+            {{genBody(expr.else)}}
         }
       {{/if}}
     {{/if}}

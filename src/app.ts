@@ -12,10 +12,10 @@ declare var YAML;
 
 global["debugOn"] = false;
 
-let prgNames = ["OneLang"];
+let prgNames = ["Test"];
 const runPrg = false;
 const langFilter = "";
-const compileAll = true;
+const compileAll = false;
 
 if (compileAll)
     prgNames = fs.readdirSync("input").filter(x => x.endsWith(".ts")).map(x => x.replace(".ts", ""));
@@ -40,6 +40,7 @@ for (const prgName of prgNames) {
     for (const lang of langs) {
         if (langFilter && lang.name !== langFilter) continue;
     
+        console.log(`converting program '${prgName}' to ${lang.name}...`);
         const langYaml = readFile(`langs/${lang.name}.yaml`);
         const codeGen = compiler.getCodeGenerator(langYaml, lang.name);
         lang.request.code = codeGen.generate(true);

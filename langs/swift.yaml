@@ -70,7 +70,7 @@ templates:
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
         {{for field in class.fields|sep=\n}}
-            {{if field.static}}static {{/if}}var {{field.name}}: {{field.type}}{{if field.type.isComplexClass}}?{{/if}}{{if field.initializer}}\ = {{gen(field.initializer)}}{{/if}}
+            {{if field.static}}static {{/if}}var {{field.name}}: {{field.type}}{{if field.type.isComplexClass}}?{{/if}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}}
         {{/for}}
 
         {{if class.constructor}}
@@ -186,10 +186,10 @@ expressions:
     }
     {{if expr.else|inline}}
       {{if isIfBlock(expr.else)}}
-        \ else\ {{genBody(expr.else)|inline}}
+         else {{genBody(expr.else)|inline}}
       {{else}}
-        \ else {
-        \    {{genBody(expr.else)}}
+         else {
+            {{genBody(expr.else)}}
         }
       {{/if}}
     {{/if}}

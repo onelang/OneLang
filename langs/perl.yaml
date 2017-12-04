@@ -103,7 +103,7 @@ templates:
 
       {{for field in class.fields|sep=\n}}
         {{if field.static}}
-          our ${{field.name}}{{if field.initializer}}\ = {{gen(field.initializer)}}{{/if}};
+          our ${{field.name}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}};
         {{/if}}
       {{/for}}
 
@@ -178,7 +178,7 @@ expressions:
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}->{{expr.methodRef.name}}"
   staticMethod: "{{expr.methodRef.classRef.name}}::{{expr.methodRef.name}}"
-  localVar: "{{varName(expr.varRef, args[0])}}"
+  localVar: "{{varName(expr.varRef)}}"
   methodArgument: "{{varName(expr.varRef)}}"
   instanceField: "{{gen(expr.thisExpr)}}->{{{expr.varRef.name}}}"
   staticField: "${{gen(expr.thisExpr)}}::{{expr.varRef.name}}"
@@ -220,10 +220,10 @@ expressions:
     }
     {{if expr.else|inline}}
       {{if isIfBlock(expr.else)}}
-        \ els{{genBody(expr.else)}}
+         els{{genBody(expr.else)}}
       {{else}}
-        \ else {
-        \    {{genBody(expr.else)}}
+         else {
+            {{genBody(expr.else)}}
         }
       {{/if}}
     {{/if}}

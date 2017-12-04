@@ -182,9 +182,9 @@ expressions:
     {{for part in expr.parts|inline}}
       {{if part.expr|inline}}
         {{if part.expr.valueType.isBoolean|inline}}
-          "true" if {{gen(part.expr)}} else "false",\ 
+          "true" if {{gen(part.expr)}} else "false", 
         {{else}}
-          {{gen(part.expr)}},\ 
+          {{gen(part.expr)}}, 
         {{/if}}
       {{/if}}
     {{/for}}
@@ -208,6 +208,6 @@ expressions:
         el{{genBody(expr.else)|inline}}
       {{else}}
         else:
-        \    {{genBody(expr.else)}}
+            {{genBody(expr.else)}}
       {{/if}}
     {{/if}}

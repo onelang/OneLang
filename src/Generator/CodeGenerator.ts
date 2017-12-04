@@ -6,58 +6,8 @@ import { LangFileSchema } from "./LangFileSchema";
 import { deindent } from "./Utils";
 import { SchemaCaseConverter, CaseConverter } from "../One/Transforms/CaseConverter";
 import { IncludesCollector } from "../One/Transforms/IncludesCollector";
-
-function tmpl(literalParts: TemplateStringsArray, ...values: any[]) {
-    interface TemplatePart { type: "text"|"value", value: any, block?: boolean };
-    let parts: TemplatePart[] = [];
-
-    for (let i = 0; i < values.length + 1; i++) {
-        parts.push({ type: "text", value: literalParts[i] });
-        if (i < values.length) {
-            let value = values[i];
-            if (value instanceof tmpl.Block) {
-                parts.push({ type: "value", value: value.data, block: true });
-            } else {
-                parts.push({ type: "value", value: value, block: false });
-            }
-        }
-    }
-
-    const isEmptyBlock = (part: TemplatePart) => part && part.block && part.value === "";
-
-    // filter out whitespace text part if it's between two blocks from which one is empty
-    //  (so the whitespace was there to separate blocks but there is no need for separator
-    //  if the block is empty)
-    parts = parts.filter((part, i) => 
-        !(part.type === "text" && (isEmptyBlock(parts[i - 1]) || isEmptyBlock(parts[i + 1]))
-            && /^\s*$/.test(part.value) ));
-
-    let result = "";
-    for (const part of parts) {
-        if (part.type === "text") {
-            result += part.value;
-        } else if (part.type === "value") {
-            const prevLastLineIdx = result.lastIndexOf("\n");
-            let extraPad = 0;
-            while (result[prevLastLineIdx + 1 + extraPad] === " ")
-                extraPad++;
-
-            const value = (part.value||"").toString().replace(/\n/g, "\n" + " ".repeat(extraPad));
-            //if (value.includes("Dictionary") || value.includes("std::map"))
-            //    debugger;
-            result += value;
-        }
-    }
-
-    return deindent(result);
-}
-
-namespace tmpl {
-    export function Block(data: string) {
-        if (!(this instanceof Block)) return new (<any>Block)(data);
-        this.data = data;
-    }
-}
+import { TemplateMethod, TemplateGenerator } from "../Test/TemplateGenerator";
+import { VariableContext, VariableSource } from "../Test/ExprLangVM";
 
 namespace CodeGeneratorModel {
     export interface MethodParameter {
@@ -129,27 +79,14 @@ class CodeGeneratorModel {
 
     includes: string[] = [];
     classes: CodeGeneratorModel.Class[] = [];
-    operatorGenerators: { [name: string]: (left: one.Expression, right: one.Expression) => string } = {};
-    expressionGenerators: { [name: string]: (expr: any, ...args: any[]) => string } = {};
-    classGenerators: { 
-        [className: string]: {
-            typeGenerator: (typeArgs: string[], ...args: any[]) => string,
-            methods: {
-                [methodName: string]: (expr: any, ...args: any[]) => string
-            },
-            fields: {
-                [fieldName: string]: (expr: any, ...args: any[]) => string
-            }
-        }
-    } = {};
 
     constructor(public generator: CodeGenerator) { }
 
     log(data: string) { console.log(`[CodeGeneratorModel] ${data}`); }
 
     typeName(type: one.Type) {
-        const cls = this.classGenerators[type.className];
-        const result = cls ? cls.typeGenerator.apply(this, [type.typeArguments.map(x => this.typeName(x))]) : this.generator.getTypeName(type);
+        const cls = this.generator.classGenerators[type.className];
+        const result = cls ? this.generator.call(cls.typeGenerator, [type.typeArguments.map(x => this.typeName(x))]) : this.generator.getTypeName(type);
         return result;
     }
 
@@ -205,10 +142,10 @@ class CodeGeneratorModel {
             callExpr.arguments[i].paramName = methodArgs[i];
 
         const thisArg = methodRef.thisExpr ? this.gen(methodRef.thisExpr) : null;
-        const overlayFunc = this.classGenerators[className].methods[methodName];
+        const overlayFunc = this.generator.classGenerators[className].methods[methodName];
         const typeArgs = methodRef.thisExpr && methodRef.thisExpr.valueType.typeArguments.map(x => this.typeName(x));
 
-        const code = overlayFunc.apply(this, [thisArg, typeArgs, ...exprCallArgs, ...extraArgValues]);
+        const code = this.generator.call(overlayFunc, [thisArg, typeArgs, ...exprCallArgs, ...extraArgValues]);
         return code;
     }
 
@@ -258,10 +195,10 @@ class CodeGeneratorModel {
                 if (cls) {
                     const func = cls.fields && cls.fields[fieldName];
                     const thisArg = varRef.thisExpr ? this.gen(varRef.thisExpr) : null;
-                    const gen = (this.classGenerators[className].fields||{})[fieldName];
+                    const gen = (this.generator.classGenerators[className].fields||{})[fieldName];
                     //this.log(varPath);
                     if (gen) {
-                        const code = gen.apply(this, [thisArg]);
+                        const code = this.generator.call(gen, [thisArg]);
                         return code;
                     }
                 }
@@ -290,24 +227,24 @@ class CodeGeneratorModel {
             const unaryExpr = <one.UnaryExpression> obj;
             const unaryName = unaryExpr.unaryType.ucFirst();
             const fullName = `${unaryName}${unaryExpr.operator}`;
-            genName = this.expressionGenerators[fullName] ? fullName : unaryName;
+            genName = this.generator.expressionGenerators[fullName] ? fullName : unaryName;
         } else if (type === one.ExpressionKind.Binary) {
             const binaryExpr = <one.BinaryExpression> obj;
             const leftType = binaryExpr.left.valueType.repr();
             const rightType = binaryExpr.right.valueType.repr();
             const opGenName = `${leftType} ${binaryExpr.operator} ${rightType}`;
-            const opGen = this.operatorGenerators[opGenName];
+            const opGen = this.generator.operatorGenerators[opGenName];
             if (opGen)
-                return opGen.call(this, binaryExpr.left, binaryExpr.right);
+                return this.generator.call(opGen, [binaryExpr.left, binaryExpr.right]);
 
             const fullName = `Binary${binaryExpr.operator}`;
-            if (this.expressionGenerators[fullName])
+            if (this.generator.expressionGenerators[fullName])
                 genName = fullName;
         } else if (type === one.StatementType.VariableDeclaration) {
             const varDecl = <one.VariableDeclaration> obj;
             const initType = varDecl.initializer.exprKind;
             if (initType === one.ExpressionKind.MapLiteral
-                    && this.expressionGenerators["MapLiteralDeclaration"])
+                    && this.generator.expressionGenerators["MapLiteralDeclaration"])
                 genName = "MapLiteralDeclaration";
             else if (initType === one.ExpressionKind.Call) {
                 const overlayCall = this.getOverlayCallCode(<one.CallExpression> varDecl.initializer, { result: varDecl.name });
@@ -320,7 +257,7 @@ class CodeGeneratorModel {
             objExpr.typeArgs = objExpr.valueType.typeArguments.map(x => this.generator.getTypeName(x));
         }
 
-        const genFunc = this.expressionGenerators[genName];
+        const genFunc = this.generator.expressionGenerators[genName];
         if (!genFunc)
             throw new Error(`Expression template not found: ${genName}!`);
 
@@ -331,7 +268,7 @@ class CodeGeneratorModel {
         if (usingResult)
             this.tempVarHandler.create();
 
-        let genResult = genFunc.call(this, obj, ...genArgs);
+        let genResult = this.generator.call(genFunc, [obj, ...genArgs]);
 
         if (usingResult)
             return this.tempVarHandler.finish(genResult);
@@ -341,9 +278,6 @@ class CodeGeneratorModel {
 
         return genResult;
     }
-
-    main(): string { return null; }
-    testGenerator(cls: string, method: string): string { return null; }
 }
 
 export class CodeGenerator {
@@ -352,9 +286,23 @@ export class CodeGenerator {
     templateObjectCode: string;
     templateObject: any;
     generatedCode: string;
+    templateGenerator: TemplateGenerator;
+    templateVars = new VariableSource("Templates");
+
+    templates: { [name: string]: TemplateMethod } = {};
+    operatorGenerators: { [name: string]: TemplateMethod } = {};
+    expressionGenerators: { [name: string]: TemplateMethod } = {};
+    classGenerators: { 
+        [className: string]: {
+            typeGenerator: TemplateMethod,
+            methods: { [methodName: string]: TemplateMethod },
+            fields: { [fieldName: string]: TemplateMethod }
+        }
+    } = {};
 
     constructor(public schema: one.Schema, public stdlib: one.Schema, public lang: LangFileSchema.LangFile) {
         this.caseConverter = new SchemaCaseConverter(lang.casing);
+        this.setupTemplateGenerator();
         this.compileTemplates();
         this.setupClasses();
 
@@ -363,11 +311,28 @@ export class CodeGenerator {
         this.model.includes = Array.from(includesCollector.includes);
     }
 
+    setupTemplateGenerator() {
+        const codeGenVars = new VariableSource("CodeGeneratorModel");
+        codeGenVars.addCallback("includes", () => this.model.includes);
+        codeGenVars.addCallback("classes", () => this.model.classes);
+        codeGenVars.addCallback("result", () => this.model.result);
+        for (const name of ["gen", "isIfBlock", "typeName", "hackPerlToVar"])
+            codeGenVars.setVariable(name, (...args) => this.model[name].apply(this.model, args));
+        const varContext = new VariableContext([codeGenVars, this.templateVars]);
+        this.templateGenerator = new TemplateGenerator(varContext);
+    }
+
+    call(method: TemplateMethod, args: any[]) {
+        const callStackItem = this.templateGenerator.callStack.last();
+        const varContext = callStackItem ? callStackItem.vars : this.templateGenerator.rootVars;
+        return this.templateGenerator.call(method, args, this.model, varContext);
+    }
+
     getTypeName(type: one.IType): string {
         if (type.typeKind === one.TypeKind.Class) {
-            const classGen = this.model.classGenerators[type.className];
+            const classGen = this.model.generator.classGenerators[type.className];
             if (classGen) {
-                return classGen.typeGenerator(type.typeArguments.map(x => this.getTypeName(x)));
+                return this.call(classGen.typeGenerator, type.typeArguments.map(x => this.getTypeName(x)));
             } else
                 return this.caseConverter.getName(type.className, "class");
         }
@@ -375,8 +340,7 @@ export class CodeGenerator {
             return this.lang.primitiveTypes ? this.lang.primitiveTypes[type.typeKind] : type.typeKind.toString();
     }
 
-    convertIdentifier(origName: string, vars: string[], mode: "variable"|"field"|"declaration") {
-        const name = origName === "class" ? "cls" : origName;
+    convertIdentifier(name: string, vars: string[], mode: "variable"|"field"|"declaration") {
         const isLocalVar = vars.includes(name);
         const knownKeyword = ["true", "false"].includes(name);
         return `${isLocalVar || mode === "declaration" || mode === "field" || knownKeyword ? "" : "this."}${name}`;
@@ -399,14 +363,6 @@ export class CodeGenerator {
 
         const funcName = parts.reverse().map(x => x.toLowerCase()).join(".");
         return funcName;
-    }
-
-    genTemplate(template: string, args: string[]) {
-        const tmpl = new Template(template, args);
-        tmpl.convertIdentifier = this.convertIdentifier;
-        const tmplCodeLines = tmpl.templateToJS(tmpl.treeRoot, args).split("\n");
-        const tmplCode = tmplCodeLines.length > 1 ? tmplCodeLines.map(x => `\n    ${x}`).join("") : tmplCodeLines[0];
-        return `return tmpl\`${tmplCode}\`;`;
     }
 
     genParameters(method: one.Method|one.Constructor) {
@@ -462,92 +418,54 @@ export class CodeGenerator {
         });
     }
 
-    genName(name: string) {
-        return /^[a-zA-Z0-9]+$/.test(name) ? name : `"${name}"`;
-    }
-
-    genTemplateMethodCode(name: string, args: string[], template: string) {
-        return tmpl`
-            ${this.genName(name)}(${[...args, "...args"].join(", ")}) {
-                ${this.genTemplate(template, [...args, "args"])}
-            },`;
-    }
-
-    compileClassMethod(className: string, cls: LangFileSchema.Class, methodName: string) {
-        const funcInfo = cls.methods[methodName];
-        const stdMethod = this.stdlib.classes[className].methods[methodName];
-        const methodArgs = stdMethod ? stdMethod.parameters.map(x => x.name) : [];
-
-        const funcArgs = ["self", "typeArgs", ...methodArgs, ...funcInfo.extraArgs||[]];
-        return this.genTemplateMethodCode(methodName, funcArgs, funcInfo.template);
-    }
-
-    compileClassField(className: string, cls: LangFileSchema.Class, fieldName: string) {
-        const fieldInfo = cls.fields[fieldName];
-        const stdField = this.stdlib.classes[className].fields[fieldName];
-
-        const funcArgs = ["self", "typeArgs"];
-        return this.genTemplateMethodCode(fieldName, funcArgs, fieldInfo.template);
-    }
-
     compileTemplates() {
-        this.templateObjectCode = tmpl`
-            ({
-                expressionGenerators: {
-                    ${Object.keys(this.lang.expressions).map(name => 
-                        this.genTemplateMethodCode(name.ucFirst(), ["expr"], this.lang.expressions[name])).join("\n\n")}
-                },
+        for (const name of Object.keys(this.lang.expressions||{}))
+            this.expressionGenerators[name.ucFirst()] = new TemplateMethod(name.ucFirst(), ["expr"], this.lang.expressions[name]);
 
-                classGenerators: {
-                    ${Object.keys(this.lang.classes).map(className => {
-                        const cls = this.lang.classes[className];
-                        return tmpl`
-                            ${this.genName(className)}: {
-                                ${this.genTemplateMethodCode("typeGenerator", ["typeArgs"], cls.type || className)}
+        for (const name of Object.keys(this.lang.operators||{}))
+            this.operatorGenerators[name] = new TemplateMethod(name, ["left", "right"], this.lang.operators[name].template);
 
-                                methods: {
-                                    ${Object.keys(cls.methods||[]).map(methodName => {
-                                        return this.compileClassMethod(className, cls, methodName);
-                                    }).join("\n\n")}
-                                },
+        for (const name of Object.keys(this.lang.templates||{})) {
+            const tmplOrig = this.lang.templates[name]; 
+            const tmplObj = typeof tmplOrig === "string" ? <LangFileSchema.TemplateObj>{ template: tmplOrig, args: [] } : tmplOrig; 
+            if (name === "testGenerator") 
+                tmplObj.args = [{ name: "class" }, { name: "method" }];
+            
+            this.templates[name] = new TemplateMethod(name, tmplObj.args.map(x => x.name), tmplObj.template);
+            this.templateVars.setVariable(name, this.templates[name]);
+        }
 
-                                fields: {
-                                    ${Object.keys(cls.fields||[]).map(fieldName => {
-                                        return this.compileClassField(className, cls, fieldName);
-                                    }).join("\n\n")}
-                                }
-                            }`
-                    }).join(",\n\n")}
-                },
+        for (const clsName of Object.keys(this.lang.classes||{})) {
+            const cls = this.lang.classes[clsName]; 
+            const clsGen = this.classGenerators[clsName] = {
+                typeGenerator: new TemplateMethod("typeGenerator", ["typeArgs"], cls.type || clsName),
+                methods: {},
+                fields: {},
+            };
 
-                operatorGenerators: {
-                    ${Object.keys(this.lang.operators||{}).map(opName => {
-                        const funcInfo = this.lang.operators[opName];
-                        return this.genTemplateMethodCode(opName, ["left", "right"], funcInfo.template);
-                    }).join("\n\n")}
-                },
+            for (const methodName of Object.keys(cls.methods||[])) {
+                const funcInfo = cls.methods[methodName]; 
+                const stdMethod = this.stdlib.classes[clsName].methods[methodName]; 
+                const methodArgs = stdMethod ? stdMethod.parameters.map(x => x.name) : []; 
+                const funcArgs = ["self", "typeArgs", ...methodArgs, ...funcInfo.extraArgs||[]];
+                clsGen.methods[methodName] = new TemplateMethod(methodName, funcArgs, funcInfo.template);
+            }
 
-                ${Object.keys(this.lang.templates).map(tmplName => {
-                    const tmplOrig = this.lang.templates[tmplName];
-                    const tmplObj = typeof tmplOrig === "string" ? <LangFileSchema.TemplateObj>{ template: tmplOrig, args: [] } : tmplOrig;
-                    if (tmplName === "testGenerator")
-                        tmplObj.args = [{ name: "cls" }, { name: "method" }];
-                    return this.genTemplateMethodCode(tmplName, tmplObj.args.map(x => x.name), tmplObj.template);
-                }).join("\n\n")}
-            })`;
-
-        this.templateObject = eval(this.templateObjectCode);
-        Object.assign(this.model, this.templateObject);
+            for (const fieldName of Object.keys(cls.fields||[])) {
+                const fieldInfo = cls.fields[fieldName];
+                const stdField = this.stdlib.classes[clsName].fields[fieldName];
+                const funcArgs = ["self", "typeArgs"];
+                clsGen.fields[fieldName] = new TemplateMethod(fieldName, funcArgs, fieldInfo.template); 
+            }
+        }
     }
 
     generate(callTestMethod: boolean) {
-        this.generatedCode = this.model.main();
+        this.generatedCode = this.call(this.templates["main"], []);
         if (callTestMethod)
-            this.generatedCode += "\n\n" + this.model.testGenerator(
+            this.generatedCode += "\n\n" + this.call(this.templates["testGenerator"], [
                 this.caseConverter.getName("test_class", "class"), 
-                this.caseConverter.getName("test_method", "method"));
-
-        this.generatedCode = this.generatedCode.replace(/\{space\}/g, " ");
+                this.caseConverter.getName("test_method", "method")]);
 
         return this.generatedCode;
     }

@@ -85,7 +85,7 @@ templates:
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
           {{for field in class.fields|sep=\n}}
-            {{field.visibility}}\ {{if field.static}}static {{/if}}{{field.type}} {{field.name}}{{if field.initializer}}\ = {{gen(field.initializer)}}{{/if}};
+            {{field.visibility}} {{if field.static}}static {{/if}}{{field.type}} {{field.name}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}};
           {{/for}}
 
           {{if class.constructor}}
@@ -95,7 +95,7 @@ templates:
           {{/if}}
 
           {{for method in class.methods|sep=\n\n}}
-              {{method.visibility}}\ {{if method.static}}static {{/if}}{{method.returnType}} {{method.name}}({{genArgs(method)}}) throws Exception
+              {{method.visibility}} {{if method.static}}static {{/if}}{{method.returnType}} {{method.name}}({{genArgs(method)}}) throws Exception
               {
                   {{genBody(method.body)}}
               }
@@ -195,10 +195,10 @@ expressions:
     }
     {{if expr.else|inline}}
       {{if isIfBlock(expr.else)}}
-        \ else\ {{genBody(expr.else)|inline}}
+         else {{genBody(expr.else)|inline}}
       {{else}}
-        \ else {
-        \    {{genBody(expr.else)}}
+         else {
+            {{genBody(expr.else)}}
         }
       {{/if}}
     {{/if}}

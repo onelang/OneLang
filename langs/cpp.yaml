@@ -127,13 +127,11 @@ templates:
       class {{class.name}} {
         public:
           {{genFields(class.publicFields)}}
-
           {{if class.constructor}}
             {{class.name}}({{genArgs(class.constructor)}}) {
                 {{genBody(class.constructor.body)}}
             }
           {{/if}}
-
           {{genMethods(class.publicMethods)}}
 
         private:
@@ -169,7 +167,7 @@ templates:
     args:
       - name: methods
     template: |-
-      {{for method in methods|sep=\n\n}}
+      {{for method in methods|sep=\n}}
         {{if method.static}}static {{/if}}
         {{method.returnType}} {{method.name}}({{genArgs(method)}}) {
             {{genBody(method.body)}}
@@ -245,7 +243,7 @@ expressions:
   thisReference: this
   conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : {{gen(expr.whenFalse)}}"
   templateString: |-
-    std::string()\ +\ 
+    std::string() + 
     {{for part in expr.parts|sep=" + " inline}}
       {{if part.literal|inline}}
         "{{part.text}}"
@@ -280,11 +278,12 @@ expressions:
         {{genBody(expr.then)}}
     }
     {{if expr.else|inline}}
-      {{if isIfBlock(expr.else)}}
-        \ else\ {{genBody(expr.else)|inline}}
+      {{" "}}
+      {{if isIfBlock(expr.else)|inline}}
+        else {{genBody(expr.else)|inline}}
       {{else}}
-        \ else {
-        \    {{genBody(expr.else)}}
+        else {
+            {{genBody(expr.else)}}
         }
       {{/if}}
     {{/if}}
