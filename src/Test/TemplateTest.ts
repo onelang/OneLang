@@ -5,7 +5,7 @@ import { execFileSync } from "child_process";
 import { Tokenizer, Token, TokenizerException } from "./Tokenizer";
 import { operators, ExpressionParser } from "./ExpressionParser";
 import { AstPrinter } from "./AstPrinter";
-import { ExprLangVM, JSMethodHandler } from "./ExprLangVM";
+import { ExprLangVM, JSMethodHandler, VariableContext, VariableSource } from "./ExprLangVM";
 import { ParamParser } from "./ParamParser";
 import { TemplatePart, TemplatePartType } from "./TemplatePart";
 import { TemplateParser } from "./TemplateParser";
@@ -117,7 +117,13 @@ class TestRunner {
 
         this.runTests(testFile.vmTests, (exprStr, test) => {
             const expr = new ExpressionParser(exprStr).parse();
-            const result = vm.evaluate(expr, Object.assign({}, model, test.model));
+
+            const varContext = new VariableContext([
+                VariableSource.fromObject(model, "test runner model"),
+                VariableSource.fromObject(test.model, "test model")
+            ]);
+
+            const result = vm.evaluate(expr, varContext);
             const ok = result === test.expected;
             console.log(`${exprStr}: ${ok ? "OK" : "FAIL"} (${ok ? result : `got: ${result}, expected: ${test.expected}`})`);
             return ok;
@@ -134,12 +140,18 @@ class TestRunner {
 
             const tmplAst = TemplateParser.parse(test.tmpl);
             const tmplAstJson = JSON.stringify(tmplAst, null, 4);
-            const tmplGen = new TemplateGenerator(tmplAst, Object.assign({}, model, test.model));
+            
+            const varContext = new VariableContext([
+                VariableSource.fromObject(model, "test runner model"),
+                VariableSource.fromObject(test.model, "test model")
+            ]);
+
+            const tmplGen = new TemplateGenerator(varContext);
             for (const signature of Object.keys(test.methods || [])) {
-                const method = new TemplateMethod(signature, test.methods[signature]);
+                const method = TemplateMethod.fromSignature(signature, test.methods[signature]);
                 tmplGen.addMethod(method);
             }
-            const result = tmplGen.generate();
+            const result = tmplGen.generate(tmplAst);
             const expected = (test.expected || "").replace(/\\n/g, "\n");
             const ok = result === expected;
             if (result.includes("\n") || expected.includes("\n")) {

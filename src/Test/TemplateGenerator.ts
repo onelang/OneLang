@@ -1,5 +1,5 @@
 import { ExprLangAst as ExprAst } from "./ExprLangAst";
-import { ExprLangVM, IMethodHandler } from "./ExprLangVM";
+import { ExprLangVM, IMethodHandler, VariableContext, VariableSource } from "./ExprLangVM";
 import { TemplateAst as TmplAst, TemplateAst } from "./TemplateAst";
 import { TemplateParser } from "./TemplateParser";
 import { ExpressionParser } from "./ExpressionParser";
@@ -19,57 +19,69 @@ import { ExpressionParser } from "./ExpressionParser";
  */
 
 export class TemplateMethod {
-    name: string;
-    arguments: string[];
     body: TemplateAst.Block;
 
-    constructor(signature: string, template: string) {
-        const signatureAst = ExpressionParser.parse(signature);
+    constructor(public name: string, public args: string[], public template: string) {
+        this.body = TemplateParser.parse(template);
+    }
+
+    static fromSignature(signature: string, template: string) {
+        const signatureAst = ExpressionParser.parse(signature);        
         if (signatureAst.kind === "call") {
             const callExpr = <ExprAst.CallExpression> signatureAst;
-            this.name = (<ExprAst.IdentifierExpression> callExpr.method).text;
-            this.arguments = callExpr.arguments.map(x => (<ExprAst.IdentifierExpression> x).text);
+            const name = (<ExprAst.IdentifierExpression> callExpr.method).text;
+            const args = callExpr.arguments.map(x => (<ExprAst.IdentifierExpression> x).text);
+            return new TemplateMethod(name, args, template);
         } else if (signatureAst.kind === "identifier") {
             const idExpr = <ExprAst.IdentifierExpression> signatureAst;
-            this.name = idExpr.text;
-            this.arguments = [];
+            const name = idExpr.text;
+            return new TemplateMethod(name, [], template);
         } else {
             throw new Error(`Could not parse method signature: '${signature}'`);
         }
-
-        this.body = TemplateParser.parse(template);
     }
+}
+
+export class CallStackItem {
+    constructor(public methodName: string, public vars: VariableContext) { }
 }
 
 export class TemplateGenerator implements IMethodHandler {
     vm = new ExprLangVM();
+    rootVars: VariableContext;
+    methods = new VariableSource("TemplateGenerator methods");
+    callStack: CallStackItem[] = [];
 
-    constructor(public template: TmplAst.Node, public model: any) {
-        this.model = this.model || {};
+    constructor(variables: VariableContext) {
         this.vm.methodHandler = this;
+        this.rootVars = variables.inherit(this.methods);
     }
 
     addMethod(method: TemplateMethod) {
-        this.model[method.name] = method;
+        this.methods.addCallback(method.name, () => method);
     }
 
-    call(method: any, args: any[], thisObj: any, parentModel: any) {
+    call(method: any, args: any[], thisObj: any, vars: VariableContext) {
+        let result;
+        this.callStack.push(new CallStackItem(<string> method.name, vars));
+        
         if (method instanceof TemplateMethod) {
-            if (args.length !== method.arguments.length)
-                throw new Error(`Method '${method.name}' called with ${args.length} arguments, but expected ${method.arguments.length}`);
+            //if (args.length !== method.args.length)
+            //    throw new Error(`Method '${method.name}' called with ${args.length} arguments, but expected ${method.args.length}`);
             
-            const model = Object.assign({}, parentModel);
+            const varSource = new VariableSource(`method: ${method.name}`);
             for (let i = 0; i < args.length; i++)
-                model[method.arguments[i]] = args[i];
+                varSource.setVariable(method.args[i], args[i]);
 
-            const result = this.generateNode(method.body, model);
-            return result;
+            result = this.generateNode(method.body, vars.inherit(varSource));
         } else if (typeof method === "function") {
-            const result = method.apply(thisObj, args);
-            return result;
+            result = method.apply(thisObj, args);
         } else {
             throw new Error(`Expected TemplateMethod or function, but got ${method}`);
         }
+
+        this.callStack.pop();
+        return result;
     }
 
     getLastLineIndent(text: string) {
@@ -80,64 +92,90 @@ export class TemplateGenerator implements IMethodHandler {
         return indentLen;
     }
 
-    generateNode(node: TmplAst.Node, model: any) {
+    processBlockNode(node: TmplAst.Block, vars: VariableContext) {
+        let result: string = null;
+
+        for (let itemIdx = 0; itemIdx < node.items.length; itemIdx++) {
+            const item = node.items[itemIdx];
+            const isLastNode = itemIdx === node.items.length - 1;
+            const line = this.generateNode(item, vars);
+            if (line !== null) {
+                if (result === null) result = "";
+
+                if (!(item instanceof TmplAst.TextNode)) {
+                    const indent = this.getLastLineIndent(result);
+                    result += line.toString().replace(/\n/g, "\n" + " ".repeat(indent));
+                } else {
+                    result += line;
+                }
+
+                if (!isLastNode && (item instanceof TmplAst.ForNode || item instanceof TmplAst.IfNode) && !item.inline)
+                    result += "\n";
+            }
+        }
+
+        return result;
+    }
+
+    processIfNode(node: TmplAst.IfNode, vars: VariableContext) {
+        let resultBlock = node.else;
+
+        for (const item of node.items)
+        {
+            const condValue = this.vm.evaluate(item.condition, vars);
+            if (condValue) {
+                resultBlock = item.body;
+                break;
+            }
+        }
+
+        const result = resultBlock ? this.generateNode(resultBlock, vars) : null;
+        return result;
+    }
+
+    processForNode(node: TmplAst.ForNode, vars: VariableContext) {
+        let result: string;
+
+        const array = <any[]> this.vm.evaluate(node.arrayExpr, vars);
+        if (array.length === 0) {
+            result = node.else ? this.generateNode(node.else, vars) : null;
+        } else {
+            const lines = [];
+
+            const varSource = new VariableSource(`for: ${node.itemName}`)
+            const newVars = vars.inherit(varSource);
+
+            for (const item of array) {
+                varSource.setVariable(node.itemName, item, true);
+                const line = this.generateNode(node.body, newVars);
+                if (line !== null)
+                    lines.push(line);
+            }
+            
+            result = lines.length === 0 ? null : lines.join(node.separator);
+        }
+
+        return result;
+    }
+
+    processTemplateNode(node: TmplAst.TemplateNode, vars: VariableContext) {
+        const result = this.vm.evaluate(node.expr, vars);
+        return result;
+    }
+
+    generateNode(node: TmplAst.Node, vars: VariableContext) {
         let result: string;
 
         if (node instanceof TmplAst.TextNode) {
             result = node.value;
         } else if (node instanceof TmplAst.TemplateNode) {
-            result = this.vm.evaluate(node.expr, model);
+            result = this.processTemplateNode(node, vars);
         } else if (node instanceof TmplAst.Block) {
-            result = null;
-
-            for (let itemIdx = 0; itemIdx < node.items.length; itemIdx++) {
-                const item = node.items[itemIdx];
-                const isLastNode = itemIdx === node.items.length - 1;
-                const line = this.generateNode(item, model);
-                if (line !== null) {
-                    if (result === null) result = "";
-
-                    if (!(item instanceof TmplAst.TextNode)) {
-                        const indent = this.getLastLineIndent(result);
-                        result += line.toString().replace(/\n/g, "\n" + " ".repeat(indent));
-                    } else {
-                        result += line;
-                    }
-
-                    if (!isLastNode && (item instanceof TmplAst.ForNode || item instanceof TmplAst.IfNode) && !item.inline)
-                        result += "\n";
-                }
-            }
+            result = this.processBlockNode(node, vars);
         } else if (node instanceof TmplAst.IfNode) {
-            let resultBlock = node.else;
-
-            for (const item of node.items)
-            {
-                const condValue = this.vm.evaluate(item.condition, model);
-                if (condValue) {
-                    resultBlock = item.body;
-                    break;
-                }
-            }
-
-            result = resultBlock ? this.generateNode(resultBlock, model) : null;
+            result = this.processIfNode(node, vars);
         } else if (node instanceof TmplAst.ForNode) {
-            const array = <any[]> this.vm.evaluate(node.arrayExpr, model);
-            if (array.length === 0) {
-                result = node.else ? this.generateNode(node.else, model) : null;
-            } else {
-                const model = Object.assign({}, this.model);
-                
-                const lines = [];
-                for (const item of array) {
-                    model[node.itemName] = item;
-                    const line = this.generateNode(node.body, model);
-                    if (line !== null)
-                        lines.push(line);
-                }
-
-                result = lines.length === 0 ? null : lines.join(node.separator);
-            }
+            result = this.processForNode(node, vars);
         } else {
             throw new Error("Unexpected node type");
         }
@@ -145,8 +183,8 @@ export class TemplateGenerator implements IMethodHandler {
         return result;
     }
 
-    generate() {
-        const result = this.generateNode(this.template, this.model);
+    generate(template: TmplAst.Node) {
+        const result = this.generateNode(template, this.rootVars);
         return result;
     }
 }
