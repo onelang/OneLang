@@ -3,13 +3,13 @@ import { Tokenizer, Token, TokenizerException } from "./Tokenizer";
 
 // http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
 
-export const operators = ["+", "-", "*", "/", "<<", ">>", "~", "(", ")", "[", "]", ",", ".", "?", ":", "not", "!", "or", "||", "and", "&&"];
+export const operators = ["+", "-", "*", "/", "<<", ">>", ">=", "==", "<=", "~", "(", ")", "[", "]", ",", ".", "?", ":", "not", "!", "or", "||", "and", "&&"];
 
 export class ExpressionParser {
     tokens: Token[];
     tokenMap = { not: '!', and: '&&', or: '||' };
     unary = ['!', '+', '-', '~'];
-    binary = ['+', '-', '*', '/', '<<', '>>'];
+    binary = ['+', '-', '*', '/', '<<', '>>', '>=', '==', '<='];
     rightAssoc = ['**']
     precedenceLevels: { name: string, operators?: string[], precedence?: number }[] = [
         { name: "assignment", operators: ['='] },
@@ -17,6 +17,7 @@ export class ExpressionParser {
         { name: "sum", operators: ['+','-'] },
         { name: "product", operators: ['*','/'] },
         { name: "exponent", operators: ['**'] },
+        { name: "comparison", operators: ['>=', '==', '<='] },
         { name: "prefix" },
         { name: "postfix" },
         { name: "call", operators: ['('] },

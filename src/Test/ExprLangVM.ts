@@ -65,6 +65,12 @@ export class ExprLangVM {
                 return leftValue << rightValue;
             } else if (binaryExpr.op === ">>") {
                 return leftValue >> rightValue;
+            } else if (binaryExpr.op === "==") {
+                return leftValue == rightValue;
+            } else if (binaryExpr.op === ">=") {
+                return leftValue >= rightValue;
+            } else if (binaryExpr.op === "<=") {
+                return leftValue <= rightValue;
             } else
                 throw new Error(`Unexpected binary operator: '${binaryExpr.op}'`);
         } else if (expr.kind === "parenthesized") {
