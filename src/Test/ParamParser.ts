@@ -32,7 +32,7 @@ export class ParamParser {
             else {
                 const quote = this.readToken("'", "\"");
                 const value = this.readUntil(quote || " ").value;
-                this.params[key.value] = value;
+                this.params[key.value] = value.replace(/\\n/g, "\n");
             }
         }
 
