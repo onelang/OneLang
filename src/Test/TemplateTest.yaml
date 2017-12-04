@@ -350,6 +350,44 @@ templateTests:
       else:
           ELSE_BODY
       END
+  cpp_complex_if:
+    tmpl: |-
+      BEGIN
+      {{if(expr)}}
+      END
+    methods:
+      if(expr): |-
+        if ({{expr.cond}}) {
+            {{expr.then}}
+        }
+        {{if expr.else|inline}}
+          {{" "}}
+          {{if hasKey(expr.else, "cond")|inline}}
+            else {{if(expr.else)|inline}}
+          {{else}}
+            else {
+                {{expr.else}}
+            }
+          {{/if}}
+        {{/if}}
+    model:
+      expr:
+        cond: COND1
+        then: COND1_BODY
+        else:
+          cond: ELIF_COND
+          then: ELIF_BODY
+          else: ELSE_BODY
+    expected: |-
+      BEGIN
+      if (COND1) {
+          COND1_BODY
+      } else if (ELIF_COND) {
+          ELIF_BODY
+      } else {
+          ELSE_BODY
+      }
+      END
   body_test:
     tmpl: |-
       function test() {
