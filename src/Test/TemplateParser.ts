@@ -233,15 +233,21 @@ export class TemplateParser {
             const lineNode = lineNodes[i];
             if (prevLine !== null && (lineNode.inline || lineNodes[i - 1].inline)) {
                 if (lineNode instanceof Ast.Line) {
-                    if (lineNode.indentLen > 0)
-                        prevLine.items.push(new Ast.TextNode(" ".repeat(lineNode.indentLen)));
+                    if (prevLine.indentLen > 0) {
+                        const firstItem = (<Ast.TextNode>lineNode.items[0]);
+                        firstItem.value = firstItem.value.substr(prevLine.indentLen);
+                    }
                     prevLine.items.push(...lineNode.items);
                 } else
                     prevLine.items.push(lineNode);
             } else {
                 block.lines.push(lineNode);
-                if (lineNode instanceof Ast.Line)
+                if (lineNode instanceof Ast.Line) {
                     prevLine = lineNode;
+                    const firstItem = prevLine.items[0];
+                    if (firstItem instanceof Ast.TextNode)
+                        prevLine.indentLen = this.getIndentLen(firstItem.value);
+                }
             }
         }
 

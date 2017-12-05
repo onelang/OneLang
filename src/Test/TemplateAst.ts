@@ -14,7 +14,7 @@ export namespace TemplateAst {
     }
 
     export class Line implements BlockItem, ItemContainer {
-        line = "line";
+        kind = "line";
         inline = false;
         indentLen = 0;
         items: LineItem[] = [];

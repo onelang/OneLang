@@ -94,7 +94,7 @@ templates:
             }
           {{/if}}
 
-          {{for method in class.methods|sep=\n\n}}
+          {{for method in class.methods|sep="\n    \n"}}
             {{method.visibility}} {{if method.static}}static {{/if}}{{method.returnType}} {{method.name}}({{genArgs(method)}}) throws Exception
             {
                 {{genBody(method.body)}}

@@ -489,6 +489,15 @@ templateTests:
       {{/if}}
        )
     expected: '( x )'
+  perl_bug_3:
+    tmpl: |-
+      LINE
+        ( x
+        {{if false|inline}}
+          , x
+        {{/if}}
+         )
+    expected: 'LINE\n  ( x )'
   glue_disappears_1:
     tmpl: |-
       BEGIN

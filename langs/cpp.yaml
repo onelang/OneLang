@@ -127,15 +127,18 @@ templates:
       class {{class.name}} {
         public:
           {{genFields(class.publicFields)}}
+
           {{if class.constructor}}
             {{class.name}}({{genArgs(class.constructor)}}) {
                 {{genBody(class.constructor.body)}}
             }
           {{/if}}
+
           {{genMethods(class.publicMethods)}}
 
         private:
           {{genFields(class.privateFields)}}
+
           {{genMethods(class.privateMethods)}}
       };
       {{for field in class.fields|sep=\n}}

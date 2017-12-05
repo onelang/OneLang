@@ -87,13 +87,15 @@ templates:
           {{for field in class.fields|sep=\n}}
             {{field.visibility}} {{if field.static}}static {{/if}}{{field.type}} {{field.name}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}};
           {{/for}}
+
           {{if class.constructor}}
             public {{class.name}}({{genArgs(class.constructor)}})
             {
                 {{genBody(class.constructor.body)}}
             }
           {{/if}}
-          {{for method in class.methods|sep=\n\n}}
+
+          {{for method in class.methods|sep="\n    \n"}}
             {{method.visibility}} {{if method.static}}static {{/if}}{{method.returnType}} {{method.name}}({{genArgs(method)}})
             {
                 {{genBody(method.body)}}

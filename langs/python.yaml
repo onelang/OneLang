@@ -67,15 +67,16 @@ templates:
           {{if class.constructor}}
             def __init__({{genArgs(class.constructor)}}):
                 {{genBody(class.constructor.body)}}
-
           {{/if}}
-          {{for method in class.methods|sep=\n\n}}
+
+          {{for method in class.methods|sep="\n    \n"}}
             {{if method.static}}
               @staticmethod
             {{/if}}
             def {{method.name}}({{genArgs(method)}}):
                 {{genBody(method.body)}}
           {{/for}}
+
           {{if class.methods.length == 0 && class.constructor == null}}
               pass
           {{/if}}

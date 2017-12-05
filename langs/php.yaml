@@ -67,7 +67,7 @@ templates:
 
   main: |-
     <?php
-
+    {{""}}
     {{for inc in includes|sep=\n}}
       require_once("{{inc}}");
     {{/for}}
@@ -75,17 +75,18 @@ templates:
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
           {{for field in class.fields|sep=\n}}
-            {{field.visibility}} {{if field.static}}static {{/if}}${{field.name}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}};
+            {{field.visibility}} {{if field.static}}static {{/if}}${{field.name}}
+            {{if field.initializer|inline}} = {{gen(field.initializer)}}{{/if}};
           {{/for}}
 
           {{if class.constructor}}
             function __construct({{genArgs(class.constructor)}}) {
                 {{genBody(class.constructor.body)}}
             }
-
           {{/if}}
-          {{for method in class.methods|sep=\n\n}}
-            {{if method.static}}static function{{else}}function{{/if}} {{method.name}}({{genArgs(method)}}) {
+
+          {{for method in class.methods|sep="\n    \n"}}
+            {{if method.static}}static {{/if}}function {{method.name}}({{genArgs(method)}}) {
                 {{genBody(method.body)}}
             }
           {{/for}}
@@ -189,8 +190,9 @@ expressions:
         {{genBody(expr.then)}}
     }
     {{if expr.else|inline}}
+      {{" "}}
       {{if isIfBlock(expr.else)|inline}}
-        else {{genBody(expr.else)}}
+        else{{genBody(expr.else)}}
       {{else}}
         else {
             {{genBody(expr.else)}}

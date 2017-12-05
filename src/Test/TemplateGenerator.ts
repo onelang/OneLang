@@ -84,6 +84,10 @@ export class TemplateGenerator implements IMethodHandler {
         return result;
     }
 
+    isSimpleTextNode(node: TmplAst.BlockItem) {
+        return node instanceof TmplAst.Line && node.items[0] instanceof TmplAst.TextNode;
+    }
+
     processBlockNode(node: TmplAst.Block, vars: VariableContext) {
         const lines = node.lines.map(x => this.generateNode(x, vars));
         const resultLines = [];
@@ -93,6 +97,8 @@ export class TemplateGenerator implements IMethodHandler {
 
             const origLine = node.lines[iLine];
             if (origLine instanceof TmplAst.Line && origLine.items.length === 0
+                //&& !this.isSimpleTextNode(node.lines[iLine - 1])
+                //&& !this.isSimpleTextNode(node.lines[iLine + 1])
                 && (lines[iLine - 1] === null || lines[iLine + 1] === null)) continue;
 
             resultLines.push(line);

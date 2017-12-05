@@ -68,9 +68,9 @@ templates:
           constructor({{genArgs(class.constructor)}}) {
               {{genBody(class.constructor.body)}}
           }
-
         {{/if}}
-        {{for method in class.methods|sep=\n\n}}
+
+        {{for method in class.methods|sep="\n  \n"}}
           {{method.name}}({{genArgs(method)}}) {
             {{genBody(method.body)}}
           }
