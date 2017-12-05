@@ -4,13 +4,14 @@ import { ExprLangAst as ExprAst } from "./ExprLangAst";
 import { execFileSync } from "child_process";
 import { Tokenizer, Token, TokenizerException } from "./Tokenizer";
 import { operators, ExpressionParser } from "./ExpressionParser";
-import { AstPrinter } from "./AstPrinter";
+import { ExprAstPrinter } from "./AstPrinter";
 import { ExprLangVM, JSMethodHandler, VariableContext, VariableSource } from "./ExprLangVM";
 import { ParamParser } from "./ParamParser";
 import { TemplatePart, TemplatePartType } from "./TemplatePart";
 import { TemplateParser } from "./TemplateParser";
 import { TemplateAst as TmplAst } from "./TemplateAst";
 import { TemplateGenerator, TemplateMethod } from "./TemplateGenerator";
+import { TemplateAstPrinter } from "./TemplateAstPrinter";
 const YAML = require('yamljs');
 
 interface TestFile {
@@ -28,6 +29,14 @@ interface TestFile {
 }
 
 const testFile = <TestFile>YAML.parse(readFile("src/Test/TemplateTest.yaml"));
+
+function printTemplateAst(name: string, tmplAst: TmplAst.Block) {
+    const tmplAstJson = JSON.stringify(tmplAst, null, 4);
+    writeFile(`generated/TemplateTests/${name}.json`, tmplAstJson);
+
+    const tmplSummary = new TemplateAstPrinter().print(tmplAst);
+    writeFile(`generated/TemplateTests/${name}.txt`, tmplSummary);
+}
 
 class TestRunner {
     failedTests = [];
@@ -79,7 +88,7 @@ class TestRunner {
         console.log('\n============== Expression tests ==============');
         this.runTests(testFile.expressionTests, (expr, expected) => {
             const parsed = new ExpressionParser(expr).parse();
-            const repr = AstPrinter.removeOuterParen(AstPrinter.print(parsed));
+            const repr = ExprAstPrinter.removeOuterParen(ExprAstPrinter.print(parsed));
             if (repr.replace(/\s*/g, "") === expected.replace(/\s*/g, "")) {
                 console.log(`${expr}: OK`);
                 return true;
@@ -139,8 +148,7 @@ class TestRunner {
             };
 
             const tmplAst = TemplateParser.parse(test.tmpl);
-            const tmplAstJson = JSON.stringify(tmplAst, null, 4);
-            writeFile(`generated/TemplateTests/${name}.json`, tmplAstJson);
+            printTemplateAst(name, tmplAst);
             
             const varContext = new VariableContext([
                 VariableSource.fromObject(model, "test runner model"),
@@ -150,9 +158,8 @@ class TestRunner {
             const tmplGen = new TemplateGenerator(varContext);
             for (const signature of Object.keys(test.methods || [])) {
                 const method = TemplateMethod.fromSignature(signature, test.methods[signature]);
-                const methodAstJson = JSON.stringify(method.body, null, 4);
-                writeFile(`generated/TemplateTests/${name}_${method.name}.json`, methodAstJson);
                 tmplGen.addMethod(method);
+                printTemplateAst(`${name}_${method.name}`, method.body);
             }
             const result = tmplGen.generate(tmplAst);
             const expected = (test.expected || "").replace(/\\n/g, "\n");

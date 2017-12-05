@@ -1,6 +1,6 @@
 import { ExprLangAst as Ast } from "./ExprLangAst";
 
-export class AstPrinter {
+export class ExprAstPrinter {
     static removeOuterParen(repr: string) {
         return repr.startsWith("(") && repr.endsWith(")") ? repr.substr(1, repr.length - 2) : repr;
     }

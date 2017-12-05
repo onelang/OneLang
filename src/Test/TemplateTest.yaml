@@ -475,3 +475,62 @@ templateTests:
         END5
       
         BEGIN6 ELSE END6
+  perl_bug:
+    tmpl: |-
+      ( x
+      {{if false|inline}}x{{/if}}
+       )
+    expected: '( x )'
+  perl_bug_2:
+    tmpl: |-
+      ( x
+      {{if false|inline}}
+        x
+      {{/if}}
+       )
+    expected: '( x )'
+  glue_disappears_1:
+    tmpl: |-
+      BEGIN
+      {{if false}}X{{/if}}
+
+      {{if false}}Y{{/if}}
+      END
+    expected: |-
+      BEGIN
+      END
+  glue_disappears_2:
+    tmpl: |-
+      BEGIN
+      {{if false}}X{{/if}}
+
+      {{if true}}Y{{/if}}
+      END
+    expected: |-
+      BEGIN
+      Y
+      END
+  glue_disappears_3:
+    tmpl: |-
+      BEGIN
+      {{if true}}X{{/if}}
+
+      {{if false}}Y{{/if}}
+      END
+    expected: |-
+      BEGIN
+      X
+      END
+  glue_stays:
+    tmpl: |-
+      BEGIN
+      {{if true}}X{{/if}}
+
+      {{if true}}Y{{/if}}
+      END
+    expected: |-
+      BEGIN
+      X
+
+      Y
+      END

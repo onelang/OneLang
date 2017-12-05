@@ -41,12 +41,16 @@ for (const prgName of prgNames) {
         if (langFilter && lang.name !== langFilter) continue;
     
         console.log(`converting program '${prgName}' to ${lang.name}...`);
-        const langYaml = readFile(`langs/${lang.name}.yaml`);
-        const codeGen = compiler.getCodeGenerator(langYaml, lang.name);
-        lang.request.code = codeGen.generate(true);
-    
-        writeFile(`generated/${prgName}/results/${prgName}.${codeGen.lang.extension}`, codeGen.generatedCode);
-        writeFile(`generated/TemplateGenerators/${lang.name}.js`, codeGen.templateObjectCode);
+        try {
+            const langYaml = readFile(`langs/${lang.name}.yaml`);
+            const codeGen = compiler.getCodeGenerator(langYaml, lang.name);
+            lang.request.code = codeGen.generate(true);
+        
+            writeFile(`generated/${prgName}/results/${prgName}.${codeGen.lang.extension}`, codeGen.generatedCode);
+            writeFile(`generated/TemplateGenerators/${lang.name}.js`, codeGen.templateObjectCode);
+        } catch(e) {
+            console.error(e);
+        }
     }
     
     // run compiled codes

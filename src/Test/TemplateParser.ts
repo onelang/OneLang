@@ -64,7 +64,7 @@ class TemplateLineParser {
 
     readIf() {
         const ifNode = new Ast.IfNode();
-        ifNode.inline = false;
+        ifNode.inline = !!this.currPart.params["inline"];
 
         const ifItem = new Ast.IfItem(this.currPart.if.condition);
         ifItem.body = this.readBlock();
@@ -245,10 +245,10 @@ export class TemplateParser {
             }
         }
 
-        for (const line of lineNodes)
+        for (const line of block.lines)
             delete line.inline;
 
-        for (const line of lineNodes) {
+        for (const line of block.lines) {
             if (line instanceof Ast.Line) {
                 const firstItem = line.items[0];
                 if (firstItem instanceof Ast.TextNode) {

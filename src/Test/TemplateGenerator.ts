@@ -86,8 +86,18 @@ export class TemplateGenerator implements IMethodHandler {
 
     processBlockNode(node: TmplAst.Block, vars: VariableContext) {
         const lines = node.lines.map(x => this.generateNode(x, vars));
-        const nonNullLines = lines.filter(x => x !== null);
-        const result = nonNullLines.length > 0 ? nonNullLines.join("\n") : null;
+        const resultLines = [];
+        for (let iLine = 0; iLine < lines.length; iLine++) {
+            const line = lines[iLine];
+            if (line === null) continue;
+
+            const origLine = node.lines[iLine];
+            if (origLine instanceof TmplAst.Line && origLine.items.length === 0
+                && (lines[iLine - 1] === null || lines[iLine + 1] === null)) continue;
+
+            resultLines.push(line);
+        }
+        const result = resultLines.length > 0 ? resultLines.join("\n") : null;
         return result;
     }
 
