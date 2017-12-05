@@ -93,8 +93,9 @@ export class TemplateGenerator implements IMethodHandler {
 
     processLineNode(node: TmplAst.Line, vars: VariableContext) {
         const lines = node.items.map(x => this.generateNode(x, vars));
-        let result = lines.filter(x => x !== null).join("");
-        if (node.indentLen > 0) {
+        const nonNullLines = lines.filter(x => x !== null);
+        let result = lines.length === 0 ? "" : nonNullLines.length > 0 ? nonNullLines.join("") : null;
+        if (result !== null && node.indentLen > 0) {
             const indent = " ".repeat(node.indentLen);
             result = indent + result.replace(/\n/g, "\n" + indent);
         }

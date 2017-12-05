@@ -232,9 +232,11 @@ export class TemplateParser {
         for (let i = 0; i < lineNodes.length; i++) {
             const lineNode = lineNodes[i];
             if (prevLine !== null && (lineNode.inline || lineNodes[i - 1].inline)) {
-                if (lineNode instanceof Ast.Line)
+                if (lineNode instanceof Ast.Line) {
+                    if (lineNode.indentLen > 0)
+                        prevLine.items.push(new Ast.TextNode(" ".repeat(lineNode.indentLen)));
                     prevLine.items.push(...lineNode.items);
-                else
+                } else
                     prevLine.items.push(lineNode);
             } else {
                 block.lines.push(lineNode);
@@ -252,6 +254,8 @@ export class TemplateParser {
                 if (firstItem instanceof Ast.TextNode) {
                     line.indentLen = this.getIndentLen(firstItem.value);
                     firstItem.value = firstItem.value.substr(line.indentLen);
+                    if (firstItem.value === "")
+                        line.items.shift();
                 }
             }
         }
