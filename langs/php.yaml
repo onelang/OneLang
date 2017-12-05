@@ -82,12 +82,12 @@ templates:
             function __construct({{genArgs(class.constructor)}}) {
                 {{genBody(class.constructor.body)}}
             }
-          {{/if}}
 
+          {{/if}}
           {{for method in class.methods|sep=\n\n}}
-              {{if method.static}}static function{{else}}function{{/if}} {{method.name}}({{genArgs(method)}}) {
-                  {{genBody(method.body)}}
-              }
+            {{if method.static}}static function{{else}}function{{/if}} {{method.name}}({{genArgs(method)}}) {
+                {{genBody(method.body)}}
+            }
           {{/for}}
       }
     {{/for}}
@@ -189,10 +189,10 @@ expressions:
         {{genBody(expr.then)}}
     }
     {{if expr.else|inline}}
-      {{if isIfBlock(expr.else)}}
-         else {{genBody(expr.else)|inline}}
+      {{if isIfBlock(expr.else)|inline}}
+        else {{genBody(expr.else)}}
       {{else}}
-         else {
+        else {
             {{genBody(expr.else)}}
         }
       {{/if}}

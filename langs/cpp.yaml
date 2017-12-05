@@ -136,10 +136,8 @@ templates:
 
         private:
           {{genFields(class.privateFields)}}
-          
           {{genMethods(class.privateMethods)}}
       };
-
       {{for field in class.fields|sep=\n}}
         {{if field.static && field.initializer}}
           {{getType(field)}} {{class.name}}::{{field.name}} = {{gen(field.initializer)}};
@@ -167,7 +165,7 @@ templates:
     args:
       - name: methods
     template: |-
-      {{for method in methods|sep=\n}}
+      {{for method in methods|sep=\n\n}}
         {{if method.static}}static {{/if}}
         {{method.returnType}} {{method.name}}({{genArgs(method)}}) {
             {{genBody(method.body)}}

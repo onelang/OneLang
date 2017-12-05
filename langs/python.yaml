@@ -67,14 +67,14 @@ templates:
           {{if class.constructor}}
             def __init__({{genArgs(class.constructor)}}):
                 {{genBody(class.constructor.body)}}
-          {{/if}}
 
+          {{/if}}
           {{for method in class.methods|sep=\n\n}}
-              {{if method.static}}
-                @staticmethod
-              {{/if}}
-              def {{method.name}}({{genArgs(method)}}):
-                  {{genBody(method.body)}}
+            {{if method.static}}
+              @staticmethod
+            {{/if}}
+            def {{method.name}}({{genArgs(method)}}):
+                {{genBody(method.body)}}
           {{/for}}
           {{if class.methods.length == 0 && class.constructor == null}}
               pass
@@ -92,11 +92,10 @@ templates:
       - name: body
     template: |-
       {{for statement in body.statements|sep=\n}}
-          {{statement.leadingTrivia2}}{{gen(statement)}}
+        {{statement.leadingTrivia2}}{{gen(statement)}}
+      {{else}}
+        pass
       {{/for}}
-      {{if body.statements.length == 0}}
-          pass
-      {{/if}}
 
   genArgs:
     args:
@@ -108,7 +107,9 @@ templates:
         {{/for}}
       {{else}}
         self
-        {{for param in method.parameters|inline}}, {{param.name}}{{/for}}
+        {{for param in method.parameters|inline}}
+          , {{param.name}}
+        {{/for}}
       {{/if}}
 
   genParams:

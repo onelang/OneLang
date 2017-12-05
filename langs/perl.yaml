@@ -95,7 +95,11 @@ templates:
           my $self = {};
           bless $self, $class;
           {{if class.constructor}}
-            my ( {{for param in class.constructor.parameters|sep=,}}${{param.name}}{{/for}} ) = @_;
+            my ( 
+            {{for param in class.constructor.parameters|inline sep=,}}
+              ${{param.name}}
+            {{/for}}
+             ) = @_;
             {{genBody(class.constructor.body)}}
           {{/if}}
           return $self;
@@ -109,7 +113,11 @@ templates:
 
       {{for method in class.methods|sep=\n\n}}
         sub {{method.name}} {
-            my ( $self{{for param in method.parameters}}, ${{param.name}}{{/for}} ) = @_;
+            my ( $self
+            {{for param in method.parameters|inline}}
+              , ${{param.name}}
+            {{/for}}
+             ) = @_;
             {{genBody(method.body)}}
         }
       {{/for}}
@@ -219,10 +227,11 @@ expressions:
         {{genBody(expr.then)}}
     }
     {{if expr.else|inline}}
-      {{if isIfBlock(expr.else)}}
-         els{{genBody(expr.else)}}
+      {{" "}}
+      {{if isIfBlock(expr.else)|inline}}
+        els{{genBody(expr.else)}}
       {{else}}
-         else {
+        else {
             {{genBody(expr.else)}}
         }
       {{/if}}
