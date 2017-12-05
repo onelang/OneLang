@@ -353,7 +353,9 @@ templateTests:
   cpp_complex_if:
     tmpl: |-
       BEGIN
-      {{if(expr)}}
+      method() {
+        {{if(expr)}}
+      }
       END
     methods:
       if(expr): |-
@@ -380,12 +382,14 @@ templateTests:
           else: ELSE_BODY
     expected: |-
       BEGIN
-      if (COND1) {
-          COND1_BODY
-      } else if (ELIF_COND) {
-          ELIF_BODY
-      } else {
-          ELSE_BODY
+      method() {
+        if (COND1) {
+            COND1_BODY
+        } else if (ELIF_COND) {
+            ELIF_BODY
+        } else {
+            ELSE_BODY
+        }
       }
       END
   body_test:

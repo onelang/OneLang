@@ -84,36 +84,20 @@ export class TemplateGenerator implements IMethodHandler {
         return result;
     }
 
-    getLastLineIndent(text: string) {
-        const lastNewLine = text.lastIndexOf("\n");
-        let indentLen = 0;
-        for (let i = lastNewLine + 1; i < text.length && text[i] === " "; i++)
-            indentLen++;
-        return indentLen;
+    processBlockNode(node: TmplAst.Block, vars: VariableContext) {
+        const lines = node.lines.map(x => this.generateNode(x, vars));
+        const nonNullLines = lines.filter(x => x !== null);
+        const result = nonNullLines.length > 0 ? nonNullLines.join("\n") : null;
+        return result;
     }
 
-    processBlockNode(node: TmplAst.Block, vars: VariableContext) {
-        let result: string = null;
-
-        for (let itemIdx = 0; itemIdx < node.items.length; itemIdx++) {
-            const item = node.items[itemIdx];
-            const isLastNode = itemIdx === node.items.length - 1;
-            const line = this.generateNode(item, vars);
-            if (line !== null) {
-                if (result === null) result = "";
-
-                if (!(item instanceof TmplAst.TextNode)) {
-                    const indent = this.getLastLineIndent(result);
-                    result += line.toString().replace(/\n/g, "\n" + " ".repeat(indent));
-                } else {
-                    result += line;
-                }
-
-                if (!isLastNode && (item instanceof TmplAst.ForNode || item instanceof TmplAst.IfNode) && !item.inline)
-                    result += "\n";
-            }
+    processLineNode(node: TmplAst.Line, vars: VariableContext) {
+        const lines = node.items.map(x => this.generateNode(x, vars));
+        let result = lines.filter(x => x !== null).join("");
+        if (node.indentLen > 0) {
+            const indent = " ".repeat(node.indentLen);
+            result = indent + result.replace(/\n/g, "\n" + indent);
         }
-
         return result;
     }
 
@@ -172,6 +156,8 @@ export class TemplateGenerator implements IMethodHandler {
             result = this.processTemplateNode(node, vars);
         } else if (node instanceof TmplAst.Block) {
             result = this.processBlockNode(node, vars);
+        } else if (node instanceof TmplAst.Line) {
+            result = this.processLineNode(node, vars);
         } else if (node instanceof TmplAst.IfNode) {
             result = this.processIfNode(node, vars);
         } else if (node instanceof TmplAst.ForNode) {

@@ -140,6 +140,7 @@ class TestRunner {
 
             const tmplAst = TemplateParser.parse(test.tmpl);
             const tmplAstJson = JSON.stringify(tmplAst, null, 4);
+            writeFile(`generated/TemplateTests/${name}.json`, tmplAstJson);
             
             const varContext = new VariableContext([
                 VariableSource.fromObject(model, "test runner model"),
@@ -149,6 +150,8 @@ class TestRunner {
             const tmplGen = new TemplateGenerator(varContext);
             for (const signature of Object.keys(test.methods || [])) {
                 const method = TemplateMethod.fromSignature(signature, test.methods[signature]);
+                const methodAstJson = JSON.stringify(method.body, null, 4);
+                writeFile(`generated/TemplateTests/${name}_${method.name}.json`, methodAstJson);
                 tmplGen.addMethod(method);
             }
             const result = tmplGen.generate(tmplAst);

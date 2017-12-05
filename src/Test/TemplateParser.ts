@@ -53,7 +53,7 @@ class LineInfo {
 class TemplateLineParser {
     parts: TemplatePart[];
     partIdx = -1;
-    root: Ast.Block;
+    root: Ast.Line;
 
     constructor(public line: LineInfo) {
         this.parts = line.parts;
@@ -64,7 +64,7 @@ class TemplateLineParser {
 
     readIf() {
         const ifNode = new Ast.IfNode();
-        ifNode.inline = true;
+        ifNode.inline = false;
 
         const ifItem = new Ast.IfItem(this.currPart.if.condition);
         ifItem.body = this.readBlock();
@@ -90,10 +90,10 @@ class TemplateLineParser {
 
     readBlock() {
         this.partIdx++;
-        const block = new Ast.Block();
+        const line = new Ast.Line();
 
         for (; this.partIdx < this.parts.length; this.partIdx++) {
-            let node: Ast.Node;
+            let node: Ast.LineItem;
 
             const part = this.currPart;
             if (part.type === "text") {
@@ -106,10 +106,10 @@ class TemplateLineParser {
                 break;
             }
 
-            block.items.push(node);
+            line.items.push(node);
         }
 
-        return block;
+        return line;
     }
 }
 
@@ -120,7 +120,6 @@ export class TemplateParser {
     lineIdx = -1;
     root: Ast.Block;
     indentLen = -this.levelIndent;
-    nl = new Ast.TextNode("\n");
 
     constructor(public template: string) {
         this.lines = template.split("\n").map((line, lineIdx) => new LineInfo(line, lineIdx));
@@ -172,14 +171,14 @@ export class TemplateParser {
         return forNode;
     }
 
-    atleastIndent(str: string, len: number) {
-        if (len > str.length) return false;
-
-        for (let i = 0; i < len; i++)
-            if (str[i] !== " ")
-                return false;
-
-        return true;
+    getIndentLen(str: string) {
+        let len = 0;
+        for (const c of str)
+            if (c === " ")
+                len++;
+            else
+                break;
+        return len;
     }
 
     deindentLine() {
@@ -198,47 +197,65 @@ export class TemplateParser {
         const prevIndent = this.indentLen;
         this.indentLen = (this.currLine && this.currLine.inline ? this.currLine.indentLen : this.indentLen) + this.levelIndent;
 
-        const block = new Ast.Block();
+        const lineNodes: Ast.BlockItem[] = [];
         this.lineIdx++;
         
-        const removeLastNl = () => {
-            if (block.items[block.items.length - 1] === this.nl)
-                block.items.pop();
-        };
-
         for (; this.lineIdx < this.lines.length; this.lineIdx++) {
-            let newNodes: Ast.Node[] = [];
+            let blockItem: Ast.BlockItem;
 
             const line = this.currLine;
 
-            if (line.inline)
-                removeLastNl();
-
             if (line.match("if")) {
-                newNodes.push(this.readIf());
+                blockItem = this.readIf();
             } else if (line.match("for")) {
-                newNodes.push(this.readFor());
+                blockItem = this.readFor();
             } else if (!line.controlPart) {
                 this.deindentLine();
-                const items = new TemplateLineParser(this.currLine).root.items;
+                const lineNode = new TemplateLineParser(this.currLine).root;
 
                 // if the whole line is a standalone "inline if" (eg "{{if cond}}something{{/if}}"),
                 //   then it converts it to a "control if" (newline only added if generates code)
-                const ifLine = items.length === 1 && items[0] instanceof Ast.IfNode;
-                if (!ifLine)
-                    items.push(this.nl);
+                if (lineNode.items.length === 1 && lineNode.items[0] instanceof Ast.IfNode)
+                    blockItem = <Ast.IfNode> lineNode.items[0];
                 else
-                    (<Ast.IfNode>items[0]).inline = false;
-
-                newNodes.push(...items);
+                    blockItem = lineNode;
             } else {
                 break;
             }
 
-            block.items.push(...newNodes);
+            lineNodes.push(blockItem);
         }
 
-        removeLastNl();
+        // concat lines together if one of them is an inline line
+        const block = new Ast.Block();
+        let prevLine: Ast.Line = null;
+        for (let i = 0; i < lineNodes.length; i++) {
+            const lineNode = lineNodes[i];
+            if (prevLine !== null && (lineNode.inline || lineNodes[i - 1].inline)) {
+                if (lineNode instanceof Ast.Line)
+                    prevLine.items.push(...lineNode.items);
+                else
+                    prevLine.items.push(lineNode);
+            } else {
+                block.lines.push(lineNode);
+                if (lineNode instanceof Ast.Line)
+                    prevLine = lineNode;
+            }
+        }
+
+        for (const line of lineNodes)
+            delete line.inline;
+
+        for (const line of lineNodes) {
+            if (line instanceof Ast.Line) {
+                const firstItem = line.items[0];
+                if (firstItem instanceof Ast.TextNode) {
+                    line.indentLen = this.getIndentLen(firstItem.value);
+                    firstItem.value = firstItem.value.substr(line.indentLen);
+                }
+            }
+        }
+
         this.indentLen = prevIndent;
         return block;
     }
