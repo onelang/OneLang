@@ -77,8 +77,8 @@ templates:
           constructor({{genArgs(class.constructor)}}) {
               {{genBody(class.constructor.body)}}
           }
-        {{/if}}
 
+        {{/if}}
         {{for method in class.methods|sep=\n\n}}
           {{method.visibility}} {{if method.static}}static {{/if}}{{method.name}}({{genArgs(method)}}) {
             {{genBody(method.body)}}
@@ -181,10 +181,11 @@ expressions:
         {{genBody(expr.then)}}
     }
     {{if expr.else|inline}}
-      {{if isIfBlock(expr.else)}}
-         else {{genBody(expr.else)|inline}}
+      {{" "}}
+      {{if isIfBlock(expr.else)|inline}}
+        else {{genBody(expr.else)}}
       {{else}}
-         else {
+        else {
             {{genBody(expr.else)}}
         }
       {{/if}}
