@@ -1,12 +1,10 @@
 class TestClass {
     public void methodTest(List<String> method_param) throws Exception
     {
-        
     }
     
     public void testMethod() throws Exception
     {
-        
     }
 }
 

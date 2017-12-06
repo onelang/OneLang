@@ -56,12 +56,7 @@ class List {
     std::vector<>* items;
 
   private:
-    
-    
-    
 };
-
-
 
 class Item {
   public:
@@ -73,23 +68,15 @@ class Item {
         this->str_constr = str_constr;
     }
 
-    
-
   private:
-    
-    
-    
 };
-
-
-
-
 
 class Container {
   public:
     List* item_list;
-    List* string_list;void method0() {
-        
+    List* string_list;
+
+    void method0() {
     }
     
     void method1(std::string str) {
@@ -97,13 +84,7 @@ class Container {
     }
 
   private:
-    
-    
-    
 };
-
-
-
 
 int main()
 {

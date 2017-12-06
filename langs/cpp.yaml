@@ -170,8 +170,7 @@ templates:
       - name: methods
     template: |-
       {{for method in methods|sep=\n\n}}
-        {{if method.static}}static {{/if}}
-        {{method.returnType}} {{method.name}}({{genArgs(method)}}) {
+        {{if method.static}}static {{/if}}{{method.returnType}} {{method.name}}({{genArgs(method)}}) {
             {{genBody(method.body)}}
         }
       {{/for}}

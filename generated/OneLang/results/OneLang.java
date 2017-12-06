@@ -1,12 +1,12 @@
 import java.util.List;
 import java.util.Arrays;
+import java.util.ArrayList;
 
 class TokenType {
     public static String end_token = "EndToken";
     public static String whitespace = "Whitespace";
     public static String identifier = "Identifier";
     public static String operator_x = "Operator";
-    public static String no_initializer;
 }
 
 class Token {
@@ -22,18 +22,19 @@ class Token {
 class StringHelper {
     public static boolean startsWithAtIndex(String str, String substr, Integer idx) throws Exception
     {
-        return str.substring(idx, idx + substr.length()) == substr;
+        return str.substring(idx, idx + substr.length()).equals(substr);
     }
 }
 
 class Tokenizer {
-    public Integer offset = 0;
+    public Integer offset;
     public String text;
     public List<String> operators;
 
     public Tokenizer(String text, List<String> operators) {
         this.operators = operators;
         this.text = text;
+        this.offset = 0;
     }
 
     public String getTokenType() throws Exception
@@ -53,32 +54,32 @@ class Tokenizer {
         while (this.offset < this.text.length()) {
             String char_type = this.getTokenType();
             
-            if (char_type == TokenType.whitespace) {
-                while (this.getTokenType() == TokenType.whitespace) {
+            if (char_type.equals(TokenType.whitespace)) {
+                while (this.getTokenType().equals(TokenType.whitespace)) {
                     this.offset++;
                 }
-            } else if (char_type == TokenType.identifier) {
+            } else if (char_type.equals(TokenType.identifier)) {
                 Integer start_offset = this.offset;
-                while (this.getTokenType() == TokenType.identifier) {
+                while (this.getTokenType().equals(TokenType.identifier)) {
                     this.offset++;
                 }
                 String identifier = this.text.substring(start_offset, this.offset);
                 result.add(new Token(identifier, false));
             } else {
                 String op = "";
-            for (Object curr_op : this.operators) {
-                if (StringHelper.startsWithAtIndex(this.text, curr_op, this.offset)) {
-                    op = curr_op;
-                    break;
+                for (String curr_op : this.operators) {
+                    if (StringHelper.startsWithAtIndex(this.text, curr_op, this.offset)) {
+                        op = curr_op;
+                        break;
+                    }
                 }
-            }
-            
-            if (op == "") {
-                return null;
-            }
-            
-            this.offset += op.length();
-            result.add(new Token(op, true));
+                
+                if (op.equals("")) {
+                    return null;
+                }
+                
+                this.offset += op.length();
+                result.add(new Token(op, true));
             }
         }
         
@@ -97,7 +98,7 @@ class TestClass {
         
         System.out.println("token count:");
         System.out.println(result.size());
-        for (Object item : result) {
+        for (Token item : result) {
             System.out.println(item.value + "(" + (item.is_operator ? "op" : "id") + ")");
         }
     }

@@ -54,20 +54,13 @@ class OneFile {
 class TestClass {
   public:
     void methodTest(std::vector<std::string> method_param) {
-        
     }
     
     void testMethod() {
-        
     }
 
   private:
-    
-    
-    
 };
-
-
 
 int main()
 {

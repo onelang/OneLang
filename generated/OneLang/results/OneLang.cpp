@@ -58,19 +58,14 @@ class TokenType {
     static std::string whitespace;
     static std::string identifier;
     static std::string operator_x;
-    static std::string no_initializer;
 
   private:
-    
-    
-    
 };
 
 std::string TokenType::end_token = std::string("EndToken");
 std::string TokenType::whitespace = std::string("Whitespace");
 std::string TokenType::identifier = std::string("Identifier");
 std::string TokenType::operator_x = std::string("Operator");
-
 
 class Token {
   public:
@@ -82,30 +77,17 @@ class Token {
         this->value = value;
     }
 
-    
-
   private:
-    
-    
-    
 };
-
-
-
 
 class StringHelper {
   public:
-    bool startsWithAtIndex(std::string str, std::string substr, int idx) {
+    static bool startsWithAtIndex(std::string str, std::string substr, int idx) {
         return str.substr(idx, idx + substr.size() - idx) == substr;
     }
 
   private:
-    
-    
-    
 };
-
-
 
 class Tokenizer {
   public:
@@ -116,6 +98,7 @@ class Tokenizer {
     Tokenizer(std::string text, std::vector<std::string> operators) {
         this->operators = operators;
         this->text = text;
+        this->offset = 0;
     }
 
     std::string getTokenType() {
@@ -146,20 +129,20 @@ class Tokenizer {
                 result->push_back(std::make_shared<Token>(identifier, false));
             } else {
                 auto op = std::string("");
-            for (auto it = this->operators->begin(); it != this->operators->end(); ++it) {
-                auto curr_op = *it;
-                if (StringHelper::startsWithAtIndex(this->text, curr_op, this->offset)) {
-                    op = curr_op;
-                    break
+                for (auto it = this->operators->begin(); it != this->operators->end(); ++it) {
+                    auto curr_op = *it;
+                    if (StringHelper::startsWithAtIndex(this->text, curr_op, this->offset)) {
+                        op = curr_op;
+                        break;
+                    }
                 }
-            }
-            
-            if (op == std::string("")) {
-                return nullptr;
-            }
-            
-            this->offset += op.size();
-            result->push_back(std::make_shared<Token>(op, true));
+                
+                if (op == std::string("")) {
+                    return nullptr;
+                }
+                
+                this->offset += op.size();
+                result->push_back(std::make_shared<Token>(op, true));
             }
         }
         
@@ -167,14 +150,7 @@ class Tokenizer {
     }
 
   private:
-    
-    
-    
 };
-
-
-
-
 
 class TestClass {
   public:
@@ -194,12 +170,7 @@ class TestClass {
     }
 
   private:
-    
-    
-    
 };
-
-
 
 int main()
 {

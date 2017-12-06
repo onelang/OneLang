@@ -18,9 +18,10 @@ public class Item
 public class Container
 {
     public List ItemList;
-    public List StringList;public void Method0()
+    public List StringList;
+
+    public void Method0()
     {
-        
     }
     
     public void Method1(string str)

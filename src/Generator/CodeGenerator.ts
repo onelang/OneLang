@@ -330,7 +330,7 @@ export class CodeGenerator {
         if (type.typeKind === one.TypeKind.Class) {
             const classGen = this.model.generator.classGenerators[type.className];
             if (classGen) {
-                return this.call(classGen.typeGenerator, type.typeArguments.map(x => this.getTypeName(x)));
+                return this.call(classGen.typeGenerator, [type.typeArguments.map(x => this.getTypeName(x))]);
             } else
                 return this.caseConverter.getName(type.className, "class");
         }

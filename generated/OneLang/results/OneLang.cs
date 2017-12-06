@@ -7,7 +7,6 @@ public class TokenType
     public static string Whitespace = "Whitespace";
     public static string Identifier = "Identifier";
     public static string OperatorX = "Operator";
-    public static string NoInitializer;
 }
 
 public class Token
@@ -32,7 +31,7 @@ public class StringHelper
 
 public class Tokenizer
 {
-    public int Offset = 0;
+    public int Offset;
     public string Text;
     public List<string> Operators;
 
@@ -40,6 +39,7 @@ public class Tokenizer
     {
         this.Operators = operators;
         this.Text = text;
+        this.Offset = 0;
     }
 
     public string GetTokenType()
@@ -48,7 +48,6 @@ public class Tokenizer
         {
             return TokenType.EndToken;
         }
-        
         
         var c = this.Text[this.Offset];
         return c == ' ' || c == '\n' || c == '\t' || c == '\r' ? TokenType.Whitespace : ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || ('0' <= c && c <= '9') || c == '_' ? TokenType.Identifier : TokenType.OperatorX;
@@ -82,24 +81,22 @@ public class Tokenizer
             else
             {
                 var op = "";
-            foreach (var currOp in this.Operators)
-            {
-                if (StringHelper.StartsWithAtIndex(this.Text, currOp, this.Offset))
+                foreach (var currOp in this.Operators)
                 {
-                    op = currOp;
-                    break;
+                    if (StringHelper.StartsWithAtIndex(this.Text, currOp, this.Offset))
+                    {
+                        op = currOp;
+                        break;
+                    }
                 }
                 
-            }
-            
-            if (op == "")
-            {
-                return null;
-            }
-            
-            
-            this.Offset += op.Length;
-            result.Add(new Token(op, true));
+                if (op == "")
+                {
+                    return null;
+                }
+                
+                this.Offset += op.Length;
+                result.Add(new Token(op, true));
             }
         }
         

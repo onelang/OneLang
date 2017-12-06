@@ -14,9 +14,10 @@ class Item {
 
 class Container {
     public List item_list;
-    public List string_list;public void method0() throws Exception
+    public List string_list;
+
+    public void method0() throws Exception
     {
-        
     }
     
     public void method1(String str) throws Exception
