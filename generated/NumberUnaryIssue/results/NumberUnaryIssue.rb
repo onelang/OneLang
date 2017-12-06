@@ -1,8 +1,5 @@
 class NumberUnaryIssue 
-  
-
   def initialize()
-      
   end
 
   def test(num)

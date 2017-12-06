@@ -10,6 +10,4 @@ class MapTestClass {
   }
 }
 
-
-
 new TestClass().testMethod();

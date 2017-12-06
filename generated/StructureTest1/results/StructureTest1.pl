@@ -8,11 +8,8 @@ sub new
     my $class = shift;
     my $self = {};
     bless $self, $class;
-    
     return $self;
 }
-
-
 
 package Item;
 
@@ -26,10 +23,6 @@ sub new
     return $self;
 }
 
-
-
-
-
 package Container;
 
 sub new
@@ -37,16 +30,11 @@ sub new
     my $class = shift;
     my $self = {};
     bless $self, $class;
-    
     return $self;
 }
 
-
-
-
 sub method0 {
     my ( $self ) = @_;
-    
 }
 
 sub method1 {

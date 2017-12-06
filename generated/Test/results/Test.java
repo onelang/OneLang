@@ -67,7 +67,7 @@ class TestClass {
         
         // some comment
         //   some comment line 2
-        for (Object item : mutable_arr) {
+        for (Integer item : mutable_arr) {
             System.out.println(item);
         }
         

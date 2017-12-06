@@ -1,7 +1,6 @@
 class TestClass {
   public testMethod() {
     const map = {
-      
     };
     const keys = Object.keys(map);
   }

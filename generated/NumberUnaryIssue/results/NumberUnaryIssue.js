@@ -4,6 +4,4 @@ class NumberUnaryIssue {
   }
 }
 
-
-
 new TestClass().testMethod();

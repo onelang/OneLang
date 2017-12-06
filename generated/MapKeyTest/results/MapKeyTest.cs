@@ -6,7 +6,6 @@ public class TestClass
     {
         var map = new Dictionary<string, object>
         {
-          
         };
         // UNUSED: var keys = map.Keys.ToArray();
     }

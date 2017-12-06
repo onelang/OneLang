@@ -1,12 +1,10 @@
 package main
 
 type StrLenInferIssue struct {
-    
 }
 
 func NewStrLenInferIssue() *StrLenInferIssue {
     this := new(StrLenInferIssue)
-    
     return this
 }
 

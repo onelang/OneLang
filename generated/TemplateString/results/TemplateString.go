@@ -4,16 +4,14 @@ import "fmt"
 import "strconv"
 
 type TestClass struct {
-    
 }
 
 func NewTestClass() *TestClass {
     this := new(TestClass)
-    
     return this
 }
 
-func (this *TestClass) TestMethod()  {
+func (this *TestClass) TestMethod() {
     str_val := "str"
     num := 1337
     b := true

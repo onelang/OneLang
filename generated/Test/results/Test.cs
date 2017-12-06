@@ -53,7 +53,6 @@ public class TestClass
             result = "z";
         }
         
-        
         if (x > 3)
         {
             result = "x";

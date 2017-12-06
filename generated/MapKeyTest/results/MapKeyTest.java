@@ -5,7 +5,6 @@ class TestClass {
     public void testMethod() throws Exception
     {
         HashMap<String, Object> map = new HashMap<String, Object>();
-        
         List<String> keys = new ArrayList(map.keySet());
     }
 }

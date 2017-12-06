@@ -1,8 +1,5 @@
 class List {
-  
 }
-
-
 
 class Item {
   constructor(str_constr) {
@@ -10,21 +7,13 @@ class Item {
   }
 }
 
-
-
-
-
 class Container {
   method0() {
-    
   }
   
   method1(str) {
     return str;
   }
 }
-
-
-
 
 new TestClass().testMethod();

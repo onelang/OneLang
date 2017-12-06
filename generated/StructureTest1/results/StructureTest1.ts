@@ -14,8 +14,9 @@ class Item {
 
 class Container {
   public itemList: List;
-  public stringList: List;public method0() {
-    
+  public stringList: List;
+
+  public method0() {
   }
   
   public method1(str: string) {

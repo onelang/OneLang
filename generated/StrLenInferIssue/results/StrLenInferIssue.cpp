@@ -58,12 +58,7 @@ class StrLenInferIssue {
     }
 
   private:
-    
-    
-    
 };
-
-
 
 int main()
 {

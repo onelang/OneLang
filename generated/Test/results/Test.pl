@@ -8,7 +8,6 @@ sub new
     my $class = shift;
     my $self = {};
     bless $self, $class;
-    
     return $self;
 }
 
@@ -47,8 +46,6 @@ sub ifTest {
     } else {
         $result = "???";
     }
-    
-    
     
     if ($x > 3) {
         $result = "z";

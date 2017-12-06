@@ -16,8 +16,9 @@ class Item {
 
 class Container {
     public $item_list;
-    public $string_list;function method0() {
-        
+    public $string_list;
+
+    function method0() {
     }
     
     function method1($str) {

@@ -10,7 +10,6 @@ type TokenType struct {
 
 func NewTokenType() *TokenType {
     this := new(TokenType)
-    
     return this
 }
 
@@ -21,12 +20,10 @@ var TokenTypeOperatorX string = "Operator";
 var TokenTypeNoInitializer string;
 
 type TestClass struct {
-    
 }
 
 func NewTestClass() *TestClass {
     this := new(TestClass)
-    
     return this
 }
 

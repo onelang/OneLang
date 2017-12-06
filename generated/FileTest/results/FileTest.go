@@ -3,12 +3,10 @@ package main
 import "io/ioutil"
 
 type TestClass struct {
-    
 }
 
 func NewTestClass() *TestClass {
     this := new(TestClass)
-    
     return this
 }
 

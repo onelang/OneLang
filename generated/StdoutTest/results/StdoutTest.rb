@@ -1,8 +1,5 @@
 class TestClass 
-  
-
   def initialize()
-      
   end
 
   def reverse_string(str)
@@ -14,7 +11,7 @@ class TestClass
       end
       return result
   end
-  
+
   def test_method()
       puts self.reverse_string("print value")
       return "return value"

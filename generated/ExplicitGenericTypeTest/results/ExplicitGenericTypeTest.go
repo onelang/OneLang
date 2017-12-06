@@ -3,16 +3,14 @@ package main
 import "fmt"
 
 type TestClass struct {
-    
 }
 
 func NewTestClass() *TestClass {
     this := new(TestClass)
-    
     return this
 }
 
-func (this *TestClass) TestMethod()  {
+func (this *TestClass) TestMethod() {
     result := []string{}
     map := map[string]int{
       "x": 5,

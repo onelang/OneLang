@@ -6,7 +6,6 @@ type List struct {
 
 func NewList() *List {
     this := new(List)
-    
     return this
 }
 
@@ -35,15 +34,13 @@ type Container struct {
 
 func NewContainer() *Container {
     this := new(Container)
-    
     return this
 }
 
-func (this *Container) Method0()  {
-    
+func (this *Container) Method0() {
 }
 
-func (this *Container) Method1(str string)  {
+func (this *Container) Method1(str string) {
     return str
 }
 

@@ -59,12 +59,7 @@ class ArrayTestClass {
     }
 
   private:
-    
-    
-    
 };
-
-
 
 int main()
 {

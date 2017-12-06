@@ -1,8 +1,5 @@
 class TestClass 
-  
-
   def initialize()
-      
   end
 
   def test_method()

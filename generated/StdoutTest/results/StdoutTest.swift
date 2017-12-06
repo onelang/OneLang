@@ -8,7 +8,7 @@ class TestClass {
       }
       return result
   }
-  
+
   func testMethod() -> String {
       print(self.reverseString(str: "print value"))
       return "return value"

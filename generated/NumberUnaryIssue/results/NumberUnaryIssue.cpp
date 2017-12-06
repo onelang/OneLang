@@ -58,12 +58,7 @@ class NumberUnaryIssue {
     }
 
   private:
-    
-    
-    
 };
-
-
 
 int main()
 {

@@ -5,6 +5,4 @@ class ArrayTestClass {
   }
 }
 
-
-
 new TestClass().testMethod();

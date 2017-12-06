@@ -1,8 +1,5 @@
 class ArrayTestClass 
-  
-
   def initialize()
-      
   end
 
   def array_test()

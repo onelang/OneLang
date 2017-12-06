@@ -64,12 +64,7 @@ class MapTestClass {
     }
 
   private:
-    
-    
-    
 };
-
-
 
 int main()
 {

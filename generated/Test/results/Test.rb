@@ -1,8 +1,5 @@
 class TestClass 
-  
-
   def initialize()
-      
   end
 
   def map_test()
@@ -19,12 +16,12 @@ class TestClass
       values_var = map_obj.values
       return map_obj["z"]
   end
-  
+
   def explicit_type_test()
       op = ""
       puts op.length
   end
-  
+
   def if_test(x)
       result = "<unk>"
       
@@ -38,11 +35,6 @@ class TestClass
           result = "???"
       end
       
-      
-      
-      
-      
-      
       if x > 3
           result = "z"
       end
@@ -53,10 +45,9 @@ class TestClass
           result = "y"
       end
       
-      
       return result
   end
-  
+
   def array_test()
       #const c2 = new Class2();
       
@@ -83,16 +74,16 @@ class TestClass
           i += 1
       end
   end
-  
+
   def calc()
       return (1 + 2) * 3
   end
-  
+
   def method_with_args(arg1, arg2, arg3)
       stuff = arg1 + arg2 + arg3 * self.calc()
       return stuff
   end
-  
+
   def string_test()
       x = "x"
       y = "y"
@@ -103,7 +94,7 @@ class TestClass
       
       return z + "|" + x + y
   end
-  
+
   def reverse_string(str)
       result = ""
       i = str.length - 1
@@ -113,11 +104,11 @@ class TestClass
       end
       return result
   end
-  
+
   def get_bool_result(value)
       return value
   end
-  
+
   def test_method()
       self.array_test()
       puts self.map_test()

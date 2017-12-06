@@ -13,12 +13,12 @@ class TestClass {
       let _ = Array(map_obj.values)
       return map_obj["z"]!
   }
-  
+
   func explicitTypeTest() -> Void {
       let op = ""
       print(op.count)
   }
-  
+
   func ifTest(x: Int) -> String {
       var result = "<unk>"
       
@@ -44,7 +44,7 @@ class TestClass {
       
       return result
   }
-  
+
   func arrayTest() -> Void {
       //const c2 = new Class2();
       
@@ -72,16 +72,16 @@ class TestClass {
           i += 1
       }
   }
-  
+
   func calc() -> Int {
       return (1 + 2) * 3
   }
-  
+
   func methodWithArgs(arg1: Int, arg2: Int, arg3: Int) -> Int {
       let stuff = arg1 + arg2 + arg3 * self.calc()
       return stuff
   }
-  
+
   func stringTest() -> String {
       let x = "x"
       let y = "y"
@@ -92,7 +92,7 @@ class TestClass {
       
       return z + "|" + x + y
   }
-  
+
   func reverseString(str: String) -> String {
       var result = ""
       var i = str.count - 1
@@ -102,11 +102,11 @@ class TestClass {
       }
       return result
   }
-  
+
   func getBoolResult(value: Bool) -> Bool {
       return value
   }
-  
+
   func testMethod() -> Void {
       self.arrayTest()
       print(self.mapTest())

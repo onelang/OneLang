@@ -3,12 +3,10 @@ package main
 import "fmt"
 
 type TestClass struct {
-    
 }
 
 func NewTestClass() *TestClass {
     this := new(TestClass)
-    
     return this
 }
 
@@ -33,7 +31,7 @@ func (this *TestClass) MapTest() int {
     return map_obj["z"]
 }
 
-func (this *TestClass) ExplicitTypeTest()  {
+func (this *TestClass) ExplicitTypeTest() {
     op := ""
     fmt.Println(len(op))
 }
@@ -64,7 +62,7 @@ func (this *TestClass) IfTest(x int) string {
     return result
 }
 
-func (this *TestClass) ArrayTest()  {
+func (this *TestClass) ArrayTest() {
     //const c2 = new Class2();
     
     mutable_arr := []int{1, 2}
@@ -122,7 +120,7 @@ func (this *TestClass) GetBoolResult(value bool) bool {
     return value
 }
 
-func (this *TestClass) TestMethod()  {
+func (this *TestClass) TestMethod() {
     this.ArrayTest()
     fmt.Println(this.MapTest())
     fmt.Println(this.StringTest())

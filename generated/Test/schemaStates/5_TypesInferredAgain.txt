@@ -131,14 +131,14 @@ TestClass::arrayTest(): void
       - Literal (numeric): "5" [OneNumber]
       - Literal (numeric): "6" [OneNumber]
   - Comment: "\n// some comment\n//   some comment line 2\n"
-  - Foreach item: any
+  - Foreach item: OneNumber
     Items
       - LocalVar: mutableArr [OneArray<OneNumber>]
     Body
       - ExpressionStatement
         - Call [void]
           - MethodReference (static) [OneConsole::print]
-          - LocalVar: item [any]
+          - LocalVar: item [OneNumber]
   - Comment: "\n/* some other comment\n   multiline and stuff\n*/\n"
   - For ("i")
     Var

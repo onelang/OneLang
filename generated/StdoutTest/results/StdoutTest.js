@@ -13,6 +13,4 @@ class TestClass {
   }
 }
 
-
-
 new TestClass().testMethod();

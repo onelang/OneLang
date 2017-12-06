@@ -3,7 +3,6 @@
 class TestClass {
     function testMethod() {
         $map = array(
-          
         );
         $keys = array_keys($map);
     }

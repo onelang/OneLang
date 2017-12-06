@@ -55,18 +55,12 @@ class TestClass {
   public:
     void testMethod() {
         auto map = std::make_shared<std::map<std::string, >>(std::map<std::string, > {
-          
         });
         auto keys = OneMapHelper::keys(*map);
     }
 
   private:
-    
-    
-    
 };
-
-
 
 int main()
 {

@@ -1,16 +1,14 @@
 package main
 
 type MapTestClass struct {
-    
 }
 
 func NewMapTestClass() *MapTestClass {
     this := new(MapTestClass)
-    
     return this
 }
 
-func (this *MapTestClass) MapTest()  {
+func (this *MapTestClass) MapTest() {
     map_obj := map[string]int{
       "x": 5,
     }

@@ -60,12 +60,7 @@ class TestClass {
     }
 
   private:
-    
-    
-    
 };
-
-
 
 int main()
 {

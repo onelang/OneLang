@@ -2,11 +2,9 @@
 
 class TestClass {
     function methodTest($method_param) {
-        
     }
     
     function testMethod() {
-        
     }
 }
 

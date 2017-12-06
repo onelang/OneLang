@@ -4,6 +4,4 @@ class StrLenInferIssue {
   }
 }
 
-
-
 new TestClass().testMethod();

@@ -1,7 +1,6 @@
 class TestClass:
     def test_method(self):
         map = {
-          
         }
         keys = map.keys()
 
