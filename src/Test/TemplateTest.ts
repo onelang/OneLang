@@ -87,7 +87,7 @@ class TestRunner {
     runExpressionTests() {
         console.log('\n============== Expression tests ==============');
         this.runTests(testFile.expressionTests, (expr, expected) => {
-            const parsed = new ExpressionParser(expr).parse();
+            const parsed = ExpressionParser.parse(expr);
             const repr = ExprAstPrinter.removeOuterParen(ExprAstPrinter.print(parsed));
             if (repr.replace(/\s*/g, "") === expected.replace(/\s*/g, "")) {
                 console.log(`${expr}: OK`);
@@ -104,7 +104,7 @@ class TestRunner {
         console.log('\n============== Expression AST tests ==============');
         this.runTests(testFile.expressionAstTests, (expr, expected) => {
             const summary = ObjectComparer.getFullSummary(expected,
-                () => new ExpressionParser(expr).parse());
+                () => ExpressionParser.parse(expr));
             console.log(`${expr}: ${summary}`);
             return summary === "OK";
         });
@@ -125,7 +125,7 @@ class TestRunner {
         vm.methodHandler = new JSMethodHandler();
 
         this.runTests(testFile.vmTests, (exprStr, test) => {
-            const expr = new ExpressionParser(exprStr).parse();
+            const expr = ExpressionParser.parse(exprStr);
 
             const varContext = new VariableContext([
                 VariableSource.fromObject(model, "test runner model"),

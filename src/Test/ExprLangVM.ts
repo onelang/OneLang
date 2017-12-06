@@ -111,11 +111,13 @@ export class ExprLangVM {
             return litExpr.value;
         } else if (expr.kind === "identifier") {
             const identifier = <Ast.IdentifierExpression> expr;
-            if (identifier.text === "true")
+            if (identifier.text === "true") {
                 return true;
-            else if (identifier.text === "false")
+            } else if (identifier.text === "false") {
                 return false;
-            else {
+            } else if (identifier.text === "null") {
+                return null;
+            } else {
                 const result = vars.getVariable(identifier.text);
                 return result;
             }

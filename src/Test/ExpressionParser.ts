@@ -3,21 +3,23 @@ import { Tokenizer, Token, TokenizerException } from "./Tokenizer";
 
 // http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
 
-export const operators = ["+", "-", "*", "/", "<<", ">>", ">=", "==", "<=", "~", "(", ")", "[", "]", ",", ".", "?", ":", "not", "!", "or", "||", "and", "&&"];
+export const operators = ["**", "+", "-", "*", "/", "<<", ">>", ">=", "==", "<=", "~", "(", ")", "[", "]", ",", ".", "?", ":", "not", "!", "or", "||", "and", "&&"];
 
 export class ExpressionParser {
     tokens: Token[];
     tokenMap = { not: '!', and: '&&', or: '||' };
     unary = ['!', '+', '-', '~'];
-    binary = ['+', '-', '*', '/', '<<', '>>', '>=', '==', '<='];
+    binary = ['+', '-', '*', '**', '/', '<<', '>>', '>=', '==', '<=', '&&', '||'];
     rightAssoc = ['**']
     precedenceLevels: { name: string, operators?: string[], precedence?: number }[] = [
         { name: "assignment", operators: ['='] },
         { name: "conditional", operators: ['?'] },
+        { name: "or", operators: ['||'] },
+        { name: "and", operators: ['&&'] },
+        { name: "comparison", operators: ['>=', '==', '<='] },
         { name: "sum", operators: ['+','-'] },
         { name: "product", operators: ['*','/'] },
         { name: "exponent", operators: ['**'] },
-        { name: "comparison", operators: ['>=', '==', '<='] },
         { name: "prefix" },
         { name: "postfix" },
         { name: "call", operators: ['('] },
@@ -59,7 +61,7 @@ export class ExpressionParser {
         return false;
     }
 
-    parse(precedence = 0) {
+    process(precedence = 0) {
         const token = this.consume();
 
         let left: Ast.Expression = null;
@@ -73,10 +75,10 @@ export class ExpressionParser {
         } else if (token.kind === "operator") {
             const operator = this.tokenMap[token.value] || token.value;
             if (this.unary.includes(operator)) {
-                const right = this.parse(this.precedenceMap["prefix"]);
+                const right = this.process(this.precedenceMap["prefix"]);
                 left = <Ast.UnaryExpression> { kind: "unary", op: operator, expr: right };
             } else if (operator === "(") {
-                const expr = this.parse();
+                const expr = this.process();
                 this.consumeOp(")");
                 left = <Ast.ParenthesizedExpression> { kind: "parenthesized", expr };
             }
@@ -96,19 +98,19 @@ export class ExpressionParser {
             this.consume();
             if (this.binary.includes(op)) {
                 const isRightAssoc = this.rightAssoc.includes(op);
-                const right = this.parse(isRightAssoc ? infixPrecedence - 1 : infixPrecedence);
+                const right = this.process(isRightAssoc ? infixPrecedence - 1 : infixPrecedence);
                 left = <Ast.BinaryExpression> { kind: "binary", op, left, right };
             } else if (op === "?") {
-                const whenTrue = this.parse();
+                const whenTrue = this.process();
                 this.consumeOp(":");
-                const whenFalse = this.parse(infixPrecedence - 1);
+                const whenFalse = this.process(infixPrecedence - 1);
                 left = <Ast.ConditionalExpression> { kind: "conditional", condition: left, whenTrue, whenFalse };
             } else if (op === "(") {
                 const args = [];
 
                 if (!this.consumeOpIf(")")) {
                     do {
-                        const arg = this.parse();
+                        const arg = this.process();
                         args.push(arg);
                     } while (this.consumeOpIf(","));
 
@@ -117,7 +119,7 @@ export class ExpressionParser {
 
                 left = <Ast.CallExpression> { kind: "call", method: left, arguments: args };
             } else if (op === "[") {
-                const elementExpr = this.parse();
+                const elementExpr = this.process();
                 this.consumeOp("]");
                 left = <Ast.ElementAccessExpression> { kind: "elementAccess", object: left, elementExpr };
             } else if (op === ".") {
@@ -135,8 +137,15 @@ export class ExpressionParser {
         return left;
     }
 
+    parse() {
+        const result = this.process();
+        if (this.tokens.length > 0)
+            throw new Error("Not all tokens were consumed!");
+        return result;
+    }
+
     static parse(expression: string) {
-        return new ExpressionParser(expression).parse();
+        return new ExpressionParser(expression).process();
     }
 }
 

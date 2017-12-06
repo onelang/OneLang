@@ -29,20 +29,20 @@ export class TemplatePart {
 
             if (match = /^for ([a-zA-Z]+) in (.*)/.exec(valueWoParams)) {
                 this.type = "for";
-                this.for = { itemName: match[1], array: new ExpressionParser(match[2]).parse() };
+                this.for = { itemName: match[1], array: ExpressionParser.parse(match[2]) };
             } else if (match = /^if (.*)/.exec(valueWoParams)) {
                 this.type = "if";
-                this.if = { condition: new ExpressionParser(match[1]).parse() };
+                this.if = { condition: ExpressionParser.parse(match[1]) };
             } else if (match = /^elif (.*)/.exec(valueWoParams)) {
                 this.type = "elif";
-                this.elif = { condition: new ExpressionParser(match[1]).parse() };
+                this.elif = { condition: ExpressionParser.parse(match[1]) };
             } else if (match = /^\/(for|if)$/.exec(valueWoParams)) {
                 this.type = match[1] === "if" ? "endif" : "endfor";
             } else if (match = /^else$/.exec(valueWoParams)) {
                 this.type = "else";
             } else {
                 this.type = "template";
-                this.template = { expr: new ExpressionParser(valueWoParams).parse() };
+                this.template = { expr: ExpressionParser.parse(valueWoParams) };
             }
         }
     }

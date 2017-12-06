@@ -27,6 +27,10 @@ tokenizerTests:
   "'alma'": [{s:"alma"}]
   "'a'+'b'": [{s:"a"}, {op:"+"}, {s:"b"}]
   "'A\\'B'": [{s:"A'B"}]
+  'a == 0 && b == null': [
+    {i:"a"}, {op:"=="}, {n:"0"},
+    {op:"&&"},
+    {i:"b"}, {op:"=="}, {i:"null"}]
 expressionTests:
   'a': 'a'
   '1': '1'
@@ -46,6 +50,10 @@ expressionTests:
   'obj[x]': 'obj[x]'
   'obj[x + y]': 'obj[(x + y)]'
   'obj[x](a)[z]': '((obj[x])(a))[z]'
+  'a && b': 'a && b'
+  'a == 0 && b == null': '(a == 0) && (b == null)'
+  'a && b || c': '(a && b) || c'
+  'a + b * c ** d == 5 - 1 && x <= y ? 9 : 8': '(((a + (b * (c ** d))) == (5 - 1)) && (x <= y)) ? 9 : 8'
 vmTests:
   '1': { expected: 1 }
   'a': { expected: 2, model: { a: 2 } }
