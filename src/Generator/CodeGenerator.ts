@@ -408,6 +408,8 @@ export class CodeGenerator {
                 protectedMethods: methods.filter(x => x.visibility === "protected"),
                 privateMethods: methods.filter(x => x.visibility === "private"),
                 fields: fields,
+                instanceFields: fields.filter(x => !x.static),
+                staticFields: fields.filter(x => x.static),
                 publicFields: fields.filter(x => x.visibility === "public"),
                 protectedFields: fields.filter(x => x.visibility === "protected"),
                 privateFields: fields.filter(x => x.visibility === "private"),

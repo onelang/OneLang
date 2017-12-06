@@ -65,11 +65,20 @@ templates:
       class {{class.name}} 
         {{for field in class.fields|sep=\n}}
           {{if field.static}}
-            @@{{field.name}} = {{if field.initializer}}{{gen(field.initializer)}}{{else}}nil{{/if}}
+            @{{field.name}} = {{if field.initializer}}{{gen(field.initializer)}}{{else}}nil{{/if}}
           {{else}}
             attr_accessor(:{{field.name}})
           {{/if}}
         {{/for}}
+
+        {{if class.staticFields.length > 0}}
+          class << self
+            attr_accessor 
+            {{for field in class.staticFields|inline sep=", "}}
+              :{{field.name}}
+            {{/for}}
+          end
+        {{/if}}
 
         def initialize({{if class.constructor}}{{genArgs(class.constructor)}}{{/if}})
             {{for field in class.fields|sep=\n}}
@@ -84,7 +93,7 @@ templates:
         end
   
         {{for method in class.methods|sep=\n\n}}
-          def {{method.name}}({{genArgs(method)}})
+          def {{if method.static}}self.{{/if}}{{method.name}}({{genArgs(method)}})
               {{genBody(method.body)}}
           end
         {{/for}}

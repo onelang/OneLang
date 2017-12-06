@@ -305,7 +305,9 @@ export class TemplateParser {
             } else if (!line.controlPart) {
                 this.deindentLine();
                 const lineNode = new TemplateLineParser(this.currLine).root;
-
+                const part0 = lineNode.items[0];
+                lineNode.indentLen = part0 instanceof Ast.TextNode ? this.getIndentLen(part0.value) : 0;
+                
                 // if the whole line is a standalone "inline if" (eg "{{if cond}}something{{/if}}"),
                 //   then it converts it to a "control if" (newline only added if generates code)
                 if (lineNode.items.length === 1 && lineNode.items[0] instanceof Ast.IfNode)
@@ -324,7 +326,8 @@ export class TemplateParser {
         let prevLine: Ast.Line = null;
         for (let i = 0; i < lineNodes.length; i++) {
             const lineNode = lineNodes[i];
-            if (prevLine !== null && (lineNode.inline || lineNodes[i - 1].inline)) {
+            const canInline = prevLine !== null && (!(lineNode instanceof Ast.Line) || lineNode.indentLen >= prevLine.indentLen);
+            if (canInline && (lineNode.inline || lineNodes[i - 1].inline)) {
                 if (lineNode instanceof Ast.Line) {
                     if (prevLine.indentLen > 0) {
                         const firstItem = (<Ast.TextNode>lineNode.items[0]);

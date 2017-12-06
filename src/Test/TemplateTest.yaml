@@ -506,6 +506,19 @@ templateTests:
         {{/if}}
          )
     expected: 'LINE\n  ( x )'
+  ruby_attr:
+    tmpl: |-
+      class << self
+        attr_accessor 
+        {{for item in items|inline sep=", "}}
+          :{{item}}
+        {{/for}}
+      end
+    model: { items: ['a','b','c'] }
+    expected: |-
+      class << self
+        attr_accessor :a, :b, :c
+      end
   glue_disappears_1:
     tmpl: |-
       BEGIN

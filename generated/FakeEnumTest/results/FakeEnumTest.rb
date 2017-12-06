@@ -1,9 +1,13 @@
 class TokenType 
-  @@end_token = "EndToken"
-  @@whitespace = "Whitespace"
-  @@identifier = "Identifier"
-  @@operator_x = "Operator"
-  @@no_initializer = nil
+  @end_token = "EndToken"
+  @whitespace = "Whitespace"
+  @identifier = "Identifier"
+  @operator_x = "Operator"
+  @no_initializer = nil
+
+  class << self
+    attr_accessor :end_token, :whitespace, :identifier, :operator_x, :no_initializer
+  end
 
   def initialize()
   end

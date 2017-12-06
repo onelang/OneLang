@@ -1,0 +1,11 @@
+Line #1 [indent=0]:
+  Item #1: "class << self"
+Line #2 [indent=2]:
+  Item #1: "attr_accessor "
+  Item #2: 
+    For item in items: [inline]
+      Line #1 [indent=0]:
+        Item #1: ":"
+        Item #2: "item"
+Line #3 [indent=0]:
+  Item #1: "end"

@@ -14,7 +14,7 @@ class Token {
 }
 
 class StringHelper {
-  startsWithAtIndex(str, substr, idx) {
+  static startsWithAtIndex(str, substr, idx) {
     return str.substring(idx, idx + substr.length) == substr;
   }
 }
