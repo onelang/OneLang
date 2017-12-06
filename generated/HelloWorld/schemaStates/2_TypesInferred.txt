@@ -1,0 +1,6 @@
+TestClass::testMethod(): void
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - Literal (string): "Hello world!" [TsString]
+

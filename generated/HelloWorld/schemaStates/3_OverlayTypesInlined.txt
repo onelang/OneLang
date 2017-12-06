@@ -1,0 +1,6 @@
+TestClass::testMethod(): void
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [OneConsole::print]
+      - Literal (string): "Hello world!" [OneString]
+

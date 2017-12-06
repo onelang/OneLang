@@ -10,7 +10,6 @@ TokenType::Identifier: OneString
 TokenType::OperatorX: OneString
 - Variable: OperatorX [OneString]
   - Literal (string): "Operator" [OneString]
-TokenType::NoInitializer: OneString
 Token::value: OneString
 Token::isOperator: OneBoolean
 Token::constructor
@@ -36,8 +35,6 @@ StringHelper::startsWithAtIndex(str: OneString, substr: OneString, idx: OneNumbe
       - MethodArgument: substr [OneString]
 
 Tokenizer::offset: OneNumber
-- Variable: offset [OneNumber]
-  - Literal (numeric): "0" [OneNumber]
 Tokenizer::text: OneString
 Tokenizer::operators: OneArray<OneString>
 Tokenizer::constructor
@@ -49,6 +46,10 @@ Tokenizer::constructor
     - Binary: = [OneString]
       - InstanceField (this): text [OneString]
       - MethodArgument: text [OneString]
+  - ExpressionStatement
+    - Binary: = [OneNumber]
+      - InstanceField (this): offset [OneNumber]
+      - Literal (numeric): "0" [OneNumber]
 Tokenizer::getTokenType(): OneString
   - If
     - Binary: >= [OneBoolean]
@@ -184,7 +185,7 @@ Tokenizer::tokenize(): OneArray<Token>
             Else
               - Variable: op [OneString]
                 - Literal (string): "" [OneString]
-              - Foreach currOp: any
+              - Foreach currOp: OneString
                 Items
                   - InstanceField (this): operators [OneArray<OneString>]
                 Body
@@ -192,13 +193,13 @@ Tokenizer::tokenize(): OneArray<Token>
                     - Call [OneBoolean]
                       - MethodReference (static) [StringHelper::startsWithAtIndex]
                       - InstanceField (this): text [OneString]
-                      - LocalVar: currOp [any]
+                      - LocalVar: currOp [OneString]
                       - InstanceField (this): offset [OneNumber]
                     Then
                       - ExpressionStatement
                         - Binary: = [OneString]
                           - LocalVar: op [OneString]
-                          - LocalVar: currOp [any]
+                          - LocalVar: currOp [OneString]
                       - Break
                     Else
               - Comment: "\n"
@@ -276,7 +277,7 @@ TestClass::testMethod(): void
       - MethodReference (static) [OneConsole::print]
       - InstanceField: length [OneNumber]
         - LocalVar: result [OneArray<Token>]
-  - Foreach item: any
+  - Foreach item: Token
     Items
       - LocalVar: result [OneArray<Token>]
     Body
@@ -287,12 +288,12 @@ TestClass::testMethod(): void
             - Binary: + [OneString]
               - Binary: + [OneString]
                 - InstanceField: value [OneString]
-                  - LocalVar: item [any]
+                  - LocalVar: item [Token]
                 - Literal (string): "(" [OneString]
               - Parenthesized [OneString]
                 - Conditional [OneString]
                   - InstanceField: isOperator [OneBoolean]
-                    - LocalVar: item [any]
+                    - LocalVar: item [Token]
                   - Literal (string): "op" [OneString]
                   - Literal (string): "id" [OneString]
             - Literal (string): ")" [OneString]

@@ -10,7 +10,6 @@ TokenType::Identifier: TsString
 TokenType::OperatorX: TsString
 - Variable: OperatorX [TsString]
   - Literal (string): "Operator"
-TokenType::NoInitializer: TsString
 Token::value: TsString
 Token::isOperator: TsBoolean
 Token::constructor
@@ -36,8 +35,6 @@ StringHelper::startsWithAtIndex(str: TsString, substr: TsString, idx: TsNumber):
       - Identifier: substr
 
 Tokenizer::offset: TsNumber
-- Variable: offset [TsNumber]
-  - Literal (numeric): "0"
 Tokenizer::text: TsString
 Tokenizer::operators: TsArray<TsString>
 Tokenizer::constructor
@@ -51,6 +48,11 @@ Tokenizer::constructor
       - PropertyAccess (.text)
         - Identifier: this
       - Identifier: text
+  - ExpressionStatement
+    - Binary: =
+      - PropertyAccess (.offset)
+        - Identifier: this
+      - Literal (numeric): "0"
 Tokenizer::getTokenType(): TsString
   - If
     - Binary: >=
