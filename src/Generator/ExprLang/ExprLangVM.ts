@@ -154,6 +154,10 @@ export class ExprLangVM {
                 return leftValue >= rightValue;
             } else if (binaryExpr.op === "<=") {
                 return leftValue <= rightValue;
+            } else if (binaryExpr.op === "<") {
+                return leftValue < rightValue;
+            } else if (binaryExpr.op === ">") {
+                return leftValue > rightValue;
             } else if (binaryExpr.op === "&&") {
                 return leftValue && rightValue;
             } else if (binaryExpr.op === "||") {
