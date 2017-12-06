@@ -153,8 +153,7 @@ templates:
   varName:
     args:
       - name: item
-      - name: asVar
-    template: "{{if item.type.isOneMap && !asVar}}%{{else}}{{if item.type.isOneArray && !asVar}}@{{else}}${{/if}}{{/if}}{{item.name}}"
+    template: "{{if item.type.isOneMap}}%{{else}}{{if item.type.isOneArray}}@{{else}}${{/if}}{{/if}}{{item.name}}"
 expressions:
   call: |-
     {{gen(expr.method)}}(

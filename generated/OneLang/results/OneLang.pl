@@ -8,7 +8,6 @@ sub new
     my $class = shift;
     my $self = {};
     bless $self, $class;
-    
     return $self;
 }
 
@@ -16,7 +15,6 @@ our $end_token = "EndToken";
 our $whitespace = "Whitespace";
 our $identifier = "Identifier";
 our $operator_x = "Operator";
-our $no_initializer;
 
 package Token;
 
@@ -31,9 +29,6 @@ sub new
     return $self;
 }
 
-
-
-
 package StringHelper;
 
 sub new
@@ -41,7 +36,6 @@ sub new
     my $class = shift;
     my $self = {};
     bless $self, $class;
-    
     return $self;
 }
 
@@ -60,12 +54,9 @@ sub new
     my ( $text,$operators ) = @_;
     $self->{operators} = @operators;
     $self->{text} = $text;
+    $self->{offset} = 0;
     return $self;
 }
-
-
-
-
 
 sub getTokenType {
     my ( $self ) = @_;
@@ -96,19 +87,18 @@ sub tokenize {
             push @result, new Token($identifier, 0);
         } else {
             my $op = "";
-        foreach my $curr_op ($self->{operators}) {
-            if (StringHelper::startsWithAtIndex($self->{text}, $curr_op, $self->{offset})) {
-                $op = $curr_op;
-                last;
+            foreach my $curr_op ($self->{operators}) {
+                if (StringHelper::startsWithAtIndex($self->{text}, $curr_op, $self->{offset})) {
+                    $op = $curr_op;
+                    last;
+                }
             }
+            if ($op == "") {
+                return undef;
+            }
+            $self->{offset} += length($op);
+            push @result, new Token($op, 1);
         }
-        if ($op == "") {
-            return undef;
-        }
-        $self->{offset} += length($op);
-        push @result, new Token($op, 1);
-        }
-        
     }
     
     return @result;
@@ -121,7 +111,6 @@ sub new
     my $class = shift;
     my $self = {};
     bless $self, $class;
-    
     return $self;
 }
 

@@ -8,13 +8,11 @@ sub new
     my $class = shift;
     my $self = {};
     bless $self, $class;
-    
     return $self;
 }
 
 sub set {
     my ( $self, $key, $value ) = @_;
-    
 }
 
 sub get {
@@ -29,7 +27,6 @@ sub new
     my $class = shift;
     my $self = {};
     bless $self, $class;
-    
     return $self;
 }
 
