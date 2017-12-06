@@ -29,6 +29,7 @@ classes:
         includes: [fmt]
         template: "fmt.Println({{str}})"
   OneArray:
+    type: "[]{{typeArgs[0]}}"
     fields:
       length:
         template: "len({{self}})"
@@ -111,7 +112,13 @@ templates:
       }
 
       {{for method in class.methods|sep=\n\n}}
-        func (this *{{class.name}}) {{method.name}}({{genArgs(method)}}) 
+        func 
+        {{if method.static|inline}}
+          {{class.name}}_{{method.name}}
+        {{else}}
+          (this *{{class.name}}) {{method.name}}
+        {{/if}}
+        ({{genArgs(method)}}) 
         {{if method.returnType|inline}}
           {{method.returnType}} 
         {{/if}}
@@ -186,7 +193,7 @@ expressions:
     }
   expressionStatement: "{{gen(expr.expression)}}"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.name}}"
-  staticMethod: "{{expr.methodRef.classRef.name}}.{{expr.methodRef.name}}"
+  staticMethod: "{{expr.methodRef.classRef.name}}_{{expr.methodRef.name}}"
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
   instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}"
@@ -228,7 +235,7 @@ expressions:
         {{genBody(expr.body)}}
     }
   while: |-
-    while {{gen(expr.condition)}} {
+    for {{gen(expr.condition)}} {
         {{genBody(expr.body)}}
     }
   if: |-

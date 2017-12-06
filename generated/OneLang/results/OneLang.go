@@ -42,17 +42,17 @@ func NewStringHelper() *StringHelper {
     return this
 }
 
-func (this *StringHelper) StartsWithAtIndex(str string, substr string, idx int) bool {
+func StringHelper_StartsWithAtIndex(str string, substr string, idx int) bool {
     return str[idx:idx + len(substr)] == substr
 }
 
 type Tokenizer struct {
     Offset int
     Text string
-    Operators *OneArray
+    Operators *[]string
 }
 
-func NewTokenizer(text string, operators OneArray) *Tokenizer {
+func NewTokenizer(text string, operators []string) *Tokenizer {
     this := new(Tokenizer)
     this.Operators = operators
     this.Text = text
@@ -81,19 +81,19 @@ func (this *Tokenizer) GetTokenType() string {
     return tmp0
 }
 
-func (this *Tokenizer) Tokenize() OneArray {
+func (this *Tokenizer) Tokenize() []Token {
     result := []Token{}
     
-    while this.Offset < len(this.Text) {
+    for this.Offset < len(this.Text) {
         char_type := this.GetTokenType()
         
         if char_type == TokenTypeWhitespace {
-            while this.GetTokenType() == TokenTypeWhitespace {
+            for this.GetTokenType() == TokenTypeWhitespace {
                 this.Offset++
             }
         } else if char_type == TokenTypeIdentifier {
             start_offset := this.Offset
-            while this.GetTokenType() == TokenTypeIdentifier {
+            for this.GetTokenType() == TokenTypeIdentifier {
                 this.Offset++
             }
             identifier := this.Text[start_offset:this.Offset]
@@ -101,7 +101,7 @@ func (this *Tokenizer) Tokenize() OneArray {
         } else {
             op := ""
             for _, curr_op := range this.Operators {
-                if StringHelper.StartsWithAtIndex(this.Text, curr_op, this.Offset) {
+                if StringHelper_StartsWithAtIndex(this.Text, curr_op, this.Offset) {
                     op = curr_op
                     break
                 }
@@ -121,7 +121,7 @@ func (this *Tokenizer) Tokenize() OneArray {
 
 var TokenizerOffset int;
 var TokenizerText string;
-var TokenizerOperators OneArray;
+var TokenizerOperators []string;
 
 type TestClass struct {
 }

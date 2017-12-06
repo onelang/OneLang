@@ -1,7 +1,7 @@
 package main
 
 type List struct {
-    Items *OneArray
+    Items *[]
 }
 
 func NewList() *List {
@@ -9,7 +9,7 @@ func NewList() *List {
     return this
 }
 
-var ListItems OneArray;
+var ListItems [];
 
 type Item struct {
     Offset int

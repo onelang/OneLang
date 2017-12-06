@@ -8,7 +8,7 @@ func NewTestClass() *TestClass {
     return this
 }
 
-func (this *TestClass) MethodTest(method_param OneArray) {
+func (this *TestClass) MethodTest(method_param []string) {
 }
 
 func (this *TestClass) TestMethod() {
