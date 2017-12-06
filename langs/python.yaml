@@ -78,7 +78,7 @@ templates:
           {{/for}}
 
           {{if class.methods.length == 0 && class.constructor == null}}
-              pass
+            pass
           {{/if}}
 
       {{for field in class.fields|sep=\n}}

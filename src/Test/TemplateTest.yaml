@@ -543,3 +543,36 @@ templateTests:
 
       Y
       END
+  php_begin:
+    tmpl: |-
+      <?php
+
+      {{for inc in includes|sep=\n}}
+        require_once("{{inc}}");
+      {{/for}}
+      
+      {{"END"}}
+    model: { includes: [] }
+    expected: |-
+      <?php
+
+      END
+  cpp_public_private:
+    tmpl: |-
+      public:
+        {{if false}}{{/if}}
+
+        {{if false}}{{/if}}
+
+      private:
+    expected: |-
+      public:
+      private:
+  at_least_one:
+    tmpl: |-
+      {{if true}}A{{/if}}
+
+      {{if false}}{{/if}}
+
+      {{if true}}B{{/if}}
+    expected: "A\n\nB"

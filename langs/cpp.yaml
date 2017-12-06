@@ -141,6 +141,7 @@ templates:
 
           {{genMethods(class.privateMethods)}}
       };
+
       {{for field in class.fields|sep=\n}}
         {{if field.static && field.initializer}}
           {{getType(field)}} {{class.name}}::{{field.name}} = {{gen(field.initializer)}};

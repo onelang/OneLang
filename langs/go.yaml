@@ -111,7 +111,11 @@ templates:
       }
 
       {{for method in class.methods|sep=\n\n}}
-        func (this *{{class.name}}) {{method.name}}({{genArgs(method)}}) {{method.returnType}} {
+        func (this *{{class.name}}) {{method.name}}({{genArgs(method)}}) 
+        {{if method.returnType|inline}}
+          {{method.returnType}} 
+        {{/if}}
+        {
             {{genBody(method.body)}}
         }
       {{/for}}

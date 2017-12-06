@@ -90,16 +90,26 @@ export class TemplateGenerator implements IMethodHandler {
 
     processBlockNode(node: TmplAst.Block, vars: VariableContext) {
         const lines = node.lines.map(x => this.generateNode(x, vars));
+        const removeWs = lines.map(x => x === null);
         const resultLines = [];
         for (let iLine = 0; iLine < lines.length; iLine++) {
             const line = lines[iLine];
             if (line === null) continue;
 
             const origLine = node.lines[iLine];
-            if (origLine instanceof TmplAst.Line && origLine.items.length === 0
-                //&& !this.isSimpleTextNode(node.lines[iLine - 1])
-                //&& !this.isSimpleTextNode(node.lines[iLine + 1])
-                && (lines[iLine - 1] === null || lines[iLine + 1] === null)) continue;
+            const origLineWs = origLine instanceof TmplAst.Line && origLine.items.length === 0;
+
+            if (origLineWs) {
+                if (removeWs[iLine - 1]) {
+                    removeWs[iLine - 1] = false;
+                    continue;
+                }
+
+                if (removeWs[iLine + 1]) {
+                    removeWs[iLine + 1] = false;
+                    continue;
+                }
+            }
 
             resultLines.push(line);
         }

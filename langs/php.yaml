@@ -67,7 +67,7 @@ templates:
 
   main: |-
     <?php
-    {{""}}
+
     {{for inc in includes|sep=\n}}
       require_once("{{inc}}");
     {{/for}}
@@ -76,7 +76,10 @@ templates:
       class {{class.name}} {
           {{for field in class.fields|sep=\n}}
             {{field.visibility}} {{if field.static}}static {{/if}}${{field.name}}
-            {{if field.initializer|inline}} = {{gen(field.initializer)}}{{/if}};
+            {{if field.initializer|inline}}
+               = {{gen(field.initializer)}}
+            {{/if}}
+            ;
           {{/for}}
 
           {{if class.constructor}}
