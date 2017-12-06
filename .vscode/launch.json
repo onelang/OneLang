@@ -7,9 +7,15 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            //"program": "${workspaceRoot}/js/app.js",
+            "name": "Launch Template Test",
             "program": "${workspaceRoot}/js/Test/TemplateTest.js",
+            "sourceMaps": true
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch App",
+            "program": "${workspaceRoot}/js/app.js",
             "sourceMaps": true
         }
     ]
