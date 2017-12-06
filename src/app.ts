@@ -47,7 +47,6 @@ for (const prgName of prgNames) {
             lang.request.code = codeGen.generate(true);
         
             writeFile(`generated/${prgName}/results/${prgName}.${codeGen.lang.extension}`, codeGen.generatedCode);
-            writeFile(`generated/TemplateGenerators/${lang.name}.js`, codeGen.templateObjectCode);
         } catch(e) {
             console.error(e);
         }

@@ -283,8 +283,6 @@ class CodeGeneratorModel {
 export class CodeGenerator {
     model = new CodeGeneratorModel(this);
     caseConverter: SchemaCaseConverter;
-    templateObjectCode: string;
-    templateObject: any;
     generatedCode: string;
     templateGenerator: TemplateGenerator;
     templateVars = new VariableSource("Templates");
