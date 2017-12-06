@@ -2,7 +2,6 @@
 
 class MapX {
     function set($key, $value) {
-        
     }
     
     function get($key) {

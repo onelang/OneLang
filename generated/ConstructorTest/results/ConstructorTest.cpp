@@ -62,16 +62,8 @@ class ConstructorTest {
         this->field2 = field1 * this->field1 * 5;
     }
 
-    
-
   private:
-    
-    
-    
 };
-
-
-
 
 class TestClass {
   public:
@@ -81,12 +73,7 @@ class TestClass {
     }
 
   private:
-    
-    
-    
 };
-
-
 
 int main()
 {

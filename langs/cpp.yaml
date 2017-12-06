@@ -223,7 +223,7 @@ expressions:
   numericLiteral: "{{expr.value}}"
   nullLiteral: "nullptr"
   variableDeclaration: "{{genVar(expr)}};"
-  new: "std::make_shared<{{gen(expr.class)}}>({{genParams(expr.arguments)}})"
+  new: "std::make_shared<{{gen(expr.cls)}}>({{genParams(expr.arguments)}})"
   classReference: "{{expr.classRef.name}}"
   arrayLiteral: "std::make_shared<std::vector<{{expr.typeArgs[0]}}>>(std::vector<{{expr.typeArgs[0]}}> { {{genParams(expr.items)}} })"
   mapLiteral: |- 

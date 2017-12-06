@@ -1,24 +1,17 @@
 class MapX 
-  
-
   def initialize()
-      
   end
 
   def set(key, value)
-      
   end
-  
+
   def get(key)
       return nil
   end
 end
 
 class Main 
-  
-
   def initialize()
-      
   end
 
   def test()

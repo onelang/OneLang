@@ -18,16 +18,14 @@ var ConstructorTestField2 int;
 var ConstructorTestField1 int;
 
 type TestClass struct {
-    
 }
 
 func NewTestClass() *TestClass {
     this := new(TestClass)
-    
     return this
 }
 
-func (this *TestClass) TestMethod()  {
+func (this *TestClass) TestMethod() {
     test := NewConstructorTest(3)
     fmt.Println(test.Field2)
 }

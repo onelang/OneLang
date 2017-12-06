@@ -1,8 +1,7 @@
 class MapX {
   func set(key: , value: ) -> Void {
-      
   }
-  
+
   func get(key: ) ->  {
       return nil
   }

@@ -5,16 +5,11 @@ class ConstructorTest {
   }
 }
 
-
-
-
 class TestClass {
   testMethod() {
     const test = new ConstructorTest(3);
     console.log(test.field2);
   }
 }
-
-
 
 new TestClass().testMethod();

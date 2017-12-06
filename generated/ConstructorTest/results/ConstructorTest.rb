@@ -3,21 +3,13 @@ class ConstructorTest
   attr_accessor(:field1)
 
   def initialize(field1)
-      
-      
-
       self.field1 = field1
       self.field2 = field1 * self.field1 * 5
   end
-
-  
 end
 
 class TestClass 
-  
-
   def initialize()
-      
   end
 
   def test_method()

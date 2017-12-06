@@ -148,7 +148,7 @@ expressions:
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
   variableDeclaration: "{{genVar(expr)}};"
-  new: "new {{gen(expr.class)}}({{genParams(expr.arguments)}})"
+  new: "new {{gen(expr.cls)}}({{genParams(expr.arguments)}})"
   classReference: "{{expr.classRef.name}}"
   arrayLiteral: "new ArrayList<{{expr.typeArgs[0]}}>(Arrays.asList({{genParams(expr.items)}}))"
   mapLiteralDeclaration: |- 

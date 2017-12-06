@@ -1,10 +1,9 @@
 class MapX {
-    public void set(key, value) throws Exception
+    public void set( key,  value) throws Exception
     {
-        
     }
     
-    public  get(key) throws Exception
+    public  get( key) throws Exception
     {
         return null;
     }

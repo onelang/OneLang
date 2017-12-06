@@ -53,21 +53,15 @@ class OneFile {
 
 class MapX {
   public:
-    void set(key, value) {
-        
+    void set( key,  value) {
     }
     
-     get(key) {
+     get( key) {
         return nullptr;
     }
 
   private:
-    
-    
-    
 };
-
-
 
 class Main {
   public:
@@ -78,12 +72,7 @@ class Main {
     }
 
   private:
-    
-    
-    
 };
-
-
 
 int main()
 {

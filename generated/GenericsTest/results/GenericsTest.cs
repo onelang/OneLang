@@ -1,11 +1,10 @@
 public class MapX
 {
-    public void Set(key, value)
+    public void Set( key,  value)
     {
-        
     }
     
-    public  Get(key)
+    public  Get( key)
     {
         return null;
     }

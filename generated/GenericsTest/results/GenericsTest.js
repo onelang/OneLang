@@ -1,14 +1,11 @@
 class MapX {
   set(key, value) {
-    
   }
   
   get(key) {
     return null;
   }
 }
-
-
 
 class Main {
   test() {
@@ -17,7 +14,5 @@ class Main {
     const num_value = map.get("hello2");
   }
 }
-
-
 
 new TestClass().testMethod();

@@ -1,6 +1,5 @@
 class MapX {
   public set(key: , value: ) {
-    
   }
   
   public get(key: ) {
