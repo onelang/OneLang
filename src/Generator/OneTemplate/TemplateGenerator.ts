@@ -1,8 +1,8 @@
-import { ExprLangAst as ExprAst } from "./ExprLangAst";
-import { ExprLangVM, IMethodHandler, VariableContext, VariableSource } from "./ExprLangVM";
-import { TemplateAst as TmplAst, TemplateAst } from "./TemplateAst";
+import { ExprLangAst as ExprAst } from "../ExprLang/ExprLangAst";
+import { ExprLangParser } from "../ExprLang/ExprLangParser";
+import { ExprLangVM, IMethodHandler, VariableContext, VariableSource } from "../ExprLang/ExprLangVM";
+import { TemplateAst as Ast } from "./TemplateAst";
 import { TemplateParser } from "./TemplateParser";
-import { ExpressionParser } from "./ExpressionParser";
 
 /**
  * Some important notes:
@@ -19,14 +19,14 @@ import { ExpressionParser } from "./ExpressionParser";
  */
 
 export class TemplateMethod {
-    body: TemplateAst.Block;
+    body: Ast.Block;
 
     constructor(public name: string, public args: string[], public template: string) {
         this.body = TemplateParser.parse(template);
     }
 
     static fromSignature(signature: string, template: string) {
-        const signatureAst = ExpressionParser.parse(signature);        
+        const signatureAst = ExprLangParser.parse(signature);        
         if (signatureAst.kind === "call") {
             const callExpr = <ExprAst.CallExpression> signatureAst;
             const name = (<ExprAst.IdentifierExpression> callExpr.method).text;
@@ -84,11 +84,11 @@ export class TemplateGenerator implements IMethodHandler {
         return result;
     }
 
-    isSimpleTextNode(node: TmplAst.BlockItem) {
-        return node instanceof TmplAst.Line && node.items[0] instanceof TmplAst.TextNode;
+    isSimpleTextNode(node: Ast.BlockItem) {
+        return node instanceof Ast.Line && node.items[0] instanceof Ast.TextNode;
     }
 
-    processBlockNode(node: TmplAst.Block, vars: VariableContext) {
+    processBlockNode(node: Ast.Block, vars: VariableContext) {
         const lines = node.lines.map(x => this.generateNode(x, vars));
         const removeWs = lines.map(x => x === null);
         const resultLines = [];
@@ -97,7 +97,7 @@ export class TemplateGenerator implements IMethodHandler {
             if (line === null) continue;
 
             const origLine = node.lines[iLine];
-            const origLineWs = origLine instanceof TmplAst.Line && origLine.items.length === 0;
+            const origLineWs = origLine instanceof Ast.Line && origLine.items.length === 0;
 
             if (origLineWs) {
                 if (removeWs[iLine - 1]) {
@@ -117,7 +117,7 @@ export class TemplateGenerator implements IMethodHandler {
         return result;
     }
 
-    processLineNode(node: TmplAst.Line, vars: VariableContext) {
+    processLineNode(node: Ast.Line, vars: VariableContext) {
         const lines = node.items.map(x => this.generateNode(x, vars));
         const nonNullLines = lines.filter(x => x !== null);
         let result = lines.length === 0 ? "" : nonNullLines.length > 0 ? nonNullLines.join("") : null;
@@ -128,7 +128,7 @@ export class TemplateGenerator implements IMethodHandler {
         return result;
     }
 
-    processIfNode(node: TmplAst.IfNode, vars: VariableContext) {
+    processIfNode(node: Ast.IfNode, vars: VariableContext) {
         let resultBlock = node.else;
 
         for (const item of node.items)
@@ -144,7 +144,7 @@ export class TemplateGenerator implements IMethodHandler {
         return result;
     }
 
-    processForNode(node: TmplAst.ForNode, vars: VariableContext) {
+    processForNode(node: Ast.ForNode, vars: VariableContext) {
         let result: string;
 
         const array = <any[]> this.vm.evaluate(node.arrayExpr, vars);
@@ -169,25 +169,25 @@ export class TemplateGenerator implements IMethodHandler {
         return result;
     }
 
-    processTemplateNode(node: TmplAst.TemplateNode, vars: VariableContext) {
+    processTemplateNode(node: Ast.TemplateNode, vars: VariableContext) {
         const result = this.vm.evaluate(node.expr, vars);
         return result;
     }
 
-    generateNode(node: TmplAst.Node, vars: VariableContext) {
+    generateNode(node: Ast.Node, vars: VariableContext) {
         let result: string;
 
-        if (node instanceof TmplAst.TextNode) {
+        if (node instanceof Ast.TextNode) {
             result = node.value;
-        } else if (node instanceof TmplAst.TemplateNode) {
+        } else if (node instanceof Ast.TemplateNode) {
             result = this.processTemplateNode(node, vars);
-        } else if (node instanceof TmplAst.Block) {
+        } else if (node instanceof Ast.Block) {
             result = this.processBlockNode(node, vars);
-        } else if (node instanceof TmplAst.Line) {
+        } else if (node instanceof Ast.Line) {
             result = this.processLineNode(node, vars);
-        } else if (node instanceof TmplAst.IfNode) {
+        } else if (node instanceof Ast.IfNode) {
             result = this.processIfNode(node, vars);
-        } else if (node instanceof TmplAst.ForNode) {
+        } else if (node instanceof Ast.ForNode) {
             result = this.processForNode(node, vars);
         } else {
             throw new Error("Unexpected node type");
@@ -196,7 +196,7 @@ export class TemplateGenerator implements IMethodHandler {
         return result;
     }
 
-    generate(template: TmplAst.Node) {
+    generate(template: Ast.Node) {
         const result = this.generateNode(template, this.rootVars);
         return result;
     }

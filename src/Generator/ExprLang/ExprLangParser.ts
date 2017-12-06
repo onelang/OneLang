@@ -1,11 +1,11 @@
 import { ExprLangAst as Ast } from "./ExprLangAst";
-import { Tokenizer, Token, TokenizerException } from "./Tokenizer";
+import { ExprLangLexer, Token } from "./ExprLangLexer";
 
 // http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
 
 export const operators = ["**", "+", "-", "*", "/", "<<", ">>", ">=", "==", "<=", "~", "(", ")", "[", "]", ",", ".", "?", ":", "not", "!", "or", "||", "and", "&&"];
 
-export class ExpressionParser {
+export class ExprLangParser {
     tokens: Token[];
     tokenMap = { not: '!', and: '&&', or: '||' };
     unary = ['!', '+', '-', '~'];
@@ -29,7 +29,7 @@ export class ExpressionParser {
     precedenceMap: { [name: string]: number } = {};
 
     constructor(public expression: string) {
-        this.tokens = new Tokenizer(expression, operators).tokens;
+        this.tokens = new ExprLangLexer(expression, operators).tokens;
         this.setupPrecedenceMap();
     }
 
@@ -145,7 +145,7 @@ export class ExpressionParser {
     }
 
     static parse(expression: string) {
-        return new ExpressionParser(expression).process();
+        return new ExprLangParser(expression).process();
     }
 }
 

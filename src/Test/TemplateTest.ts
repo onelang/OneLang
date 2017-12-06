@@ -1,17 +1,15 @@
 import { writeFile, readFile, jsonRequest } from "../Utils/NodeUtils";
 import { ObjectComparer } from "./ObjectComparer";
-import { ExprLangAst as ExprAst } from "./ExprLangAst";
 import { execFileSync } from "child_process";
-import { Tokenizer, Token, TokenizerException } from "./Tokenizer";
-import { operators, ExpressionParser } from "./ExpressionParser";
-import { ExprAstPrinter } from "./AstPrinter";
-import { ExprLangVM, JSMethodHandler, VariableContext, VariableSource } from "./ExprLangVM";
-import { ParamParser } from "./ParamParser";
-import { TemplatePart, TemplatePartType } from "./TemplatePart";
-import { TemplateParser } from "./TemplateParser";
-import { TemplateAst as TmplAst } from "./TemplateAst";
-import { TemplateGenerator, TemplateMethod } from "./TemplateGenerator";
-import { TemplateAstPrinter } from "./TemplateAstPrinter";
+import { ExprLangAst as ExprAst } from "../Generator/ExprLang/ExprLangAst";
+import { TemplateAst as TmplAst } from "../Generator/OneTemplate/TemplateAst";
+import { TemplateAstPrinter } from "../Generator/OneTemplate/TemplateAstPrinter";
+import { Token, ExprLangLexer, ExprLangLexerException } from "../Generator/ExprLang/ExprLangLexer";
+import { operators, ExprLangParser } from "../Generator/ExprLang/ExprLangParser";
+import { ExprLangAstPrinter } from "../Generator/ExprLang/ExprLangAstPrinter";
+import { ExprLangVM, JSMethodHandler, VariableContext, VariableSource } from "../Generator/ExprLang/ExprLangVM";
+import { TemplateParser } from "../Generator/OneTemplate/TemplateParser";
+import { TemplateGenerator, TemplateMethod } from "../Generator/OneTemplate/TemplateGenerator";
 const YAML = require('yamljs');
 
 interface TestFile {
@@ -70,9 +68,9 @@ class TestRunner {
 
             const summary = ObjectComparer.getFullSummary(expected, () => {
                 try {
-                    return new Tokenizer(expr, operators).tokens;
+                    return new ExprLangLexer(expr, operators).tokens;
                 } catch(e) {
-                    if (e instanceof TokenizerException)
+                    if (e instanceof ExprLangLexerException)
                         return { errorOffset: e.errorOffset, message: e.message };
                     else
                         throw e;
@@ -87,8 +85,8 @@ class TestRunner {
     runExpressionTests() {
         console.log('\n============== Expression tests ==============');
         this.runTests(testFile.expressionTests, (expr, expected) => {
-            const parsed = ExpressionParser.parse(expr);
-            const repr = ExprAstPrinter.removeOuterParen(ExprAstPrinter.print(parsed));
+            const parsed = ExprLangParser.parse(expr);
+            const repr = ExprLangAstPrinter.removeOuterParen(ExprLangAstPrinter.print(parsed));
             if (repr.replace(/\s*/g, "") === expected.replace(/\s*/g, "")) {
                 console.log(`${expr}: OK`);
                 return true;
@@ -104,7 +102,7 @@ class TestRunner {
         console.log('\n============== Expression AST tests ==============');
         this.runTests(testFile.expressionAstTests, (expr, expected) => {
             const summary = ObjectComparer.getFullSummary(expected,
-                () => ExpressionParser.parse(expr));
+                () => ExprLangParser.parse(expr));
             console.log(`${expr}: ${summary}`);
             return summary === "OK";
         });
@@ -125,7 +123,7 @@ class TestRunner {
         vm.methodHandler = new JSMethodHandler();
 
         this.runTests(testFile.vmTests, (exprStr, test) => {
-            const expr = ExpressionParser.parse(exprStr);
+            const expr = ExprLangParser.parse(exprStr);
 
             const varContext = new VariableContext([
                 VariableSource.fromObject(model, "test runner model"),

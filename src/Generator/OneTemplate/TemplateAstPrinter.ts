@@ -1,5 +1,5 @@
-import { TemplateAst as TmplAst } from "./TemplateAst";
-import { ExprAstPrinter } from "./AstPrinter";
+import { TemplateAst as Ast } from "./TemplateAst";
+import { ExprLangAstPrinter } from "../ExprLang/ExprLangAstPrinter";
 
 // Node types: Block, Line, ForNode, IfNode, TextNode, TemplateNode
 // Block: BlockItem[]
@@ -14,24 +14,24 @@ export class TemplateAstPrinter {
         this.result += `${"  ".repeat(this.indent)}${line}\n`;
     }
 
-    processNode(node: TmplAst.Node) {
+    processNode(node: Ast.Node) {
         this.indent++;
-        if (node instanceof TmplAst.Block) {
+        if (node instanceof Ast.Block) {
             for (let iLine = 0; iLine < node.lines.length; iLine++) {
                 const line = node.lines[iLine];
-                const indentText = line instanceof TmplAst.Line ? ` [indent=${line.indentLen}]` : "";
+                const indentText = line instanceof Ast.Line ? ` [indent=${line.indentLen}]` : "";
                 this.addLine(`Line #${iLine + 1}${indentText}:`);
                 this.processNode(line);
             }
-        } else if (node instanceof TmplAst.Line) {
+        } else if (node instanceof Ast.Line) {
             for (let iItem = 0; iItem < node.items.length; iItem++) {
                 const item = node.items[iItem];
                 
                 let inlineValue = null;
-                if (item instanceof TmplAst.TextNode) {
+                if (item instanceof Ast.TextNode) {
                     inlineValue = `"${item.value.replace(/\n/g, "\\n")}"`;
-                } else if (item instanceof TmplAst.TemplateNode) {
-                    const exprText = ExprAstPrinter.print(item.expr);
+                } else if (item instanceof Ast.TemplateNode) {
+                    const exprText = ExprLangAstPrinter.print(item.expr);
                     inlineValue = `"${exprText}"`;
                 }
 
@@ -39,18 +39,18 @@ export class TemplateAstPrinter {
                 if (!inlineValue)
                     this.processNode(item);
             }
-        } else if (node instanceof TmplAst.ForNode) {
-            const arrayExprText = ExprAstPrinter.print(node.arrayExpr);
+        } else if (node instanceof Ast.ForNode) {
+            const arrayExprText = ExprLangAstPrinter.print(node.arrayExpr);
             this.addLine(`For ${node.itemName} in ${arrayExprText}:${node.inline ? " [inline]" : ""}`);
             this.processNode(node.body);
             if (node.else) {
                 this.addLine(`Else:`);
                 this.processNode(node.else);
             }
-        } else if (node instanceof TmplAst.IfNode) {
+        } else if (node instanceof Ast.IfNode) {
             let first = true;
             for (const item of node.items) {
-                const condText = ExprAstPrinter.print(item.condition);
+                const condText = ExprLangAstPrinter.print(item.condition);
                 this.addLine(`${first ? "If" : "Elif"} (${condText}):${node.inline ? " [inline]" : ""}`);
                 this.processNode(item.body);
                 first = false;
@@ -66,7 +66,7 @@ export class TemplateAstPrinter {
         this.indent--;
     }
 
-    print(node: TmplAst.Node) {
+    print(node: Ast.Node) {
         this.processNode(node);
         return this.result;
     }

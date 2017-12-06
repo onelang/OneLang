@@ -1,5 +1,6 @@
-import { TemplatePart, TemplatePartType } from "./TemplatePart";
 import { TemplateAst as Ast } from "./TemplateAst";
+import { ExprLangAst as ExprAst } from "../ExprLang/ExprLangAst";
+import { ExprLangParser } from "../ExprLang/ExprLangParser";
 
 /**
  * Some info about this AST:
@@ -13,6 +14,98 @@ import { TemplateAst as Ast } from "./TemplateAst";
  *  - If the "inline" template argument specified for an "if" or "for" then it's inlined into the text
  *    (the previous and next "\n" character will be removed)
  */
+
+type TemplatePartType = "text"|"template"|"for"|"if"|"elif"|"else"|"endif"|"endfor";
+
+class TemplatePart {
+    type: TemplatePartType;
+    params: { [name: string]: string|boolean } = {};
+
+    textValue: string;
+    for: { itemName: string, array: ExprAst.Expression };
+    if: { condition: ExprAst.Expression };
+    elif: { condition: ExprAst.Expression };
+    template: { expr: ExprAst.Expression };
+    
+    isWhitespace = false;
+
+    constructor(public value: string, isText: boolean) {
+        let match;
+        if (isText) {
+            this.type = "text";
+            this.textValue = value;
+            this.isWhitespace = !!value.match(/^\s*$/);
+        } else {
+            const paramsOffs = value.lastIndexOf("|");
+            const valueWoParams = paramsOffs === -1 || value[paramsOffs - 1] === "|" ? value : value.substr(0, paramsOffs).trim();
+            this.params = paramsOffs === -1 ? {} : new ParamParser(value.substr(paramsOffs + 1).trim()).parse();
+
+            if (match = /^for ([a-zA-Z]+) in (.*)/.exec(valueWoParams)) {
+                this.type = "for";
+                this.for = { itemName: match[1], array: ExprLangParser.parse(match[2]) };
+            } else if (match = /^if (.*)/.exec(valueWoParams)) {
+                this.type = "if";
+                this.if = { condition: ExprLangParser.parse(match[1]) };
+            } else if (match = /^elif (.*)/.exec(valueWoParams)) {
+                this.type = "elif";
+                this.elif = { condition: ExprLangParser.parse(match[1]) };
+            } else if (match = /^\/(for|if)$/.exec(valueWoParams)) {
+                this.type = match[1] === "if" ? "endif" : "endfor";
+            } else if (match = /^else$/.exec(valueWoParams)) {
+                this.type = "else";
+            } else {
+                this.type = "template";
+                this.template = { expr: ExprLangParser.parse(valueWoParams) };
+            }
+        }
+    }
+
+    repr() {
+        return `${this.type}: "${this.value.replace(/\n/g, "\\n")}"`;
+    }
+}
+
+class ParamParser {
+    pos = 0;
+    params: { [name: string]: string|boolean } = { };
+
+    constructor(public str: string) { }
+
+    readToken(...tokens: string[]) {
+        for (const token of tokens)
+            if (this.str.startsWith(token, this.pos)) {
+                this.pos += token.length;
+                return token;
+            }
+        return null;
+    }
+
+    readUntil(...tokens: string[]) {
+        const startPos = this.pos;
+        let token = null;
+        for (; this.pos < this.str.length; this.pos++)
+            if (token = this.readToken(...tokens))
+                break;
+
+        const value = this.str.substring(startPos, this.pos - (token||"").length);
+        return { value, token };
+    }
+
+    parse() {
+        while (this.pos < this.str.length) {
+            const key = this.readUntil("=", " ");
+            if(key.token !== "=")
+                this.params[key.value] = true;
+            else {
+                const quote = this.readToken("'", "\"");
+                const value = this.readUntil(quote || " ").value;
+                this.params[key.value] = value.replace(/\\n/g, "\n");
+            }
+        }
+
+        return this.params;
+    }
+}
 
 class LineInfo {
     parts: TemplatePart[];

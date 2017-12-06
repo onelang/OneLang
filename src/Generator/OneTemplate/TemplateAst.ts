@@ -1,4 +1,4 @@
-import { ExprLangAst as ExprAst } from "./ExprLangAst";
+import { ExprLangAst as ExprAst } from "../ExprLang/ExprLangAst";
 
 export namespace TemplateAst {
     export interface Node { }

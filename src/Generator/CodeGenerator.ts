@@ -1,13 +1,12 @@
 import { OneAst as one } from "../One/Ast";
-import { Template } from "./TemplateCompiler";
-import { ExpressionParser } from "./ExpressionLanguage/ExpressionParser";
+import { ExprLangParser } from "./ExprLang/ExprLangParser";
 import { OverviewGenerator } from "../One/OverviewGenerator";
 import { LangFileSchema } from "./LangFileSchema";
 import { deindent } from "./Utils";
 import { SchemaCaseConverter, CaseConverter } from "../One/Transforms/CaseConverter";
 import { IncludesCollector } from "../One/Transforms/IncludesCollector";
-import { TemplateMethod, TemplateGenerator } from "../Test/TemplateGenerator";
-import { VariableContext, VariableSource } from "../Test/ExprLangVM";
+import { TemplateMethod, TemplateGenerator } from "./OneTemplate/TemplateGenerator";
+import { VariableContext, VariableSource } from "./ExprLang/ExprLangVM";
 
 namespace CodeGeneratorModel {
     export interface MethodParameter {

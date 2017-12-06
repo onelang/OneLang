@@ -5,17 +5,16 @@ import { writeFile, readFile, jsonRequest } from "./Utils/NodeUtils";
 import { OneCompiler } from "./OneCompiler";
 import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs";
 import { LangFileSchema } from "./Generator/LangFileSchema";
-import { Template } from "./Generator/TemplateCompiler";
 import { deindent } from "./Generator/Utils";
 
 declare var YAML;
 
 global["debugOn"] = false;
 
-let prgNames = ["Test"];
+let prgNames = ["GenericsTest"];
 const runPrg = false;
 const langFilter = "";
-const compileAll = false;
+const compileAll = true;
 
 if (compileAll)
     prgNames = fs.readdirSync("input").filter(x => x.endsWith(".ts")).map(x => x.replace(".ts", ""));

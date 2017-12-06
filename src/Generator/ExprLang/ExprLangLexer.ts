@@ -5,19 +5,19 @@ export class Token
     constructor(public kind: TokenKind, public value: string) { }
 }
 
-export class TokenizerException {
+export class ExprLangLexerException {
     errorOffset: number;
 
     get context() { return this.tokenizer.expression.substr(this.errorOffset, 30) + "..."; }
 
-    constructor(public tokenizer: Tokenizer, public message: string) {
+    constructor(public tokenizer: ExprLangLexer, public message: string) {
         this.errorOffset = tokenizer.offset;
     }
 
     toString() { return `TokenizerException: ${this.message} at '${this.context}' (offset: ${this.errorOffset})`; }
 }
 
-export class Tokenizer {
+export class ExprLangLexer {
     offset = 0;
     tokens: Token[] = [];
 
@@ -108,7 +108,7 @@ export class Tokenizer {
     }
 
     fail(message: string) {
-        throw new TokenizerException(this, message);
+        throw new ExprLangLexerException(this, message);
     }
 }
 
