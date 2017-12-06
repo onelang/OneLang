@@ -5,7 +5,6 @@ class TokenType {
     public static $whitespace = "Whitespace";
     public static $identifier = "Identifier";
     public static $operator_x = "Operator";
-    public static $no_initializer;
 }
 
 class Token {
@@ -25,13 +24,14 @@ class StringHelper {
 }
 
 class Tokenizer {
-    public $offset = 0;
+    public $offset;
     public $text;
     public $operators;
 
     function __construct($text, $operators) {
         $this->operators = $operators;
         $this->text = $text;
+        $this->offset = 0;
     }
 
     function getTokenType() {
@@ -62,19 +62,19 @@ class Tokenizer {
                 $result[] = new Token($identifier, FALSE);
             } else {
                 $op = "";
-            foreach ($this->operators as $curr_op) {
-                if (StringHelper::startsWithAtIndex($this->text, $curr_op, $this->offset)) {
-                    $op = $curr_op;
-                    break;
+                foreach ($this->operators as $curr_op) {
+                    if (StringHelper::startsWithAtIndex($this->text, $curr_op, $this->offset)) {
+                        $op = $curr_op;
+                        break;
+                    }
                 }
-            }
-            
-            if ($op == "") {
-                return NULL;
-            }
-            
-            $this->offset += strlen($op);
-            $result[] = new Token($op, TRUE);
+                
+                if ($op == "") {
+                    return NULL;
+                }
+                
+                $this->offset += strlen($op);
+                $result[] = new Token($op, TRUE);
             }
         }
         

@@ -6,21 +6,21 @@ TokenType.whitespace = "Whitespace";
 TokenType.identifier = "Identifier";
 TokenType.operator_x = "Operator";
 
-
 class Token:
     def __init__(self, value, is_operator):
         self.is_operator = is_operator
         self.value = value
-        
 
 class StringHelper:
-    def starts_with_at_index(self, str, substr, idx):
+    @staticmethod
+    def starts_with_at_index(str, substr, idx):
         return str[idx:idx + len(substr)] == substr
 
 class Tokenizer:
     def __init__(self, text, operators):
         self.operators = operators
         self.text = text
+        self.offset = 0
 
     def get_token_type(self):
         if self.offset >= len(self.text):
@@ -45,18 +45,16 @@ class Tokenizer:
                 result.append(Token(identifier, False))
             else:
                 op = ""
-            for curr_op in self.operators:
-                if StringHelper.starts_with_at_index(self.text, curr_op, self.offset):
-                    op = curr_op
-                    break
-            if op == "":
-                return None
-            self.offset += len(op)
-            result.append(Token(op, True))
+                for curr_op in self.operators:
+                    if StringHelper.starts_with_at_index(self.text, curr_op, self.offset):
+                        op = curr_op
+                        break
+                if op == "":
+                    return None
+                self.offset += len(op)
+                result.append(Token(op, True))
         
         return result
-        
-        
 
 class TestClass:
     def test_method(self):

@@ -7,12 +7,10 @@ type TokenType struct {
     Whitespace string
     Identifier string
     OperatorX string
-    NoInitializer string
 }
 
 func NewTokenType() *TokenType {
     this := new(TokenType)
-    
     return this
 }
 
@@ -20,7 +18,6 @@ var TokenTypeEndToken string = "EndToken";
 var TokenTypeWhitespace string = "Whitespace";
 var TokenTypeIdentifier string = "Identifier";
 var TokenTypeOperatorX string = "Operator";
-var TokenTypeNoInitializer string;
 
 type Token struct {
     Value string
@@ -38,12 +35,10 @@ var TokenValue string;
 var TokenIsOperator bool;
 
 type StringHelper struct {
-    
 }
 
 func NewStringHelper() *StringHelper {
     this := new(StringHelper)
-    
     return this
 }
 
@@ -61,6 +56,7 @@ func NewTokenizer(text string, operators OneArray) *Tokenizer {
     this := new(Tokenizer)
     this.Operators = operators
     this.Text = text
+    this.Offset = 0
     return this
 }
 
@@ -104,40 +100,38 @@ func (this *Tokenizer) Tokenize() OneArray {
             result = append(result, NewToken(identifier, false))
         } else {
             op := ""
-        for _, curr_op := range this.Operators {
-            if StringHelper.StartsWithAtIndex(this.Text, curr_op, this.Offset) {
-                op = curr_op
-                break
+            for _, curr_op := range this.Operators {
+                if StringHelper.StartsWithAtIndex(this.Text, curr_op, this.Offset) {
+                    op = curr_op
+                    break
+                }
             }
-        }
-        
-        if op == "" {
-            return nil
-        }
-        
-        this.Offset += len(op)
-        result = append(result, NewToken(op, true))
+            
+            if op == "" {
+                return nil
+            }
+            
+            this.Offset += len(op)
+            result = append(result, NewToken(op, true))
         }
     }
     
     return result
 }
 
-var TokenizerOffset int = 0;
+var TokenizerOffset int;
 var TokenizerText string;
 var TokenizerOperators OneArray;
 
 type TestClass struct {
-    
 }
 
 func NewTestClass() *TestClass {
     this := new(TestClass)
-    
     return this
 }
 
-func (this *TestClass) TestMethod()  {
+func (this *TestClass) TestMethod() {
     operators := []string{"<<", ">>", "++", "--", "==", "!=", "!", "<", ">", "=", "(", ")", "[", "]", "{", "}", ";", "+", "-", "*", "/", "&&", "&", "%", "||", "|", "^", ",", "."}
     
     input := "hello * 5"

@@ -3,7 +3,6 @@ class TokenType {
   public static whitespace: string = "Whitespace";
   public static identifier: string = "Identifier";
   public static operatorX: string = "Operator";
-  public static noInitializer: string;
 }
 
 class Token {
@@ -23,13 +22,14 @@ class StringHelper {
 }
 
 class Tokenizer {
-  public offset: number = 0;
+  public offset: number;
   public text: string;
   public operators: OneArray;
 
   constructor(text: string, operators: OneArray) {
       this.operators = operators;
       this.text = text;
+      this.offset = 0;
   }
 
   public getTokenType() {
@@ -60,19 +60,19 @@ class Tokenizer {
             result.push(new Token(identifier, false));
         } else {
             let op = "";
-        for (const curr_op of this.operators) {
-            if (StringHelper.startsWithAtIndex(this.text, curr_op, this.offset)) {
-                op = curr_op;
-                break
+            for (const curr_op of this.operators) {
+                if (StringHelper.startsWithAtIndex(this.text, curr_op, this.offset)) {
+                    op = curr_op;
+                    break
+                }
             }
-        }
-        
-        if (op == "") {
-            return null;
-        }
-        
-        this.offset += op.length;
-        result.push(new Token(op, true));
+            
+            if (op == "") {
+                return null;
+            }
+            
+            this.offset += op.length;
+            result.push(new Token(op, true));
         }
     }
     

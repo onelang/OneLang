@@ -1,12 +1,10 @@
 class TokenType {
-  
 }
 
 TokenType.endToken = "EndToken";
 TokenType.whitespace = "Whitespace";
 TokenType.identifier = "Identifier";
 TokenType.operatorX = "Operator";
-
 
 class Token {
   constructor(value, is_operator) {
@@ -15,21 +13,17 @@ class Token {
   }
 }
 
-
-
-
 class StringHelper {
   startsWithAtIndex(str, substr, idx) {
     return str.substring(idx, idx + substr.length) == substr;
   }
 }
 
-
-
 class Tokenizer {
   constructor(text, operators) {
       this.operators = operators;
       this.text = text;
+      this.offset = 0;
   }
 
   getTokenType() {
@@ -60,29 +54,25 @@ class Tokenizer {
             result.push(new Token(identifier, false));
         } else {
             let op = "";
-        for (const curr_op of this.operators) {
-            if (StringHelper.startsWithAtIndex(this.text, curr_op, this.offset)) {
-                op = curr_op;
-                break
+            for (const curr_op of this.operators) {
+                if (StringHelper.startsWithAtIndex(this.text, curr_op, this.offset)) {
+                    op = curr_op;
+                    break
+                }
             }
-        }
-        
-        if (op == "") {
-            return null;
-        }
-        
-        this.offset += op.length;
-        result.push(new Token(op, true));
+            
+            if (op == "") {
+                return null;
+            }
+            
+            this.offset += op.length;
+            result.push(new Token(op, true));
         }
     }
     
     return result;
   }
 }
-
-
-
-
 
 class TestClass {
   testMethod() {
@@ -99,7 +89,5 @@ class TestClass {
     }
   }
 }
-
-
 
 new TestClass().testMethod();
