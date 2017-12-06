@@ -1,0 +1,8 @@
+Line #1 [indent=0]:
+  Item #1: "A"
+Line #2:
+  For item in items:
+    Line #1 [indent=0]:
+      Item #1: "BAD"
+Line #3 [indent=0]:
+  Item #1: "B"

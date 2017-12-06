@@ -1,0 +1,12 @@
+Line #1 [indent=0]:
+  Item #1: "public:"
+Line #2 [indent=2]:
+  Item #1: 
+    If (false):
+Line #3 [indent=0]:
+Line #4 [indent=2]:
+  Item #1: 
+    If (false):
+Line #5 [indent=0]:
+Line #6 [indent=0]:
+  Item #1: "private:"

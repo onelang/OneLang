@@ -1,0 +1,7 @@
+Line #1 [indent=0]:
+  Item #1: "A"
+Line #2:
+  If (cond):
+    Item #1: "B"
+Line #3 [indent=0]:
+  Item #1: "C"

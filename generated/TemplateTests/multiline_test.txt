@@ -1,0 +1,47 @@
+Line #1 [indent=0]:
+  Item #1: "BEGIN1 "
+  Item #2: ""L1
+L2""
+  Item #3: " END1"
+Line #2 [indent=0]:
+Line #3 [indent=2]:
+  Item #1: "BEGIN2 "
+  Item #2: ""L1
+L2""
+  Item #3: " END2"
+Line #4 [indent=0]:
+Line #5 [indent=2]:
+  Item #1: "BEGIN3 "
+  Item #2: 
+    If (true):
+      Item #1: ""L1
+L2""
+  Item #3: " END3"
+Line #6 [indent=0]:
+Line #7 [indent=2]:
+  Item #1: "BEGIN4"
+Line #8:
+  If (true):
+    Line #1 [indent=2]:
+      Item #1: ""L1
+L2""
+Line #9 [indent=2]:
+  Item #1: "END4"
+Line #10 [indent=0]:
+Line #11 [indent=2]:
+  Item #1: "BEGIN5"
+Line #12 [indent=4]:
+  Item #1: ""L1
+L2""
+Line #13 [indent=2]:
+  Item #1: "END5"
+Line #14 [indent=0]:
+Line #15 [indent=2]:
+  Item #1: "BEGIN6 "
+  Item #2: 
+    If (false):
+      Item #1: ""L1
+L2""
+    else:
+      Item #1: "ELSE"
+  Item #3: " END6"

@@ -1,0 +1,21 @@
+Line #1 [indent=0]:
+  Item #1: "$""
+  Item #2: 
+    For part in parts: [inline]
+      Line #1:
+        If ((part.literal)):
+          Line #1 [indent=0]:
+            Item #1: "(part.text)"
+        else:
+          Line #1:
+            If ((part.isBoolean)):
+              Line #1 [indent=0]:
+                Item #1: "{(("
+                Item #2: "(part.expr)"
+                Item #3: ") ? "true" : "false")}"
+            else:
+              Line #1 [indent=0]:
+                Item #1: "{"
+                Item #2: "(part.expr)"
+                Item #3: "}"
+  Item #3: """

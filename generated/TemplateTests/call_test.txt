@@ -1,0 +1,8 @@
+Line #1 [indent=0]:
+  Item #1: "(main())"
+  Item #2: "("
+  Item #3: 
+    For item in array: [inline]
+      Line #1 [indent=0]:
+        Item #1: "(genItem(item))"
+  Item #4: ")"

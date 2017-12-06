@@ -1,0 +1,4 @@
+Line #1 [indent=0]:
+  Item #1: "LINE1"
+Line #2 [indent=4]:
+  Item #1: "(multiLine())"

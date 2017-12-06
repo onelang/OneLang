@@ -1,0 +1,10 @@
+Line #1:
+  If (true):
+    Item #1: "A"
+Line #2 [indent=0]:
+Line #3:
+  If (false):
+Line #4 [indent=0]:
+Line #5:
+  If (true):
+    Item #1: "B"

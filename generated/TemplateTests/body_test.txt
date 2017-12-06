@@ -1,0 +1,12 @@
+Line #1 [indent=0]:
+  Item #1: "function test() {"
+Line #2 [indent=4]:
+  Item #1: "(genBody())"
+Line #3 [indent=4]:
+  Item #1: "if (condition) {"
+Line #4 [indent=8]:
+  Item #1: "(genBody())"
+Line #5 [indent=4]:
+  Item #1: "}"
+Line #6 [indent=0]:
+  Item #1: "}"

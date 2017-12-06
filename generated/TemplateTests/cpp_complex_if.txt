@@ -1,0 +1,10 @@
+Line #1 [indent=0]:
+  Item #1: "BEGIN"
+Line #2 [indent=0]:
+  Item #1: "method() {"
+Line #3 [indent=2]:
+  Item #1: "(if(expr))"
+Line #4 [indent=0]:
+  Item #1: "}"
+Line #5 [indent=0]:
+  Item #1: "END"

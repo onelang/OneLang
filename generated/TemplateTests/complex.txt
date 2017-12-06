@@ -1,0 +1,75 @@
+Line #1 [indent=0]:
+  Item #1: "L0"
+Line #2 [indent=0]:
+  Item #1: "L1A "
+  Item #2: "42"
+  Item #3: " L1B"
+Line #3 [indent=0]:
+  Item #1: "L2A "
+  Item #2: 
+    If (cond1):
+      Item #1: "true"
+  Item #3: " L2B"
+Line #4 [indent=0]:
+  Item #1: "L3A "
+  Item #2: 
+    If (cond2):
+      Item #1: "true"
+    else:
+      Item #1: "false"
+  Item #3: " L3B"
+Line #5 [indent=0]:
+  Item #1: "L4A "
+  Item #2: 
+    If (cond1):
+      Item #1: "true"
+  Item #3: " L4B "
+  Item #4: "12"
+  Item #5: " L4C"
+Line #6 [indent=0]:
+  Item #1: "L5"
+Line #7:
+  For item in array:
+    Line #1 [indent=0]:
+      Item #1: "L6A "
+      Item #2: "(item.name)"
+      Item #3: " L6B"
+    Line #2:
+      If ((item.cond1)):
+        Line #1 [indent=0]:
+          Item #1: "L7 COND1 TRUE"
+      Elif ((item.cond2)):
+        Line #1 [indent=0]:
+          Item #1: "L7 COND2 TRUE"
+        Line #2:
+          If ((item.cond3)):
+            Line #1 [indent=0]:
+              Item #1: "L8 COND3 TRUE"
+            Line #2 [indent=2]:
+              Item #1: "L8 plus indent"
+            Line #3 [indent=0]:
+              Item #1: "L8 indent back"
+      else:
+        Line #1 [indent=0]:
+          Item #1: "L7 FALSE"
+  Else:
+    Line #1 [indent=0]:
+      Item #1: "FOR ELSE"
+Line #8 [indent=0]:
+  Item #1: "L9"
+Line #9:
+  For item in array:
+    Line #1 [indent=0]:
+      Item #1: "(item.name)"
+Line #10 [indent=0]:
+  Item #1: "L10"
+Line #11:
+  If (cond1):
+    Line #1 [indent=0]:
+      Item #1: "L11 COND1"
+Line #12:
+  If (cond2):
+    Line #1 [indent=0]:
+      Item #1: "L12 COND2"
+Line #13 [indent=0]:
+  Item #1: "L13"

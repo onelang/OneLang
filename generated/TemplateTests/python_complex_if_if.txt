@@ -1,0 +1,18 @@
+Line #1 [indent=0]:
+  Item #1: "if "
+  Item #2: "(expr.cond)"
+  Item #3: ":"
+Line #2 [indent=4]:
+  Item #1: "(expr.then)"
+Line #3:
+  If ((expr.else)):
+    Line #1:
+      If ((hasKey((expr.else), "cond"))):
+        Line #1 [indent=0]:
+          Item #1: "el"
+          Item #2: "(if((expr.else)))"
+      else:
+        Line #1 [indent=0]:
+          Item #1: "else:"
+        Line #2 [indent=4]:
+          Item #1: "(expr.else)"

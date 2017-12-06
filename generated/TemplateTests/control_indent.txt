@@ -1,0 +1,16 @@
+Line #1 [indent=0]:
+  Item #1: "LINE1"
+Line #2:
+  If (cond):
+    Line #1 [indent=4]:
+      Item #1: "LINE2-INDENT4"
+    Line #2 [indent=6]:
+      Item #1: "LINE3-INDENT6"
+Line #3:
+  If (cond):
+    Line #1 [indent=4]:
+      Item #1: "LINE4-INDENT4"
+    Line #2 [indent=6]:
+      Item #1: "LINE5-INDENT6"
+Line #4 [indent=0]:
+  Item #1: "LINE6"

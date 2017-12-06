@@ -1,0 +1,6 @@
+Line #1 [indent=0]:
+  Item #1: "line1"
+Line #2 [indent=2]:
+  Item #1: "line2"
+Line #3 [indent=0]:
+  Item #1: "line3"

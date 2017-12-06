@@ -1,0 +1,6 @@
+Line #1 [indent=0]:
+  Item #1: "A "
+  Item #2: 
+    If (condition):
+      Item #1: "true"
+  Item #3: " B"

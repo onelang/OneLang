@@ -1,0 +1,12 @@
+Line #1 [indent=0]:
+  Item #1: "<?php"
+Line #2 [indent=0]:
+Line #3:
+  For inc in includes:
+    Line #1 [indent=0]:
+      Item #1: "require_once(""
+      Item #2: "inc"
+      Item #3: "");"
+Line #4 [indent=0]:
+Line #5 [indent=0]:
+  Item #1: ""END""

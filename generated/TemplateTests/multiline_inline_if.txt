@@ -1,0 +1,9 @@
+Line #1 [indent=0]:
+  Item #1: "YamlIndent"
+Line #2 [indent=2]:
+  Item #1: "BEGIN3 "
+  Item #2: 
+    If (true):
+      Item #1: ""L1
+L2""
+  Item #3: " END3"
