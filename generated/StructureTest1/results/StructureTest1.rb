@@ -2,10 +2,7 @@ class List
   attr_accessor(:items)
 
   def initialize()
-      
   end
-
-  
 end
 
 class Item 
@@ -20,8 +17,6 @@ class Item
 
       self.str_constr = str_constr
   end
-
-  
 end
 
 class Container 
@@ -29,14 +24,11 @@ class Container
   attr_accessor(:string_list)
 
   def initialize()
-      
-      
   end
 
   def method0()
-      
   end
-  
+
   def method1(str)
       return str
   end

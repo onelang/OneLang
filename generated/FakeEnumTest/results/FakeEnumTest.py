@@ -6,7 +6,6 @@ TokenType.whitespace = "Whitespace";
 TokenType.identifier = "Identifier";
 TokenType.operator_x = "Operator";
 
-
 class TestClass:
     def test_method(self):
         casing_test = TokenType.end_token
