@@ -59,7 +59,7 @@ langs = {
     },
     "CPP": {
         "ext": "cpp",
-        "cmd": "g++ -std=c++11 {name}.cpp -o {name} && ./{name} && rm {name}"
+        "cmd": "g++ -std=c++11 {name}.cpp -I../../langs/StdLibs/ -o {name} && ./{name} && rm {name}"
     },
     "Go": {
         "ext": "go",
