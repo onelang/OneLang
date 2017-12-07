@@ -12,7 +12,7 @@ classes:
         template: "{{self}}.count"
     methods:
       substring:
-        template: "{{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{start}}) ..< {{self}}.index({{self}}.startIndex, offsetBy: {{end}})]"
+        template: "String({{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{start}}) ..< {{self}}.index({{self}}.startIndex, offsetBy: {{end}})])"
       split:
         template: "{{self}}.split(separator: {{separator}}, omittingEmptySubsequences: false)"
       get:
@@ -80,7 +80,7 @@ templates:
         {{/if}}
 
         {{for method in class.methods|sep=\n\n}}
-          func {{method.name}}({{genArgs(method)}}) -> {{method.returnType}} {
+          {{if method.static}}class {{/if}}func {{method.name}}({{genArgs(method)}}) -> {{method.returnType}} {
               {{genBody(method.body)}}
           }
         {{/for}}
