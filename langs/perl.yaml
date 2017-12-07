@@ -9,11 +9,11 @@ classes:
         template: "length({{self}})"
     methods:
       substring:
-        template: "substr {{self}}, {{start}}, ({{end}} - {{start}})"
+        template: "(substr {{self}}, {{start}}, ({{end}} - {{start}}))"
       split:
         template: "split({{separator}}, {{self}})"
       get:
-        template: "substr {{self}}, {{idx}}, 1"
+        template: "(substr {{self}}, {{idx}}, 1)"
   OneConsole:
     methods:
       print:
@@ -21,7 +21,7 @@ classes:
   OneArray:
     fields:
       length:
-        template: "scalar({{self}})"
+        template: "scalar(@{{{self}}})"
     methods:
       add:
         template: "push {{self}}, {{item}}"
@@ -66,6 +66,14 @@ operators:
     template: "{{gen(left)}} gt {{gen(right)}}"
   OneCharacter >= OneCharacter:
     template: "{{gen(left)}} gt {{gen(right)}}"
+  OneString == OneString:
+    template: "{{gen(left)}} eq {{gen(right)}}"
+  OneString == OneCharacter:
+    template: "{{gen(left)}} eq {{gen(right)}}"
+  OneCharacter == OneString:
+    template: "{{gen(left)}} eq {{gen(right)}}"
+  OneCharacter == OneCharacter:
+    template: "{{gen(left)}} eq {{gen(right)}}"
   OneString + OneNumber:
     template: "{{gen(left)}} . {{gen(right)}}"
   OneString + OneBoolean:
@@ -96,8 +104,8 @@ templates:
           bless $self, $class;
           {{if class.constructor}}
             my ( 
-            {{for param in class.constructor.parameters|inline sep=,}}
-              ${{param.name}}
+            {{for param in class.constructor.parameters|inline sep=", "}}
+              {{genType(param.typeInfo)}}{{param.name}}
             {{/for}}
              ) = @_;
             {{genBody(class.constructor.body)}}
@@ -113,11 +121,19 @@ templates:
 
       {{for method in class.methods|sep=\n\n}}
         sub {{method.name}} {
-            my ( $self
-            {{for param in method.parameters|inline}}
-              , ${{param.name}}
-            {{/for}}
-             ) = @_;
+            {{if method.static}}
+              my ( 
+              {{for param in method.parameters|inline sep=", "}}
+                {{genType(param.typeInfo)}}{{param.name}}
+              {{/for}}
+               ) = @_;
+            {{else}}
+              my ( $self
+              {{for param in method.parameters|inline}}
+                , {{genType(param.typeInfo)}}{{param.name}}
+              {{/for}}
+               ) = @_;
+            {{/if}}
             {{genBody(method.body)}}
         }
       {{/for}}
@@ -150,10 +166,14 @@ templates:
       - name: itemVar
     template: "my {{varName(itemVar)}} = {{gen(itemVar.initializer)}}"
 
+  genType:
+    args: [{ name: type }]
+    #template: "{{if type.isOneMap}}%{{else}}{{if type.isOneArray}}@{{else}}${{/if}}{{/if}}"
+    template: "$"
+  
   varName:
-    args:
-      - name: item
-    template: "{{if item.type.isOneMap}}%{{else}}{{if item.type.isOneArray}}@{{else}}${{/if}}{{/if}}{{item.name}}"
+    args: [{ name: item }]
+    template: "{{genType(item.type)}}{{item.name}}"
 expressions:
   call: |-
     {{gen(expr.method)}}(
@@ -175,7 +195,7 @@ expressions:
   variableDeclaration: "{{genVar(expr)}};"
   new: "new {{gen(expr.cls)}}({{genParams(expr.arguments)}})"
   classReference: "{{expr.classRef.name}}"
-  arrayLiteral: "({{genParams(expr.items)}})"
+  arrayLiteral: "[{{genParams(expr.items)}}]"
   mapLiteral: |- 
     (
       {{for prop in expr.properties|sep="\n"}}
@@ -210,7 +230,7 @@ expressions:
     {{/for}}
     "
   foreach: |-
-    foreach my ${{expr.itemVariable.name}} ({{gen(expr.items)}}) {
+    foreach my ${{expr.itemVariable.name}} (@{{{gen(expr.items)}}}) {
         {{genBody(expr.body)}}
     }
   for: |-
