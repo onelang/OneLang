@@ -4,6 +4,7 @@ casing:
   method: camel_case
 primitiveTypes:
   void: void
+  any: any
 classes:
   OneString:
     type: string
