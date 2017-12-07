@@ -296,7 +296,6 @@ export namespace OneAst {
 
     export interface ArrayLiteral extends Expression {
         items: Expression[];
-        arrayType?: string;
     }
 
     export interface MapLiteral extends Expression {

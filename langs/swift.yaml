@@ -70,7 +70,7 @@ templates:
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
         {{for field in class.fields|sep=\n}}
-          {{if field.static}}static {{/if}}var {{field.name}}: {{field.type}}{{if field.typeInfo.isComplexClass}}?{{/if}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}}
+          {{if field.static}}static {{/if}}var {{field.name}}: {{field.type}}{{if field.typeInfo.isComplexClass && !field.typeInfo.isOneArray}}?{{/if}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}}
         {{/for}}
 
         {{if class.constructor}}
@@ -136,7 +136,12 @@ expressions:
   variableDeclaration: "{{genVar(expr)}}"
   new: "{{gen(expr.cls)}}({{genMethodArgs(expr.arguments)}})"
   classReference: "{{expr.classRef.name}}"
-  arrayLiteral: "[{{genParams(expr.items)}}]"
+  arrayLiteral: |-
+    {{if expr.items.length > 0}}
+      [{{genParams(expr.items)}}]
+    {{else}}
+      [{{expr.typeArgs[0]}}]()
+    {{/if}}
   mapLiteral: |- 
     [
       {{for prop in expr.properties|sep=",\n"}}
@@ -148,8 +153,12 @@ expressions:
   staticMethod: "{{expr.methodRef.classRef.name}}.{{expr.methodRef.name}}"
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
-  instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}{{if expr.valueType.isComplexClass}}!{{/if}}"
-  staticField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}{{if expr.valueType.isComplexClass}}!{{/if}}"
+  instanceField: |-
+    {{gen(expr.thisExpr)}}.{{expr.varRef.name}}
+    {{if expr.valueType.isComplexClass && !expr.valueType.isOneArray|inline}}!{{/if}}
+  staticField: |-
+    {{gen(expr.thisExpr)}}.{{expr.varRef.name}}
+    {{if expr.valueType.isComplexClass && !expr.valueType.isOneArray|inline}}!{{/if}}
   falseLiteral: "false"
   trueLiteral: "true"
   elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
