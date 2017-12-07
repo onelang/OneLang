@@ -94,11 +94,6 @@ class CodeGeneratorModel {
             && block.statements[0].stmtType === one.StatementType.If;
     }
 
-    // TODO: hack: understand how perl works and fix this...
-    hackPerlToVar(name: string) {
-        return name.replace(/%|@/g, '$');
-    }
-
     getOverlayCallCode(callExpr: one.CallExpression, extraArgs?: { [name: string]: any }) {
         const methodRef = <one.MethodReference> callExpr.method;
         

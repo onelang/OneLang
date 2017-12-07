@@ -26,9 +26,9 @@ classes:
       add:
         template: "push {{self}}, {{item}}"
       get:
-        template: "{{hackPerlToVar(self)}}[{{index}}]"
+        template: "${{{self}}}[{{index}}]"
       set:
-        template: "{{hackPerlToVar(self)}}[{{index}}] = {{value}}"
+        template: "${{{self}}}[{{index}}] = {{value}}"
   OneMap:
     methods:
       keys:
@@ -36,13 +36,13 @@ classes:
       values:
         template: "values {{self}}"
       remove:
-        template: "delete {{hackPerlToVar(self)}}{{{key}}}"
+        template: "delete ${{{self}}}{{{key}}}"
       hasKey:
-        template: "exists {{hackPerlToVar(self)}}{{{key}}}"
+        template: "exists ${{{self}}}{{{key}}}"
       get:
-        template: "{{hackPerlToVar(self)}}{{{key}}}"
+        template: "${{{self}}}{{{key}}}"
       set:
-        template: "{{hackPerlToVar(self)}}{{{key}}} = {{value}}"
+        template: "${{{self}}}{{{key}}} = {{value}}"
   OneFile:
     methods:
       readText:
@@ -197,11 +197,11 @@ expressions:
   classReference: "{{expr.classRef.name}}"
   arrayLiteral: "[{{genParams(expr.items)}}]"
   mapLiteral: |- 
-    (
+    {
       {{for prop in expr.properties|sep="\n"}}
         {{prop.name}} => {{gen(prop.initializer)}},
       {{/for}}
-    )
+    }
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}->{{expr.methodRef.name}}"
   staticMethod: "{{expr.methodRef.classRef.name}}::{{expr.methodRef.name}}"
