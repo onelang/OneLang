@@ -63,7 +63,7 @@ export class Tokenizer
                     }
 
                 if (op == "")
-                    return null;
+                    break;
 
                 this.offset += op.length;
                 result.push(new Token(op, true));
