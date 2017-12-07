@@ -376,6 +376,7 @@ export class CodeGenerator {
                 return <CodeGeneratorModel.Method> {
                     name: method.name,
                     returnType: this.getTypeName(method.returns),
+                    returnTypeInfo: method.returns,
                     body: method.body,
                     parameters: this.genParameters(method),
                     visibility: method.visibility || "public",

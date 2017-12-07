@@ -99,7 +99,7 @@ templates:
     {{for class in classes|sep=\n\n}}
       type {{class.name}} struct {
           {{for field in class.fields|sep=\n}}
-            {{field.name}} {{getType(field)}}
+            {{field.name}} {{getType(field.typeInfo)}}
           {{/for}}
       }
 
@@ -120,7 +120,7 @@ templates:
         {{/if}}
         ({{genArgs(method)}}) 
         {{if method.returnType|inline}}
-          {{method.returnType}} 
+          {{getType(method.returnTypeInfo)}} 
         {{/if}}
         {
             {{genBody(method.body)}}
@@ -135,7 +135,14 @@ templates:
   getType:
     args:
       - name: item
-    template: "{{if item.typeInfo.isComplexClass}}*{{/if}}{{item.type}}"
+    template: |-
+      {{if item.isComplexClass && !item.isOneArray}}
+        *{{typeName(item)}}
+      {{elif item.isOneArray}}
+        []{{getType(item.typeArguments[0])}}
+      {{else}}
+        {{typeName(item)}}
+      {{/if}}
 
   genBody:
     args:
@@ -184,7 +191,7 @@ expressions:
   variableDeclaration: "{{genVar(expr)}}"
   new: "New{{gen(expr.cls)}}({{genParams(expr.arguments)}})"
   classReference: "{{expr.classRef.name}}"
-  arrayLiteral: "[]{{expr.typeArgs[0]}}{{{genParams(expr.items)}}}"
+  arrayLiteral: "[]{{getType(expr.valueType.typeArguments[0])}}{{{genParams(expr.items)}}}"
   mapLiteral: |- 
     map[{{expr.typeArgs[0]}}]{{expr.typeArgs[1]}}{
       {{for prop in expr.properties|sep="\n"}}
