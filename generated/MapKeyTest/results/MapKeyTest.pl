@@ -13,9 +13,9 @@ sub new
 
 sub testMethod {
     my ( $self ) = @_;
-    my %map = (
-    );
-    my @keys = keys %map;
+    my $map = {
+    };
+    my $keys = keys $map;
 }
 
 package Program;

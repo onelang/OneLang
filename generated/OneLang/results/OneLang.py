@@ -50,7 +50,7 @@ class Tokenizer:
                         op = curr_op
                         break
                 if op == "":
-                    return None
+                    break
                 self.offset += len(op)
                 result.append(Token(op, True))
         

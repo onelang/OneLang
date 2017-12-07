@@ -208,8 +208,7 @@ Tokenizer::tokenize(): OneArray<Token>
                   - LocalVar: op [OneString]
                   - Literal (string): "" [OneString]
                 Then
-                  - Return
-                    - Literal (null): "null" [any]
+                  - Break
                 Else
               - Comment: "\n"
               - ExpressionStatement

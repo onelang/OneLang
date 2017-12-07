@@ -20,10 +20,10 @@ sub testMethod {
     $z .= "Z";
     $z .= $x;
     
-    my $a = substr "abcdef", 2, (4 - 2);
-    my @arr = split(" ", "ab  cd ef");
+    my $a = (substr "abcdef", 2, (4 - 2));
+    my $arr = split(" ", "ab  cd ef");
     
-    return $z . "|" . $x . $y . "|" . $a . "|" . $arr[2];
+    return $z . "|" . $x . $y . "|" . $a . "|" . ${$arr}[2];
 }
 
 package Program;

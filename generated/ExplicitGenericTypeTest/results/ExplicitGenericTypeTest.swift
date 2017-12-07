@@ -1,6 +1,6 @@
 class TestClass {
   func testMethod() -> Void {
-      let result = []
+      let result = [String]()
       let map = [
         "x": 5
       ]

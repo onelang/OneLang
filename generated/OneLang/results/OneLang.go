@@ -49,7 +49,7 @@ func StringHelper_StartsWithAtIndex(str string, substr string, idx int) bool {
 type Tokenizer struct {
     Offset int
     Text string
-    Operators *[]string
+    Operators []string
 }
 
 func NewTokenizer(text string, operators []string) *Tokenizer {
@@ -81,8 +81,8 @@ func (this *Tokenizer) GetTokenType() string {
     return tmp0
 }
 
-func (this *Tokenizer) Tokenize() []Token {
-    result := []Token{}
+func (this *Tokenizer) Tokenize() []*Token {
+    result := []*Token{}
     
     for this.Offset < len(this.Text) {
         char_type := this.GetTokenType()
@@ -108,7 +108,7 @@ func (this *Tokenizer) Tokenize() []Token {
             }
             
             if op == "" {
-                return nil
+                break
             }
             
             this.Offset += len(op)

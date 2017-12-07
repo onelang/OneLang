@@ -76,7 +76,7 @@ class Tokenizer
                   end
               end
               if op == ""
-                  return nil
+                  break
               end
               self.offset += op.length
               result << Token.new(op, true)

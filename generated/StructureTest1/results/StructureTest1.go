@@ -1,7 +1,7 @@
 package main
 
 type List struct {
-    Items *[]
+    Items []
 }
 
 func NewList() *List {

@@ -75,7 +75,7 @@ class Tokenizer {
                 }
                 
                 if (op.equals("")) {
-                    return null;
+                    break;
                 }
                 
                 this.offset += op.length();

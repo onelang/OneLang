@@ -206,8 +206,7 @@ Tokenizer::tokenize(): TsArray<Token>
                   - LocalVar: op [TsString]
                   - Literal (string): "" [TsString]
                 Then
-                  - Return
-                    - Literal (null): "null" [any]
+                  - Break
                 Else
               - Comment: "\n"
               - ExpressionStatement

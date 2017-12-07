@@ -13,18 +13,18 @@ sub new
 
 sub mapTest {
     my ( $self ) = @_;
-    my %map_obj = (
+    my $map_obj = {
       x => 5,
       y => 3,
-    );
+    };
     
     #let containsX = "x" in mapObj;
-    $map_obj{"z"} = 9;
-    delete $map_obj{"x"};
+    ${$map_obj}{"z"} = 9;
+    delete ${$map_obj}{"x"};
     
-    my @keys_var = keys %map_obj;
-    my @values_var = values %map_obj;
-    return $map_obj{"z"};
+    my $keys_var = keys $map_obj;
+    my $values_var = values $map_obj;
+    return ${$map_obj}{"z"};
 }
 
 sub explicitTypeTest {
@@ -64,25 +64,25 @@ sub arrayTest {
     my ( $self ) = @_;
     #const c2 = new Class2();
     
-    my @mutable_arr = (1, 2);
-    push @mutable_arr, 3;
-    push @mutable_arr, 4;
+    my $mutable_arr = [1, 2];
+    push $mutable_arr, 3;
+    push $mutable_arr, 4;
     # mutableArr.push(c2.property);
     # mutableArr.push(c2.child.property);
     # mutableArr.push(c2.child.child.property);
     
-    my @constant_arr = (5, 6);
+    my $constant_arr = [5, 6];
     
     # some comment
     #   some comment line 2
-    foreach my $item (@mutable_arr) {
+    foreach my $item (@{$mutable_arr}) {
         print(($item) . "\n");
     }
     
     # some other comment
     # multiline and stuff
-    for (my $i = 0; $i < scalar(@constant_arr); $i++) {
-        print(($constant_arr[$i]) . "\n");
+    for (my $i = 0; $i < scalar(@{$constant_arr}); $i++) {
+        print((${$constant_arr}[$i]) . "\n");
     }
 }
 
@@ -113,7 +113,7 @@ sub reverseString {
     my ( $self, $str ) = @_;
     my $result = "";
     for (my $i = length($str) - 1; $i >= 0; $i--) {
-        $result .= substr $str, $i, 1;
+        $result .= (substr $str, $i, 1);
     }
     return $result;
 }

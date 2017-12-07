@@ -16,18 +16,18 @@ class Token {
 }
 
 class StringHelper {
-  func startsWithAtIndex(str: String, substr: String, idx: Int) -> Bool {
-      return str[str.index(str.startIndex, offsetBy: idx) ..< str.index(str.startIndex, offsetBy: idx + substr.count)] == substr
+  class func startsWithAtIndex(str: String, substr: String, idx: Int) -> Bool {
+      return String(str[str.index(str.startIndex, offsetBy: idx) ..< str.index(str.startIndex, offsetBy: idx + substr.count)]) == substr
   }
 }
 
 class Tokenizer {
   var offset: Int
   var text: String
-  var operators: [String]?
+  var operators: [String]
 
   init(text: String, operators: [String]) {
-      self.operators! = operators
+      self.operators = operators
       self.text = text
       self.offset = 0
   }
@@ -42,7 +42,7 @@ class Tokenizer {
   }
 
   func tokenize() -> [Token] {
-      var result = []
+      var result = [Token]()
       
       while self.offset < self.text.count {
           let char_type = self.getTokenType()
@@ -56,11 +56,11 @@ class Tokenizer {
               while self.getTokenType() == TokenType.identifier {
                   self.offset += 1
               }
-              let identifier = self.text[self.text.index(self.text.startIndex, offsetBy: start_offset) ..< self.text.index(self.text.startIndex, offsetBy: self.offset)]
+              let identifier = String(self.text[self.text.index(self.text.startIndex, offsetBy: start_offset) ..< self.text.index(self.text.startIndex, offsetBy: self.offset)])
               result.append(Token(value: identifier, is_operator: false))
           } else {
               var op = ""
-              for curr_op in self.operators! {
+              for curr_op in self.operators {
                   if StringHelper.startsWithAtIndex(str: self.text, substr: curr_op, idx: self.offset) {
                       op = curr_op
                       break
@@ -68,7 +68,7 @@ class Tokenizer {
               }
               
               if op == "" {
-                  return nil
+                  break
               }
               
               self.offset += op.count

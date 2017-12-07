@@ -15,7 +15,7 @@ sub testMethod {
     my ( $self ) = @_;
     my $str = "a1A";
     for (my $i = 0; $i < length($str); $i++) {
-        my $c = substr $str, $i, 1;
+        my $c = (substr $str, $i, 1);
         my $is_upper = "A" le $c && $c le "Z";
         my $is_lower = "a" le $c && $c le "z";
         my $is_number = "0" le $c && $c le "9";

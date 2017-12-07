@@ -229,8 +229,7 @@ Tokenizer::tokenize(): TsArray<Token>
                   - Identifier: op
                   - Literal (string): ""
                 Then
-                  - Return
-                    - Literal (null): "null"
+                  - Break
                 Else
               - Comment: "\n"
               - ExpressionStatement

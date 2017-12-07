@@ -1,5 +1,5 @@
 class List {
-  var items: []?
+  var items: []
 }
 
 class Item {

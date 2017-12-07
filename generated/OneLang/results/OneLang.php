@@ -70,7 +70,7 @@ class Tokenizer {
                 }
                 
                 if ($op == "") {
-                    return NULL;
+                    break;
                 }
                 
                 $this->offset += strlen($op);

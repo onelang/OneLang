@@ -1,3 +1,4 @@
+#include <one.hpp>
 #include <memory>
 #include <fstream>
 #include <vector>
@@ -5,66 +6,18 @@
 #include <iostream>
 #include <string>
 
-class OneMapHelper {
-  public:
-    template<typename K, typename V> static std::shared_ptr<std::vector<K>> keys(const std::map<K,V>& map) {
-        std::vector<K> result;
-        for(auto it = map.begin(); it != map.end(); ++it)
-            result.push_back(it->first);
-        return std::make_shared<std::vector<K>>(result);
-    }
-
-    template<typename K, typename V> static std::shared_ptr<std::vector<V>> values(const std::map<K,V>& map) {
-        std::vector<V> result;
-        for(auto it = map.begin(); it != map.end(); ++it)
-            result.push_back(it->second);
-        return std::make_shared<std::vector<V>>(result);
-    }
-};
-
-class OneStringHelper {
-  public:
-    static std::shared_ptr<std::vector<std::string>> split(const std::string& str, const std::string& delim)
-    {
-        std::vector<std::string> tokens;
-        
-        size_t prev = 0, pos = 0;
-        do
-        {
-            pos = str.find(delim, prev);
-            if (pos == std::string::npos) pos = str.length();
-            std::string token = str.substr(prev, pos - prev);
-            tokens.push_back(token);
-            prev = pos + delim.length();
-        }
-        while (pos < str.length() && prev < str.length());
-
-        return std::make_shared<std::vector<std::string>>(tokens);
-    }
-};
-
-class OneFile {
-  public:
-    static std::string readText(const std::string& path)
-    {
-      std::ifstream file(path);
-      std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-      return content;
-    }
-};
-
 class TestClass {
   public:
     void testMethod() {
-        auto str_val = std::string("str");
+        auto str_val = string("str");
         int num = 1337;
         auto b = true;
-        auto result = std::string() + "before " + str_val + ", num: " + std::to_string(num) + ", true: " + ((b) ? "true" : "false") + " after";
-        std::cout << (result) << std::endl;
-        std::cout << (std::string() + "before " + str_val + ", num: " + std::to_string(num) + ", true: " + ((b) ? "true" : "false") + " after") << std::endl;
+        auto result = string() + "before " + str_val + ", num: " + to_string(num) + ", true: " + ((b) ? "true" : "false") + " after";
+        cout << (result) << endl;
+        cout << (string() + "before " + str_val + ", num: " + to_string(num) + ", true: " + ((b) ? "true" : "false") + " after") << endl;
         
-        auto result2 = std::string("before ") + str_val + std::string(", num: ") + std::to_string(num) + std::string(", true: ") + (b ? "true" : "false") + std::string(" after");
-        std::cout << (result2) << std::endl;
+        auto result2 = string("before ") + str_val + string(", num: ") + to_string(num) + string(", true: ") + (b ? "true" : "false") + string(" after");
+        cout << (result2) << endl;
     }
 
   private:

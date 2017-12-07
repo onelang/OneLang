@@ -92,7 +92,7 @@ public class Tokenizer
                 
                 if (op == "")
                 {
-                    return null;
+                    break;
                 }
                 
                 this.Offset += op.Length;

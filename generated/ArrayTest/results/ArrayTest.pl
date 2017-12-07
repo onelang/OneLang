@@ -13,8 +13,8 @@ sub new
 
 sub arrayTest {
     my ( $self ) = @_;
-    my @constant_arr = (5);
-    return scalar(@constant_arr);
+    my $constant_arr = [5];
+    return scalar(@{$constant_arr});
 }
 
 package Program;

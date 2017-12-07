@@ -13,13 +13,13 @@ sub new
 
 sub testMethod {
     my ( $self ) = @_;
-    my @result = ();
-    my %map = (
+    my $result = [];
+    my $map = {
       x => 5,
-    );
-    my @keys = keys %map;
-    print((@result) . "\n");
-    print((@keys) . "\n");
+    };
+    my $keys = keys $map;
+    print(($result) . "\n");
+    print(($keys) . "\n");
 }
 
 package Program;
