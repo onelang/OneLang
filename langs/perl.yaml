@@ -51,6 +51,10 @@ classes:
           open my $fh, '<', {{fn}} or die "Can't open file $!";
           read $fh, my ${{result}}, -s $fh;
           close($fh);
+  OneError:
+    methods:
+      raise:
+        template: die {{message}}."\n"
 operators:
   OneString + OneString:
     template: "{{gen(left)}} . {{gen(right)}}"
@@ -87,8 +91,14 @@ operators:
 templates:
   testGenerator: |-
     package Program;
-    my $c = new {{class}}();
-    $c->{{method}}();
+
+    eval {
+        my $c = new {{class}}();
+        $c->{{method}}();
+    };
+    if ($@) {
+        print "Exception: " . $@
+    }
 
   main: |-
     use strict;
@@ -190,6 +200,7 @@ expressions:
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
   prefix: "{{expr.operator}}{{gen(expr.operand)}}"
+  throw: "throw {{gen(expr.expression)}};"
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
   variableDeclaration: "{{genVar(expr)}};"

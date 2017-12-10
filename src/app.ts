@@ -11,10 +11,10 @@ declare var YAML;
 
 global["debugOn"] = false;
 
-let prgNames = ["GenericsTest"];
+let prgNames = ["ExceptionTest"];
 const runPrg = false;
 const langFilter = "";
-const compileAll = true;
+const compileAll = false;
 
 if (compileAll)
     prgNames = fs.readdirSync("input").filter(x => x.endsWith(".ts")).map(x => x.replace(".ts", ""));
@@ -40,15 +40,15 @@ for (const prgName of prgNames) {
         if (langFilter && lang.name !== langFilter) continue;
     
         console.log(`converting program '${prgName}' to ${lang.name}...`);
-        try {
+        //try {
             const langYaml = readFile(`langs/${lang.name}.yaml`);
             const codeGen = compiler.getCodeGenerator(langYaml, lang.name);
             lang.request.code = codeGen.generate(true);
         
             writeFile(`generated/${prgName}/results/${prgName}.${codeGen.lang.extension}`, codeGen.generatedCode);
-        } catch(e) {
-            console.error(e);
-        }
+        //} catch(e) {
+        //    console.error(e);
+        //}
     }
     
     // run compiled codes

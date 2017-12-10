@@ -55,6 +55,11 @@ classes:
     methods:
       print:
         template: "cout << ({{str}}) << endl"
+  OneError:
+    includes: [stdexcept]
+    methods:
+      raise:
+        template: throw std::runtime_error({{message}})
 operators:
   OneString + OneNumber:
     includes: [string]
@@ -66,8 +71,12 @@ templates:
   testGenerator: |-
     int main()
     {
-        {{class}} c;
-        c.{{method}}();
+        try {
+            {{class}} c;
+            c.{{method}}();
+        } catch(std::exception& err) {
+            cout << "Exception: " << err.what() << '\n';
+        }
         return 0;
     }
 
@@ -178,6 +187,7 @@ expressions:
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
   prefix: "{{expr.operator}}{{gen(expr.operand)}}"
+  throw: "throw {{gen(expr.expression)}};"
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
   nullLiteral: "nullptr"

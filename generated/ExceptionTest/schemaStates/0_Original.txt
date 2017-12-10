@@ -1,0 +1,7 @@
+TestClass::testMethod(): void
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.raise)
+        - Identifier: OneError
+      - Literal (string): "exception message"
+

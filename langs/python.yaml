@@ -48,6 +48,10 @@ classes:
       readText:
         extraArgs: [result]
         template: "with open({{fn}}, 'r') as f: {{result}} = f.read()"
+  OneError:
+    methods:
+      raise:
+        template: raise Exception({{message}})
 operators:
   OneString + OneNumber:
     template: "{{gen(left)}} + str({{gen(right)}})"
@@ -55,7 +59,10 @@ operators:
     template: '{{gen(left)}} + ("true" if {{gen(right)}} else "false")'
 templates:
   testGenerator: |-
-    {{class}}().{{method}}()
+    try:
+        {{class}}().{{method}}()
+    except Exception as err:
+        print "Exception: " + err.message
 
   main: |-
     {{for inc in includes|sep=\n}}
@@ -146,6 +153,7 @@ expressions:
   postfix++: "{{gen(expr.operand)}} += 1"
   postfix--: "{{gen(expr.operand)}} -= 1"
   prefix: "{{expr.operator}}{{gen(expr.operand)}}"
+  throw: "raise {{gen(expr.expression)}};"
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
   variableDeclaration: "{{genVar(expr)}}"

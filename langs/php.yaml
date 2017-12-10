@@ -47,6 +47,10 @@ classes:
     methods:
       readText:
         template: "file_get_contents({{fn}})"
+  OneError:
+    methods:
+      raise:
+        template: throw new Exception({{message}})
 operators:
   OneString + OneString:
     template: "{{gen(left)}} . {{gen(right)}}"
@@ -62,8 +66,12 @@ operators:
     template: "{{gen(left)}} .= {{gen(right)}}"
 templates:
   testGenerator: |-
-    $c = new {{class}}();
-    $c->{{method}}();
+    try {
+        $c = new {{class}}();
+        $c->{{method}}();
+    } catch (Exception $err) {
+        echo 'Exception: ' . $err->getMessage() . "\n";
+    }
 
   main: |-
     <?php
@@ -137,6 +145,7 @@ expressions:
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
   prefix: "{{expr.operator}}{{gen(expr.operand)}}"
+  throw: "throw {{gen(expr.expression)}};"
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
   variableDeclaration: "{{genVar(expr)}};"

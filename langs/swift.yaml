@@ -58,14 +58,25 @@ classes:
       readText:
         includes: [Foundation]
         template: "try! String(contentsOfFile: {{fn}}, encoding: String.Encoding.utf8)"
+  OneError:
+    methods:
+      raise:
+        template: throw OneError.RuntimeError({{message}})
 templates:
   testGenerator: |-
-    {{class}}().{{method}}()
-
+    do {
+        {{class}}().{{method}}()
+    } catch OneError.RuntimeError(let message) {
+        print("Exception: \(message)");
+    }
   main: |-
     {{for inc in includes|sep=\n}}
       import {{inc}}
     {{/for}}
+
+    enum OneError : Error {
+        case RuntimeError(String)
+    }
 
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
@@ -130,6 +141,7 @@ expressions:
   postfix++: "{{gen(expr.operand)}} += 1"
   postfix--: "{{gen(expr.operand)}} -= 1"
   prefix: "{{expr.operator}}{{gen(expr.operand)}}"
+  throw: "throw {{gen(expr.expression)}};"
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
   nullLiteral: "nil"

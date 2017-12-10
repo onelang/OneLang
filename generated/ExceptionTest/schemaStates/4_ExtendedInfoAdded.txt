@@ -1,0 +1,6 @@
+TestClass::testMethod(): void
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [OneError::raise]
+      - Literal (string): "exception message" [OneString]
+

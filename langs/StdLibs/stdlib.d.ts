@@ -40,3 +40,7 @@ declare class OneNumber {
 
 declare class OneBoolean {
 }
+
+declare class OneError {
+    static raise(message: string);
+}

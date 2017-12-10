@@ -63,6 +63,11 @@ classes:
     methods:
       readText:
         template: "File.ReadAllText({{fn}})"
+  OneError:
+    includes: [System]
+    methods:
+      raise:
+        template: throw new Exception({{message}})
 operators:
   OneString + OneBoolean:
     template: '{{gen(left)}} + ({{gen(right)}} ? "true" : "false")'
@@ -72,7 +77,14 @@ templates:
     {
         static public void Main()
         {
-            new {{class}}().{{method}}();
+            try 
+            {
+                new {{class}}().{{method}}();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception: {e.Message}");
+            }
         }
     }
 
@@ -140,6 +152,7 @@ expressions:
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
   prefix: "{{expr.operator}}{{gen(expr.operand)}}"
+  throw: "throw {{gen(expr.expression)}};"
   parenthesized: "({{gen(expr.expression)}})"
   variableDeclaration: "{{genVar(expr)}};"
   new: "new {{gen(expr.cls)}}({{genParams(expr.arguments)}})"

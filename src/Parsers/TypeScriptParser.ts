@@ -436,7 +436,7 @@ export class TypeScriptParser {
                 constr.parameters = params.map(tsParam => this.convertParameter(tsParam));
                 constr.body = this.convertBlock(<ts.BlockLike> constructors[0].getBody().compilerNode);
 
-                const publicParams = params.filter(p => p.modifiers.some(m => m.kind === ts.SyntaxKind.PublicKeyword));
+                const publicParams = params.filter(p => p.modifiers && p.modifiers.some(m => m.kind === ts.SyntaxKind.PublicKeyword));
                 for (const publicParam of publicParams) {
                     const paramName = publicParam.name.getText();
                     const stmt = <one.ExpressionStatement> {

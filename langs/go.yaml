@@ -73,6 +73,10 @@ classes:
         template: |-
           file_content_bytes, _ := ioutil.ReadFile({{fn}})
           {{result}} := string(file_content_bytes)
+  OneError:
+    methods:
+      raise:
+        template: panic({{message}})
 operators:
   OneString + OneNumber:
     includes: [strconv]
@@ -85,6 +89,12 @@ operators:
 templates:
   testGenerator: |-
     func main() {
+        defer func() {
+          if r := recover(); r != nil {
+              fmt.Print("Exception: ", r)
+          }
+        }()
+
         c := ({{class}}{})
         c.{{method}}();
     }
@@ -92,6 +102,7 @@ templates:
   main: |-
     package main
 
+    import "fmt"
     {{for inc in includes|sep=\n}}
       import "{{inc}}"
     {{/for}}
@@ -186,6 +197,7 @@ expressions:
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
   prefix: "{{expr.operator}}{{gen(expr.operand)}}"
+  throw: "panic({{gen(expr.expression)}});"
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
   variableDeclaration: "{{genVar(expr)}}"

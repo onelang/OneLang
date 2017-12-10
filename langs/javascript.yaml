@@ -53,9 +53,17 @@ classes:
     methods:
       readText:
         template: "fs.readFileSync({{fn}}, 'utf-8')"
+  OneError:
+    methods:
+      raise:
+        template: throw new Error({{message}})
 templates:
   testGenerator: |-
-    new {{class}}().{{method}}();
+    try {
+      new {{class}}().{{method}}();
+    } catch(e) {
+      console.log(`Exception: ${e.message}`);
+    }
 
   main: |-
     {{for inc in includes|sep=\n}}
@@ -126,6 +134,7 @@ expressions:
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
   prefix: "{{expr.operator}}{{gen(expr.operand)}}"
+  throw: "throw {{gen(expr.expression)}};"
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
   variableDeclaration: "{{genVar(expr)}};"

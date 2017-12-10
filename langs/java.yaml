@@ -66,6 +66,10 @@ classes:
         includes: [java.nio.file.Paths, java.nio.file.Files] # java.io.IOException
         exceptions: [IOException]
         template: "new String(Files.readAllBytes(Paths.get({{fn}})));"
+  OneError:
+    methods:
+      raise:
+        template: throw new Exception({{message}})
 operators:
   OneString == OneString:
     template: "{{gen(left)}}.equals({{gen(right)}})"
@@ -73,7 +77,11 @@ templates:
   testGenerator: |-
     class Program {
         public static void main(String[] args) throws Exception {
-            new {{class}}().{{method}}();
+            try {
+                new {{class}}().{{method}}();
+            } catch (Exception err) {
+                System.out.println("Exception: " + err.getMessage());
+            }
         }
     }
 
@@ -145,6 +153,7 @@ expressions:
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
   prefix: "{{expr.operator}}{{gen(expr.operand)}}"
+  throw: "throw {{gen(expr.expression)}};"
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
   variableDeclaration: "{{genVar(expr)}};"

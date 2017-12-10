@@ -47,6 +47,10 @@ classes:
     methods:
       readText:
         template: "IO.read({{fn}})"
+  OneError:
+    methods:
+      raise:
+        template: raise {{message}}
 operators:
   OneString + OneNumber:
     template: "{{gen(left)}} + ({{gen(right)}}).to_s"
@@ -54,7 +58,11 @@ operators:
     template: "{{gen(left)}} + ({{gen(right)}}).to_s"
 templates:
   testGenerator: |-
-    {{class}}.new().{{method}}()
+    begin
+        {{class}}.new().{{method}}()
+    rescue Exception => err
+        print "Exception: #{err}"
+    end
 
   main: |-
     {{for inc in includes|sep=\n}}
@@ -144,6 +152,7 @@ expressions:
   postfix--: "{{gen(expr.operand)}} -= 1"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
   prefix: "{{expr.operator}}{{gen(expr.operand)}}"
+  throw: "raise {{gen(expr.expression)}};"
   parenthesized: "({{gen(expr.expression)}})"
   numericLiteral: "{{expr.value}}"
   variableDeclaration: "{{genVar(expr)}}"
