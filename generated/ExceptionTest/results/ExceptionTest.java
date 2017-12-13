@@ -1,7 +1,18 @@
 class TestClass {
-    public void testMethod() throws Exception
+    public Integer notThrows() throws Exception
+    {
+        return 5;
+    }
+    
+    public void fThrows() throws Exception
     {
         throw new Exception("exception message");
+    }
+    
+    public void testMethod() throws Exception
+    {
+        System.out.println(this.notThrows());
+        this.fThrows();
     }
 }
 

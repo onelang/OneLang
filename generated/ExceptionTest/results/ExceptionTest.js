@@ -1,6 +1,15 @@
 class TestClass {
-  testMethod() {
+  notThrows() {
+    return 5;
+  }
+  
+  fThrows() {
     throw new Error("exception message");
+  }
+  
+  testMethod() {
+    console.log(this.notThrows());
+    this.fThrows();
   }
 }
 

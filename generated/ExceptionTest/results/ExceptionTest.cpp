@@ -4,11 +4,21 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
+#include <iostream>
 
 class TestClass {
   public:
-    void testMethod() {
+    int notThrows() {
+        return 5;
+    }
+    
+    void fThrows() {
         throw std::runtime_error(string("exception message"));
+    }
+    
+    void testMethod() {
+        cout << (this->notThrows()) << endl;
+        this->fThrows();
     }
 
   private:

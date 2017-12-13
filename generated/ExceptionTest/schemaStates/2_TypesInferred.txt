@@ -1,6 +1,20 @@
+TestClass::notThrows(): TsNumber
+  - Return
+    - Literal (numeric): "5" [TsNumber]
+
+TestClass::fThrows(): void
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static, throws) [OneError::raise]
+      - Literal (string): "exception message" [TsString]
+
 TestClass::testMethod(): void
   - ExpressionStatement
     - Call [void]
-      - MethodReference (static) [OneError::raise]
-      - Literal (string): "exception message" [TsString]
+      - MethodReference (static) [console::log]
+      - Call [TsNumber]
+        - MethodReference (this) [TestClass::notThrows]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (this) [TestClass::fThrows]
 

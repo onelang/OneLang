@@ -45,6 +45,6 @@ OneString::get(idx: TsNumber): OneCharacter
 OneString::startsWith(str: TsString): OneBoolean
   <no body>
 
-OneError::raise(message: TsString): void [static]
+OneError::raise(message: TsString): void [static, throws]
   <no body>
 

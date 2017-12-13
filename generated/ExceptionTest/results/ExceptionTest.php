@@ -1,8 +1,17 @@
 <?php
 
 class TestClass {
-    function testMethod() {
+    function notThrows() {
+        return 5;
+    }
+    
+    function fThrows() {
         throw new Exception("exception message");
+    }
+    
+    function testMethod() {
+        print(($this->notThrows()) . "\n");
+        $this->fThrows();
     }
 }
 

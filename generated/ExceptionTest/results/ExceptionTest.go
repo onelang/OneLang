@@ -9,8 +9,17 @@ func NewTestClass() *TestClass {
     return this
 }
 
-func (this *TestClass) TestMethod() {
+func (this *TestClass) NotThrows() int {
+    return 5
+}
+
+func (this *TestClass) FThrows() {
     panic("exception message")
+}
+
+func (this *TestClass) TestMethod() {
+    fmt.Println(this.NotThrows())
+    this.FThrows()
 }
 
 func main() {

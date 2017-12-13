@@ -3,8 +3,17 @@ enum OneError : Error {
 }
 
 class TestClass {
-  func testMethod() throws -> Void {
+  func notThrows() -> Int {
+      return 5
+  }
+
+  func fThrows() throws -> Void {
       throw OneError.RuntimeError("exception message")
+  }
+
+  func testMethod() throws -> Void {
+      print(self.notThrows())
+      self.fThrows()
   }
 }
 

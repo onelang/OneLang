@@ -2,8 +2,17 @@ class TestClass
   def initialize()
   end
 
-  def test_method()
+  def not_throws()
+      return 5
+  end
+
+  def f_throws()
       raise "exception message"
+  end
+
+  def test_method()
+      puts self.not_throws()
+      self.f_throws()
   end
 end
 

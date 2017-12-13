@@ -2,9 +2,20 @@ using System;
 
 public class TestClass
 {
-    public void TestMethod()
+    public int NotThrows()
+    {
+        return 5;
+    }
+    
+    public void FThrows()
     {
         throw new Exception("exception message");
+    }
+    
+    public void TestMethod()
+    {
+        Console.WriteLine(this.NotThrows());
+        this.FThrows();
     }
 }
 
@@ -16,9 +27,9 @@ public class Program
         {
             new TestClass().TestMethod();
         }
-        catch (Exception e)
+        catch (System.Exception e)
         {
-            Console.WriteLine($"Exception: {e.Message}");
+            System.Console.WriteLine($"Exception: {e.Message}");
         }
     }
 }

@@ -11,9 +11,20 @@ sub new
     return $self;
 }
 
-sub testMethod {
+sub notThrows {
+    my ( $self ) = @_;
+    return 5;
+}
+
+sub fThrows {
     my ( $self ) = @_;
     die "exception message"."\n";
+}
+
+sub testMethod {
+    my ( $self ) = @_;
+    print(($self->notThrows()) . "\n");
+    $self->fThrows();
 }
 
 package Program;
