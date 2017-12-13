@@ -61,14 +61,19 @@ classes:
   OneError:
     methods:
       raise:
+        throws: true
         template: throw OneError.RuntimeError({{message}})
 templates:
   testGenerator: |-
-    do {
-        {{class}}().{{method}}()
-    } catch OneError.RuntimeError(let message) {
-        print("Exception: \(message)");
-    }
+    {{if methodInfo.throws}}
+      do {
+          try {{class}}().{{method}}()
+      } catch OneError.RuntimeError(let message) {
+          print("Exception: \(message)");
+      }
+    {{else}}
+      {{class}}().{{method}}()
+    {{/if}}
   main: |-
     {{for inc in includes|sep=\n}}
       import {{inc}}
@@ -91,7 +96,7 @@ templates:
         {{/if}}
 
         {{for method in class.methods|sep=\n\n}}
-          {{if method.static}}class {{/if}}func {{method.name}}({{genArgs(method)}}) -> {{method.returnType}} {
+          {{if method.static}}class {{/if}}func {{method.name}}({{genArgs(method)}}){{if method.throws}} throws{{/if}} -> {{method.returnType}} {
               {{genBody(method.body)}}
           }
         {{/for}}
@@ -132,7 +137,9 @@ templates:
         {{arg.paramName}}: {{gen(arg)}}
       {{/for}}
 expressions:
-  call: "{{gen(expr.method)}}({{genMethodArgs(expr.arguments)}})"
+  call: |-
+    {{if expr.method.throws|inline}}try {{/if}}
+    {{gen(expr.method)}}({{genMethodArgs(expr.arguments)}})
   stringLiteral: '"{{expr.escapedText}}"'
   characterLiteral: '"{{expr.escapedText}}"'
   return: "return {{gen(expr.expression)}}"

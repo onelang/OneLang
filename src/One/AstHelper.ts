@@ -1,4 +1,5 @@
 import { OneAst as one } from "./Ast";
+import { LangFileSchema } from "../Generator/LangFileSchema";
 
 export class AstHelper {
     static replaceProperties<T>(dest, src: T): T {
@@ -46,5 +47,15 @@ export class AstHelper {
         });
         
         return clone;
+    }
+
+    static getMethodFromRef(lang: LangFileSchema.LangFile, methodRef: one.MethodReference) {
+        const metaPath = methodRef.methodRef.metaPath;
+        if (!metaPath) return null;
+        
+        const methodPathParts = metaPath.split("/");
+        const cls = lang.classes[methodPathParts[0]];
+        const method = cls && cls.methods && cls.methods[methodPathParts[1]];
+        return method;
     }
 }

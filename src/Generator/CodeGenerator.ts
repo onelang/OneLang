@@ -22,12 +22,14 @@ namespace CodeGeneratorModel {
         parameters: MethodParameter[];
         returnType: string;
         body: one.Block;
+        throws: boolean;
     }
 
     export interface Constructor {
         visibility: "public"|"protected"|"private";
         parameters: MethodParameter[];
         body: one.Block;
+        throws: boolean;
     }
 
     export interface Class {
@@ -376,13 +378,15 @@ export class CodeGenerator {
                     body: method.body,
                     parameters: this.genParameters(method),
                     visibility: method.visibility || "public",
-                    static: method.static || false
+                    static: method.static || false,
+                    throws: method.throws || false
                 };
             });
 
             const constructor = cls.constructor ? <CodeGeneratorModel.Constructor> {
                 body: cls.constructor.body,
                 parameters: this.genParameters(cls.constructor),
+                throws: cls.constructor.throws || false
             } : null;
             
             const fields = Object.values(cls.fields).map(field => {
@@ -425,7 +429,7 @@ export class CodeGenerator {
             const tmplOrig = this.lang.templates[name]; 
             const tmplObj = typeof tmplOrig === "string" ? <LangFileSchema.TemplateObj>{ template: tmplOrig, args: [] } : tmplOrig; 
             if (name === "testGenerator") 
-                tmplObj.args = [{ name: "class" }, { name: "method" }];
+                tmplObj.args = [{ name: "class" }, { name: "method" }, { name: "methodInfo" }];
             
             this.templates[name] = new TemplateMethod(name, tmplObj.args.map(x => x.name), tmplObj.template);
             this.templateVars.setVariable(name, this.templates[name]);
@@ -458,10 +462,14 @@ export class CodeGenerator {
 
     generate(callTestMethod: boolean) {
         this.generatedCode = this.call(this.templates["main"], []);
-        if (callTestMethod)
-            this.generatedCode += "\n\n" + this.call(this.templates["testGenerator"], [
-                this.caseConverter.getName("test_class", "class"), 
-                this.caseConverter.getName("test_method", "method")]);
+        if (callTestMethod) {
+            const testClassName = this.caseConverter.getName("test_class", "class");
+            const testMethodName = this.caseConverter.getName("test_method", "method");
+            const testMethod = this.model.classes.find(x => x.name === testClassName)
+                .methods.find(x => x.name === testMethodName);
+            this.generatedCode += "\n\n" + this.call(this.templates["testGenerator"], 
+                [testClassName, testMethodName, testMethod]);
+            }
 
         return this.generatedCode;
     }

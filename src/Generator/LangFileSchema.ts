@@ -42,6 +42,7 @@ export namespace LangFileSchema {
         includes: string[];
         template: string;
         mutates?: boolean;
+        throws?: boolean;
     }
 
     export interface Field {

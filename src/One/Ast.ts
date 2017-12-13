@@ -164,6 +164,7 @@ export namespace OneAst {
         classRef?: Class;
         parameters: MethodParameter[];
         body: Block;
+        throws: boolean;
     }
 
     export interface Method extends NamedItem {
@@ -174,6 +175,7 @@ export namespace OneAst {
         parameters: MethodParameter[];
         returns: Type;
         body: Block;
+        throws: boolean;
         visibility?: Visibility;
     }
 

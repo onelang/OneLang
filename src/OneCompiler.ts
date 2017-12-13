@@ -19,6 +19,7 @@ import { FillVariableMutability } from "./One/Transforms/FillVariableMutability"
 import { TriviaCommentTransform } from "./One/Transforms/TriviaCommentTransform";
 import { GenericTransformer, GenericTransformerFile } from "./One/Transforms/GenericTransformer";
 import { IncludesCollector } from "./One/Transforms/IncludesCollector";
+import { FillThrowsTransform } from "./One/Transforms/FillThrowsTransform";
 
 declare var YAML: any;
 
@@ -128,6 +129,7 @@ export class OneCompiler {
         this.preprocessLangFile(lang);
         new SchemaCaseConverter(lang.casing).process(this.schemaCtx.schema);
         new FillVariableMutability(lang).process(this.schemaCtx.schema);
+        new FillThrowsTransform(lang).process(this.schemaCtx.schema);
         this.saveSchemaState(this.schemaCtx, `10_${langName ? `${langName}_` : ""}Init`);
         
         const codeGen = new CodeGenerator(this.schemaCtx.schema, this.stdlibCtx.schema, lang);

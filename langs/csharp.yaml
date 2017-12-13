@@ -81,9 +81,9 @@ templates:
             {
                 new {{class}}().{{method}}();
             }
-            catch (Exception e)
+            catch (System.Exception e)
             {
-                Console.WriteLine($"Exception: {e.Message}");
+                System.Console.WriteLine($"Exception: {e.Message}");
             }
         }
     }
