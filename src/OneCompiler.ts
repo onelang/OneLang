@@ -52,6 +52,7 @@ export class OneCompiler {
         // TODO: hack
         overlaySchema.classes["TsArray"].meta = { iterable: true };
         stdlibSchema.classes["OneArray"].meta = { iterable: true };
+        stdlibSchema.classes["OneError"].methods["raise"].throws = true;
         
         this.prepareSchemas(schema, overlaySchema, stdlibSchema);
     }

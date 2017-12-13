@@ -169,7 +169,10 @@ export class OverviewGenerator extends AstVisitor<void> {
             const specType = !expr.thisExpr ? "static" : 
                 expr.thisExpr.exprKind === one.ExpressionKind.ThisReference ? "this" : null;
 
-            addHdr(`MethodReference${specType ? ` (${specType})` : ""}`);
+            const throws = expr.methodRef && expr.methodRef.throws;
+            const addInfo = [specType, throws ? "throws" : null].filter(x => x);
+
+            addHdr(`MethodReference${addInfo.length > 0 ? ` (${addInfo.join(", ")})` : ""}`);
             if (!specType)
                 this.visitExpression(expr.thisExpr);
         } else if (expression.exprKind === one.ExpressionKind.ThisReference) {
@@ -221,7 +224,11 @@ export class OverviewGenerator extends AstVisitor<void> {
 
             for (const method of Object.values(cls.methods)) {
                 const argList = method.parameters.map(arg => `${arg.name}: ${arg.type.repr()}`).join(", ");
-                this.addLine(`${cls.name}::${method.name}(${argList}): ${method.returns.repr()}${method.static ? " [static]" : ""}`);
+                const addInfo = [method.static ? "static" : null, method.throws ? "throws" : null].filter(x => x);
+
+                this.addLine(`${cls.name}::${method.name}(${argList}): ${method.returns.repr()}`
+                    +`${addInfo.length > 0 ? ` [${addInfo.join(", ")}]` : ""}`);
+
                 if (method.body)
                     this.visitBlock(method.body);
                 else
