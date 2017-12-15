@@ -33,6 +33,8 @@ declare class OneString {
     split(separator: string): OneArray<OneString>;
     get(idx: number): OneCharacter;
     startsWith(str: string): OneBoolean;
+    substrMatch(str: string, offset: number): OneBoolean;
+    replace(from: string, to: string): OneString;
 }
 
 declare class OneNumber {
@@ -43,4 +45,8 @@ declare class OneBoolean {
 
 declare class OneError {
     static raise(message: string);
+}
+
+declare class OneRegex {
+    static matchFromIndex(pattern: string, input: string, offset: number): string[];
 }

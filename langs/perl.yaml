@@ -14,6 +14,10 @@ classes:
         template: "split({{separator}}, {{self}})"
       get:
         template: "(substr {{self}}, {{idx}}, 1)"
+      replace:
+        template: "Helpers::str_replace({{self}}, {{from}}, {{to}})"
+      substrMatch:
+        template: "(substr {{self}}, {{offset}}, length({{str}})) eq ({{str}})"
   OneConsole:
     methods:
       print:
@@ -103,6 +107,22 @@ templates:
   main: |-
     use strict;
     use warnings;
+
+    package Helpers;
+
+    sub str_replace
+    {
+      my ($string, $find, $replace) = @_;
+
+      my $pos = index($string, $find);
+
+      while($pos > -1) {
+        substr($string, $pos, length($find), $replace);
+        $pos = index($string, $find, $pos + length($replace));
+      }
+      
+      return $string;
+    }
 
     {{for class in classes|sep=\n\n}}
       package {{class.name}};

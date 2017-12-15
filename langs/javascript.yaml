@@ -19,6 +19,10 @@ classes:
         template: "{{self}}.split({{separator}})"
       get:
         template: "{{self}}[{{idx}}]"
+      replace:
+        template: "{{self}}.split({{from}}).join({{to}})"
+      substrMatch:
+        template: "{{self}}.startsWith({{str}}, {{offset}})"
   OneConsole:
     methods:
       print:

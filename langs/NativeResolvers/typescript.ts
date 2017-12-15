@@ -79,8 +79,8 @@ class TsString {
         return this._one.split(separator);
     }
 
-    startsWith(str: string): OneBoolean {
-        return this._one.startsWith(str);
+    startsWith(str: string, position: number = 0): OneBoolean {
+        return this._one.substrMatch(str, position);
     }
 }
 

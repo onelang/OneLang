@@ -21,6 +21,10 @@ classes:
         template: "Arrays.asList({{self}}.split({{separator}}))"
       get:
         template: "{{self}}.charAt({{idx}})"
+      replace:
+        template: "{{self}}.replace({{from}}, {{to}})"
+      substrMatch:
+        template: "{{self}}.startsWith({{str}}, {{offset}})"
   OneNumber:
     type: Integer
   OneBoolean:

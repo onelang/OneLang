@@ -18,6 +18,10 @@ classes:
         template: "OneStringHelper::split({{self}}, {{separator}})"
       get:
         template: "{{self}}[{{idx}}]"
+      replace:
+        template: "OneStringHelper::replace({{self}}, {{from}}, {{to}})"
+      substrMatch:
+        template: "{{self}}.compare({{offset}}, {{str}}.size(), {{str}}) == 0"
   OneNumber:
     type: int
   OneBoolean:

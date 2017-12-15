@@ -19,6 +19,11 @@ classes:
         template: "strings.Split({{self}}, {{separator}})"
       get:
         template: "{{self}}[{{idx}}]"
+      substrMatch:
+        template: "{{self}}[{{offset}}:{{offset}} + len({{str}})] == {{str}}"
+      replace:
+        includes: [strings]
+        template: "strings.Replace({{self}}, {{from}}, {{to}}, -1)"
   OneNumber:
     type: int
   OneBoolean:

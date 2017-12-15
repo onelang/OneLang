@@ -14,6 +14,10 @@ classes:
         template: "explode({{separator}}, {{self}})"
       get:
         template: "{{self}}[{{idx}}]"
+      replace:
+        template: "str_replace({{from}}, {{to}}, {{self}})"
+      substrMatch:
+        template: "substr_compare({{self}}, {{str}}, {{offset}}, strlen({{str}})) === 0"
   OneConsole:
     methods:
       print:

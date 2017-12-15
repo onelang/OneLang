@@ -21,6 +21,10 @@ classes:
         template: "{{self}}.Split(new[]{ {{separator}} }, StringSplitOptions.None)"
       get:
         template: "{{self}}[{{idx}}]"
+      replace:
+        template: "{{self}}.Replace({{from}}, {{to}})"
+      substrMatch:
+        template: "String.Compare({{self}}, {{offset}}, {{str}}, 0, ({{str}}).Length) == 0"
   OneNumber:
     type: int
   OneBoolean:

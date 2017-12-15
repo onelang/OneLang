@@ -45,6 +45,18 @@ class OneStringHelper {
 
         return tokens;
     }
+
+    static string replace(const string& str, const string& from, const string& to) {
+        if(from.empty()) return "";
+
+        string result = str;
+        size_t start_pos = 0;
+        while((start_pos = result.find(from, start_pos)) != string::npos) {
+            result.replace(start_pos, from.length(), to);
+            start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
+        }
+        return result;
+    }
 };
 
 class OneFile {

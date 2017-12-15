@@ -17,6 +17,11 @@ classes:
         template: "{{self}}.split(separator: {{separator}}, omittingEmptySubsequences: false)"
       get:
         template: "String({{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{idx}})])"
+      replace:
+        includes: ["Foundation"]
+        template: "{{self}}.replacingOccurrences(of: {{from}}, with: {{to}})"
+      substrMatch:
+        template: "{{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{offset}}) ..< {{self}}.endIndex].hasPrefix({{str}})"
   OneNumber:
     type: Int
   OneBoolean:
