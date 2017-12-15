@@ -144,10 +144,14 @@ export class TypeScriptParser {
         } else if (tsExpr.kind === ts.SyntaxKind.TemplateExpression) {
             const templateExpr = <ts.TemplateExpression> tsExpr;
 
-            const parts: one.TemplateStringPart[] = [{ literal: true, text: templateExpr.head.text }];
+            const parts: one.TemplateStringPart[] = [];
+            if (templateExpr.head.text !== "")
+                parts.push({ literal: true, text: templateExpr.head.text });
+
             for (const span of templateExpr.templateSpans) {
                 parts.push({ literal: false, expr: this.convertExpression(span.expression) });
-                parts.push({ literal: true, text: span.literal.text });
+                if (span.literal.text !== "")
+                    parts.push({ literal: true, text: span.literal.text });
             }
 
             return <one.TemplateString> { exprKind: one.ExpressionKind.TemplateString, parts };
