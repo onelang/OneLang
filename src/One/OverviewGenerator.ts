@@ -207,13 +207,13 @@ export class OverviewGenerator extends AstVisitor<void> {
 
         for (const cls of Object.values(schemaCtx.schema.classes)) {
             for (const field of Object.values(cls.fields)) {
-                this.addLine(`${cls.name}::${field.name}: ${field.type.repr()}`);
+                this.addLine(`${cls.name}::${field.name}: ${field.type && field.type.repr() || "null"}`);
                 if (field.initializer)
                     this.visitVariableDeclaration(field, null);
             }
 
             for (const prop of Object.values(cls.properties)) {
-                this.addLine(`${cls.name}::${prop.name}: ${prop.type.repr()}`);
+                this.addLine(`${cls.name}::${prop.name}: ${prop.type && prop.type.repr() || "null"}`);
                 this.visitBlock(prop.getter);
             }
 

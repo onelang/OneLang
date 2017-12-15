@@ -176,6 +176,7 @@ export namespace OneAst {
         returns: Type;
         body: Block;
         throws: boolean;
+        mutates: boolean;
         visibility?: Visibility;
     }
 
