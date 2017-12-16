@@ -186,10 +186,10 @@ expressions:
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
   instanceField: |-
-    {{gen(expr.thisExpr)}}.{{expr.varRef.name}}
+    {{gen(expr.thisExpr)}}.{{expr.varRef.outName}}
     {{if expr.valueType.isComplexClass && !expr.valueType.isOneArray|inline}}!{{/if}}
   staticField: |-
-    {{gen(expr.thisExpr)}}.{{expr.varRef.name}}
+    {{gen(expr.thisExpr)}}.{{expr.varRef.outName}}
     {{if expr.valueType.isComplexClass && !expr.valueType.isOneArray|inline}}!{{/if}}
   falseLiteral: "false"
   trueLiteral: "true"
