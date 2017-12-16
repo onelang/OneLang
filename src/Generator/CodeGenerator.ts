@@ -487,11 +487,13 @@ export class CodeGenerator {
         if (callTestMethod) {
             const testClassName = this.caseConverter.getName("test_class", "class");
             const testMethodName = this.caseConverter.getName("test_method", "method");
-            const testMethod = this.model.classes.find(x => x.name === testClassName)
-                .methods.find(x => x.name === testMethodName);
-            this.generatedCode += "\n\n" + this.call(this.templates["testGenerator"], 
-                [testClassName, testMethodName, testMethod]);
+            const testClass = this.model.classes.find(x => x.name === testClassName);
+            if (testClass) {
+                const testMethod = testClass.methods.find(x => x.name === testMethodName);
+                this.generatedCode += "\n\n" + this.call(this.templates["testGenerator"], 
+                    [testClassName, testMethodName, testMethod]);
             }
+        }
 
         return this.generatedCode;
     }
