@@ -369,7 +369,7 @@ export class CodeGenerator {
     genParameters(method: one.Method|one.Constructor) {
         return method.parameters.map((param, idx) => <CodeGeneratorModel.MethodParameter> {
             idx,
-            name: param.outName,
+            name: param.name,
             type: this.getTypeName(param.type),
             typeInfo: param.type
         });
