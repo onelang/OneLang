@@ -84,11 +84,12 @@ export class TypeScriptParser {
             };
         } else if (tsExpr.kind === ts.SyntaxKind.BinaryExpression) {
             const binaryExpr = <ts.BinaryExpression> tsExpr;
+            const opText = binaryExpr.operatorToken.getText();
             return <one.BinaryExpression> {
                 exprKind: one.ExpressionKind.Binary,
                 left: this.convertExpression(binaryExpr.left),
                 right: this.convertExpression(binaryExpr.right),
-                operator: binaryExpr.operatorToken.getText()
+                operator: opText === "===" ? "==" : opText === "!==" ? "!=" : opText
             };
         } else if (tsExpr.kind === ts.SyntaxKind.PropertyAccessExpression) {
             const propAccessExpr = <ts.PropertyAccessExpression> tsExpr;
