@@ -20,6 +20,9 @@ export class VariableSource {
     constructor(public name: string) { }
 
     checkUnique(varName: string, allowOverwrite = false) {
+        if (!varName)
+            throw new Error("Variable name is missing!");
+
         if (varName in this.callbacks)
             throw new Error(`Callback was already set for variable '${varName}'`);
 

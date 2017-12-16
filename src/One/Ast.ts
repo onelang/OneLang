@@ -9,14 +9,17 @@ export namespace OneAst {
 
     export interface NamedItem {
         name?: string;
+        outName?: string;
         metaPath?: string;
     }
 
     export interface Enum extends NamedItem {
+        name?: string;
         values: EnumMember[];
+        type?: Type;
     }
 
-    export interface EnumMember {
+    export interface EnumMember extends NamedItem {
         name: string;
     }
 
@@ -41,24 +44,18 @@ export namespace OneAst {
         Void = "void",
         Any = "any",
         Class = "class",
+        Enum = "enum",
         Method = "method",
         Generics = "generics"
     }
 
-    export interface IType {
-        typeKind: TypeKind;
-        className: string;
-        typeArguments: Type[];
-        classType: Type;
-        methodName: string;
-    }
-
-    export class Type implements IType {
+    export class Type {
         $objType = "Type";
         
         constructor(public typeKind: TypeKind = null) { }
         
         public className: string;
+        public enumName: string;
         public typeArguments: Type[];
         public classType: Type;
         public methodName: string;
@@ -67,6 +64,7 @@ export namespace OneAst {
         get isPrimitiveType() { return Type.PrimitiveTypeKinds.includes(this.typeKind); }
         get isClass() { return this.typeKind === TypeKind.Class; }
         get isComplexClass() { return this.typeKind === TypeKind.Class && !this.isNumber && !this.isString && !this.isBoolean; }
+        get isEnum() { return this.typeKind === TypeKind.Enum; }
         get isMethod() { return this.typeKind === TypeKind.Method; }
         get isGenerics() { return this.typeKind === TypeKind.Generics; }
         get isAny() { return this.typeKind === TypeKind.Any; }
@@ -103,6 +101,8 @@ export namespace OneAst {
                 return `${this.classType.repr()}::${this.methodName}`;
             } else if (this.isGenerics) {
                 return this.genericsName;
+            } else if (this.isEnum) {
+                return this.enumName;
             } else {
                 return "?";
             }
@@ -120,6 +120,12 @@ export namespace OneAst {
             return result;
         }
 
+        static Enum(enumName: string) {
+            const result = new Type(TypeKind.Enum);
+            result.enumName = enumName;
+            return result;
+        }
+
         static Method(classType: Type, methodName: string) {
             const result = new Type(TypeKind.Method);
             result.classType = classType;
@@ -133,7 +139,7 @@ export namespace OneAst {
             return result;
         }
 
-        static Load(source: IType) {
+        static Load(source: Type) {
             return Object.assign(new Type(), source);
         }
     }
@@ -202,6 +208,8 @@ export namespace OneAst {
         MethodReference = "MethodReference",
         ThisReference = "ThisReference",
         ClassReference = "ClassReference",
+        EnumReference = "EnumReference",
+        EnumMemberReference = "EnumMemberReference",
     }
 
     export interface Expression {
@@ -265,6 +273,18 @@ export namespace OneAst {
         exprKind = ExpressionKind.ClassReference;
         
         constructor(public classRef: Class) { super(); }
+    }
+
+    export class EnumReference extends Reference {
+        exprKind = ExpressionKind.EnumReference;
+        
+        constructor(public enumRef: Enum) { super(); }
+    }
+
+    export class EnumMemberReference extends Reference {
+        exprKind = ExpressionKind.EnumMemberReference;
+        
+        constructor(public enumMemberRef: EnumMember, public enumRef: Enum) { super(); }
     }
 
     export class ThisReference extends Reference {

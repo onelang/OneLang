@@ -163,8 +163,12 @@ export abstract class AstVisitor<TContext> {
     }
 
     protected visitClassReference(expr: one.ClassReference, context: TContext) { }
-    
+
     protected visitThisReference(expr: one.ThisReference, context: TContext) { }
+
+    protected visitEnumReference(expr: one.EnumReference, context: TContext) { }
+
+    protected visitEnumMemberReference(expr: one.EnumReference, context: TContext) { }
 
     protected visitExpression(expression: one.Expression, context: TContext) {
         if (expression.exprKind === one.ExpressionKind.Binary) {
@@ -201,6 +205,10 @@ export abstract class AstVisitor<TContext> {
             return this.visitClassReference(<one.ClassReference> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.ThisReference) {
             return this.visitThisReference(<one.ThisReference> expression, context);
+        } else if (expression.exprKind === one.ExpressionKind.EnumReference) {
+            return this.visitEnumReference(<one.EnumReference> expression, context);
+        } else if (expression.exprKind === one.ExpressionKind.EnumMemberReference) {
+            return this.visitEnumMemberReference(<one.EnumMemberReference> expression, context);
         } else {
             return this.visitUnknownExpression(expression, context);
         }
@@ -245,9 +253,18 @@ export abstract class AstVisitor<TContext> {
             this.visitField(field, context);
     }
  
+    protected visitEnum(enum_: one.Enum, context: TContext) { 
+        for (var item of enum_.values)
+            this.visitEnumMember(item, context);
+    }
+
+    protected visitEnumMember(enumMember: one.EnumMember, context: TContext) { }
+
     protected visitSchema(schema: one.Schema, context: TContext) {
-        for (const cls of Object.values(schema.classes)) {
+        for (const enum_ of Object.values(schema.enums))
+            this.visitEnum(enum_, context);
+
+        for (const cls of Object.values(schema.classes))
             this.visitClass(cls, context);
-        }
     }
 }

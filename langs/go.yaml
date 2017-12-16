@@ -3,6 +3,8 @@ casing:
   class: pascal_case
   method: pascal_case
   field: pascal_case
+  enum: pascal_case
+  enumMember: upper_case
 primitiveTypes:
   void: ""
 classes:
@@ -112,6 +114,14 @@ templates:
       import "{{inc}}"
     {{/for}}
 
+    {{for enum in enums|sep=\n\n}}
+      const (
+          {{for item in enum.values}}
+            {{enum.name}}_{{item.name}} = {{item.intValue}}
+          {{/for}}
+      )
+    {{/for}}    
+
     {{for class in classes|sep=\n\n}}
       type {{class.name}} struct {
           {{for field in class.fields|sep=\n}}
@@ -207,7 +217,8 @@ expressions:
   numericLiteral: "{{expr.value}}"
   variableDeclaration: "{{genVar(expr)}}"
   new: "New{{gen(expr.cls)}}({{genParams(expr.arguments)}})"
-  classReference: "{{expr.classRef.name}}"
+  classReference: "{{expr.classRef.outName}}"
+  enumMemberReference: "{{expr.enumRef.outName}}_{{expr.enumMemberRef.outName}}"
   arrayLiteral: "[]{{getType(expr.valueType.typeArguments[0])}}{{{genParams(expr.items)}}}"
   mapLiteral: |- 
     map[{{expr.typeArgs[0]}}]{{expr.typeArgs[1]}}{
@@ -216,8 +227,8 @@ expressions:
       {{/for}}
     }
   expressionStatement: "{{gen(expr.expression)}}"
-  instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.name}}"
-  staticMethod: "{{expr.methodRef.classRef.name}}_{{expr.methodRef.name}}"
+  instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
+  staticMethod: "{{expr.methodRef.classRef.outName}}_{{expr.methodRef.outName}}"
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
   instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}"

@@ -7,6 +7,7 @@ export namespace LangFileSchema {
         PascalCase = "pascal_case",
         CamelCase = "camel_case",
         SnakeCase = "snake_case",
+        UpperCase = "upper_case",
     }
 
     export interface CasingOptions {
@@ -15,6 +16,7 @@ export namespace LangFileSchema {
         field?: Casing;
         property?: Casing;
         enum?: Casing;
+        enumMember?: Casing;
         variable?: Casing;
     }
 

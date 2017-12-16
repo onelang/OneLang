@@ -1,6 +1,8 @@
 extension: cpp
 casing:
   class: pascal_case
+  enum: pascal_case
+  enumMember: pascal_case
   method: camel_case
 primitiveTypes:
   void: void
@@ -88,6 +90,19 @@ templates:
     #include <one.hpp>
     {{for inc in includes|sep=\n}}
       #include <{{inc}}>
+    {{/for}}
+
+    {{for enum in enums|sep=\n}}
+      enum class {{enum.name}} { 
+      {{for item in enum.values|inline sep=", "}}
+        {{item.name}}
+      {{/for}}
+       };
+      const char* {{enum.name}}ToStr[] = { 
+      {{for item in enum.values|inline sep=", "}}
+        "{{item.origName}}"
+      {{/for}}
+       };
     {{/for}}
 
     {{for class in classes|sep=\n\n}}
@@ -197,7 +212,9 @@ expressions:
   nullLiteral: "nullptr"
   variableDeclaration: "{{genVar(expr)}};"
   new: "make_shared<{{gen(expr.cls)}}>({{genParams(expr.arguments)}})"
-  classReference: "{{expr.classRef.name}}"
+  classReference: "{{expr.classRef.outName}}"
+  enumReference: "{{expr.enumRef.outName}}"
+  enumMemberReference: "{{expr.enumRef.outName}}::{{expr.enumMemberRef.outName}}"
   arrayLiteral: "vector<{{getType(expr.valueType.typeArguments[0])}}> { {{genParams(expr.items)}} }"
   mapLiteral: |- 
     map<{{getType(expr.valueType.typeArguments[0])}}, {{getType(expr.valueType.typeArguments[1])}}> {
@@ -206,8 +223,8 @@ expressions:
       {{/for}}
     }
   expressionStatement: "{{gen(expr.expression)}};"
-  instanceMethod: "{{gen(expr.thisExpr)}}->{{expr.methodRef.name}}"
-  staticMethod: "{{expr.methodRef.classRef.name}}::{{expr.methodRef.name}}"
+  instanceMethod: "{{gen(expr.thisExpr)}}->{{expr.methodRef.outName}}"
+  staticMethod: "{{expr.methodRef.classRef.outName}}::{{expr.methodRef.outName}}"
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
   instanceField: "{{gen(expr.thisExpr)}}->{{expr.varRef.name}}"
@@ -222,16 +239,14 @@ expressions:
     {{for part in expr.parts|sep=" + " inline}}
       {{if part.literal|inline}}
         "{{part.text}}"
+      {{elif part.expr.valueType.isNumber|inline}}
+        to_string({{gen(part.expr)}})
+      {{elif part.expr.valueType.isEnum|inline}}
+        {{part.expr.valueType.enumName}}ToStr[(int)({{gen(part.expr)}})]
+      {{elif part.expr.valueType.isBoolean|inline}}
+        (({{gen(part.expr)}}) ? "true" : "false")
       {{else}}
-        {{if part.expr.valueType.isNumber|inline}}
-          to_string({{gen(part.expr)}})
-        {{else}}
-          {{if part.expr.valueType.isBoolean|inline}}
-            (({{gen(part.expr)}}) ? "true" : "false")
-          {{else}}
-            {{gen(part.expr)}}
-          {{/if}}
-        {{/if}}
+        {{gen(part.expr)}}
       {{/if}}
     {{/for}}
   foreach: |-

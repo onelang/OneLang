@@ -11,7 +11,7 @@ declare var YAML;
 
 global["debugOn"] = false;
 
-let prgNames = ["OneLang2"];
+let prgNames = ["EnumTest"];
 const runPrg = false;
 const langFilter = "";
 const compileAll = false;

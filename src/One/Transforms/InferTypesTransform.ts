@@ -225,6 +225,25 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         super.visitPropertyAccessExpression(expr, context);
 
         const objType = expr.object.valueType;
+        if (objType.isEnum) {
+            const enum_ = context.schemaCtx.schema.enums[objType.enumName];
+            if (!enum_) {
+                this.log(`Enum not found: ${objType.enumName}`);
+                return;
+            }
+
+            const enumMember = enum_.values.find(x => x.name === expr.propertyName);
+            if (!enumMember) {
+                this.log(`Enum member '${expr.propertyName}' not found in enum '${objType.enumName}'`);
+                return;
+            }
+
+            const newValue = new one.EnumMemberReference(enumMember, enum_);
+            const newExpr = AstHelper.replaceProperties(expr, newValue);
+            newExpr.valueType = objType;
+            return;
+        }
+
         if (!objType.isClass) {
             this.log(`Cannot access property '${expr.propertyName}' on object type '${expr.object.valueType.repr()}'.`);
             return;
@@ -294,6 +313,10 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         expr.valueType = expr.classRef.type || expr.valueType;
     }
     
+    protected visitEnumReference(expr: one.EnumReference, context: Context) {
+        expr.valueType = expr.enumRef.type || expr.valueType;
+    }
+    
     protected visitThisReference(expr: one.ThisReference, context: Context) {
         expr.valueType = context.currClass.type || expr.valueType;
     }
@@ -318,6 +341,11 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         super.visitClass(cls, context);
     }
 
+    protected visitEnum(enum_: one.Enum, context: Context) {
+        enum_.type = one.Type.Enum(enum_.name);
+        super.visitEnum(enum_, context);
+    }
+
     transform(schemaCtx: SchemaContext) {
         const context = new Context();
         context.schemaCtx = schemaCtx;
@@ -326,8 +354,6 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         for (const cls of Object.values(schemaCtx.schema.classes))
             context.classes.addClass(cls);
 
-        for (const cls of Object.values(schemaCtx.schema.classes)) { 
-            this.visitClass(cls, context); 
-        }
+        super.visitSchema(schemaCtx.schema, context);
     }
 }

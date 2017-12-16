@@ -2,6 +2,8 @@ extension: cs
 casing:
   class: pascal_case
   method: pascal_case
+  enum: pascal_case
+  enumMember: pascal_case
   variable: camel_case
   field: pascal_case
   property: pascal_case
@@ -97,6 +99,14 @@ templates:
       using {{inc}};
     {{/for}}
 
+    {{for enum in enums|sep=\n}}
+      public enum {{enum.name}} { 
+      {{for item in enum.values|inline sep=", "}}
+        {{item.name}}
+      {{/for}}
+       };
+    {{/for}}
+
     {{for class in classes|sep=\n\n}}
       public class {{class.name}}
       {
@@ -160,7 +170,9 @@ expressions:
   parenthesized: "({{gen(expr.expression)}})"
   variableDeclaration: "{{genVar(expr)}};"
   new: "new {{gen(expr.cls)}}({{genParams(expr.arguments)}})"
-  classReference: "{{expr.classRef.name}}"
+  classReference: "{{expr.classRef.outName}}"
+  enumReference: "{{expr.enumRef.outName}}"
+  enumMemberReference: "{{expr.enumRef.outName}}.{{expr.enumMemberRef.outName}}"
   arrayLiteral: "new List<{{expr.typeArgs[0]}}> { {{genParams(expr.items)}} }"
   mapLiteral: |- 
     new Dictionary<{{expr.typeArgs[0]}}, {{expr.typeArgs[1]}}>
@@ -170,8 +182,8 @@ expressions:
       {{/for}}
     }
   expressionStatement: "{{gen(expr.expression)}};"
-  instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.name}}"
-  staticMethod: "{{expr.methodRef.classRef.name}}.{{expr.methodRef.name}}"
+  instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
+  staticMethod: "{{expr.methodRef.classRef.outName}}.{{expr.methodRef.outName}}"
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
   instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}"

@@ -38,6 +38,11 @@ namespace CodeGeneratorModel {
         publicMethods: Method[];
         privateMethods: Method[];
     }
+
+    export interface Enum {
+        name: string;
+        values: { name: string, intValue: number, origName: string }[];
+    }
 }
 
 class TempVariable {
@@ -80,6 +85,7 @@ class CodeGeneratorModel {
 
     includes: string[] = [];
     classes: CodeGeneratorModel.Class[] = [];
+    enums: CodeGeneratorModel.Enum[] = [];
 
     constructor(public generator: CodeGenerator) { }
 
@@ -298,17 +304,16 @@ export class CodeGenerator {
         this.caseConverter = new SchemaCaseConverter(lang.casing);
         this.setupTemplateGenerator();
         this.compileTemplates();
+        this.setupEnums();
         this.setupClasses();
-
-        const includesCollector = new IncludesCollector(lang);
-        includesCollector.process(this.schema);
-        this.model.includes = Array.from(includesCollector.includes);
+        this.setupIncludes();
     }
 
     setupTemplateGenerator() {
         const codeGenVars = new VariableSource("CodeGeneratorModel");
         codeGenVars.addCallback("includes", () => this.model.includes);
         codeGenVars.addCallback("classes", () => this.model.classes);
+        codeGenVars.addCallback("enums", () => this.model.enums);
         codeGenVars.addCallback("result", () => this.model.result);
         for (const name of ["gen", "isIfBlock", "typeName", "hackPerlToVar"])
             codeGenVars.setVariable(name, (...args) => this.model[name].apply(this.model, args));
@@ -322,16 +327,18 @@ export class CodeGenerator {
         return this.templateGenerator.call(method, args, this.model, varContext);
     }
 
-    getTypeName(type: one.IType): string {
-        if (type.typeKind === one.TypeKind.Class) {
+    getTypeName(type: one.Type): string {
+        if (type.isClass) {
             const classGen = this.model.generator.classGenerators[type.className];
             if (classGen) {
                 return this.call(classGen.typeGenerator, [type.typeArguments.map(x => this.getTypeName(x))]);
             } else
                 return this.caseConverter.getName(type.className, "class");
-        }
-        else
+        } else if (type.isEnum) {
+            return this.caseConverter.getName(type.enumName, "enum");
+        } else {
             return this.lang.primitiveTypes ? this.lang.primitiveTypes[type.typeKind] : type.typeKind.toString();
+        }
     }
 
     convertIdentifier(name: string, vars: string[], mode: "variable"|"field"|"declaration") {
@@ -362,9 +369,24 @@ export class CodeGenerator {
     genParameters(method: one.Method|one.Constructor) {
         return method.parameters.map((param, idx) => <CodeGeneratorModel.MethodParameter> {
             idx,
-            name: param.name,
+            name: param.outName,
             type: this.getTypeName(param.type),
             typeInfo: param.type
+        });
+    }
+
+    setupIncludes() {
+        const includesCollector = new IncludesCollector(this.lang);
+        includesCollector.process(this.schema);
+        this.model.includes = Array.from(includesCollector.includes);
+    }
+
+    setupEnums() {
+        this.model.enums = Object.values(this.schema.enums).map(enum_ => {
+            return <CodeGeneratorModel.Enum> {
+                name: enum_.outName,
+                values: enum_.values.map((x, i) => ({ name: x.outName, intValue: i, origName: x.name }))
+            }
         });
     }
 
@@ -372,7 +394,7 @@ export class CodeGenerator {
         this.model.classes = Object.values(this.schema.classes).map(cls => {
             const methods = Object.values(cls.methods).map(method => {
                 return <CodeGeneratorModel.Method> {
-                    name: method.name,
+                    name: method.outName,
                     returnType: this.getTypeName(method.returns),
                     returnTypeInfo: method.returns,
                     body: method.body,
@@ -391,7 +413,7 @@ export class CodeGenerator {
             
             const fields = Object.values(cls.fields).map(field => {
                 return {
-                    name: this.caseConverter.getName(field.name, "field"),
+                    name: this.caseConverter.getName(field.outName, "field"),
                     type: this.getTypeName(field.type),
                     typeInfo: field.type,                    
                     visibility: field.visibility || "public",
@@ -402,7 +424,7 @@ export class CodeGenerator {
             });
 
             return <CodeGeneratorModel.Class> {
-                name: cls.name,
+                name: cls.outName,
                 methods: methods,
                 constructor,
                 publicMethods: methods.filter(x => x.visibility === "public"),
@@ -446,7 +468,7 @@ export class CodeGenerator {
             for (const methodName of Object.keys(cls.methods||[])) {
                 const funcInfo = cls.methods[methodName]; 
                 const stdMethod = this.stdlib.classes[clsName].methods[methodName]; 
-                const methodArgs = stdMethod ? stdMethod.parameters.map(x => x.name) : []; 
+                const methodArgs = stdMethod ? stdMethod.parameters.map(x => x.outName || x.name) : []; 
                 const funcArgs = ["self", "typeArgs", ...methodArgs, ...funcInfo.extraArgs||[]];
                 clsGen.methods[methodName] = new TemplateMethod(methodName, funcArgs, funcInfo.template);
             }

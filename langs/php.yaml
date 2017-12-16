@@ -2,6 +2,8 @@ extension: php
 casing:
   class: pascal_case
   method: camel_case
+  enum: pascal_case
+  enumMember: pascal_case  
 classes:
   OneString:
     fields:
@@ -84,6 +86,14 @@ templates:
       require_once("{{inc}}");
     {{/for}}
 
+    {{for enum in enums|sep=\n\n}}
+      class {{enum.name}} { 
+          {{for item in enum.values}}
+            const {{item.name}} = {{item.intValue}};
+          {{/for}}
+      };
+    {{/for}}
+
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
           {{for field in class.fields|sep=\n}}
@@ -154,7 +164,9 @@ expressions:
   numericLiteral: "{{expr.value}}"
   variableDeclaration: "{{genVar(expr)}};"
   new: "new {{gen(expr.cls)}}({{genParams(expr.arguments)}})"
-  classReference: "{{expr.classRef.name}}"
+  classReference: "{{expr.classRef.outName}}"
+  enumReference: "{{expr.enumRef.outName}}"
+  enumMemberReference: "{{expr.enumRef.outName}}::{{expr.enumMemberRef.outName}}"
   arrayLiteral: "array({{genParams(expr.items)}})"
   mapLiteral: |- 
     array(
@@ -163,8 +175,8 @@ expressions:
       {{/for}}
     )
   expressionStatement: "{{gen(expr.expression)}};"
-  instanceMethod: "{{gen(expr.thisExpr)}}->{{expr.methodRef.name}}"
-  staticMethod: "{{expr.methodRef.classRef.name}}::{{expr.methodRef.name}}"
+  instanceMethod: "{{gen(expr.thisExpr)}}->{{expr.methodRef.outName}}"
+  staticMethod: "{{expr.methodRef.classRef.outName}}::{{expr.methodRef.outName}}"
   localVar: "${{expr.varRef.name}}"
   methodArgument: "${{expr.varRef.name}}"
   instanceField: "{{gen(expr.thisExpr)}}->{{expr.varRef.name}}"
@@ -183,6 +195,8 @@ expressions:
       {{else}}
         {{if part.expr.valueType.isBoolean|inline}}
           " . (({{gen(part.expr)}}) ? "true" : "false") . "
+        {{elif part.expr.valueType.isEnum|inline}}
+          " . ({{gen(part.expr)}}) . "
         {{else}}
           {{{gen(part.expr)}}}
         {{/if}}

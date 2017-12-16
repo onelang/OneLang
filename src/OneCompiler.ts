@@ -41,6 +41,12 @@ export class OneCompiler {
 
     saveSchemaStateCallback: (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, data: string) => void;
 
+    /**
+     * Schema types:
+     *  - program: the input program to be compiled into another language
+     *  - overlay: helper classes which map the input language's built-in methods / properties to OneLang methods (eg. Object.keys(map) -> map.keys())
+     *  - stdlib: declaration (not implementation!) of OneLang methods (eg. map.keys) which are implemented in every language separately
+     */
     parseFromTS(programCode: string, overlayCode: string, stdlibCode: string, genericTransformerYaml: string) {
         overlayCode = overlayCode.replace(/^[^\n]*<reference.*stdlib.d.ts[^\n]*\n/, "");
         const schema = TypeScriptParser.parseFile(programCode.replace(/\r\n/g, "\n"));

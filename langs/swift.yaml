@@ -2,6 +2,8 @@ extension: swift
 casing:
   class: pascal_case
   method: camel_case
+  enum: pascal_case
+  enumMember: snake_case
 primitiveTypes:
   void: Void
 classes:
@@ -88,6 +90,15 @@ templates:
         case RuntimeError(String)
     }
 
+    {{for enum in enums|sep=\n}}
+      enum {{enum.name}} {
+          case 
+        {{for item in enum.values|inline sep=", "}}
+          {{item.name}}
+        {{/for}}
+      }
+    {{/for}}
+
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
         {{for field in class.fields|sep=\n}}
@@ -158,7 +169,9 @@ expressions:
   nullLiteral: "nil"
   variableDeclaration: "{{genVar(expr)}}"
   new: "{{gen(expr.cls)}}({{genMethodArgs(expr.arguments)}})"
-  classReference: "{{expr.classRef.name}}"
+  classReference: "{{expr.classRef.outName}}"
+  enumReference: "{{expr.enumRef.outName}}"
+  enumMemberReference: "{{expr.enumRef.outName}}.{{expr.enumMemberRef.outName}}"
   arrayLiteral: |-
     {{if expr.items.length > 0}}
       [{{genParams(expr.items)}}]
@@ -172,8 +185,8 @@ expressions:
       {{/for}}
     ]
   expressionStatement: "{{gen(expr.expression)}}"
-  instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.name}}"
-  staticMethod: "{{expr.methodRef.classRef.name}}.{{expr.methodRef.name}}"
+  instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
+  staticMethod: "{{expr.methodRef.classRef.outName}}.{{expr.methodRef.outName}}"
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
   instanceField: |-

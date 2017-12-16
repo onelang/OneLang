@@ -4,6 +4,8 @@ casing:
   method: camel_case
   field: camel_case
   property: camel_case
+  enum: pascal_case
+  enumMember: upper_case
 primitiveTypes:
   void: void
   any: object
@@ -72,6 +74,14 @@ templates:
   main: |-
     {{for inc in includes|sep=\n}}
       const {{inc}} = require('{{inc}}');
+    {{/for}}
+
+    {{for enum in enums|sep=\n\n}}
+      const {{enum.name}} = Object.freeze({
+        {{for item in enum.values}}
+          {{item.name}}: "{{item.origName}}",
+        {{/for}}
+      });
     {{/for}}
 
     {{for class in classes|sep=\n\n}}
@@ -143,7 +153,9 @@ expressions:
   numericLiteral: "{{expr.value}}"
   variableDeclaration: "{{genVar(expr)}};"
   new: "new {{gen(expr.cls)}}({{genParams(expr.arguments)}})"
-  classReference: "{{expr.classRef.name}}"
+  classReference: "{{expr.classRef.outName}}"
+  enumReference: "{{expr.enumRef.outName}}"
+  enumMemberReference: "{{expr.enumRef.outName}}.{{expr.enumMemberRef.outName}}"
   arrayLiteral: "[{{genParams(expr.items)}}]"
   mapLiteral: |- 
     {
@@ -152,8 +164,8 @@ expressions:
       {{/for}}
     }
   expressionStatement: "{{gen(expr.expression)}};"
-  instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.name}}"
-  staticMethod: "{{expr.methodRef.classRef.name}}.{{expr.methodRef.name}}"
+  instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
+  staticMethod: "{{expr.methodRef.classRef.outName}}.{{expr.methodRef.outName}}"
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
   instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}"

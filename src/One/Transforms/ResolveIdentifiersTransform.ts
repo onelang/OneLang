@@ -7,10 +7,12 @@ import { ClassRepository } from "./InferTypesTransform";
 import { AstHelper } from "../AstHelper";
 
 export class Context {
+    schemaCtx: SchemaContext = null;
     variables: VariableContext<one.Reference> = null;
     classes: ClassRepository = null;
 
     constructor(parent: Context = null) {
+        this.schemaCtx = parent === null ? null : parent.schemaCtx;
         this.variables = parent === null ? new VariableContext() : parent.variables.inherit();
         this.classes = parent === null ? new ClassRepository() : parent.classes;
     }
@@ -30,15 +32,16 @@ export class ResolveIdentifiersTransform extends AstVisitor<Context> implements 
 
     protected visitIdentifier(id: one.Identifier, context: Context) {
         const variable = context.variables.get(id.text);
+        const cls = context.classes.classes[id.text];
+        const enum_ = context.schemaCtx.schema.enums[id.text];
         if (variable) {
             AstHelper.replaceProperties(id, variable);
+        } else if (cls) {
+            AstHelper.replaceProperties(id, new one.ClassReference(cls));
+        } else if (enum_) {
+            AstHelper.replaceProperties(id, new one.EnumReference(enum_));
         } else {
-            const cls = context.classes.getClass(id.text);
-            if (cls) {
-                AstHelper.replaceProperties(id, new one.ClassReference(cls));
-            } else {
-                this.log(`Could not find identifier: ${id.text}`);
-            }
+            this.log(`Could not find identifier: ${id.text}`);
         }
     }
 
@@ -84,11 +87,12 @@ export class ResolveIdentifiersTransform extends AstVisitor<Context> implements 
     }
         
     transform(schemaCtx: SchemaContext) {
-        const globalContext = schemaCtx.tiContext.inherit();
-        
+        const globalContext = schemaCtx.tiContext.inherit();        
+        globalContext.schemaCtx = schemaCtx;
+
         for (const cls of Object.values(schemaCtx.schema.classes))
             globalContext.classes.addClass(cls);
-        
+
         this.visitSchema(schemaCtx.schema, globalContext);
     }
 }

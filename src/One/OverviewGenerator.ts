@@ -205,6 +205,9 @@ export class OverviewGenerator extends AstVisitor<void> {
         for (const glob of Object.values(schemaCtx.schema.globals))
             this.addLine(`global ${glob.name}: ${glob.type.repr()}`);
 
+        for (const _enum of Object.values(schemaCtx.schema.enums))
+            this.addLine(`enum ${_enum.name}: ${_enum.values.map(x => x.name).join(', ')}\n`);
+                
         for (const cls of Object.values(schemaCtx.schema.classes)) {
             for (const field of Object.values(cls.fields)) {
                 this.addLine(`${cls.name}::${field.name}: ${field.type && field.type.repr() || "null"}`);

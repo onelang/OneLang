@@ -2,6 +2,8 @@ extension: py
 casing:
   class: pascal_case
   method: snake_case
+  enum: pascal_case
+  enumMember: upper_case
 classes:
   OneString:
     fields:
@@ -69,8 +71,18 @@ templates:
         print "Exception: " + err.message
 
   main: |-
+    {{if enums.length > 0}}
+      from enum import Enum
+    {{/if}}
     {{for inc in includes|sep=\n}}
       import {{inc}};
+    {{/for}}
+
+    {{for enum in enums|sep=\n\n}}
+      class {{enum.name}}(Enum):
+          {{for item in enum.values}}
+            {{item.name}} = {{item.intValue}}
+          {{/for}}
     {{/for}}
 
     {{for class in classes|sep=\n\n}}
@@ -162,7 +174,9 @@ expressions:
   numericLiteral: "{{expr.value}}"
   variableDeclaration: "{{genVar(expr)}}"
   new: "{{gen(expr.cls)}}({{genParams(expr.arguments)}})"
-  classReference: "{{expr.classRef.name}}"
+  classReference: "{{expr.classRef.outName}}"
+  enumReference: "{{expr.enumRef.outName}}"
+  enumMemberReference: "{{expr.enumRef.outName}}.{{expr.enumMemberRef.outName}}"
   arrayLiteral: "[{{genParams(expr.items)}}]"
   mapLiteral: |- 
     {
@@ -171,8 +185,8 @@ expressions:
       {{/for}}
     }
   expressionStatement: "{{gen(expr.expression)}}"
-  instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.name}}"
-  staticMethod: "{{expr.methodRef.classRef.name}}.{{expr.methodRef.name}}"
+  instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
+  staticMethod: "{{expr.methodRef.classRef.outName}}.{{expr.methodRef.outName}}"
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
   instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.name}}"
