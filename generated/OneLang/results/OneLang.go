@@ -2,10 +2,6 @@ package main
 
 import "fmt"
 type TokenType struct {
-    EndToken string
-    Whitespace string
-    Identifier string
-    OperatorX string
 }
 
 func NewTokenType() *TokenType {
@@ -29,9 +25,6 @@ func NewToken(value string, is_operator bool) *Token {
     this.Value = value
     return this
 }
-
-var TokenValue string;
-var TokenIsOperator bool;
 
 type StringHelper struct {
 }
@@ -117,10 +110,6 @@ func (this *Tokenizer) Tokenize() []*Token {
     
     return result
 }
-
-var TokenizerOffset int;
-var TokenizerText string;
-var TokenizerOperators []string;
 
 type TestClass struct {
 }

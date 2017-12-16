@@ -13,9 +13,6 @@ func NewConstructorTest(field1 int) *ConstructorTest {
     return this
 }
 
-var ConstructorTestField2 int;
-var ConstructorTestField1 int;
-
 type TestClass struct {
 }
 
@@ -26,7 +23,7 @@ func NewTestClass() *TestClass {
 
 func (this *TestClass) TestMethod() {
     test := NewConstructorTest(3)
-    fmt.Println(test.field2)
+    fmt.Println(test.Field2)
 }
 
 func main() {

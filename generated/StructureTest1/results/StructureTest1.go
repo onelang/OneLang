@@ -10,12 +10,10 @@ func NewList() *List {
     return this
 }
 
-var ListItems [];
-
 type Item struct {
-    Offset int
-    StrTest string
-    StrConstr string
+    Offset int = 5
+    StrTest string = "test" + "test2"
+    StrConstr string = "constr"
 }
 
 func NewItem(str_constr string) *Item {
@@ -23,10 +21,6 @@ func NewItem(str_constr string) *Item {
     this.StrConstr = str_constr
     return this
 }
-
-var ItemOffset int = 5;
-var ItemStrTest string = "test" + "test2";
-var ItemStrConstr string = "constr";
 
 type Container struct {
     ItemList *List
@@ -44,6 +38,3 @@ func (this *Container) Method0() {
 func (this *Container) Method1(str string) {
     return str
 }
-
-var ContainerItemList List;
-var ContainerStringList List;

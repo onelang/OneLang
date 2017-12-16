@@ -2,11 +2,6 @@ package main
 
 import "fmt"
 type TokenType struct {
-    EndToken string
-    Whitespace string
-    Identifier string
-    OperatorX string
-    NoInitializer string
 }
 
 func NewTokenType() *TokenType {

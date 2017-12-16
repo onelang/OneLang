@@ -8,7 +8,7 @@ class TokenType {
 
 class TestClass {
   public testMethod() {
-    const casing_test = TokenType.endToken!;
+    const casing_test = TokenType.endToken;
     return casing_test;
   }
 }
