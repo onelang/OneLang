@@ -67,7 +67,7 @@ langs = {
     },
     "CSharp": {
         "ext": "cs",
-        "cmd": "mcs {name}.cs && mono {name}.exe && rm {name}.exe"
+        "cmd": "mcs {name}.cs ../../langs/StdLibs/one.cs && mono {name}.exe && rm {name}.exe"
     },
     "Perl": {
         "ext": "pl",
