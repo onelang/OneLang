@@ -31,7 +31,7 @@ classes:
         template: "scalar(@{{{self}}})"
     methods:
       add:
-        template: "push {{self}}, {{item}}"
+        template: "push @{{self}}, {{item}}"
       get:
         template: "${{{self}}}[{{index}}]"
       set:
