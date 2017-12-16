@@ -125,7 +125,7 @@ templates:
     {{for class in classes|sep=\n\n}}
       type {{class.name}} struct {
           {{for field in class.instanceFields|sep=\n}}
-            {{field.name}} {{getType(field.typeInfo)}}
+            {{field.name}} {{getType(field.typeInfo)}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}}
           {{/for}}
       }
 
