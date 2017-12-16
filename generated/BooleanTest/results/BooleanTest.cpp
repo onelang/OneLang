@@ -12,7 +12,7 @@ class TestClass {
         auto b = false;
         auto c = a && b;
         auto d = a || b;
-        cout << (string() + "a: " + ((a) ? "true" : "false") + ", b: " + ((b) ? "true" : "false") + ", c: " + ((c) ? "true" : "false") + ", d: " + ((d) ? "true" : "false") + "") << endl;
+        cout << (string() + "a: " + ((a) ? "true" : "false") + ", b: " + ((b) ? "true" : "false") + ", c: " + ((c) ? "true" : "false") + ", d: " + ((d) ? "true" : "false")) << endl;
     }
 
   private:

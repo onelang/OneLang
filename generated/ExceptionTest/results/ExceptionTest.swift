@@ -1,7 +1,3 @@
-enum OneError : Error {
-    case RuntimeError(String)
-}
-
 class TestClass {
   func notThrows() -> Int {
       return 5
@@ -13,7 +9,7 @@ class TestClass {
 
   func testMethod() throws -> Void {
       print(self.notThrows())
-      self.fThrows()
+      try self.fThrows()
   }
 }
 

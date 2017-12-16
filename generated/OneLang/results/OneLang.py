@@ -69,4 +69,7 @@ class TestClass:
         for item in result:
             print item.value + "(" + ("op" if item.is_operator else "id") + ")"
 
-TestClass().test_method()
+try:
+    TestClass().test_method()
+except Exception as err:
+    print "Exception: " + err.message
