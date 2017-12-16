@@ -135,6 +135,7 @@ export class OneCompiler {
 
         this.preprocessLangFile(lang);
         new SchemaCaseConverter(lang.casing).process(this.schemaCtx.schema);
+        new SchemaCaseConverter(lang.casing).process(this.stdlibCtx.schema);
         new FillVariableMutability(lang).process(this.schemaCtx.schema);
         new FillThrowsTransform(lang).process(this.schemaCtx.schema);
         this.saveSchemaState(this.schemaCtx, `10_${langName ? `${langName}_` : ""}Init`);
