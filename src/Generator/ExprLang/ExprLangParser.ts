@@ -91,7 +91,7 @@ export class ExprLangParser {
             const nextToken = this.tokens[0];
             if (nextToken.kind !== "operator") break;
 
-            const op = nextToken.value;
+            const op = this.tokenMap[nextToken.value] || nextToken.value;
             const infixPrecedence = this.precedenceMap[op] || 0;
             if (infixPrecedence <= precedence) break;
 
