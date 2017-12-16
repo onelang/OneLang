@@ -124,7 +124,7 @@ templates:
 
     {{for class in classes|sep=\n\n}}
       type {{class.name}} struct {
-          {{for field in class.fields|sep=\n}}
+          {{for field in class.instanceFields|sep=\n}}
             {{field.name}} {{getType(field.typeInfo)}}
           {{/for}}
       }
@@ -153,7 +153,7 @@ templates:
         }
       {{/for}}
 
-      {{for field in class.fields|sep=\n}}
+      {{for field in class.staticFields|sep=\n}}
         var {{class.name}}{{field.name}} {{field.type}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}};
       {{/for}}
     {{/for}}
