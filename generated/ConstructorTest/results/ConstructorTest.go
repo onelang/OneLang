@@ -1,7 +1,6 @@
 package main
 
 import "fmt"
-
 type ConstructorTest struct {
     Field2 int
     Field1 int
@@ -27,10 +26,16 @@ func NewTestClass() *TestClass {
 
 func (this *TestClass) TestMethod() {
     test := NewConstructorTest(3)
-    fmt.Println(test.Field2)
+    fmt.Println(test.field2)
 }
 
 func main() {
+    defer func() {
+      if r := recover(); r != nil {
+          fmt.Print("Exception: ", r)
+      }
+    }()
+
     c := (TestClass{})
     c.TestMethod();
 }

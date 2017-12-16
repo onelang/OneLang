@@ -1,7 +1,6 @@
 package main
 
 import "fmt"
-
 type TokenType struct {
     EndToken string
     Whitespace string

@@ -1,5 +1,6 @@
 package main
 
+import "fmt"
 type TokenType struct {
     EndToken string
     Whitespace string
@@ -33,6 +34,12 @@ func (this *TestClass) TestMethod() string {
 }
 
 func main() {
+    defer func() {
+      if r := recover(); r != nil {
+          fmt.Print("Exception: ", r)
+      }
+    }()
+
     c := (TestClass{})
     c.TestMethod();
 }
