@@ -1,6 +1,16 @@
-class ArrayTestClass {
-  public arrayTest() {
+class TestClass {
+  public testMethod() {
     const constant_arr = [5];
-    return constant_arr.length;
+    
+    const mutable_arr = [1];
+    mutable_arr.push(2);
+    
+    console.log(`len1: ${constant_arr.length}, len2: ${mutable_arr.length}`);
   }
+}
+
+try {
+  new TestClass().testMethod();
+} catch(e) {
+  console.log(`Exception: ${e.message}`);
 }

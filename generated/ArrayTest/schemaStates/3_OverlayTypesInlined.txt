@@ -1,8 +1,23 @@
-ArrayTestClass::arrayTest(): void
+TestClass::testMethod(): void
   - Variable: constantArr [OneArray<OneNumber>]
     - ArrayLiteral [OneArray<OneNumber>]
       - Literal (numeric): "5" [OneNumber]
-  - Return
-    - InstanceField: length [OneNumber]
-      - LocalVar: constantArr [OneArray<OneNumber>]
+  - Comment: "\n"
+  - Variable: mutableArr [OneArray<OneNumber>]
+    - ArrayLiteral [OneArray<OneNumber>]
+      - Literal (numeric): "1" [OneNumber]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference [OneArray<T>::add]
+        - LocalVar: mutableArr [OneArray<OneNumber>]
+      - Literal (numeric): "2" [OneNumber]
+  - Comment: "\n"
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [OneConsole::print]
+      - TemplateString [any]
+        - InstanceField: length [OneNumber]
+          - LocalVar: constantArr [OneArray<OneNumber>]
+        - InstanceField: length [OneNumber]
+          - LocalVar: mutableArr [OneArray<OneNumber>]
 

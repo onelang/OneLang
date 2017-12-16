@@ -1,15 +1,30 @@
 package main
 
 import "fmt"
-type ArrayTestClass struct {
+type TestClass struct {
 }
 
-func NewArrayTestClass() *ArrayTestClass {
-    this := new(ArrayTestClass)
+func NewTestClass() *TestClass {
+    this := new(TestClass)
     return this
 }
 
-func (this *ArrayTestClass) ArrayTest() {
+func (this *TestClass) TestMethod() {
     constant_arr := []int{5}
-    return len(constant_arr)
+    
+    mutable_arr := []int{1}
+    mutable_arr = append(mutable_arr, 2)
+    
+    fmt.Println(fmt.Sprintf("len1: %v, len2: %v", len(constant_arr), len(mutable_arr)))
+}
+
+func main() {
+    defer func() {
+      if r := recover(); r != nil {
+          fmt.Print("Exception: ", r)
+      }
+    }()
+
+    c := (TestClass{})
+    c.TestMethod();
 }

@@ -1,8 +1,24 @@
-ArrayTestClass::arrayTest(): void
+TestClass::testMethod(): void
   - Variable: constantArr
     - ArrayLiteral
       - Literal (numeric): "5"
-  - Return
-    - PropertyAccess (.length)
-      - Identifier: constantArr
+  - Comment: "\n"
+  - Variable: mutableArr
+    - ArrayLiteral
+      - Literal (numeric): "1"
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.push)
+        - Identifier: mutableArr
+      - Literal (numeric): "2"
+  - Comment: "\n"
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - TemplateString
+        - PropertyAccess (.length)
+          - Identifier: constantArr
+        - PropertyAccess (.length)
+          - Identifier: mutableArr
 

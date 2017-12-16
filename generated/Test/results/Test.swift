@@ -1,6 +1,6 @@
 class TestClass {
   func mapTest() -> Int {
-      let map_obj = [
+      var map_obj = [
         "x": 5,
         "y": 3
       ]
@@ -48,7 +48,7 @@ class TestClass {
   func arrayTest() -> Void {
       //const c2 = new Class2();
       
-      let mutable_arr = [1, 2]
+      var mutable_arr = [1, 2]
       mutable_arr.append(3)
       mutable_arr.append(4)
       // mutableArr.push(c2.property);

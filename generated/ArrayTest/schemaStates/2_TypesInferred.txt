@@ -1,8 +1,23 @@
-ArrayTestClass::arrayTest(): void
+TestClass::testMethod(): void
   - Variable: constantArr [TsArray<TsNumber>]
     - ArrayLiteral [TsArray<TsNumber>]
       - Literal (numeric): "5" [TsNumber]
-  - Return
-    - InstanceField: length [TsNumber]
-      - LocalVar: constantArr [TsArray<TsNumber>]
+  - Comment: "\n"
+  - Variable: mutableArr [TsArray<TsNumber>]
+    - ArrayLiteral [TsArray<TsNumber>]
+      - Literal (numeric): "1" [TsNumber]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference [TsArray<TsNumber>::push]
+        - LocalVar: mutableArr [TsArray<TsNumber>]
+      - Literal (numeric): "2" [TsNumber]
+  - Comment: "\n"
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - TemplateString [any]
+        - InstanceField: length [TsNumber]
+          - LocalVar: constantArr [TsArray<TsNumber>]
+        - InstanceField: length [TsNumber]
+          - LocalVar: mutableArr [TsArray<TsNumber>]
 

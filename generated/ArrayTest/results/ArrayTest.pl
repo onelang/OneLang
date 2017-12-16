@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-package ArrayTestClass;
+package TestClass;
 
 sub new
 {
@@ -11,8 +11,22 @@ sub new
     return $self;
 }
 
-sub arrayTest {
+sub testMethod {
     my ( $self ) = @_;
     my $constant_arr = [5];
-    return scalar(@{$constant_arr});
+    
+    my $mutable_arr = [1];
+    push @$mutable_arr, 2;
+    
+    print(("len1: @{[scalar(@{$constant_arr})]}, len2: @{[scalar(@{$mutable_arr})]}") . "\n");
+}
+
+package Program;
+
+eval {
+    my $c = new TestClass();
+    $c->testMethod();
+};
+if ($@) {
+    print "Exception: " . $@
 }
