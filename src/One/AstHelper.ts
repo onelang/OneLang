@@ -50,7 +50,7 @@ export class AstHelper {
     }
 
     static getMethodFromRef(lang: LangFileSchema.LangFile, methodRef: one.MethodReference) {
-        if (methodRef.methodRef.name)
+        if (methodRef.methodRef.body)
             return methodRef.methodRef;
 
         const metaPath = methodRef.methodRef.metaPath;
