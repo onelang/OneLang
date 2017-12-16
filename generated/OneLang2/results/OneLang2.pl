@@ -75,7 +75,7 @@ sub add {
 
 sub tryToMatch {
     my ( $self, $pattern ) = @_;
-    my $matches = ::($pattern, $self->{expression}, $self->{offset});
+    my $matches = OneRegex::matchFromIndex($pattern, $self->{expression}, $self->{offset});
     return ${$matches}[0];
 }
 

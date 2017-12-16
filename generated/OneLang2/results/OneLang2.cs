@@ -69,7 +69,7 @@ public class ExprLangLexer
     
     public string TryToMatch(string pattern)
     {
-        var matches = .(pattern, this.Expression, this.Offset);
+        var matches = OneRegex.MatchFromIndex(pattern, this.Expression, this.Offset);
         return matches[0];
     }
     

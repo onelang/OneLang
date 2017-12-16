@@ -56,7 +56,7 @@ class ExprLangLexer {
   }
 
   func tryToMatch(pattern: String) -> String {
-      let matches = .(pattern: pattern, input: self.expression, offset: self.offset)
+      let matches = OneRegex.matchFromIndex(pattern: pattern, input: self.expression, offset: self.offset)
       return matches[0]
   }
 

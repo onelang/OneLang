@@ -62,7 +62,7 @@ class ExprLangLexer {
     
     public String tryToMatch(String pattern) throws Exception
     {
-        List<String> matches = .(pattern, this.expression, this.offset);
+        List<String> matches = OneRegex.matchFromIndex(pattern, this.expression, this.offset);
         return matches.get(0);
     }
     

@@ -56,7 +56,7 @@ class ExprLangLexer {
     }
     
     function tryToMatch($pattern) {
-        $matches = ::($pattern, $this->expression, $this->offset);
+        $matches = OneRegex::matchFromIndex($pattern, $this->expression, $this->offset);
         return $matches[0];
     }
     

@@ -37,7 +37,7 @@ class ExprLangLexer:
         self.offset += len(value)
     
     def try_to_match(self, pattern):
-        matches = .(pattern, self.expression, self.offset)
+        matches = OneRegex.match_from_index(pattern, self.expression, self.offset)
         return matches[0]
     
     def try_to_read_operator(self):

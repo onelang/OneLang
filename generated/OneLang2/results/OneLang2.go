@@ -70,7 +70,7 @@ func (this *ExprLangLexer) Add(kind string, value string) {
 }
 
 func (this *ExprLangLexer) TryToMatch(pattern string) string {
-    matches := _(pattern, this.Expression, this.Offset)
+    matches := OneRegex_MatchFromIndex(pattern, this.Expression, this.Offset)
     return matches[0]
 }
 

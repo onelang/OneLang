@@ -74,7 +74,7 @@ class ExprLangLexer {
     }
     
     string tryToMatch(string pattern) {
-        auto matches = ::(pattern, this->expression, this->offset);
+        auto matches = OneRegex::matchFromIndex(pattern, this->expression, this->offset);
         return matches.at(0);
     }
     

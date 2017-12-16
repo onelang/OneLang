@@ -54,7 +54,7 @@ class ExprLangLexer {
   }
   
   public tryToMatch(pattern: string) {
-    const matches = .(pattern, this.expression, this.offset);
+    const matches = OneRegex.matchFromIndex(pattern, this.expression, this.offset);
     return matches[0];
   }
   
