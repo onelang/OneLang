@@ -195,10 +195,8 @@ expressions:
       {{else}}
         {{if part.expr.valueType.isBoolean|inline}}
           " . (({{gen(part.expr)}}) ? "true" : "false") . "
-        {{elif part.expr.valueType.isEnum|inline}}
-          " . ({{gen(part.expr)}}) . "
         {{else}}
-          {{{gen(part.expr)}}}
+          " . ({{gen(part.expr)}}) . "
         {{/if}}
       {{/if}}
     {{/for}}
