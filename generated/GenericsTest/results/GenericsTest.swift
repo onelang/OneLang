@@ -14,5 +14,3 @@ class Main {
       let _ = map.get(key: "hello2")
   }
 }
-
-TestClass().testMethod()

@@ -1,5 +1,6 @@
 package main
 
+import "fmt"
 type StrLenInferIssue struct {
 }
 
@@ -10,9 +11,4 @@ func NewStrLenInferIssue() *StrLenInferIssue {
 
 func (this *StrLenInferIssue) Test(str string) int {
     return len(str)
-}
-
-func main() {
-    c := (TestClass{})
-    c.TestMethod();
 }

@@ -38,10 +38,3 @@ class Container {
 
   private:
 };
-
-int main()
-{
-    TestClass c;
-    c.testMethod();
-    return 0;
-}

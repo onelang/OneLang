@@ -46,8 +46,3 @@ func (this *Container) Method1(str string) {
 
 var ContainerItemList List;
 var ContainerStringList List;
-
-func main() {
-    c := (TestClass{})
-    c.TestMethod();
-}

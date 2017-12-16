@@ -11,9 +11,3 @@ class MapTestClass {
         return map_obj.get("x");
     }
 }
-
-class Program {
-    public static void main(String[] args) throws Exception {
-        new TestClass().testMethod();
-    }
-}

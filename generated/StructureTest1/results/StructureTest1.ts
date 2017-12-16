@@ -23,5 +23,3 @@ class Container {
     return str;
   }
 }
-
-new TestClass().testMethod();

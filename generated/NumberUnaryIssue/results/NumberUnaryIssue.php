@@ -5,6 +5,3 @@ class NumberUnaryIssue {
         $num--;
     }
 }
-
-$c = new TestClass();
-$c->testMethod();

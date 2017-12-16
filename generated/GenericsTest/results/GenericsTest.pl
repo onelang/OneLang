@@ -36,7 +36,3 @@ sub test {
     $map->set("hello", 3);
     my $num_value = $map->get("hello2");
 }
-
-package Program;
-my $c = new TestClass();
-$c->testMethod();

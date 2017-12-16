@@ -21,7 +21,3 @@ sub mapTest {
     ${$map_obj}{"x"} = 3;
     return ${$map_obj}{"x"};
 }
-
-package Program;
-my $c = new TestClass();
-$c->testMethod();

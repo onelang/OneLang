@@ -7,5 +7,3 @@ class ArrayTestClass
       return constant_arr.length
   end
 end
-
-TestClass.new().test_method()

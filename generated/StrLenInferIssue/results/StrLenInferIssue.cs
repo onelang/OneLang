@@ -5,11 +5,3 @@ public class StrLenInferIssue
         return str.Length;
     }
 }
-
-public class Program
-{
-    static public void Main()
-    {
-        new TestClass().TestMethod();
-    }
-}

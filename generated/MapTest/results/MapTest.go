@@ -1,5 +1,6 @@
 package main
 
+import "fmt"
 type MapTestClass struct {
 }
 
@@ -16,9 +17,4 @@ func (this *MapTestClass) MapTest() {
     //delete mapObj["x"];
     map_obj["x"] = 3
     return map_obj["x"]
-}
-
-func main() {
-    c := (TestClass{})
-    c.TestMethod();
 }

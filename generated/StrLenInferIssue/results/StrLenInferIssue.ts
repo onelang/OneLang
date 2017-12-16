@@ -3,5 +3,3 @@ class StrLenInferIssue {
     return str.length;
   }
 }
-
-new TestClass().testMethod();

@@ -29,11 +29,3 @@ public class Container
         return str;
     }
 }
-
-public class Program
-{
-    static public void Main()
-    {
-        new TestClass().TestMethod();
-    }
-}

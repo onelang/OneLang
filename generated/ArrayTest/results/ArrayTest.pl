@@ -16,7 +16,3 @@ sub arrayTest {
     my $constant_arr = [5];
     return scalar(@{$constant_arr});
 }
-
-package Program;
-my $c = new TestClass();
-$c->testMethod();

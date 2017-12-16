@@ -4,5 +4,3 @@ class ArrayTestClass {
     return constant_arr.length;
   }
 }
-
-new TestClass().testMethod();

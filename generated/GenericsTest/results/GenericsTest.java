@@ -17,9 +17,3 @@ class Main {
         Integer num_value = map.get("hello2");
     }
 }
-
-class Program {
-    public static void main(String[] args) throws Exception {
-        new TestClass().testMethod();
-    }
-}

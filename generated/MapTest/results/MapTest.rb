@@ -12,5 +12,3 @@ class MapTestClass
       return map_obj["x"]
   end
 end
-
-TestClass.new().test_method()

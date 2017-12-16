@@ -25,9 +25,3 @@ class Container {
         return str;
     }
 }
-
-class Program {
-    public static void main(String[] args) throws Exception {
-        new TestClass().testMethod();
-    }
-}

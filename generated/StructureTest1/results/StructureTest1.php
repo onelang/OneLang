@@ -25,6 +25,3 @@ class Container {
         return $str;
     }
 }
-
-$c = new TestClass();
-$c->testMethod();

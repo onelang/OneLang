@@ -4,9 +4,3 @@ class StrLenInferIssue {
         return str.length();
     }
 }
-
-class Program {
-    public static void main(String[] args) throws Exception {
-        new TestClass().testMethod();
-    }
-}

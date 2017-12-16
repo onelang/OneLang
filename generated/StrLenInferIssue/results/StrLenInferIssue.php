@@ -5,6 +5,3 @@ class StrLenInferIssue {
         return strlen($str);
     }
 }
-
-$c = new TestClass();
-$c->testMethod();

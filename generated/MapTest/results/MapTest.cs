@@ -14,11 +14,3 @@ public class MapTestClass
         return mapObj["x"];
     }
 }
-
-public class Program
-{
-    static public void Main()
-    {
-        new TestClass().TestMethod();
-    }
-}

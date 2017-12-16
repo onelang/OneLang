@@ -6,5 +6,3 @@ class NumberUnaryIssue
       num -= 1
   end
 end
-
-TestClass.new().test_method()

@@ -9,5 +9,3 @@ class MapTestClass {
       return map_obj["x"]!
   }
 }
-
-TestClass().testMethod()

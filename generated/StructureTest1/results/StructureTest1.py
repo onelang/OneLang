@@ -11,5 +11,3 @@ class Container:
     
     def method1(self, str):
         return str
-
-TestClass().test_method()

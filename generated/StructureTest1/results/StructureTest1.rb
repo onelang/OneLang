@@ -33,5 +33,3 @@ class Container
       return str
   end
 end
-
-TestClass.new().test_method()

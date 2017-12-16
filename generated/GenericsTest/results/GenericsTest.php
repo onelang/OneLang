@@ -16,6 +16,3 @@ class Main {
         $num_value = $map->get("hello2");
     }
 }
-
-$c = new TestClass();
-$c->testMethod();

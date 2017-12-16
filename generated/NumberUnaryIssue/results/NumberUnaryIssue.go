@@ -1,5 +1,6 @@
 package main
 
+import "fmt"
 type NumberUnaryIssue struct {
 }
 
@@ -10,9 +11,4 @@ func NewNumberUnaryIssue() *NumberUnaryIssue {
 
 func (this *NumberUnaryIssue) Test(num int) {
     num--
-}
-
-func main() {
-    c := (TestClass{})
-    c.TestMethod();
 }

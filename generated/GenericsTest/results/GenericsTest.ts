@@ -14,5 +14,3 @@ class Main {
     const num_value = map.get("hello2");
   }
 }
-
-new TestClass().testMethod();

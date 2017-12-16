@@ -6,6 +6,3 @@ class ArrayTestClass {
         return count($constant_arr);
     }
 }
-
-$c = new TestClass();
-$c->testMethod();

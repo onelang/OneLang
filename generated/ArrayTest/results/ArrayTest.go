@@ -1,5 +1,6 @@
 package main
 
+import "fmt"
 type ArrayTestClass struct {
 }
 
@@ -11,9 +12,4 @@ func NewArrayTestClass() *ArrayTestClass {
 func (this *ArrayTestClass) ArrayTest() {
     constant_arr := []int{5}
     return len(constant_arr)
-}
-
-func main() {
-    c := (TestClass{})
-    c.TestMethod();
 }

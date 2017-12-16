@@ -3,5 +3,3 @@ class NumberUnaryIssue {
       num -= 1
   }
 }
-
-TestClass().testMethod()

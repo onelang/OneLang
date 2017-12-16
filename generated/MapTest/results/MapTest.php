@@ -11,6 +11,3 @@ class MapTestClass {
         return $map_obj["x"];
     }
 }
-
-$c = new TestClass();
-$c->testMethod();

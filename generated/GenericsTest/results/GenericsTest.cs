@@ -19,11 +19,3 @@ public class Main
         // UNUSED: var numValue = map.Get("hello2");
     }
 }
-
-public class Program
-{
-    static public void Main()
-    {
-        new TestClass().TestMethod();
-    }
-}

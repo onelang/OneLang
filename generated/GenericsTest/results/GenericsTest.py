@@ -10,5 +10,3 @@ class Main:
         map = MapX()
         map.set("hello", 3)
         num_value = map.get("hello2")
-
-TestClass().test_method()

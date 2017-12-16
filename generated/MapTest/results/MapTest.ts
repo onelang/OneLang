@@ -9,5 +9,3 @@ class MapTestClass {
     return map_obj["x"];
   }
 }
-
-new TestClass().testMethod();

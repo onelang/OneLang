@@ -7,5 +7,3 @@ class MapTestClass:
         #delete mapObj["x"];
         map_obj["x"] = 3
         return map_obj["x"]
-
-TestClass().test_method()

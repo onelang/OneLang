@@ -20,5 +20,3 @@ class Main
       num_value = map.get("hello2")
   end
 end
-
-TestClass.new().test_method()

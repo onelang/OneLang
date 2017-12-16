@@ -15,7 +15,3 @@ sub test {
     my ( $self, $str ) = @_;
     return length($str);
 }
-
-package Program;
-my $c = new TestClass();
-$c->testMethod();

@@ -6,5 +6,3 @@ class StrLenInferIssue
       return str.length
   end
 end
-
-TestClass.new().test_method()
