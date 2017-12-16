@@ -5,6 +5,10 @@ class TestClass {
         let enumV = TestEnum.Item1;
         if (3 * 2 === 6)
             enumV = TestEnum.Item2;
-        console.log(`Item1: ${TestEnum.Item1}, Item2: ${enumV}`);
+
+        const check1 = enumV === TestEnum.Item2 ? "SUCCESS" : "FAIL";
+        const check2 = enumV === TestEnum.Item1 ? "FAIL" : "SUCCESS";
+
+        console.log(`Item1: ${TestEnum.Item1}, Item2: ${enumV}, checks: ${check1} ${check2}`);
     }
 }
