@@ -86,10 +86,6 @@ templates:
       import {{inc}}
     {{/for}}
 
-    enum OneError : Error {
-        case RuntimeError(String)
-    }
-
     {{for enum in enums|sep=\n}}
       enum {{enum.name}} {
           case 

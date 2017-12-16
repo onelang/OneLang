@@ -17,7 +17,8 @@ classes:
       get:
         template: "(substr {{self}}, {{idx}}, 1)"
       replace:
-        template: "Helpers::str_replace({{self}}, {{from}}, {{to}})"
+        includes: ["one"]
+        template: "One::str_replace({{self}}, {{from}}, {{to}})"
       substrMatch:
         template: "(substr {{self}}, {{offset}}, length({{str}})) eq ({{str}})"
   OneConsole:
@@ -110,21 +111,9 @@ templates:
     use strict;
     use warnings;
 
-    package Helpers;
-
-    sub str_replace
-    {
-      my ($string, $find, $replace) = @_;
-
-      my $pos = index($string, $find);
-
-      while($pos > -1) {
-        substr($string, $pos, length($find), $replace);
-        $pos = index($string, $find, $pos + length($replace));
-      }
-      
-      return $string;
-    }
+    {{for include in includes}}
+      require "{{include}}.pl";
+    {{/for}}
 
     {{for enum in enums|sep=\n\n}}
       package {{enum.name}};

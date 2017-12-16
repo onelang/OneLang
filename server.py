@@ -71,11 +71,11 @@ langs = {
     },
     "Perl": {
         "ext": "pl",
-        "cmd": "perl {name}.pl"
+        "cmd": "perl -I../../langs/StdLibs/ {name}.pl"
     },
     "Swift": {
         "ext": "swift",
-        "cmd": "swift {name}.swift"
+        "cmd": "cat ../../langs/StdLibs/one.swift {name}.swift | swift -"
     },
     "TypeScript": {
         "ext": "ts",
