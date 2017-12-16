@@ -1,0 +1,16 @@
+TestClass::testMethod(): void
+  - Variable: str [TsString]
+    - Literal (string): "A x B x C x D" [TsString]
+  - Variable: result [any]
+    - Call [any]
+      - PropertyAccess (.replace) [any]
+        - LocalVar: str [TsString]
+      - Literal (string): "x" [TsString]
+      - Literal (string): "y" [TsString]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - TemplateString [any]
+        - LocalVar: result [any]
+        - LocalVar: str [TsString]
+

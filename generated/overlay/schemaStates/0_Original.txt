@@ -124,13 +124,14 @@ TsString::split(separator: TsString): OneArray<OneString>
           - Identifier: this
       - Identifier: separator
 
-TsString::startsWith(str: TsString): OneBoolean
+TsString::startsWith(str: TsString, position: TsNumber): OneBoolean
   - Return
     - Call
-      - PropertyAccess (.startsWith)
+      - PropertyAccess (.substrMatch)
         - PropertyAccess (._one)
           - Identifier: this
       - Identifier: str
+      - Identifier: position
 
 TsNumber::_one: OneNumber
 TsCharacter::_one: OneCharacter

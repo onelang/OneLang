@@ -45,6 +45,15 @@ OneString::get(idx: TsNumber): OneCharacter
 OneString::startsWith(str: TsString): OneBoolean
   <no body>
 
+OneString::substrMatch(str: TsString, offset: TsNumber): OneBoolean
+  <no body>
+
+OneString::replace(from: TsString, to: TsString): OneString
+  <no body>
+
 OneError::raise(message: TsString): void [static, throws]
+  <no body>
+
+OneRegex::matchFromIndex(pattern: TsString, input: TsString, offset: TsNumber): OneArray<OneString> [static]
   <no body>
 

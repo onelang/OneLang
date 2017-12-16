@@ -1,0 +1,17 @@
+TestClass::testMethod(): void
+  - Variable: str
+    - Literal (string): "A x B x C x D"
+  - Variable: result
+    - Call
+      - PropertyAccess (.replace)
+        - Identifier: str
+      - Literal (string): "x"
+      - Literal (string): "y"
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - TemplateString
+        - Identifier: result
+        - Identifier: str
+

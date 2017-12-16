@@ -1,0 +1,42 @@
+enum TestEnum: Item1, Item2
+
+TestClass::testMethod(): void
+  - Variable: enumV [TestEnum]
+    - EnumMemberReference [TestEnum]
+  - If
+    - Binary: == [OneBoolean]
+      - Binary: * [any]
+        - Literal (numeric): "3" [TsNumber]
+        - Literal (numeric): "2" [TsNumber]
+      - Literal (numeric): "6" [TsNumber]
+    Then
+      - ExpressionStatement
+        - Binary: = [any]
+          - LocalVar: enumV [TestEnum]
+          - EnumMemberReference [TestEnum]
+    Else
+  - Comment: "\n"
+  - Variable: check1 [TsString]
+    - Conditional [TsString]
+      - Binary: == [OneBoolean]
+        - LocalVar: enumV [TestEnum]
+        - EnumMemberReference [TestEnum]
+      - Literal (string): "SUCCESS" [TsString]
+      - Literal (string): "FAIL" [TsString]
+  - Variable: check2 [TsString]
+    - Conditional [TsString]
+      - Binary: == [OneBoolean]
+        - LocalVar: enumV [TestEnum]
+        - EnumMemberReference [TestEnum]
+      - Literal (string): "FAIL" [TsString]
+      - Literal (string): "SUCCESS" [TsString]
+  - Comment: "\n"
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - TemplateString [any]
+        - EnumMemberReference [TestEnum]
+        - LocalVar: enumV [TestEnum]
+        - LocalVar: check1 [TsString]
+        - LocalVar: check2 [TsString]
+

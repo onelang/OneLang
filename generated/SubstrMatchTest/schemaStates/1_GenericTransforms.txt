@@ -1,0 +1,37 @@
+TestClass::testMethod(): void
+  - Variable: str
+    - Literal (string): "ABCDEF"
+  - Variable: tA0_true
+    - Call
+      - PropertyAccess (.startsWith)
+        - Identifier: str
+      - Literal (string): "A"
+      - Literal (numeric): "0"
+  - Variable: tA1_false
+    - Call
+      - PropertyAccess (.startsWith)
+        - Identifier: str
+      - Literal (string): "A"
+      - Literal (numeric): "1"
+  - Variable: tB1_true
+    - Call
+      - PropertyAccess (.startsWith)
+        - Identifier: str
+      - Literal (string): "B"
+      - Literal (numeric): "1"
+  - Variable: tCD2_true
+    - Call
+      - PropertyAccess (.startsWith)
+        - Identifier: str
+      - Literal (string): "CD"
+      - Literal (numeric): "2"
+  - ExpressionStatement
+    - Call
+      - PropertyAccess (.log)
+        - Identifier: console
+      - TemplateString
+        - Identifier: tA0_true
+        - Identifier: tA1_false
+        - Identifier: tB1_true
+        - Identifier: tCD2_true
+

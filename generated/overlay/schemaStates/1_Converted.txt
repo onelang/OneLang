@@ -98,11 +98,12 @@ TsString::split(separator: TsString): OneArray<OneString>
       - MethodReference (this) [OneString::split]
       - MethodArgument: separator [TsString]
 
-TsString::startsWith(str: TsString): OneBoolean
+TsString::startsWith(str: TsString, position: TsNumber): OneBoolean
   - Return
     - Call [OneBoolean]
-      - MethodReference (this) [OneString::startsWith]
+      - MethodReference (this) [OneString::substrMatch]
       - MethodArgument: str [TsString]
+      - MethodArgument: position [TsNumber]
 
 TsNumber::_one: OneNumber
 TsCharacter::_one: OneCharacter

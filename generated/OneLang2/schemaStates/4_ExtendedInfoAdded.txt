@@ -1,0 +1,353 @@
+TokenKind::Number: OneString
+- Variable: Number [OneString]
+  - Literal (string): "number" [OneString]
+TokenKind::Identifier: OneString
+- Variable: Identifier [OneString]
+  - Literal (string): "identifier" [OneString]
+TokenKind::OperatorX: OneString
+- Variable: OperatorX [OneString]
+  - Literal (string): "operator" [OneString]
+TokenKind::StringX: OneString
+- Variable: StringX [OneString]
+  - Literal (string): "string" [OneString]
+Token::kind: OneString
+Token::value: OneString
+Token::constructor
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): value [OneString]
+      - MethodArgument: value [OneString]
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): kind [OneString]
+      - MethodArgument: kind [OneString]
+ExprLangLexer::offset: OneNumber
+- Variable: offset [OneNumber]
+  - Literal (numeric): "0" [OneNumber]
+ExprLangLexer::tokens: OneArray<Token>
+- Variable: tokens [OneArray<Token>]
+  - ArrayLiteral [OneArray<Token>]
+ExprLangLexer::expression: OneString
+ExprLangLexer::operators: OneArray<OneString>
+ExprLangLexer::constructor
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): operators [OneArray<OneString>]
+      - MethodArgument: operators [OneArray<OneString>]
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): expression [OneString]
+      - MethodArgument: expression [OneString]
+  - If
+    - Unary (prefix): ! [any]
+      - Call [OneBoolean]
+        - MethodReference (this) [ExprLangLexer::tryToReadNumber]
+    Then
+      - ExpressionStatement
+        - Call [OneBoolean]
+          - MethodReference (this) [ExprLangLexer::tryToReadOperator]
+      - ExpressionStatement
+        - Call [OneBoolean]
+          - MethodReference (this) [ExprLangLexer::tryToReadLiteral]
+    Else
+  - Comment: "\n"
+  - While
+      - Call [OneBoolean]
+        - MethodReference (this) [ExprLangLexer::hasMoreToken]
+    Body
+      - If
+        - Unary (prefix): ! [any]
+          - Call [OneBoolean]
+            - MethodReference (this) [ExprLangLexer::tryToReadOperator]
+        Then
+          - ExpressionStatement
+            - Call [void]
+              - MethodReference (this) [ExprLangLexer::fail]
+              - Literal (string): "expected operator here" [OneString]
+        Else
+      - Comment: "\n"
+      - ExpressionStatement
+        - Call [OneBoolean]
+          - MethodReference (this) [ExprLangLexer::tryToReadLiteral]
+ExprLangLexer::fail(message: OneString): void
+  - Variable: context [OneString]
+    - Binary: + [OneString]
+      - Call [OneString]
+        - MethodReference [OneString::substring]
+          - InstanceField (this): expression [OneString]
+        - InstanceField (this): offset [any]
+        - Binary: + [any]
+          - InstanceField (this): offset [any]
+          - Literal (numeric): "30" [OneNumber]
+      - Literal (string): "..." [OneString]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static, throws) [OneError::raise]
+      - TemplateString [any]
+        - MethodArgument: message [OneString]
+        - LocalVar: context [OneString]
+        - InstanceField (this): offset [any]
+
+ExprLangLexer::hasMoreToken(): OneBoolean
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (this) [ExprLangLexer::skipWhitespace]
+  - Return
+    - Unary (prefix): ! [any]
+      - Call [OneBoolean]
+        - MethodReference (this) [ExprLangLexer::eof]
+
+ExprLangLexer::add(kind: OneString, value: OneString): void
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference [OneArray<T>::add]
+        - InstanceField (this): tokens [OneArray<Token>]
+      - New Token [Token]
+  - ExpressionStatement
+    - Binary: += [any]
+      - InstanceField (this): offset [any]
+      - InstanceField: length [OneNumber]
+        - MethodArgument: value [OneString]
+
+ExprLangLexer::tryToMatch(pattern: OneString): OneString
+  - Variable: matches [OneArray<OneString>]
+    - Call [OneArray<OneString>]
+      - MethodReference (static) [OneRegex::matchFromIndex]
+      - MethodArgument: pattern [OneString]
+      - InstanceField (this): expression [OneString]
+      - InstanceField (this): offset [any]
+  - Return
+    - Call [OneString]
+      - MethodReference [OneArray<OneString>::get]
+        - LocalVar: matches [OneArray<OneString>]
+      - Literal (numeric): "0" [OneNumber]
+
+ExprLangLexer::tryToReadOperator(): OneBoolean
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (this) [ExprLangLexer::skipWhitespace]
+  - Foreach op: OneString
+    Items
+      - InstanceField (this): operators [OneArray<OneString>]
+    Body
+      - If
+        - Call [OneBoolean]
+          - MethodReference [OneString::substrMatch]
+            - InstanceField (this): expression [OneString]
+          - LocalVar: op [OneString]
+          - InstanceField (this): offset [any]
+        Then
+          - ExpressionStatement
+            - Call [void]
+              - MethodReference (this) [ExprLangLexer::add]
+              - StaticField: OperatorX [OneString]
+                - ClassReference [TokenKind]
+              - LocalVar: op [OneString]
+          - Return
+            - Literal (boolean): true [OneBoolean]
+        Else
+  - Return
+    - Literal (boolean): false [OneBoolean]
+
+ExprLangLexer::tryToReadNumber(): OneBoolean
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (this) [ExprLangLexer::skipWhitespace]
+  - Variable: number [OneString]
+    - Call [OneString]
+      - MethodReference (this) [ExprLangLexer::tryToMatch]
+      - Literal (string): "[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)" [OneString]
+  - If
+    - Binary: == [OneBoolean]
+      - LocalVar: number [OneString]
+      - Literal (string): "" [OneString]
+    Then
+      - Return
+        - Literal (boolean): false [OneBoolean]
+    Else
+  - Comment: "\n"
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (this) [ExprLangLexer::add]
+      - StaticField: Number [OneString]
+        - ClassReference [TokenKind]
+      - LocalVar: number [OneString]
+  - If
+    - Call [OneString]
+      - MethodReference (this) [ExprLangLexer::tryToMatch]
+      - Literal (string): "[0-9a-zA-Z]" [OneString]
+    Then
+      - ExpressionStatement
+        - Call [void]
+          - MethodReference (this) [ExprLangLexer::fail]
+          - Literal (string): "invalid character in number" [OneString]
+    Else
+  - Comment: "\n"
+  - Return
+    - Literal (boolean): true [OneBoolean]
+
+ExprLangLexer::tryToReadIdentifier(): OneBoolean
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (this) [ExprLangLexer::skipWhitespace]
+  - Variable: identifier [OneString]
+    - Call [OneString]
+      - MethodReference (this) [ExprLangLexer::tryToMatch]
+      - Literal (string): "[a-zA-Z_][a-zA-Z0-9_]*" [OneString]
+  - If
+    - Binary: == [OneBoolean]
+      - LocalVar: identifier [OneString]
+      - Literal (string): "" [OneString]
+    Then
+      - Return
+        - Literal (boolean): false [OneBoolean]
+    Else
+  - Comment: "\n"
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (this) [ExprLangLexer::add]
+      - StaticField: Identifier [OneString]
+        - ClassReference [TokenKind]
+      - LocalVar: identifier [OneString]
+  - Return
+    - Literal (boolean): true [OneBoolean]
+
+ExprLangLexer::tryToReadString(): OneBoolean
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (this) [ExprLangLexer::skipWhitespace]
+  - Comment: "\n"
+  - Variable: match [OneString]
+    - Call [OneString]
+      - MethodReference (this) [ExprLangLexer::tryToMatch]
+      - Literal (string): "'(\\\\'|[^'])*'" [OneString]
+  - If
+    - Binary: == [OneBoolean]
+      - LocalVar: match [OneString]
+      - Literal (null): "null" [any]
+    Then
+      - ExpressionStatement
+        - Binary: = [any]
+          - LocalVar: match [OneString]
+          - Call [OneString]
+            - MethodReference (this) [ExprLangLexer::tryToMatch]
+            - Literal (string): "\"(\\\\\"|[^\"])*\"" [OneString]
+    Else
+  - If
+    - Binary: == [OneBoolean]
+      - LocalVar: match [OneString]
+      - Literal (null): "null" [any]
+    Then
+      - Return
+        - Literal (boolean): false [OneBoolean]
+    Else
+  - Comment: "\n"
+  - Variable: str [OneString]
+    - Call [OneString]
+      - MethodReference [OneString::substring]
+        - LocalVar: match [OneString]
+      - Literal (numeric): "1" [OneNumber]
+      - Binary: + [any]
+        - Literal (numeric): "1" [OneNumber]
+        - Binary: - [any]
+          - InstanceField: length [OneNumber]
+            - LocalVar: match [OneString]
+          - Literal (numeric): "2" [OneNumber]
+  - ExpressionStatement
+    - Binary: = [OneString]
+      - LocalVar: str [OneString]
+      - Conditional [OneString]
+        - Binary: == [OneBoolean]
+          - Call [OneCharacter]
+            - MethodReference [OneString::get]
+              - LocalVar: match [OneString]
+            - Literal (numeric): "0" [OneNumber]
+          - Literal (string): "'" [OneString]
+        - Call [OneString]
+          - MethodReference [OneString::replace]
+            - LocalVar: str [OneString]
+          - Literal (string): "\\'" [OneString]
+          - Literal (string): "'" [OneString]
+        - Call [OneString]
+          - MethodReference [OneString::replace]
+            - LocalVar: str [OneString]
+          - Literal (string): "\\\"" [OneString]
+          - Literal (string): "\"" [OneString]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference [OneArray<T>::add]
+        - InstanceField (this): tokens [OneArray<Token>]
+      - New Token [Token]
+  - ExpressionStatement
+    - Binary: += [any]
+      - InstanceField (this): offset [any]
+      - InstanceField: length [OneNumber]
+        - LocalVar: match [OneString]
+  - Return
+    - Literal (boolean): true [OneBoolean]
+
+ExprLangLexer::eof(): OneBoolean
+  - Return
+    - Binary: >= [OneBoolean]
+      - InstanceField (this): offset [any]
+      - InstanceField: length [OneNumber]
+        - InstanceField (this): expression [OneString]
+
+ExprLangLexer::skipWhitespace(): void
+  - While
+      - Unary (prefix): ! [any]
+        - Call [OneBoolean]
+          - MethodReference (this) [ExprLangLexer::eof]
+    Body
+      - Variable: c [OneCharacter]
+        - Call [OneCharacter]
+          - MethodReference [OneString::get]
+            - InstanceField (this): expression [OneString]
+          - InstanceField (this): offset [any]
+      - If
+        - Binary: || [OneBoolean]
+          - Binary: || [OneBoolean]
+            - Binary: || [OneBoolean]
+              - Binary: == [OneBoolean]
+                - LocalVar: c [OneCharacter]
+                - Literal (string): " " [OneString]
+              - Binary: == [OneBoolean]
+                - LocalVar: c [OneCharacter]
+                - Literal (string): "\n" [OneString]
+            - Binary: == [OneBoolean]
+              - LocalVar: c [OneCharacter]
+              - Literal (string): "\t" [OneString]
+          - Binary: == [OneBoolean]
+            - LocalVar: c [OneCharacter]
+            - Literal (string): "\r" [OneString]
+        Then
+          - ExpressionStatement
+            - Unary (postfix): ++ [any]
+              - InstanceField (this): offset [any]
+        Else
+          - Break
+
+ExprLangLexer::tryToReadLiteral(): OneBoolean
+  - Variable: success [any]
+    - Binary: || [any]
+      - Binary: || [any]
+        - Call [OneBoolean]
+          - MethodReference (this) [ExprLangLexer::tryToReadIdentifier]
+        - Call [OneBoolean]
+          - MethodReference (this) [ExprLangLexer::tryToReadNumber]
+      - Call [OneBoolean]
+        - MethodReference (this) [ExprLangLexer::tryToReadString]
+  - Return
+    - LocalVar: success [any]
+
+TestClass::testMethod(): void
+  - Variable: lexer [ExprLangLexer]
+    - New ExprLangLexer [ExprLangLexer]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [OneConsole::print]
+      - TemplateString [any]
+        - InstanceField: length [OneNumber]
+          - InstanceField: tokens [OneArray<Token>]
+            - LocalVar: lexer [ExprLangLexer]
+
