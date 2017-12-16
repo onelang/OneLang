@@ -65,8 +65,8 @@ sub arrayTest {
     #const c2 = new Class2();
     
     my $mutable_arr = [1, 2];
-    push $mutable_arr, 3;
-    push $mutable_arr, 4;
+    push @$mutable_arr, 3;
+    push @$mutable_arr, 4;
     # mutableArr.push(c2.property);
     # mutableArr.push(c2.child.property);
     # mutableArr.push(c2.child.child.property);

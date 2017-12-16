@@ -69,7 +69,7 @@ sub hasMoreToken {
 
 sub add {
     my ( $self, $kind, $value ) = @_;
-    push $self->{tokens}, new Token($kind, $value);
+    push @$self->{tokens}, new Token($kind, $value);
     $self->{offset} += length($value);
 }
 
@@ -133,7 +133,7 @@ sub tryToReadString {
     
     my $str = (substr $match, 1, (1 + length($match) - 2 - 1));
     $str = (substr $match, 0, 1) eq "\'" ? One::str_replace($str, "\\\'", "\'") : One::str_replace($str, "\\\"", "\"");
-    push $self->{tokens}, new Token($TokenKind::string_x, $str);
+    push @$self->{tokens}, new Token($TokenKind::string_x, $str);
     $self->{offset} += length($match);
     return 1;
 }

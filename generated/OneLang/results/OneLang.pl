@@ -84,7 +84,7 @@ sub tokenize {
                 $self->{offset}++;
             }
             my $identifier = (substr $self->{text}, $start_offset, ($self->{offset} - $start_offset));
-            push $result, new Token($identifier, 0);
+            push @$result, new Token($identifier, 0);
         } else {
             my $op = "";
             foreach my $curr_op (@{$self->{operators}}) {
@@ -97,7 +97,7 @@ sub tokenize {
                 last;
             }
             $self->{offset} += length($op);
-            push $result, new Token($op, 1);
+            push @$result, new Token($op, 1);
         }
     }
     
