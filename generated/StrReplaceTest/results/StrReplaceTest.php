@@ -4,7 +4,7 @@ class TestClass {
     function testMethod() {
         $str = "A x B x C x D";
         $result = str_replace("x", "y", $str);
-        print(("R: {$result}, O: {$str}") . "\n");
+        print(("R: " . ($result) . ", O: " . ($str) . "") . "\n");
     }
 }
 

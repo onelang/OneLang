@@ -42,7 +42,7 @@ class ExprLangLexer {
 
     function fail($message) {
         $context = substr($this->expression, $this->offset, $this->offset + 30 - $this->offset) . "...";
-        throw new Exception("TokenizerException: {$message} at '{$context}' (offset: {$this->offset})");
+        throw new Exception("TokenizerException: " . ($message) . " at '" . ($context) . "' (offset: " . ($this->offset) . ")");
     }
     
     function hasMoreToken() {
@@ -139,7 +139,7 @@ class ExprLangLexer {
 class TestClass {
     function testMethod() {
         $lexer = new ExprLangLexer("1+2", array("+"));
-        print(("Token count: {count($lexer->tokens)}") . "\n");
+        print(("Token count: " . (count($lexer->tokens)) . "") . "\n");
     }
 }
 
