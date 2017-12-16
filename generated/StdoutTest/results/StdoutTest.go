@@ -1,7 +1,6 @@
 package main
 
 import "fmt"
-
 type TestClass struct {
 }
 
@@ -24,6 +23,12 @@ func (this *TestClass) TestMethod() string {
 }
 
 func main() {
+    defer func() {
+      if r := recover(); r != nil {
+          fmt.Print("Exception: ", r)
+      }
+    }()
+
     c := (TestClass{})
     c.TestMethod();
 }

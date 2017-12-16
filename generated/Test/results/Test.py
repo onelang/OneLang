@@ -98,4 +98,7 @@ class TestClass:
         print self.reverse_string("print value")
         print "true" if self.get_bool_result(True) else "false"
 
-TestClass().test_method()
+try:
+    TestClass().test_method()
+except Exception as err:
+    print "Exception: " + err.message

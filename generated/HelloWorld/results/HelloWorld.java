@@ -7,6 +7,10 @@ class TestClass {
 
 class Program {
     public static void main(String[] args) throws Exception {
-        new TestClass().testMethod();
+        try {
+            new TestClass().testMethod();
+        } catch (Exception err) {
+            System.out.println("Exception: " + err.getMessage());
+        }
     }
 }

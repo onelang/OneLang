@@ -1,7 +1,6 @@
 package main
 
 import "fmt"
-
 type TestClass struct {
 }
 

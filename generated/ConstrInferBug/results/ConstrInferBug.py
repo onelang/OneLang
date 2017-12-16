@@ -5,4 +5,7 @@ class TestClass:
     def test_method(self):
         pass
 
-TestClass().test_method()
+try:
+    TestClass().test_method()
+except Exception as err:
+    print "Exception: " + err.message

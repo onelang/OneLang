@@ -27,5 +27,11 @@ sub testMethod {
 }
 
 package Program;
-my $c = new TestClass();
-$c->testMethod();
+
+eval {
+    my $c = new TestClass();
+    $c->testMethod();
+};
+if ($@) {
+    print "Exception: " . $@
+}

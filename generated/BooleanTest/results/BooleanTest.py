@@ -6,4 +6,7 @@ class TestClass:
         d = a or b
         print "a: %s, b: %s, c: %s, d: %s" % ("true" if a else "false", "true" if b else "false", "true" if c else "false", "true" if d else "false", )
 
-TestClass().test_method()
+try:
+    TestClass().test_method()
+except Exception as err:
+    print "Exception: " + err.message

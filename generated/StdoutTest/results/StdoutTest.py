@@ -11,4 +11,7 @@ class TestClass:
         print self.reverse_string("print value")
         return "return value"
 
-TestClass().test_method()
+try:
+    TestClass().test_method()
+except Exception as err:
+    print "Exception: " + err.message

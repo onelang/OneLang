@@ -2,4 +2,7 @@ class TestClass:
     def test_method(self):
         print "Hello world!"
 
-TestClass().test_method()
+try:
+    TestClass().test_method()
+except Exception as err:
+    print "Exception: " + err.message

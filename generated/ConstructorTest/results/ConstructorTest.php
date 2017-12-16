@@ -17,5 +17,9 @@ class TestClass {
     }
 }
 
-$c = new TestClass();
-$c->testMethod();
+try {
+    $c = new TestClass();
+    $c->testMethod();
+} catch (Exception $err) {
+    echo 'Exception: ' . $err->getMessage() . "\n";
+}

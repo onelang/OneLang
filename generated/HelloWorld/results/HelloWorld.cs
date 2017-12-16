@@ -12,6 +12,13 @@ public class Program
 {
     static public void Main()
     {
-        new TestClass().TestMethod();
+        try 
+        {
+            new TestClass().TestMethod();
+        }
+        catch (System.Exception e)
+        {
+            System.Console.WriteLine($"Exception: {e.Message}");
+        }
     }
 }

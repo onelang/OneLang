@@ -3,4 +3,7 @@ class TestClass:
         with open("../../input/test.txt", 'r') as f: file_content = f.read()
         return file_content
 
-TestClass().test_method()
+try:
+    TestClass().test_method()
+except Exception as err:
+    print "Exception: " + err.message

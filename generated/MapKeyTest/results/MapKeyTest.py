@@ -4,4 +4,7 @@ class TestClass:
         }
         keys = map.keys()
 
-TestClass().test_method()
+try:
+    TestClass().test_method()
+except Exception as err:
+    print "Exception: " + err.message

@@ -10,4 +10,7 @@ class TestClass:
         result2 = "before " + str_val + ", num: " + str(num) + ", true: " + ("true" if b else "false") + " after"
         print result2
 
-TestClass().test_method()
+try:
+    TestClass().test_method()
+except Exception as err:
+    print "Exception: " + err.message

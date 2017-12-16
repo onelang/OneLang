@@ -12,4 +12,7 @@ class TestClass:
         
         return z + "|" + x + y + "|" + a + "|" + arr[2]
 
-TestClass().test_method()
+try:
+    TestClass().test_method()
+except Exception as err:
+    print "Exception: " + err.message

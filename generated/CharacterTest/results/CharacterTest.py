@@ -10,4 +10,7 @@ class TestClass:
             print "upper" if is_upper else "lower" if is_lower else "number" if is_number else "other"
             i += 1
 
-TestClass().test_method()
+try:
+    TestClass().test_method()
+except Exception as err:
+    print "Exception: " + err.message

@@ -11,4 +11,7 @@ class TestClass:
         casing_test = TokenType.end_token
         return casing_test
 
-TestClass().test_method()
+try:
+    TestClass().test_method()
+except Exception as err:
+    print "Exception: " + err.message

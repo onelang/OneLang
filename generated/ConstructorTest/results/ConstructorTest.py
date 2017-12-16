@@ -8,4 +8,7 @@ class TestClass:
         test = ConstructorTest(3)
         print test.field2
 
-TestClass().test_method()
+try:
+    TestClass().test_method()
+except Exception as err:
+    print "Exception: " + err.message

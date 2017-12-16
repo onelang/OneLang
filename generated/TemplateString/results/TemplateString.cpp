@@ -25,7 +25,11 @@ class TestClass {
 
 int main()
 {
-    TestClass c;
-    c.testMethod();
+    try {
+        TestClass c;
+        c.testMethod();
+    } catch(std::exception& err) {
+        cout << "Exception: " << err.what() << '\n';
+    }
     return 0;
 }

@@ -8,4 +8,8 @@ class TestClass
   end
 end
 
-TestClass.new().test_method()
+begin
+    TestClass.new().test_method()
+rescue Exception => err
+    print "Exception: #{err}"
+end
