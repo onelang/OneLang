@@ -8,7 +8,7 @@ import { OneCompiler } from "./OneCompiler";
 
 declare var YAML: any;
 
-const testPrgName = "EnumTest";
+const testPrgName = "OneLang2";
 
 const qs = {};
 location.search.substr(1).split('&').map(x => x.split('=')).forEach(x => qs[x[0]] = x[1]);
