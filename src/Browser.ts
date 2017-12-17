@@ -1,4 +1,4 @@
-import { Layout, LangUi } from "./UI/AppLayout";
+import { Layout, LangUi, EditorChangeHandler } from "./UI/AppLayout";
 import { CodeGenerator } from "./Generator/CodeGenerator";
 import { langConfigs, LangConfig, CompileResult, LangConfigs } from "./Generator/LangConfigs";
 import { TypeScriptParser } from "./Parsers/TypeScriptParser";
@@ -73,26 +73,39 @@ function escapeHtml(unsafe) {
 }
 
 class CompileHelper {
-    overlayContent: string;
-    stdlibContent: string;
-    genericTransforms: string;
-
     constructor(public langConfigs: LangConfigs) { }
 
-    async init() {
-        this.overlayContent = await downloadTextFile(`langs/NativeResolvers/typescript.ts`);
-        this.stdlibContent = await downloadTextFile(`langs/StdLibs/stdlib.d.ts`);
-        this.genericTransforms = await downloadTextFile(`langs/NativeResolvers/GenericTransforms.yaml`);
+    async setContent(handler: EditorChangeHandler, url: string) {
+        const content = await downloadTextFile(url);
+        handler.setContent(content);
+    }
 
-        for (const lang of Object.values(this.langConfigs))
-            lang.schemaYaml = await downloadTextFile(`langs/${lang.name}.yaml`);
+    async init() {
+        const tasks: Promise<void>[] = [];
+
+        tasks.push(this.setContent(layout.langs.typescript.overlayHandler, `langs/NativeResolvers/typescript.ts`));
+        tasks.push(this.setContent(layout.oneStdLibHandler, `langs/StdLibs/stdlib.d.ts`));
+        tasks.push(this.setContent(layout.genericTransformsHandler, `langs/NativeResolvers/GenericTransforms.yaml`));
+
+        for (const lang of Object.values(this.langConfigs)) {
+            tasks.push(this.setContent(layout.langs[lang.name].generatorHandler, `langs/${lang.name}.yaml`));
+            tasks.push(this.setContent(layout.langs[lang.name].stdLibHandler, `langs/StdLibs/${lang.stdlibFn}`));
+        }
+
+        await Promise.all(tasks);
     }
 
     compile(programCode: string, langName: string) {
         const compiler = new OneCompiler();
-        compiler.parseFromTS(programCode, this.overlayContent, this.stdlibContent, this.genericTransforms);
+
+        const overlayContent = layout.langs.typescript.overlayHandler.getContent();
+        const oneStdLibContent = layout.oneStdLibHandler.getContent();
+        const genericTransforms = layout.genericTransformsHandler.getContent();
+        
+        compiler.parseFromTS(programCode, overlayContent, oneStdLibContent, genericTransforms);
         const lang = this.langConfigs[langName];
-        const code = compiler.compile(lang.schemaYaml, langName, true);
+        const schemaYaml = layout.langs[langName].generatorHandler.getContent();
+        const code = compiler.compile(schemaYaml, langName, true);
         return code;
     }
 }

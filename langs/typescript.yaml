@@ -70,11 +70,11 @@ classes:
         template: throw new Error({{message}})
 templates:
   testGenerator: |-
-    try {
+    //try {
       new {{class}}().{{method}}();
-    } catch(e) {
-      console.log(`Exception: ${e.message}`);
-    }
+    //} catch(e) {
+    //  console.log(`Exception: ${e.message}`);
+    //}
 
   main: |-
     {{for inc in includes|sep=\n}}

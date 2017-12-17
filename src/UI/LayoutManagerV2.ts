@@ -114,6 +114,11 @@ export class Container extends LayoutItem {
         return this;
     }
 
+    setActiveTab(tabIndex: number) {
+        this.contentItem.setActiveContentItem(this.contentItem.contentItems[tabIndex]);
+        return this;
+    }
+
     init() {
         for (var child of this.children)
             child.init();

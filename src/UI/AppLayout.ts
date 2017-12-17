@@ -2,16 +2,27 @@ import { LayoutManager, Container, Component, ClosableComponent } from "./Layout
 import * as ace from "ace/ace";
 
 export interface LangUi {
-    component: Component,
+    editorComponent: Component,
     editor: AceAjax.Editor,
     changeHandler: EditorChangeHandler,
     statusBar: JQuery
+
+    overlayHandler: EditorChangeHandler,
+    generatorHandler: EditorChangeHandler,
+    stdLibHandler: EditorChangeHandler,
+}
+
+interface TabContainer extends Container {
+    addLang(title: string, langName: string, aceLang?: string);
+    addInputLang(title: string, langName: string, aceLang?: string);
 }
 
 export class Layout {
     manager: LayoutManager;
 
     langs: { [lang: string]: LangUi } = {};
+    genericTransformsHandler: EditorChangeHandler;
+    oneStdLibHandler: EditorChangeHandler;
 
     errors: ClosableComponent;
 
@@ -23,29 +34,99 @@ export class Layout {
         this.initLangComponents();
     }
 
+    addLang(container: Container, title: string, langName: string, aceLang: string = null, isInput: boolean) {
+        container.addTabs(tabs => {
+            const langUi = <LangUi>{};
+            tabs.addComponent(title, editorComp => {
+                langUi.editorComponent = editorComp;
+
+                const parent = $(`
+                    <div class="editorDiv">
+                        <div class="aceEditor" />
+                        <div class="statusBar">status</div>
+                    </div>
+                `).appendTo(editorComp.element);
+
+                langUi.statusBar = parent.find('.statusBar');
+                langUi.editor = LayoutHelper.setupEditor(langUi.editorComponent, aceLang || langName, parent.find('.aceEditor').get(0));
+                langUi.changeHandler = new EditorChangeHandler(langUi.editor, 500, (newContent, userChange) => {
+                    if (userChange)
+                        this.onEditorChange(langName, newContent);
+                });
+            });
+
+            if (isInput) {
+                tabs.addComponent("Overlay", c => {
+                    const editor = LayoutHelper.setupEditor(c, langName);
+                    langUi.overlayHandler = new EditorChangeHandler(editor, 500, (newContent, userChange) => {
+                    });
+                });
+            }
+
+            tabs.addComponent("Generator", c => {
+                const editor = LayoutHelper.setupEditor(c, "yaml");
+                langUi.generatorHandler = new EditorChangeHandler(editor, 500, (newContent, userChange) => {
+                });
+            });
+
+            tabs.addComponent("StdLib", c => {
+                const editor = LayoutHelper.setupEditor(c, langName);
+                langUi.stdLibHandler = new EditorChangeHandler(editor, 500, (newContent, userChange) => {
+                });
+            });
+
+            // TODO: hack, these should be global tabs... on the other hand, the whole UI should be rethought, so whatever...
+            if (isInput) {
+                tabs.addComponent("Transforms", c => {
+                    const editor = LayoutHelper.setupEditor(c, "yaml");
+                    this.genericTransformsHandler = new EditorChangeHandler(editor, 500, (newContent, userChange) => {
+                    });
+                });
+
+                tabs.addComponent("One StdLib", c => {
+                    const editor = LayoutHelper.setupEditor(c, "typescript");
+                    this.oneStdLibHandler = new EditorChangeHandler(editor, 500, (newContent, userChange) => {
+                    });
+                });
+            }
+
+            tabs.setActiveTab(0);
+
+            this.langs[langName] = langUi;            
+        });
+        return container;
+    }
+
+    setup(container: Container): TabContainer {
+        const c = <TabContainer> container;
+        c.addLang = (title: string, langName: string, aceLang?: string) => this.addLang(container, title, langName, aceLang, false);
+        c.addInputLang = (title: string, langName: string, aceLang?: string) => this.addLang(container, title, langName, aceLang, true);
+        return c;
+    }
+
     initLangComponents() {
         this.manager.root
             .addHorizontal(mainCols => mainCols
-                .addVertical(rows => rows.setConfig({ width: 50 })
-                    .addComponent("TypeScript", c => this.initLang(c, "typescript"))
-                    .addHorizontal(cols => cols
-                        .addComponent("C++", c => this.initLang(c, "cpp", "c_cpp"))
-                        .addComponent("C#", c => this.initLang(c, "csharp"))
+                .addVertical(rows => this.setup(rows.setConfig({ width: 50 }))
+                    .addInputLang("TypeScript", "typescript")
+                    .addHorizontal(cols => this.setup(cols)
+                        .addLang("C++", "cpp", "c_cpp")
+                        .addLang("C#", "csharp")
                     )
-                    .addHorizontal(cols => cols
-                        .addComponent("Go", c => this.initLang(c, "go", "swift"))
-                        .addComponent("Java", c => this.initLang(c, "java"))
+                    .addHorizontal(cols => this.setup(cols)
+                        .addLang("Go", "go", "swift")
+                        .addLang("Java", "java")
                     )
                 )
-                .addVertical(rows => rows.setConfig({ width: 25 })
-                    .addComponent("Perl", c => this.initLang(c, "perl"))
-                    .addComponent("PHP", c => this.initLang(c, "php"))
-                    .addComponent("Python", c => this.initLang(c, "python"))
+                .addVertical(rows => this.setup(rows.setConfig({ width: 25 }))
+                    .addLang("Perl", "perl")
+                    .addLang("PHP", "php")
+                    .addLang("Python", "python")
                 )
-                .addVertical(rows => rows.setConfig({ width: 25 })
-                    .addComponent("Ruby", c => this.initLang(c, "ruby"))
-                    .addComponent("Swift", c => this.initLang(c, "swift"))
-                    .addComponent("JavaScript", c => this.initLang(c, "javascript"))
+                .addVertical(rows => this.setup(rows.setConfig({ width: 25 }))
+                    .addLang("Ruby", "ruby")
+                    .addLang("Swift", "swift")
+                    .addLang("JavaScript", "javascript")
                 )
             );
 
@@ -53,23 +134,6 @@ export class Layout {
     }
 
     onEditorChange(lang: string, newContent: string) { }
-
-    initLang(component: Component, name: string, aceLang: string = null) {
-        const parent = $(`
-            <div class="editorDiv">
-                <div class="aceEditor" />
-                <div class="statusBar">status</div>
-            </div>
-            `).appendTo(component.element);
-        const statusBar = parent.find('.statusBar');
-        const editor = LayoutHelper.setupEditor(component, aceLang || name, parent.find('.aceEditor').get(0));
-        const changeHandler = new EditorChangeHandler(editor, 500, (newContent, userChange) => {
-            if (userChange)
-                this.onEditorChange(name, newContent);
-        });
-
-        this.langs[name] = { component, editor, changeHandler, statusBar };
-    }
 }
 
 export class EditorChangeHandler {
