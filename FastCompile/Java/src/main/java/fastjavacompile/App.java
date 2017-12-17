@@ -95,7 +95,7 @@ public class App
                 Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(sourceCode);
                 DynamicClassLoader cl = new DynamicClassLoader(ClassLoader.getSystemClassLoader());
                 ExtendedStandardJavaFileManager fileManager = new ExtendedStandardJavaFileManager(
-                        javac.getStandardFileManager(null, null, null), cl);
+                    javac.getStandardFileManager(null, null, null), cl);
                 StringWriter writer = new StringWriter();
                 JavaCompiler.CompilationTask task = javac.getTask(writer, fileManager, null, null, null, compilationUnits);
                 if (!task.call()) {

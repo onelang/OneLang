@@ -2,7 +2,7 @@ const process = require("process");
 const http = require("http");
 const vm = require("vm");
 const ts = require("typescript");
-const util = require('util');
+const util = require("util");
 
 function readRequestBody(request) {
     return new Promise((resolve, reject) => {
