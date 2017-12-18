@@ -15,11 +15,12 @@ server.mount_proc '/compile' do |req, res|
         request = JSON.parse(req.body())
 
         startTime = Time.now
-        result = eval request['code']
+        eval request['stdlibCode']
+        result = eval request['code'].sub(/require 'one'/, "")
         elapsedMs = ((Time.now - startTime) * 1000).round
         
         res.body = JSON.generate({ :result => $stdout.string, :elapsedMs => elapsedMs })
-    rescue
+    rescue Exception
         res.body = JSON.generate({ :exceptionText => "#{$@.first}: #{$!.message} (#{$!.class})" + $@.drop(1).map{|s| "\n\t#{s}"}.join("") })
     ensure
         $stdout = original_stdout

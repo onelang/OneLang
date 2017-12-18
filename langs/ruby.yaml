@@ -57,6 +57,11 @@ classes:
     methods:
       raise:
         template: raise {{message}}
+  OneRegex:
+    includes: ["one"]
+    methods:
+      matchFromIndex:
+        template: "One::Regex::matchFromIndex({{pattern}}, {{input}}, {{offset}})"
 operators:
   OneString + OneNumber:
     template: "{{gen(left)}} + ({{gen(right)}}).to_s"
