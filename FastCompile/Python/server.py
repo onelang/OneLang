@@ -4,6 +4,7 @@ import traceback
 import time
 import sys
 import threading
+import imp
 from cStringIO import StringIO
 
 from SocketServer import ThreadingMixIn
@@ -47,6 +48,9 @@ class HTTPHandler(BaseHTTPRequestHandler):
                     sys.stdout = result_stdout = StringIO()
                     try:
                         start = time.time()
+
+                        sys.modules['one'] = imp.new_module('one')
+                        exec(request["stdlibCode"], sys.modules['one'].__dict__)
                         exec(request["code"], {})
                         elapsedMs = int((time.time() - start) * 1000)
                     finally:

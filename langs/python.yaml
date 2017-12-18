@@ -58,6 +58,11 @@ classes:
     methods:
       raise:
         template: raise Exception({{message}})
+  OneRegex:
+    includes: ["one"]
+    methods:
+      matchFromIndex:
+        template: "one.Regex.matchFromIndex({{pattern}}, {{input}}, {{offset}})"
 operators:
   OneString + OneNumber:
     template: "{{gen(left)}} + str({{gen(right)}})"
@@ -75,7 +80,7 @@ templates:
       from enum import Enum
     {{/if}}
     {{for inc in includes|sep=\n}}
-      import {{inc}};
+      import {{inc}}
     {{/for}}
 
     {{for enum in enums|sep=\n\n}}
@@ -89,6 +94,11 @@ templates:
       class {{class.name}}:
           {{if class.constructor}}
             def __init__({{genArgs(class.constructor)}}):
+                {{for field in class.fields|sep=\n}}
+                  {{if field.static == false && field.initializer}}
+                    self.{{field.name}} = {{gen(field.initializer)}};
+                  {{/if}}
+                {{/for}}
                 {{genBody(class.constructor.body)}}
           {{/if}}
 
@@ -165,6 +175,7 @@ expressions:
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   binary&&: "{{gen(expr.left)}} and {{gen(expr.right)}}"
   binary||: "{{gen(expr.left)}} or {{gen(expr.right)}}"
+  prefix!: "not {{gen(expr.operand)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
   postfix++: "{{gen(expr.operand)}} += 1"
   postfix--: "{{gen(expr.operand)}} -= 1"
