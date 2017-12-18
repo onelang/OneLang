@@ -67,7 +67,7 @@ langs = {
     },
     "CSharp": {
         "ext": "cs",
-        "cmd": "mcs {name}.cs ../../langs/StdLibs/one.cs && mono {name}.exe && rm {name}.exe"
+        "cmd": "mcs {name}.cs {name}_StdLib.cs && mono {name}.exe && rm {name}.exe"
     },
     "Perl": {
         "ext": "pl",
@@ -163,8 +163,12 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 lang = langs[request["lang"]]
 
                 name = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
                 fn = "%s%s.%s" % (TMP_DIR, name, lang["ext"])
                 with open(fn, "wt") as f: f.write(request["code"])
+
+                stdlibFn = "%s%s_StdLib.%s" % (TMP_DIR, name, lang["ext"])
+                with open(stdlibFn, "wt") as f: f.write(request["stdlibCode"])
                 
                 start = time.time()
                 pipes = subprocess.Popen(lang["cmd"].format(name=name), shell=True, cwd=TMP_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -175,6 +179,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 else:
                     elapsedMs = int((time.time() - start) * 1000)
                     os.remove(fn)
+                    os.remove(stdlibFn)
                     self.resp(200, { 'result': stdout, "elapsedMs": elapsedMs })
             except Exception as e:
                 log(repr(e))
