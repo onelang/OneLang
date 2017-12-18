@@ -20,6 +20,17 @@ function log(...args) {
     console.log('[TypeScript]', ...args);
 }
 
+function requireFromString(src, filename) {
+    var Module = module.constructor;
+    var m = new Module();
+    m._compile(src, filename);
+    return m.exports;
+}
+
+function tsCompile(code) {
+    return ts.transpileModule(code, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+}
+
 const server = http.createServer(async (request, response) => {
     response.setHeader("Access-Control-Allow-Origin", "*");
     try {
@@ -27,8 +38,11 @@ const server = http.createServer(async (request, response) => {
         const requestJson = JSON.parse(requestText);
         
         let code = requestJson.code;
-        if (requestJson.lang === "TypeScript")
-            code = ts.transpileModule(code, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+        let stdlibCode = requestJson.stdlibCode;
+        if (requestJson.lang === "TypeScript") {
+            code = tsCompile(code);
+            stdlibCode = tsCompile(stdlibCode);
+        }
 
         let result = "";
         const script = new vm.Script(code);
@@ -36,7 +50,12 @@ const server = http.createServer(async (request, response) => {
             console: {
                 log: (...args) => result += (util.format(...args) + '\n'),
             },
-            require: require
+            require: (...args) => {
+                if (args[0] === 'one')
+                    return requireFromString(stdlibCode, 'one.js');
+                else                    
+                    return require(...args);
+            }
         });
 
         const startTime = process.hrtime();

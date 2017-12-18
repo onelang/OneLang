@@ -25,8 +25,10 @@ async function runLang(langConfig: LangConfig, code?: string) {
     if (!serverhost)
         throw new Error("No compilation backend!");
 
-    if (code)
+    if (code) {
         langConfig.request.code = code;
+        langConfig.request.stdlibCode = layout.langs[langConfig.name].stdLibHandler.getContent();
+    }
     
     const endpoint = httpsMode ? `${serverhost}/${langConfig.httpsEndpoint || "compile"}` : 
         `http://${serverhost}:${langConfig.port}/compile`;

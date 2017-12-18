@@ -9,6 +9,7 @@ export interface LangConfig {
     request: {
         lang?: string;
         code: string;
+        stdlibCode?: string;
         className?: string;
         methodName?: string;
     };

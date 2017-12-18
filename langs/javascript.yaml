@@ -63,6 +63,11 @@ classes:
     methods:
       raise:
         template: throw new Error({{message}})
+  OneRegex:
+    includes: ["one"]
+    methods:
+      matchFromIndex:
+        template: "one.Regex.matchFromIndex({{pattern}}, {{input}}, {{offset}})"
 templates:
   testGenerator: |-
     try {
@@ -88,6 +93,11 @@ templates:
       class {{class.name}} {
         {{if class.constructor}}
           constructor({{genArgs(class.constructor)}}) {
+              {{for field in class.fields|sep=\n}}
+                {{if field.static == false && field.initializer}}
+                  this.{{field.name}} = {{gen(field.initializer)}};
+                {{/if}}
+              {{/for}}
               {{genBody(class.constructor.body)}}
           }
         {{/if}}

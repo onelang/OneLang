@@ -68,6 +68,11 @@ classes:
     methods:
       raise:
         template: throw new Error({{message}})
+  OneRegex:
+    includes: ["one"]
+    methods:
+      matchFromIndex:
+        template: "one.Regex.matchFromIndex({{pattern}}, {{input}}, {{offset}})"
 templates:
   testGenerator: |-
     //try {
