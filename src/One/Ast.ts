@@ -43,6 +43,7 @@ export namespace OneAst {
     export enum TypeKind { 
         Void = "void",
         Any = "any",
+        Null = "null",
         Class = "class",
         Enum = "enum",
         Method = "method",
@@ -68,6 +69,7 @@ export namespace OneAst {
         get isMethod() { return this.typeKind === TypeKind.Method; }
         get isGenerics() { return this.typeKind === TypeKind.Generics; }
         get isAny() { return this.typeKind === TypeKind.Any; }
+        get isNull() { return this.typeKind === TypeKind.Null; }
         get isNumber() { return this.className === "OneNumber"; }
         get isString() { return this.className === "OneString"; }
         get isCharacter() { return this.className === "OneCharacter"; }
@@ -108,10 +110,11 @@ export namespace OneAst {
             }
         }
 
-        static PrimitiveTypeKinds = [TypeKind.Void, TypeKind.Any];
+        static PrimitiveTypeKinds = [TypeKind.Void, TypeKind.Any, TypeKind.Null];
         
         static Void = new Type(TypeKind.Void);
         static Any = new Type(TypeKind.Any);
+        static Null = new Type(TypeKind.Null);
         
         static Class(className: string, generics: Type[] = []) {
             const result = new Type(TypeKind.Class);

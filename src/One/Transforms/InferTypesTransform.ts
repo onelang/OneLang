@@ -146,10 +146,15 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
 
     protected visitConditionalExpression(expr: one.ConditionalExpression, context: Context) {
         super.visitConditionalExpression(expr, context);
-        if (expr.whenTrue.valueType.equals(expr.whenFalse.valueType))
+        if (expr.whenTrue.valueType.equals(expr.whenFalse.valueType)) {
             expr.valueType = expr.whenTrue.valueType;
-        else
+        } else if (expr.whenTrue.valueType.isNull && !expr.whenFalse.valueType.isNull) {
+            expr.valueType = expr.whenFalse.valueType;
+        } else if (!expr.whenTrue.valueType.isNull && expr.whenFalse.valueType.isNull) {
+            expr.valueType = expr.whenTrue.valueType;
+        } else {
             this.log(`Could not determine type of conditional expression. Type when true: ${expr.whenTrue.valueType.repr()}, when false: ${expr.whenFalse.valueType.repr()}`);
+        }
     }
 
     protected visitReturnStatement(stmt: one.ReturnStatement, context: Context) {
@@ -211,7 +216,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         if (expr.literalType === "numeric" || expr.literalType === "string" || expr.literalType === "boolean" || expr.literalType === "character")
             expr.valueType = one.Type.Class(expr.literalClassName);
         else if (expr.literalType === "null")
-            expr.valueType = one.Type.Any;
+            expr.valueType = one.Type.Null;
         else
             this.log(`Could not infer literal type: ${expr.literalType}`);
     }
