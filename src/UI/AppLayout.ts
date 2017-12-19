@@ -7,6 +7,7 @@ export interface LangUi {
     changeHandler: EditorChangeHandler,
     statusBar: JQuery
 
+    astHandler: EditorChangeHandler,
     overlayHandler: EditorChangeHandler,
     generatorHandler: EditorChangeHandler,
     stdLibHandler: EditorChangeHandler,
@@ -55,14 +56,6 @@ export class Layout {
                 });
             });
 
-            if (isInput) {
-                tabs.addComponent("Overlay", c => {
-                    const editor = LayoutHelper.setupEditor(c, langName);
-                    langUi.overlayHandler = new EditorChangeHandler(editor, 500, (newContent, userChange) => {
-                    });
-                });
-            }
-
             tabs.addComponent("Generator", c => {
                 const editor = LayoutHelper.setupEditor(c, "yaml");
                 langUi.generatorHandler = new EditorChangeHandler(editor, 500, (newContent, userChange) => {
@@ -75,8 +68,19 @@ export class Layout {
                 });
             });
 
-            // TODO: hack, these should be global tabs... on the other hand, the whole UI should be rethought, so whatever...
             if (isInput) {
+                tabs.addComponent("Overlay", c => {
+                    const editor = LayoutHelper.setupEditor(c, langName);
+                    langUi.overlayHandler = new EditorChangeHandler(editor, 500, (newContent, userChange) => {
+                    });
+                });
+
+                tabs.addComponent("AST", c => {
+                    const editor = LayoutHelper.setupEditor(c, "text");
+                    langUi.astHandler = new EditorChangeHandler(editor, 500);
+                });
+
+                // TODO: hack, these should be global tabs... on the other hand, the whole UI should be rethought, so whatever...
                 tabs.addComponent("Transforms", c => {
                     const editor = LayoutHelper.setupEditor(c, "yaml");
                     this.genericTransformsHandler = new EditorChangeHandler(editor, 500, (newContent, userChange) => {
@@ -140,10 +144,10 @@ export class EditorChangeHandler {
     editDelay: Delayed;
     internalChange: boolean;
 
-    constructor(public editor: AceAjax.Editor, delay: number, public changeCallback: (newContent: string, userChange: boolean) => void) {
+    constructor(public editor: AceAjax.Editor, delay: number, public changeCallback: (newContent: string, userChange: boolean) => void = null) {
         this.editDelay = new Delayed(delay);
 
-        if (this.editor)
+        if (this.editor && this.changeCallback)
             this.editor.on("change", () => {
                 const wasInternalChange = this.internalChange;
                 this.editDelay.do(() => this.changeCallback(this.editor.getValue(), !wasInternalChange))

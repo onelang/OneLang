@@ -7,6 +7,7 @@ export class OverviewGenerator extends AstVisitor<void> {
     pad = "";
     padWasAdded = false;
     showRefs = false;
+    lastLineWasNewLine = true;
 
     constructor() {
         super();
@@ -15,6 +16,7 @@ export class OverviewGenerator extends AstVisitor<void> {
     addLine(line: string) {
         this.add(`${line}\n`);
         this.padWasAdded = false;
+        this.lastLineWasNewLine = false;
     }
 
     add(data: string) {
@@ -31,6 +33,12 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.pad += "  ";
         else
             this.pad = this.pad.substr(0, this.pad.length - 2);
+    }
+
+    newLine() {
+        if (!this.lastLineWasNewLine)
+            this.result += "\n";
+        this.lastLineWasNewLine = true;
     }
 
     protected visitVariable(stmt: one.VariableBase) {
@@ -56,9 +64,10 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.indent(1);
             this.addLine(`Then`);
             this.visitBlock(stmt.then);
-            this.addLine(`Else`);
-            if (stmt.else)
+            if (stmt.else) {
+                this.addLine(`Else`);
                 this.visitBlock(stmt.else);
+            }
             this.indent(-1);
         } else if (statement.stmtType === one.StatementType.VariableDeclaration) {
             const stmt = <one.VariableDeclaration> statement;
@@ -204,26 +213,33 @@ export class OverviewGenerator extends AstVisitor<void> {
 
         for (const glob of Object.values(schemaCtx.schema.globals))
             this.addLine(`global ${glob.name}: ${glob.type.repr()}`);
+        this.newLine();
 
         for (const _enum of Object.values(schemaCtx.schema.enums))
-            this.addLine(`enum ${_enum.name}: ${_enum.values.map(x => x.name).join(', ')}\n`);
+            this.addLine(`enum ${_enum.name}: ${_enum.values.map(x => x.name).join(', ')}`);
+        this.newLine();
                 
         for (const cls of Object.values(schemaCtx.schema.classes)) {
             for (const field of Object.values(cls.fields)) {
                 this.addLine(`${cls.name}::${field.name}: ${field.type && field.type.repr() || "null"}`);
-                if (field.initializer)
+                if (field.initializer) {
                     this.visitVariableDeclaration(field, null);
+                    this.newLine();
+                }
             }
+            this.newLine();
 
             for (const prop of Object.values(cls.properties)) {
                 this.addLine(`${cls.name}::${prop.name}: ${prop.type && prop.type.repr() || "null"}`);
                 this.visitBlock(prop.getter);
             }
+            this.newLine();
 
             if (cls.constructor) {
                 this.addLine(`${cls.name}::constructor`);
                 this.visitBlock(cls.constructor.body);
             }
+            this.newLine();
 
             for (const method of Object.values(cls.methods)) {
                 const argList = method.parameters.map(arg => `${arg.name}: ${arg.type.repr()}`).join(", ");
@@ -236,7 +252,7 @@ export class OverviewGenerator extends AstVisitor<void> {
                     this.visitBlock(method.body);
                 else
                     this.addLine("  <no body>");
-                this.addLine("");
+                this.newLine();
             }
         }
 

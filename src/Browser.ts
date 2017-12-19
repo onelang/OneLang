@@ -5,6 +5,7 @@ import { TypeScriptParser } from "./Parsers/TypeScriptParser";
 import { ExposedPromise } from "./Utils/ExposedPromise";
 import { LangFileSchema } from "./Generator/LangFileSchema";
 import { OneCompiler } from "./OneCompiler";
+import { OverviewGenerator } from "./One/OverviewGenerator";
 
 declare var YAML: any;
 
@@ -75,6 +76,8 @@ function escapeHtml(unsafe) {
 }
 
 class CompileHelper {
+    astOverview: string;
+
     constructor(public langConfigs: LangConfigs) { }
 
     async setContent(handler: EditorChangeHandler, url: string) {
@@ -105,6 +108,8 @@ class CompileHelper {
         const genericTransforms = layout.genericTransformsHandler.getContent();
         
         compiler.parseFromTS(programCode, overlayContent, oneStdLibContent, genericTransforms);
+        this.astOverview = new OverviewGenerator().generate(compiler.schemaCtx);
+
         const lang = this.langConfigs[langName];
         const schemaYaml = layout.langs[langName].generatorHandler.getContent();
         const code = compiler.compile(schemaYaml, langName, true);
@@ -157,6 +162,8 @@ function initLayout() {
                     const code = compileHelper.compile(newContent, langName);
                     if (!isSourceLang)
                         langUi.changeHandler.setContent(code);
+                    else
+                        langUi.astHandler.setContent(compileHelper.astOverview);
                     return code;
                 });
                 
