@@ -29,6 +29,16 @@ export class CaseConverter {
         if (currPart !== "")
             parts.push(currPart);
 
+        let prefixLen = 0, postfixLen = 0;
+        for (; prefixLen < name.length && name[prefixLen] === '_'; prefixLen++) { }
+        for (; postfixLen < name.length && name[name.length - postfixLen - 1] === '_'; postfixLen++) { }
+
+        if (prefixLen > 0)
+            parts[0] = "_".repeat(prefixLen) + parts[0];
+
+        if (postfixLen > 0)
+            parts[parts.length - 1] = parts[parts.length - 1] + "_".repeat(postfixLen);
+
         return parts;
     }
 
