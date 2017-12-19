@@ -173,7 +173,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                     return str.format(name=name, stdlibFn=stdlibFn, tmpDir=TMP_DIR, stdlibName=stdlibName)
 
                 code = request["code"]
-                for replace in lang["replaces"]:
+                for replace in lang.get("replaces", []):
                     code = code.replace(replace["from"], tmpl(replace["to"]))
 
                 with open(fn, "wt") as f: f.write(code)
