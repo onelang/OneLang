@@ -85,6 +85,12 @@ operators:
     template: "{{gen(left)}} eq {{gen(right)}}"
   OneCharacter == OneCharacter:
     template: "{{gen(left)}} eq {{gen(right)}}"
+  OneString != OneString:
+    template: "{{gen(left)}} ne {{gen(right)}}"
+  any == null:
+    template: "!defined {{gen(left)}}"
+  any != null:
+    template: "defined {{gen(left)}}"
   OneString + OneNumber:
     template: "{{gen(left)}} . {{gen(right)}}"
   OneString + OneBoolean:

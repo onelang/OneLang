@@ -234,10 +234,13 @@ class CodeGeneratorModel {
             const binaryExpr = <one.BinaryExpression> obj;
             const leftType = binaryExpr.left.valueType.repr();
             const rightType = binaryExpr.right.valueType.repr();
-            const opGenName = `${leftType} ${binaryExpr.operator} ${rightType}`;
-            const opGen = this.generator.operatorGenerators[opGenName];
-            if (opGen)
-                return this.generator.call(opGen, [binaryExpr.left, binaryExpr.right]);
+            const opGens = this.generator.operatorGenerators;
+            const opGenMatch = Object.keys(opGens).find(opGenName => {
+                const [left, op, right] = opGenName.split(' ');
+                return binaryExpr.operator === op && (left === "any" || left === leftType) && (right === "any" || right === rightType);
+            });
+            if (opGenMatch)
+                return this.generator.call(opGens[opGenMatch], [binaryExpr.left, binaryExpr.right]);
 
             const fullName = `Binary${binaryExpr.operator}`;
             if (this.generator.expressionGenerators[fullName])
