@@ -14,4 +14,14 @@ sub str_replace
     return $string;
 }
 
+package OneRegex;
+
+sub matchFromIndex
+{
+    my ($pattern, $input, $offset) = @_;
+    pos($input) = $offset;
+    my @matches = ($input =~ /\G$pattern/g);
+    return \@matches;
+}
+
 1;

@@ -71,7 +71,8 @@ langs = {
     },
     "Perl": {
         "ext": "pl",
-        "cmd": "perl -I../../langs/StdLibs/ {name}.pl"
+        "cmd": "perl -I{tmpDir} {name}.pl",
+        "replaces": [{ "from": "one.pl", "to": "{stdlibName}" }]
     },
     "Swift": {
         "ext": "swift",
@@ -165,13 +166,21 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 name = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
                 fn = "%s%s.%s" % (TMP_DIR, name, lang["ext"])
-                with open(fn, "wt") as f: f.write(request["code"])
+                stdlibName = "%s_StdLib.%s" % (name, lang["ext"])
+                stdlibFn = "%s%s" % (TMP_DIR, stdlibName)
 
-                stdlibFn = "%s%s_StdLib.%s" % (TMP_DIR, name, lang["ext"])
+                def tmpl(str):
+                    return str.format(name=name, stdlibFn=stdlibFn, tmpDir=TMP_DIR, stdlibName=stdlibName)
+
+                code = request["code"]
+                for replace in lang["replaces"]:
+                    code = code.replace(replace["from"], tmpl(replace["to"]))
+
+                with open(fn, "wt") as f: f.write(code)
                 with open(stdlibFn, "wt") as f: f.write(request["stdlibCode"])
                 
                 start = time.time()
-                pipes = subprocess.Popen(lang["cmd"].format(name=name), shell=True, cwd=TMP_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                pipes = subprocess.Popen(tmpl(lang["cmd"]), shell=True, cwd=TMP_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 stdout, stderr = pipes.communicate()
 
                 if pipes.returncode != 0 or len(stderr) > 0:
