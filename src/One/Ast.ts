@@ -70,6 +70,7 @@ export namespace OneAst {
         get isGenerics() { return this.typeKind === TypeKind.Generics; }
         get isAny() { return this.typeKind === TypeKind.Any; }
         get isNull() { return this.typeKind === TypeKind.Null; }
+        get isVoid() { return this.typeKind === TypeKind.Void; }
         get isNumber() { return this.className === "OneNumber"; }
         get isString() { return this.className === "OneString"; }
         get isCharacter() { return this.className === "OneCharacter"; }
