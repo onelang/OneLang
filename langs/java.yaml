@@ -111,7 +111,7 @@ templates:
           {{/for}}
 
           {{if class.constructor}}
-            public {{class.name}}({{genArgs(class.constructor)}}) {
+            public {{class.name}}({{genArgs(class.constructor)}}) throws Exception {
                 {{genBody(class.constructor.body)}}
             }
           {{/if}}

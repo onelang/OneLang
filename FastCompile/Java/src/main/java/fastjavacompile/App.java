@@ -13,6 +13,7 @@ import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Scanner;
+import java.util.ArrayList;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -38,6 +39,7 @@ public class App
     static class CompileHandler implements HttpHandler {
         private class Request {
             public String code;
+            public String stdlibCode;
             public String className;
             public String methodName;
         }
@@ -88,11 +90,21 @@ public class App
 
                 Request request = getRequest(t);
 
+                String[] stdlibParts = request.stdlibCode.split("\nclass ");
+                String stdlibImports = stdlibParts[0];
+
                 long startTime = System.nanoTime();
 
                 JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
-                SourceCode sourceCode = new SourceCode(request.className, request.code);
-                Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(sourceCode);
+                ArrayList<SourceCode> compilationUnits = new ArrayList<SourceCode>();
+                compilationUnits.add(new SourceCode(request.className, request.code));
+
+                for (int i = 1; i < stdlibParts.length; i++) {
+                    String[] nameAndContent = stdlibParts[i].split(" ", 2);
+                    compilationUnits.add(new SourceCode(nameAndContent[0], 
+                        stdlibImports + "\nclass " + nameAndContent[0] + " " + nameAndContent[1]));
+                }
+
                 DynamicClassLoader cl = new DynamicClassLoader(ClassLoader.getSystemClassLoader());
                 ExtendedStandardJavaFileManager fileManager = new ExtendedStandardJavaFileManager(
                     javac.getStandardFileManager(null, null, null), cl);

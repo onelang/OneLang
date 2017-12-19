@@ -1,3 +1,5 @@
+import java.util.List;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -5,7 +7,8 @@ class OneRegex {
     public static List<String> matchFromIndex(String pattern, String input, int offset) {
         Pattern patternObj = Pattern.compile("\\G" + pattern);
         Matcher matcher = patternObj.matcher(input);
-        matcher.find(offset);
+        if (!matcher.find(offset))
+            return null;
 
         List<String> result = new ArrayList();
         result.add(matcher.group());
