@@ -105,7 +105,7 @@ export namespace OneAst {
             } else if (this.isGenerics) {
                 return this.genericsName;
             } else if (this.isEnum) {
-                return this.enumName;
+                return `${this.enumName} (enum)`;
             } else {
                 return "?";
             }

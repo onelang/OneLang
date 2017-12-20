@@ -54,6 +54,8 @@ export class TypeScriptParser {
             
             if (this.currClass.typeArguments.includes(typeText) || (this.currMethod && this.currMethod.typeArguments.includes(typeText))) {
                 result = one.Type.Generics(typeText);
+            } else if (this.sourceFile.getEnum(typeText)) {
+                result = one.Type.Enum(typeText);
             } else {
                 const typeArgs = typeRef.typeArguments;
                 result = one.Type.Class(typeText, typeArgs && typeArgs.map(x => this.convertTsType(x)));
