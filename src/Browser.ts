@@ -6,10 +6,11 @@ import { ExposedPromise } from "./Utils/ExposedPromise";
 import { LangFileSchema } from "./Generator/LangFileSchema";
 import { OneCompiler } from "./OneCompiler";
 import { OverviewGenerator } from "./One/OverviewGenerator";
+import { AstHelper } from "./One/AstHelper";
 
 declare var YAML: any;
 
-const testPrgName = "OneLang2";
+const testPrgName = "EnumAsFieldTest";
 
 const qs = {};
 location.search.substr(1).split('&').map(x => x.split('=')).forEach(x => qs[x[0]] = x[1]);
@@ -77,6 +78,7 @@ function escapeHtml(unsafe) {
 
 class CompileHelper {
     astOverview: string;
+    astJsonOverview: string;
 
     constructor(public langConfigs: LangConfigs) { }
 
@@ -109,6 +111,7 @@ class CompileHelper {
         
         compiler.parseFromTS(programCode, overlayContent, oneStdLibContent, genericTransforms);
         this.astOverview = new OverviewGenerator().generate(compiler.schemaCtx);
+        this.astJsonOverview = AstHelper.toJson(compiler.schemaCtx.schema);
 
         const lang = this.langConfigs[langName];
         const schemaYaml = layout.langs[langName].generatorHandler.getContent();
@@ -162,8 +165,10 @@ function initLayout() {
                     const code = compileHelper.compile(newContent, langName);
                     if (!isSourceLang)
                         langUi.changeHandler.setContent(code);
-                    else
+                    else {
                         langUi.astHandler.setContent(compileHelper.astOverview);
+                        langUi.astJsonHandler.setContent(compileHelper.astJsonOverview);
+                    }
                     return code;
                 });
                 

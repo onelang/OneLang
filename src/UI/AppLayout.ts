@@ -8,6 +8,7 @@ export interface LangUi {
     statusBar: JQuery
 
     astHandler: EditorChangeHandler,
+    astJsonHandler: EditorChangeHandler,
     overlayHandler: EditorChangeHandler,
     generatorHandler: EditorChangeHandler,
     stdLibHandler: EditorChangeHandler,
@@ -78,6 +79,11 @@ export class Layout {
                 tabs.addComponent("AST", c => {
                     const editor = LayoutHelper.setupEditor(c, "text");
                     langUi.astHandler = new EditorChangeHandler(editor, 500);
+                });
+
+                tabs.addComponent("AST (json)", c => {
+                    const editor = LayoutHelper.setupEditor(c, "json");
+                    langUi.astJsonHandler = new EditorChangeHandler(editor, 500);
                 });
 
                 // TODO: hack, these should be global tabs... on the other hand, the whole UI should be rethought, so whatever...
