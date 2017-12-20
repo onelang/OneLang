@@ -54,6 +54,8 @@ expressionTests:
   'a == 0 && b == null': '(a == 0) && (b == null)'
   'a && b || c': '(a && b) || c'
   'a + b * c ** d == 5 - 1 && x <= y ? 9 : 8': '(((a + (b * (c ** d))) == (5 - 1)) && (x <= y)) ? 9 : 8'
+  'not a and b': '(!a) && b'
+  "not expr.expression.valueType.isVoid and expr.expression.exprKind == 'Call'": '(!(((expr.expression).valueType).isVoid)) && (((expr.expression).exprKind) == "Call")'
 vmTests:
   '1': { expected: 1 }
   'a': { expected: 2, model: { a: 2 } }
