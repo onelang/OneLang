@@ -145,11 +145,13 @@ templates:
               {{genType(param.typeInfo)}}{{param.name}}
             {{/for}}
              ) = @_;
-            {{for field in class.fields|sep=\n}}
-              {{if field.static == false && field.initializer}}
-                $self->{{{field.name}}} = {{gen(field.initializer)}};
-              {{/if}}
-            {{/for}}
+          {{/if}}
+          {{for field in class.fields|sep=\n}}
+            {{if field.static == false && field.initializer}}
+              $self->{{{field.name}}} = {{gen(field.initializer)}};
+            {{/if}}
+          {{/for}}
+          {{if class.constructor}}
             {{genBody(class.constructor.body)}}
           {{/if}}
           return $self;

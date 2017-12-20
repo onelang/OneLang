@@ -91,14 +91,16 @@ templates:
 
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
-        {{if class.constructor}}
-          constructor({{genArgs(class.constructor)}}) {
+        {{if class.constructor or class.fields.length > 0}}
+          constructor({{if class.constructor}}{{genArgs(class.constructor)}}{{/if}}) {
               {{for field in class.fields|sep=\n}}
                 {{if field.static == false && field.initializer}}
                   this.{{field.name}} = {{gen(field.initializer)}};
                 {{/if}}
               {{/for}}
-              {{genBody(class.constructor.body)}}
+              {{if class.constructor}}
+                {{genBody(class.constructor.body)}}
+              {{/if}}
           }
         {{/if}}
 

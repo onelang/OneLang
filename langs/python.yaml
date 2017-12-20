@@ -92,14 +92,16 @@ templates:
 
     {{for class in classes|sep=\n\n}}
       class {{class.name}}:
-          {{if class.constructor}}
-            def __init__({{genArgs(class.constructor)}}):
+          {{if class.constructor or class.fields.length > 0}}
+            def __init__({{if class.constructor}}{{genArgs(class.constructor)}}{{else}}self{{/if}}):
                 {{for field in class.fields|sep=\n}}
                   {{if field.static == false && field.initializer}}
-                    self.{{field.name}} = {{gen(field.initializer)}};
+                    self.{{field.name}} = {{gen(field.initializer)}}
                   {{/if}}
                 {{/for}}
-                {{genBody(class.constructor.body)}}
+                {{if class.constructor}}
+                  {{genBody(class.constructor)}}
+                {{/if}}
           {{/if}}
 
           {{for method in class.methods|sep="\n    \n"}}

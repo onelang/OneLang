@@ -102,7 +102,7 @@ templates:
           }
         }()
 
-        c := ({{class}}{})
+        c := New{{class}}()
         c.{{method}}();
     }
 
@@ -115,6 +115,7 @@ templates:
     {{/for}}
 
     {{for enum in enums|sep=\n\n}}
+      type {{enum.name}} int
       const (
           {{for item in enum.values}}
             {{enum.name}}_{{item.name}} = {{item.intValue}}
@@ -125,12 +126,17 @@ templates:
     {{for class in classes|sep=\n\n}}
       type {{class.name}} struct {
           {{for field in class.instanceFields|sep=\n}}
-            {{field.name}} {{getType(field.typeInfo)}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}}
+            {{field.name}} {{getType(field.typeInfo)}}
           {{/for}}
       }
 
       func New{{class.name}}({{if class.constructor}}{{genArgs(class.constructor)}}{{/if}}) *{{class.name}} {
           this := new({{class.name}})
+          {{for field in class.fields|sep=\n}}
+            {{if field.static == false && field.initializer}}
+              this.{{field.name}} = {{gen(field.initializer)}}
+            {{/if}}
+          {{/for}}
           {{if class.constructor}}
             {{genBody(class.constructor.body)}}
           {{/if}}
