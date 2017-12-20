@@ -100,7 +100,7 @@ templates:
                   {{/if}}
                 {{/for}}
                 {{if class.constructor}}
-                  {{genBody(class.constructor)}}
+                  {{genBody(class.constructor.body)}}
                 {{/if}}
           {{/if}}
 
