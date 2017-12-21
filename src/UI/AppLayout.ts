@@ -64,14 +64,14 @@ export class Layout {
             });
 
             tabs.addComponent("StdLib", c => {
-                const editor = LayoutHelper.setupEditor(c, langName);
+                const editor = LayoutHelper.setupEditor(c, aceLang || langName);
                 langUi.stdLibHandler = new EditorChangeHandler(editor, 500, (newContent, userChange) => {
                 });
             });
 
             if (isInput) {
                 tabs.addComponent("Overlay", c => {
-                    const editor = LayoutHelper.setupEditor(c, langName);
+                    const editor = LayoutHelper.setupEditor(c, aceLang || langName);
                     langUi.overlayHandler = new EditorChangeHandler(editor, 500, (newContent, userChange) => {
                     });
                 });

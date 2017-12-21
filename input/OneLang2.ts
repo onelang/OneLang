@@ -44,7 +44,7 @@ export class ExprLangLexer {
 
     tryToMatch(pattern: string): string {
         const matches = OneRegex.matchFromIndex(pattern, this.expression, this.offset);
-        return matches === null ? null : matches[0];
+        return matches === null ? "" : matches[0];
     }
 
     tryToReadOperator(): boolean {
@@ -61,11 +61,11 @@ export class ExprLangLexer {
         this.skipWhitespace();
 
         const number = this.tryToMatch("[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)");
-        if (number === null) return false;
+        if (number === "") return false;
         
         this.add(TokenKind.Number, number);
 
-        if (this.tryToMatch("[0-9a-zA-Z]") !== null)
+        if (this.tryToMatch("[0-9a-zA-Z]") !== "")
             this.fail("invalid character in number");
 
         return true;
@@ -74,7 +74,7 @@ export class ExprLangLexer {
     tryToReadIdentifier(): boolean {
         this.skipWhitespace();
         const identifier = this.tryToMatch("[a-zA-Z_][a-zA-Z0-9_]*");
-        if (identifier === null) return false;
+        if (identifier === "") return false;
 
         this.add(TokenKind.Identifier, identifier);
         return true;
@@ -84,9 +84,9 @@ export class ExprLangLexer {
         this.skipWhitespace();
         
         let match = this.tryToMatch("'(\\\\'|[^'])*'");
-        if (match === null)
+        if (match === "")
             match = this.tryToMatch('"(\\\\"|[^"])*"');
-        if (match === null) return false;
+        if (match === "") return false;
 
         let str = match.substr(1, match.length - 2);
         str = match[0] === "'" ? str.replace("\\'", "'") : str.replace('\\"', '"');

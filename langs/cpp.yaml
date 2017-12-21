@@ -30,17 +30,17 @@ classes:
     type: bool
   OneArray:
     includes: [vector]
-    type: "vector<{{typeArgs[0]}}>"
+    type: "vec<{{typeArgs[0]}}>"
     fields:
       length: 
-        template: "{{self}}.size()"
+        template: "{{self}}->size()"
     methods:
       add: 
-        template: "{{self}}.push_back({{item}})"
+        template: "{{self}}->push_back({{item}})"
       get: 
-        template: "{{self}}.at({{index}})"
+        template: "{{self}}->at({{index}})"
       set: 
-        template: "{{self}}[{{index}}] = {{value}}"
+        template: "(*{{self}})[{{index}}] = {{value}}"
   OneMap:
     includes: [map]
     methods:
@@ -49,9 +49,9 @@ classes:
       values: 
         template: "OneMapHelper::values({{self}})"
       remove: 
-        template: "{{self}}.erase({{key}})"
+        template: "{{self}}->erase({{key}})"
       hasKey: 
-        template: "{{self}}.find({{key}}) != {{self}}.end()"
+        template: "{{self}}->find({{key}}) != {{self}}.end()"
       get: 
         template: "{{self}}[{{key}}]"
       set: 
@@ -144,7 +144,7 @@ templates:
       {{if item.isComplexClass && !item.isOneArray}}
         sp<{{typeName(item)}}>
       {{elif item.isOneArray}}
-        vector<{{getType(item.typeArguments[0])}}>
+        vec<{{getType(item.typeArguments[0])}}>
       {{else}}
         {{typeName(item)}}
       {{/if}}
@@ -215,7 +215,7 @@ expressions:
   classReference: "{{expr.classRef.outName}}"
   enumReference: "{{expr.enumRef.outName}}"
   enumMemberReference: "{{expr.enumRef.outName}}::{{expr.enumMemberRef.outName}}"
-  arrayLiteral: "vector<{{getType(expr.valueType.typeArguments[0])}}> { {{genParams(expr.items)}} }"
+  arrayLiteral: "make_shared<vector<{{getType(expr.valueType.typeArguments[0])}}>>(initializer_list<{{getType(expr.valueType.typeArguments[0])}}>{ {{genParams(expr.items)}} })"
   mapLiteral: |- 
     map<{{getType(expr.valueType.typeArguments[0])}}, {{getType(expr.valueType.typeArguments[1])}}> {
       {{for prop in expr.properties|sep=",\n"}}
@@ -250,7 +250,7 @@ expressions:
       {{/if}}
     {{/for}}
   foreach: |-
-    for (auto it = {{gen(expr.items)}}.begin(); it != {{gen(expr.items)}}.end(); ++it) {
+    for (auto it = {{gen(expr.items)}}->begin(); it != {{gen(expr.items)}}->end(); ++it) {
         auto {{expr.itemVariable.name}} = *it;
         {{genBody(expr.body)}}
     }
