@@ -7,8 +7,8 @@ sub str_replace
     my $pos = index($string, $find);
 
     while($pos > -1) {
-    substr($string, $pos, length($find), $replace);
-    $pos = index($string, $find, $pos + length($replace));
+        substr($string, $pos, length($find), $replace);
+        $pos = index($string, $find, $pos + length($replace));
     }
     
     return $string;
@@ -21,7 +21,8 @@ sub matchFromIndex
     my ($pattern, $input, $offset) = @_;
     pos($input) = $offset;
     my @matches = ($input =~ /\G$pattern/g);
-    return \@matches;
+    my $result = scalar(@matches) ? \@matches : undef;
+    return $result;
 }
 
 1;
