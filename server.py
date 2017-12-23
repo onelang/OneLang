@@ -6,6 +6,8 @@ import urllib2
 import time
 import datetime
 import traceback
+import shutil
+import errno    
 
 import SimpleHTTPServer
 from SocketServer import ThreadingMixIn
@@ -13,15 +15,15 @@ from BaseHTTPServer import HTTPServer
 
 PORT = 8000
 TEST_SERVERS = False
-TMP_DIR = "tmp/FastCompile/"
+TMP_DIR = "tmp/compilation/"
 
 def log(text):
     print "[Compile] %s" % text
 
 langs = {
-    "Java": {
+    "Java": { # FastCompile is used instead of this
         "ext": "java",
-        "cmd": "javac {name}.java && java {name} && rm {name}.class",
+        "cmd": "javac {name}.java && java {name}",
         "serverCmd": "java -cp target/classes:lib/* fastjavacompile.App {port}",
         "port": 8001,
         "testRequest": {
@@ -35,23 +37,23 @@ langs = {
             "methodName": 'testMethod'
         }
     },
-    "JavaScript": {
+    "JavaScript": { # FastCompile is used instead of this
         "ext": "js",
         "cmd": "node {name}.js",
     },
-    "Python": {
+    "Python": { # FastCompile is used instead of this
         "ext": "py",
         "cmd": "python {name}.py",
         "serverCmd": "python server.py",
         "port": 8004,
     },
-    "PHP": {
+    "PHP": { # FastCompile is used instead of this
         "ext": "php",
         "cmd": "php {name}.php",
         "serverCmd": "php -S 127.0.0.1:8003 server.php",
         "port": 8003,
     },
-    "Ruby": {
+    "Ruby": { # FastCompile is used instead of this
         "ext": "rb",
         "cmd": "ruby {name}.rb",
         "serverCmd": "ruby server.rb",
@@ -59,28 +61,37 @@ langs = {
     },
     "CPP": {
         "ext": "cpp",
-        "cmd": "g++ -std=c++11 {name}.cpp -I../../langs/StdLibs/ -o {name} && ./{name} && rm {name}"
+        "mainFn": "main.cpp",
+        "stdlibFn": "one.hpp",
+        "cmd": "g++ -std=c++11 main.cpp -I. -o binary && ./binary",
     },
     "Go": {
         "ext": "go",
-        "cmd": "go run {name}.go"
+        "mainFn": "main.go",
+        "stdlibFn": "src/one/one.go",
+        "cmd": "GOPATH=$PWD go run main.go"
     },
     "CSharp": {
         "ext": "cs",
-        "cmd": "mcs {name}.cs {name}_StdLib.cs && mono {name}.exe && rm {name}.exe"
+        "mainFn": "Program.cs",
+        "stdlibFn": "StdLib.cs",
+        "cmd": "mcs Program.cs StdLib.cs && mono Program.exe"
     },
     "Perl": {
         "ext": "pl",
-        "cmd": "perl -I{tmpDir} {name}.pl",
-        "replaces": [{ "from": "one.pl", "to": "{stdlibName}" }]
+        "mainFn": "main.pl",
+        "stdlibFn": "one.pl",
+        "cmd": "perl -I. main.pl",
     },
     "Swift": {
         "ext": "swift",
-        "cmd": "cat ../../langs/StdLibs/one.swift {name}.swift | swift -"
+        "mainFn": "main.swift",
+        "stdlibFn": "one.swift",
+        "cmd": "cat one.swift main.swift | swift -"
     },
-    "TypeScript": {
+    "TypeScript": { # FastCompile is used instead of this
         "ext": "ts",
-        "cmd": "tsc {name}.ts --outFile {name}.ts.js && node {name}.ts.js && rm {name}.ts.js",
+        "cmd": "tsc {name}.ts --outFile {name}.ts.js && node {name}.ts.js",
         "serverCmd": "../../node_modules/node/bin/node index.js {port}",
         "port": 8002,
         "testRequest": {
@@ -99,8 +110,20 @@ langs = {
 def postRequest(url, request):
     return urllib2.urlopen(urllib2.Request(url, request)).read()
 
-if not os.path.isdir("tmp"): os.mkdir("tmp")
-if not os.path.isdir("tmp/FastCompile"): os.mkdir("tmp/FastCompile")
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise    
+
+def providePath(fileName):
+    mkdir_p(os.path.dirname(fileName))
+    return fileName
+
+mkdir_p(TMP_DIR)
 
 testText = "Works!"
 for langName in langs:
@@ -158,37 +181,26 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def do_POST(self):
         if self.path == '/compile':
-            fn = None
             try:
                 request = json.loads(self.rfile.read(int(self.headers.getheader('content-length'))))
-                lang = langs[request["lang"]]
+                langName = request["lang"]
+                lang = langs[langName]
 
-                name = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                dateStr = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                outDir = "%s%s_%s/" % (TMP_DIR, dateStr, langName)
 
-                fn = "%s%s.%s" % (TMP_DIR, name, lang["ext"])
-                stdlibName = "%s_StdLib.%s" % (name, lang["ext"])
-                stdlibFn = "%s%s" % (TMP_DIR, stdlibName)
-
-                def tmpl(str):
-                    return str.format(name=name, stdlibFn=stdlibFn, tmpDir=TMP_DIR, stdlibName=stdlibName)
-
-                code = request["code"]
-                for replace in lang.get("replaces", []):
-                    code = code.replace(replace["from"], tmpl(replace["to"]))
-
-                with open(fn, "wt") as f: f.write(code)
-                with open(stdlibFn, "wt") as f: f.write(request["stdlibCode"])
+                with open(providePath(outDir + lang["mainFn"]), "wt") as f: f.write(request["code"])
+                with open(providePath(outDir + lang["stdlibFn"]), "wt") as f: f.write(request["stdlibCode"])
                 
                 start = time.time()
-                pipes = subprocess.Popen(tmpl(lang["cmd"]), shell=True, cwd=TMP_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                pipes = subprocess.Popen(lang["cmd"], shell=True, cwd=outDir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 stdout, stderr = pipes.communicate()
 
                 if pipes.returncode != 0 or len(stderr) > 0:
                     self.resp(400, { 'exceptionText': stderr })
                 else:
                     elapsedMs = int((time.time() - start) * 1000)
-                    os.remove(fn)
-                    os.remove(stdlibFn)
+                    shutil.rmtree(outDir)
                     self.resp(200, { 'result': stdout, "elapsedMs": elapsedMs })
             except Exception as e:
                 log(repr(e))
