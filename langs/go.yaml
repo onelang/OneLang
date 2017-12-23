@@ -84,6 +84,11 @@ classes:
     methods:
       raise:
         template: panic({{message}})
+  OneRegex:
+    includes: [one]
+    methods:
+      matchFromIndex:
+        template: "one.Regex_MatchFromIndex({{pattern}}, {{input}}, {{offset}})"
 operators:
   OneString + OneNumber:
     includes: [strconv]
