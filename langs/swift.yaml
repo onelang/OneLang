@@ -23,7 +23,7 @@ classes:
         includes: ["Foundation"]
         template: "{{self}}.replacingOccurrences(of: {{from}}, with: {{to}})"
       substrMatch:
-        template: "{{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{offset}}) ..< {{self}}.endIndex].hasPrefix({{str}})"
+        template: "String({{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{offset}}) ..< {{self}}.endIndex]).hasPrefix({{str}})"
   OneNumber:
     type: Int
   OneBoolean:
@@ -102,7 +102,7 @@ templates:
         {{/for}}
 
         {{if class.constructor}}
-          init({{genArgs(class.constructor)}}) {
+          init({{genArgs(class.constructor)}}){{if class.constructor.throws}} throws{{/if}} {
               {{genBody(class.constructor.body)}}
           }
         {{/if}}
