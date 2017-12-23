@@ -309,6 +309,7 @@ export namespace OneAst {
         literalClassName: string;
         value: any;
         escapedText: string;
+        escapedTextSingle: string;
     }
 
     export interface TemplateStringPart {

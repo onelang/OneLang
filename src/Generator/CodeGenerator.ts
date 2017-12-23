@@ -216,7 +216,8 @@ class CodeGeneratorModel {
                 genName = `${literalExpr.literalType.ucFirst()}Literal`;
                 if (literalExpr.literalType === "string" || literalExpr.literalType === "character") {
                     const escapedJson = JSON.stringify(literalExpr.value);
-                    literalExpr.escapedText = escapedJson.substr(1, escapedJson.length - 2).replace(/'/g, "\\'");
+                    literalExpr.escapedText = escapedJson.substr(1, escapedJson.length - 2);
+                    literalExpr.escapedTextSingle = literalExpr.escapedText.replace(/'/g, "\\'");
                 }
             }
         } else if (type === one.ExpressionKind.VariableReference) {

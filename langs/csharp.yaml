@@ -159,7 +159,7 @@ expressions:
   propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
   identifier: "{{expr.text}}"
   stringLiteral: '"{{expr.escapedText}}"'
-  characterLiteral: "'{{expr.escapedText}}'"
+  characterLiteral: "'{{expr.escapedTextSingle}}'"
   numericLiteral: "{{expr.value}}"
   nullLiteral: "null"
   return: "return {{gen(expr.expression)}};"
