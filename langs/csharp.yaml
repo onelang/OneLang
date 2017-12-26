@@ -153,7 +153,7 @@ templates:
   genVar:
     args:
       - name: itemVar
-    template: "{{if itemVar.isUnused}}// UNUSED: {{/if}}var {{itemVar.name}} = {{gen(itemVar.initializer)}}"
+    template: "{{if itemVar.isUnused}}/* UNUSED: {{/if}}var {{itemVar.name}} = {{if itemVar.isUnused}}*/ {{/if}}{{gen(itemVar.initializer)}}"
 expressions:
   call: "{{gen(expr.method)}}({{genParams(expr.arguments)}})"
   propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
