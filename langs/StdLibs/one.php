@@ -29,9 +29,8 @@ class OneReflect {
 }
 
 class OneClass {
-    function __construct($typeObj, $fields, $methods) {
-        $this->typeObj = $typeObj;
-        $this->name = $typeObj;
+    function __construct($name, $fields, $methods) {
+        $this->name = $name;
 
         $this->fields = array();
         foreach ($fields as $field) {
@@ -62,7 +61,7 @@ class OneField {
     function getValue($obj) {
         if ($this->isStatic) {
             $field = $this->name;
-            $obj = $this->cls->typeObj;
+            $obj = $this->cls->name;
             return $obj::$$field;
         } else {
             return $obj->{$this->name};
@@ -72,7 +71,7 @@ class OneField {
     function setValue($obj, $value) {
         if ($this->isStatic) {
             $field = $this->name;
-            $obj = $this->cls->typeObj;
+            $obj = $this->cls->name;
             $obj::$$field = $value;
         } else {
             $obj->{$this->name} = $value;
@@ -94,7 +93,7 @@ class OneMethod {
         if ($gotArgCount !== $expectedArgCount)
             throw new Exception("Expected {$expectedArgCount} arguments, but got {$gotArgCount} in {$this->cls->name}::{$this->name} call!");
 
-        $realObj = $this->isStatic ? $this->cls->typeObj : $obj;
+        $realObj = $this->isStatic ? $this->cls->name : $obj;
         return call_user_func_array(array($realObj, $this->name), $args);
     }
 }
