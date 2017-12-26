@@ -4,6 +4,8 @@ casing:
   enum: pascal_case
   enumMember: upper_case
   method: camel_case
+  field: camel_case
+  variable: camel_case
 primitiveTypes:
   any: Object
   void: void
@@ -76,6 +78,10 @@ classes:
     methods:
       raise:
         template: throw new Exception({{message}})
+  OneReflectMethod:
+    methods:
+      call:
+        template: "{{self}}.call({{obj}}, ({{args}}))"
 operators:
   OneString == OneString:
     template: "{{gen(left)}}.equals({{gen(right)}})"
@@ -106,6 +112,10 @@ templates:
 
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
+          static {
+              OneReflect.publish({{class.name}}.class);
+          }
+
           {{for field in class.fields|sep=\n}}
             {{field.visibility}} {{if field.static}}static {{/if}}{{field.type}} {{field.name}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}};
           {{/for}}
@@ -175,7 +185,9 @@ expressions:
   classReference: "{{expr.classRef.outName}}"
   enumReference: "{{expr.enumRef.outName}}"
   enumMemberReference: "{{expr.enumRef.outName}}.{{expr.enumMemberRef.outName}}"
-  arrayLiteral: "new ArrayList<{{expr.typeArgs[0]}}>(Arrays.asList({{genParams(expr.items)}}))"
+  arrayLiteral:
+    includes: [java.util.ArrayList, java.util.Arrays]
+    template: "new ArrayList<{{expr.typeArgs[0]}}>(Arrays.asList({{genParams(expr.items)}}))"
   mapLiteralDeclaration: |- 
     HashMap<{{typeName(expr.initializer.valueType.typeArguments[0])}}, {{typeName(expr.initializer.valueType.typeArguments[1])}}> {{expr.name}} = new HashMap<{{typeName(expr.initializer.valueType.typeArguments[0])}}, {{typeName(expr.initializer.valueType.typeArguments[1])}}>();
     {{for prop in expr.initializer.properties|sep="\n"}}

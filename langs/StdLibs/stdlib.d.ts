@@ -72,7 +72,7 @@ declare class OneReflectField {
     name: string;
     isStatic: boolean;
 
-    getValue(obj: any);
+    getValue(obj: any): any;
     setValue(obj: any, value: any);
 }
 
@@ -80,7 +80,7 @@ declare class OneReflectMethod {
     name: string;
     isStatic: boolean;
 
-    call(obj: any, args: any[]);
+    call(obj: any, args: any[]): any;
 }
 
 //===
