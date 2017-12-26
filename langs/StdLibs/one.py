@@ -56,10 +56,11 @@ class Class:
         return self.methods.values()
 
 class Field:
-    def __init__(self, name, is_static):
+    def __init__(self, name, is_static, type):
         self.cls = None
         self.name = name
         self.is_static = is_static
+        self.type = type
     
     def get_value(self, obj):
         realObj = self.cls.typeObj if self.is_static else obj
@@ -70,10 +71,11 @@ class Field:
         setattr(realObj, self.name, value)
 
 class Method:
-    def __init__(self, name, is_static, args):
+    def __init__(self, name, is_static, return_type, args):
         self.cls = None
         self.name = name
         self.is_static = is_static
+        self.return_type = return_type
         self.args = args
     
     def call(self, obj, args):

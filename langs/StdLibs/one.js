@@ -42,9 +42,10 @@ class Class {
 }
 
 class Field {
-    constructor(name, isStatic) {
+    constructor(name, isStatic, type) {
         this.name = name;
         this.isStatic = isStatic;
+        this.type = type;
     }
 
     getValue(obj) {
@@ -59,10 +60,11 @@ class Field {
 }
 
 class Method {
-    constructor(name, isStatic, args) {
+    constructor(name, isStatic, returnType, args) {
         this.name = name;
         this.isStatic = isStatic;
         this.args = args;
+        this.returnType = returnType;
     }
 
     call(obj, args) {
@@ -81,6 +83,5 @@ class MethodArgument {
         this.type = type;
     }
 }
-
 
 module.exports = { Regex, Reflect, Class, Field, Method, MethodArgument };

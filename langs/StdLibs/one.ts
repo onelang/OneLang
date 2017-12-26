@@ -46,7 +46,7 @@ export class Class {
 export class Field {
     cls: Class;
 
-    constructor(public name: string, public isStatic: boolean) { }
+    constructor(public name: string, public isStatic: boolean, public type: string) { }
 
     getValue(obj: any) {
         const realObj = this.isStatic ? this.cls.typeObj : obj;
@@ -62,7 +62,7 @@ export class Field {
 export class Method {
     cls: Class;
 
-    constructor(public name: string, public isStatic: boolean, public args: MethodArgument[]) { }
+    constructor(public name: string, public isStatic: boolean, public returnType: string, public args: MethodArgument[]) { }
 
     call(obj: any, args: any[]) {
         if (args.length !== this.args.length)
