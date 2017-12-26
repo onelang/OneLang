@@ -52,10 +52,12 @@ class TestClass {
 
         const field1 = cls.getField("instanceField");
         field1.setValue(obj, 6);
-        console.log(`new instance field value: ${obj.instanceField}`);
+        const field1NewVal = field1.getValue(obj);
+        console.log(`new instance field value: ${obj.instanceField} == ${field1NewVal}`);
 
         const field2 = cls.getField("staticField");
         field2.setValue(null, "bello");
-        console.log(`new static field value: ${TargetClass.staticField}`);
+        const field2NewVal = field2.getValue(null);
+        console.log(`new static field value: ${TargetClass.staticField} == ${field2NewVal}`);
     }
 }
