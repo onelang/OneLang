@@ -39,7 +39,7 @@ class TestClass {
         if (method2 === null)
             console.log("method2 is null!");
 
-        const method2Result = method2.call(null, ["arg1value"]);
+        const method2Result = method2.call(null, <any[]>["arg1value"]);
         console.log(`staticMethod: ${method2Result}`);
 
         const field1 = cls.getField("instanceField");

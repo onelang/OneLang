@@ -238,6 +238,11 @@ export class TypeScriptParser {
                 },
                 arguments: [objToDelete.elementExpr]
             };
+        } else if (tsExpr.kind === ts.SyntaxKind.TypeAssertionExpression) {
+            const typeAssertation = <ts.TypeAssertion> tsExpr;
+            const result = this.convertExpression(typeAssertation.expression);
+            result.valueType = this.convertTsType(typeAssertation.type);
+            return result;
         } else {
             const kindName = ts.SyntaxKind[tsExpr.kind];
             const knownKeywords = ["this", "super"];

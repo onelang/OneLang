@@ -295,7 +295,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         if (expr.items.some(x => !x.valueType.equals(itemType)))
             itemType = one.Type.Any;
 
-        expr.valueType = one.Type.Class(context.schemaCtx.arrayType, [itemType]);
+        expr.valueType = expr.valueType || one.Type.Class(context.schemaCtx.arrayType, [itemType]);
     }
 
     protected visitMapLiteral(expr: one.MapLiteral, context: Context) {
