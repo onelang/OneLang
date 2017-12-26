@@ -35,7 +35,7 @@ class OneMap<K, V> {
     values(): OneArray<V> {
         const arr = new OneArray<V>();
         for (const item of Object.values(this.data))
-        arr.add(<V><any>item);
+            arr.add(<V><any>item);
         return arr;
     }
 
