@@ -155,7 +155,7 @@ expressions:
   stringLiteral: '"{{expr.escapedText}}"'
   characterLiteral: '"{{expr.escapedText}}"'
   nullLiteral: "NULL"
-  return: "return {{gen(expr.expression)}};"
+  return: "return{{if expr.expression}} {{gen(expr.expression)}}{{/if}};"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
   prefix: "{{expr.operator}}{{gen(expr.operand)}}"

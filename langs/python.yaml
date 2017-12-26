@@ -188,7 +188,7 @@ expressions:
   stringLiteral: '"{{expr.escapedText}}"'
   characterLiteral: '"{{expr.escapedText}}"'
   nullLiteral: "None"
-  return: "return {{gen(expr.expression)}}"
+  return: "return{{if expr.expression}} {{gen(expr.expression)}}{{/if}}"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   binary&&: "{{gen(expr.left)}} and {{gen(expr.right)}}"
   binary||: "{{gen(expr.left)}} or {{gen(expr.right)}}"

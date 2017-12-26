@@ -230,7 +230,7 @@ expressions:
   stringLiteral: '"{{expr.escapedText}}"'
   characterLiteral: '"{{expr.escapedText}}"'
   nullLiteral: "undef" # ???
-  return: "return {{gen(expr.expression)}};"
+  return: "return{{if expr.expression}} {{gen(expr.expression)}}{{/if}};"
   binary: |-
     {{if expr.left.valueType.isEnum and expr.operator == "=="}}
       {{gen(expr.left)}} eq {{gen(expr.right)}}

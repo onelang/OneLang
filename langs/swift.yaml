@@ -153,7 +153,7 @@ expressions:
     {{if expr.method.methodRef.throws}}try {{/if}}{{gen(expr.method)}}({{genMethodArgs(expr.arguments)}})
   stringLiteral: '"{{expr.escapedText}}"'
   characterLiteral: '"{{expr.escapedText}}"'
-  return: "return {{gen(expr.expression)}}"
+  return: "return{{if expr.expression}} {{gen(expr.expression)}}{{/if}}"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
   postfix++: "{{gen(expr.operand)}} += 1"

@@ -9,7 +9,8 @@ export abstract class AstVisitor<TContext> {
     protected visitIdentifier(id: one.Identifier, context: TContext) { }
 
     protected visitReturnStatement(stmt: one.ReturnStatement, context: TContext) {
-        this.visitExpression(stmt.expression, context);
+        if (stmt.expression)
+            this.visitExpression(stmt.expression, context);
     }
 
     protected visitExpressionStatement(stmt: one.ExpressionStatement, context: TContext) {

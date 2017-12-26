@@ -202,7 +202,7 @@ expressions:
   identifier: "{{expr.text}}"
   stringLiteral: 'string("{{expr.escapedText}}")'
   characterLiteral: "'{{expr.escapedTextSingle}}'"
-  return: "return {{gen(expr.expression)}};"
+  return: "return{{if expr.expression}} {{gen(expr.expression)}}{{/if}};"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"
   postfix: "{{gen(expr.operand)}}{{expr.operator}}"
   prefix: "{{expr.operator}}{{gen(expr.operand)}}"
