@@ -7,7 +7,7 @@ export interface IMethodHandler {
 export class JSMethodHandler implements IMethodHandler {
     call(method: any, args: any[], thisObj: object, model: object) {
         if (typeof method !== "function")
-            throw new Error(`Tried to call a non-method value: '${method}' (${typeof method})`);
+            ExprLangVM.fail(`Tried to call a non-method value: '${method}' (${typeof method})`);
         const result = method.apply(thisObj, args);
         return result;
     }
@@ -21,13 +21,13 @@ export class VariableSource {
 
     checkUnique(varName: string, allowOverwrite = false) {
         if (!varName)
-            throw new Error("Variable name is missing!");
+            ExprLangVM.fail("Variable name is missing!");
 
         if (varName in this.callbacks)
-            throw new Error(`Callback was already set for variable '${varName}'`);
+            ExprLangVM.fail(`Callback was already set for variable '${varName}'`);
 
         if (!allowOverwrite && varName in this.vars)
-            throw new Error(`Variable '${varName}' was already set`);
+            ExprLangVM.fail(`Variable '${varName}' was already set`);
     }
 
     addCallback(varName: string, callback: () => any) {
@@ -86,7 +86,7 @@ export class VariableContext {
                 return result;
         }
 
-        throw new Error(`Variable '${varName}' was not found in contexts: ` 
+        ExprLangVM.fail(`Variable '${varName}' was not found in contexts: ` 
             + this.sources.map(x => `'${x.name}'`).join(", "));
     }
 
@@ -101,11 +101,15 @@ export class ExprLangVM {
 
     static accessMember(obj: object, memberName: string|number) {
         if (typeof obj !== "object")
-            throw new Error(`Expected object for accessing member: (${typeof obj})`);
+            this.fail(`Expected object for accessing member: (${typeof obj})`);
         if (!(memberName in obj))
             return null;
-            //throw new Error(`Member '${memberName}' not found in object '${obj.constructor.name}' (${typeof obj})`);
+            //ExprLangVM.fail(`Member '${memberName}' not found in object '${obj.constructor.name}' (${typeof obj})`);
         return obj[memberName];
+    }
+
+    static fail(msg: string) {
+        throw new Error(`[ExprLangVM] ${msg}`);
     }
 
     evaluate(expr: Ast.Expression, vars: VariableContext) {
@@ -134,7 +138,7 @@ export class ExprLangVM {
             } else if (unaryExpr.op === "-") {
                 return -exprValue;
             } else
-                throw new Error(`Unexpected unary operator: '${unaryExpr.op}'`);
+                ExprLangVM.fail(`Unexpected unary operator: '${unaryExpr.op}'`);
         } else if (expr.kind === "binary") {
             const binaryExpr = <Ast.BinaryExpression> expr;
             const leftValue = this.evaluate(binaryExpr.left, vars);
@@ -166,7 +170,7 @@ export class ExprLangVM {
             } else if (binaryExpr.op === "||") {
                 return leftValue || rightValue;
             } else
-                throw new Error(`Unexpected binary operator: '${binaryExpr.op}'`);
+                ExprLangVM.fail(`Unexpected binary operator: '${binaryExpr.op}'`);
         } else if (expr.kind === "parenthesized") {
             const parenExpr = <Ast.ParenthesizedExpression> expr;
             const exprValue = this.evaluate(parenExpr, vars);
@@ -191,7 +195,7 @@ export class ExprLangVM {
             const args = callExpr.arguments.map(arg => this.evaluate(arg, vars));
             
             if (!this.methodHandler)
-                throw new Error(`Method handler was not set!`);
+                ExprLangVM.fail(`Method handler was not set!`);
             const result = this.methodHandler.call(method, args, thisObj, vars);
             return result;
         } else if (expr.kind === "propertyAccess") {
@@ -206,7 +210,7 @@ export class ExprLangVM {
             const result = ExprLangVM.accessMember(object, memberName);
             return result;
         } else {
-            throw new Error(`[ExprLangVM] Unknown expression kind: '${expr.kind}'`);
+            ExprLangVM.fail(`Unknown expression kind: '${expr.kind}'`);
         }
     }
 }
