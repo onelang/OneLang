@@ -63,7 +63,7 @@ langs = {
         "ext": "cpp",
         "mainFn": "main.cpp",
         "stdlibFn": "one.hpp",
-        "cmd": "g++ -std=c++11 main.cpp -I. -o binary && ./binary",
+        "cmd": "g++ -std=c++17 main.cpp -I. -o binary && ./binary",
     },
     "Go": {
         "ext": "go",
