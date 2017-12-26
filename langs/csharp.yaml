@@ -187,7 +187,7 @@ expressions:
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
   instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.outName}}"
-  staticField: "{{gen(expr.thisExpr)}}.{{expr.varRef.outName}}"
+  staticField: "{{if expr.thisExpr.exprKind != 'ThisReference'}}{{gen(expr.thisExpr)}}.{{/if}}{{expr.varRef.outName}}"
   falseLiteral: "false"
   trueLiteral: "true"
   elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
