@@ -98,7 +98,8 @@ templates:
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
         {{for field in class.fields|sep=\n}}
-          {{field.visibility}} {{if field.static}}static {{/if}}{{field.name}}: {{field.type}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}};
+          {{if field.visibility != "public"|inline}}{{field.visibility}} {{/if}}
+          {{if field.static}}static {{/if}}{{field.name}}: {{field.type}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}};
         {{/for}}
 
         {{if class.constructor}}
@@ -108,7 +109,8 @@ templates:
         {{/if}}
 
         {{for method in class.methods|sep="\n  \n"}}
-          {{method.visibility}} {{if method.static}}static {{/if}}{{method.name}}({{genArgs(method)}}) {
+          {{if method.visibility != "public"|inline}}{{method.visibility}} {{/if}}
+          {{if method.static}}static {{/if}}{{method.name}}({{genArgs(method)}}) {
             {{genBody(method.body)}}
           }
         {{/for}}
