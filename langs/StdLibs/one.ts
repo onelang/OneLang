@@ -10,8 +10,10 @@ export class Regex {
 export class Reflect {
     static classes: { [name: string]: Class } = {};
     
-    static getClass(obj: any): Class { return this.classes[obj.constructor.name]; }
-    static setupClass(cls: Class) { this.classes[cls.name] = cls; }
+    static getClass(obj: any): Class { return this.classes[obj.constructor.name.toLowerCase()]; }
+    static getClassByName(name: string): Class { return this.classes[name.toLowerCase()]; }
+
+    static setupClass(cls: Class) { this.classes[cls.name.toLowerCase()] = cls; }
 }
 
 export class Class {
@@ -25,14 +27,20 @@ export class Class {
 
         for (const field of fields) {
             field.cls = this;
-            this.fields[field.name] = field;
+            this.fields[field.name.toLowerCase()] = field;
         }
 
         for (const method of methods) {
             method.cls = this;
-            this.methods[method.name] = method;
+            this.methods[method.name.toLowerCase()] = method;
         }
     }
+
+    getField(name: string) { return this.fields[name.toLowerCase()]; }
+    getMethod(name: string) { return this.methods[name.toLowerCase()]; }
+
+    getFields() { return Object.values(this.fields); }
+    getMethods() { return Object.values(this.methods); }
 }
 
 export class Field {

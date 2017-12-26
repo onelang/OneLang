@@ -54,14 +54,18 @@ declare class OneRegex {
 //=== REFLECTION
 
 declare class OneReflect {
-    static classes: OneMap<string, OneReflectClass>;
     static getClass(obj: any): OneReflectClass;
+    static getClassByName(obj: any): OneReflectClass;
 }
 
 declare class OneReflectClass {
     name: string;
-    fields: OneMap<string, OneReflectField>;
-    methods: OneMap<string, OneReflectMethod>;
+
+    getField(name: string): OneReflectField;
+    getMethod(name: string): OneReflectMethod;
+
+    getFields(): OneReflectField[];
+    getMethods(): OneReflectMethod[];
 }
 
 declare class OneReflectField {
@@ -75,6 +79,7 @@ declare class OneReflectField {
 declare class OneReflectMethod {
     name: string;
     isStatic: boolean;
+
     call(obj: any, args: any[]);
 }
 
