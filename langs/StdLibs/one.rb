@@ -92,12 +92,12 @@ module One
 
         def get_value(obj)
             realObj = @is_static ? @cls.type_obj : obj;
-            return realObj.instance_variable_get("@"+@name)
+            return realObj.instance_variable_get("@" + @name)
         end
 
         def set_value(obj, value)
             realObj = @is_static ? @cls.type_obj : obj;
-            realObj.instance_variable_set("@"+@name, value)
+            realObj.instance_variable_set("@" + @name, value)
         end
     end
 
