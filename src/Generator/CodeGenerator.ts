@@ -151,6 +151,8 @@ class CodeGeneratorModel {
         return code;
     }
 
+    escapeQuotes(str: string) { return str.replace(/"/g, '\\"'); }
+
     gen(obj: one.Statement|one.Expression, ...genArgs: any[]) {
         const objExpr = (<one.Expression> obj);
         const type = (<one.Statement>obj).stmtType || objExpr.exprKind;
@@ -319,7 +321,7 @@ export class CodeGenerator {
         codeGenVars.addCallback("classes", () => this.model.classes);
         codeGenVars.addCallback("enums", () => this.model.enums);
         codeGenVars.addCallback("result", () => this.model.result);
-        for (const name of ["gen", "isIfBlock", "typeName", "hackPerlToVar"])
+        for (const name of ["gen", "isIfBlock", "typeName", "hackPerlToVar", "escapeQuotes"])
             codeGenVars.setVariable(name, (...args) => this.model[name].apply(this.model, args));
         const varContext = new VariableContext([codeGenVars, this.templateVars]);
         this.templateGenerator = new TemplateGenerator(varContext);
