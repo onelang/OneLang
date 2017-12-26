@@ -10,7 +10,7 @@ import { AstHelper } from "./One/AstHelper";
 
 declare var YAML: any;
 
-const testPrgName = "OneLang2";
+const testPrgName = "ReflectionTest";
 
 const qs = {};
 location.search.substr(1).split('&').map(x => x.split('=')).forEach(x => qs[x[0]] = x[1]);

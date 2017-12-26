@@ -50,3 +50,32 @@ declare class OneError {
 declare class OneRegex {
     static matchFromIndex(pattern: string, input: string, offset: number): OneArray<OneString>;
 }
+
+//=== REFLECTION
+
+declare class OneReflect {
+    static classes: OneMap<string, OneReflectClass>;
+    static getClass(obj: any): OneReflectClass;
+}
+
+declare class OneReflectClass {
+    name: string;
+    fields: OneMap<string, OneReflectField>;
+    methods: OneMap<string, OneReflectMethod>;
+}
+
+declare class OneReflectField {
+    name: string;
+    isStatic: boolean;
+
+    getValue(obj: any);
+    setValue(obj: any, value: any);
+}
+
+declare class OneReflectMethod {
+    name: string;
+    isStatic: boolean;
+    call(obj: any, args: any[]);
+}
+
+//===
