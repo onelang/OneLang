@@ -59,9 +59,10 @@ classes:
         template: raise {{message}}
   OneRegex:
     includes: ["one"]
-    methods:
-      matchFromIndex:
-        template: "One::Regex::matchFromIndex({{pattern}}, {{input}}, {{offset}})"
+    template: "One::Regex"
+  OneReflect:
+    includes: ["one"]
+    template: "One::Reflect"
 operators:
   OneString + OneNumber:
     template: "{{gen(left)}} + ({{gen(right)}}).to_s"
@@ -125,6 +126,20 @@ templates:
           end
         {{/for}}
       end
+
+      One::Reflect::setup_class(One::Class.new({{class.name}}, [
+          {{for field in class.fields|sep=\n}}
+            One::Field.new("{{field.name}}", {{field.static}}, "{{field.type}}"),
+          {{/for}}
+        ], [
+          {{for method in class.methods|sep=\n}}
+            One::Method.new("{{method.name}}", {{method.static}}, "{{method.returnType}}", [
+              {{for param in method.parameters|sep=\n}}
+                One::MethodArgument.new("{{param.name}}", "{{param.type}}"),
+              {{/for}}
+            ]),
+          {{/for}}
+        ]));
     {{/for}}
 
   genBody:
@@ -176,7 +191,7 @@ expressions:
   numericLiteral: "{{expr.value}}"
   variableDeclaration: "{{genVar(expr)}}"
   new: "{{gen(expr.cls)}}.new({{genParams(expr.arguments)}})"
-  classReference: "{{expr.classRef.outName}}"
+  classReference: "{{clsName(expr.classRef)}}"
   enumReference: "{{expr.enumRef.outName}}"
   enumMemberReference: "{{expr.enumRef.outName}}::{{expr.enumMemberRef.outName}}"
   arrayLiteral: "[{{genParams(expr.items)}}]"
@@ -188,7 +203,7 @@ expressions:
     }
   expressionStatement: "{{gen(expr.expression)}}"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
-  staticMethod: "{{expr.methodRef.classRef.outName}}.{{expr.methodRef.outName}}"
+  staticMethod: "{{clsName(expr.methodRef.classRef)}}.{{expr.methodRef.outName}}"
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
   instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.outName}}"
