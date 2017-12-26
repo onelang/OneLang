@@ -99,10 +99,19 @@ public class App
                 ArrayList<SourceCode> compilationUnits = new ArrayList<SourceCode>();
                 compilationUnits.add(new SourceCode(request.className, request.code));
 
-                for (int i = 1; i < stdlibParts.length; i++) {
-                    String[] nameAndContent = stdlibParts[i].split(" ", 2);
-                    compilationUnits.add(new SourceCode(nameAndContent[0], 
-                        stdlibImports + "\nclass " + nameAndContent[0] + " " + nameAndContent[1]));
+                for (int iPart = 1; iPart < stdlibParts.length; iPart++) {
+                    String stdlibPart = stdlibParts[iPart];
+                    int offs;
+                    for (offs = 0; offs < stdlibPart.length(); offs++) {
+                        char c = stdlibPart.charAt(offs);
+                        if (!Character.isLetterOrDigit(c) && c != '_')
+                            break;
+                    }
+
+                    String name = stdlibPart.substring(0, offs);
+                    String content = stdlibPart.substring(offs);
+                    compilationUnits.add(new SourceCode(name, 
+                        stdlibImports + "\nclass " + name + "\n" + content));
                 }
 
                 DynamicClassLoader cl = new DynamicClassLoader(ClassLoader.getSystemClassLoader());
