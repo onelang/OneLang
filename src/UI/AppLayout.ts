@@ -12,6 +12,7 @@ export interface LangUi {
     overlayHandler: EditorChangeHandler,
     generatorHandler: EditorChangeHandler,
     stdLibHandler: EditorChangeHandler,
+    generatedHandler: EditorChangeHandler,
 }
 
 interface TabContainer extends Container {
@@ -56,6 +57,14 @@ export class Layout {
                         this.onEditorChange(langName, newContent);
                 });
             });
+
+            if (isInput) {
+                tabs.addComponent("Generated", c => {
+                    const editor = LayoutHelper.setupEditor(c, aceLang || langName);
+                    langUi.generatedHandler = new EditorChangeHandler(editor, 500, (newContent, userChange) => {
+                    });
+                });
+            }
 
             tabs.addComponent("Generator", c => {
                 const editor = LayoutHelper.setupEditor(c, "yaml");

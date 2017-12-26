@@ -163,9 +163,8 @@ function initLayout() {
     
                 const result = await runLangUi(langName, () => {
                     const code = compileHelper.compile(newContent, langName);
-                    if (!isSourceLang)
-                        langUi.changeHandler.setContent(code);
-                    else {
+                    (isSourceLang ? langUi.generatedHandler : langUi.changeHandler).setContent(code);
+                    if (isSourceLang) {
                         langUi.astHandler.setContent(compileHelper.astOverview);
                         langUi.astJsonHandler.setContent(compileHelper.astJsonOverview);
                     }
