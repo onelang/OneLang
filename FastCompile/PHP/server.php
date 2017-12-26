@@ -20,7 +20,8 @@ function fatal_handler() {
         $errline = $error["line"];
         $errstr  = $error["message"];
 
-        print json_encode(array("exceptionText" => "line #{$errline}: {$errstr}"));
+        $result = ob_get_clean();
+        print json_encode(array("result" => $result, "exceptionText" => "line #{$errline}: {$errstr}"));
     }
 }
 
@@ -43,5 +44,6 @@ try {
     $result = ob_get_clean();
     print json_encode(array("result" => $result, "elapsedMs" => $elapsedMs));
 } catch(Exception $e) {
-    print json_encode(array("exceptionText" => "line #{$e->getLine()}: {$e->getMessage()}\n{$e->getTraceAsString()}"));
+    $result = ob_get_clean();
+    print json_encode(array("result" => $result, "exceptionText" => "line #{$e->getLine()}: {$e->getMessage()}\n{$e->getTraceAsString()}"));
 }
