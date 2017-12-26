@@ -135,7 +135,7 @@ templates:
       - name: fields
     template: |-
       {{for field in fields|sep=\n}}
-        {{if field.static}}static {{/if}}{{getType(field.typeInfo)}} {{field.name}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}};
+        {{if field.static}}static {{/if}}{{getType(field.typeInfo)}} {{field.name}}{{if !field.static && field.initializer}} = {{gen(field.initializer)}}{{/if}};
       {{/for}}
   getType:
     args:
