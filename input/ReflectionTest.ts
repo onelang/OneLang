@@ -21,23 +21,31 @@ class TestClass {
         //console.log(`instanceField (direct): ${obj.instanceField}`);
         //console.log(`staticField (direct): ${TargetClass.staticField}`);
         const cls = OneReflect.getClass(obj);
-        if (cls === null)
+        if (cls === null) {
             console.log("cls is null!");
+            return;
+        }
 
         const cls2 = OneReflect.getClassByName("TargetClass");
-        if (cls2 === null)
+        if (cls2 === null) {
             console.log("cls2 is null!");
+            return;
+        }
 
         const method1 = cls.getMethod("instanceMethod");
-        if (method1 === null)
+        if (method1 === null) {
             console.log("method1 is null!");
+            return;
+        }
 
         const method1Result = method1.call(obj, []);
         console.log(`instanceMethod: ${method1Result}`);
 
         const method2 = cls.getMethod("staticMethod");
-        if (method2 === null)
+        if (method2 === null) {
             console.log("method2 is null!");
+            return;
+        }
 
         const method2Result = method2.call(null, <any[]>["arg1value"]);
         console.log(`staticMethod: ${method2Result}`);
