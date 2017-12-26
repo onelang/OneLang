@@ -286,6 +286,11 @@ class CodeGeneratorModel {
 
         return genResult;
     }
+
+    clsName(obj: one.Class) {
+        const cls = (this.generator.lang.classes||{})[obj.name];
+        return cls && cls.template ? cls.template : obj.outName;
+    }
 }
 
 export class CodeGenerator {
@@ -321,7 +326,7 @@ export class CodeGenerator {
         codeGenVars.addCallback("classes", () => this.model.classes);
         codeGenVars.addCallback("enums", () => this.model.enums);
         codeGenVars.addCallback("result", () => this.model.result);
-        for (const name of ["gen", "isIfBlock", "typeName", "hackPerlToVar", "escapeQuotes"])
+        for (const name of ["gen", "isIfBlock", "typeName", "hackPerlToVar", "escapeQuotes", "clsName"])
             codeGenVars.setVariable(name, (...args) => this.model[name].apply(this.model, args));
         const varContext = new VariableContext([codeGenVars, this.templateVars]);
         this.templateGenerator = new TemplateGenerator(varContext);

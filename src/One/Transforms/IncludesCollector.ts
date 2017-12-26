@@ -15,7 +15,7 @@ export class IncludesCollector extends AstVisitor<void> {
     useInclude(className: string, methodName?: string) {
         const cls = this.lang.classes[className];
         if (!cls) return;
-        const includes = (cls.includes || []).concat(methodName ? cls.methods[methodName].includes || [] : []);
+        const includes = (cls.includes || []).concat(cls.methods && methodName ? cls.methods[methodName].includes || [] : []);
         for (const include of includes)
             this.includes.add(include);
     }

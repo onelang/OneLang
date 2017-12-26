@@ -70,9 +70,10 @@ classes:
         template: throw new Error({{message}})
   OneRegex:
     includes: ["one"]
-    methods:
-      matchFromIndex:
-        template: "one.Regex.matchFromIndex({{pattern}}, {{input}}, {{offset}})"
+    template: "one.Regex"
+  OneReflect:
+    includes: ["one"]
+    template: "one.Reflect"
 templates:
   testGenerator: |-
     //try {
@@ -161,7 +162,7 @@ expressions:
   numericLiteral: "{{expr.value}}"
   variableDeclaration: "{{genVar(expr)}};"
   new: "new {{gen(expr.cls)}}({{genParams(expr.arguments)}})"
-  classReference: "{{expr.classRef.outName}}"
+  classReference: "{{clsName(expr.classRef)}}"
   enumReference: "{{expr.enumRef.outName}}"
   enumMemberReference: "{{expr.enumRef.outName}}.{{expr.enumMemberRef.outName}}"
   arrayLiteral: "[{{genParams(expr.items)}}]"
@@ -173,7 +174,7 @@ expressions:
     }
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
-  staticMethod: "{{expr.methodRef.classRef.outName}}.{{expr.methodRef.outName}}"
+  staticMethod: "{{clsName(expr.methodRef.classRef)}}.{{expr.methodRef.outName}}"
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
   instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.outName}}"

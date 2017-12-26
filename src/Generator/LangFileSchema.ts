@@ -53,6 +53,7 @@ export namespace LangFileSchema {
 
     export interface Class {
         type: string;
+        template: string;
         includes: string[];
         fields: { [name: string]: Field };
         methods: { [name: string]: Method };
