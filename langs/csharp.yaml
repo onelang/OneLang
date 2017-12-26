@@ -173,7 +173,9 @@ expressions:
   classReference: "{{expr.classRef.outName}}"
   enumReference: "{{expr.enumRef.outName}}"
   enumMemberReference: "{{expr.enumRef.outName}}.{{expr.enumMemberRef.outName}}"
-  arrayLiteral: "new List<{{expr.typeArgs[0]}}> { {{genParams(expr.items)}} }"
+  arrayLiteral:
+    includes: [System.Collections.Generic]
+    template: "new List<{{expr.typeArgs[0]}}> { {{genParams(expr.items)}} }"
   mapLiteral: |- 
     new Dictionary<{{expr.typeArgs[0]}}, {{expr.typeArgs[1]}}>
     {

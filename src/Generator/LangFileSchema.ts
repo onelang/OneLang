@@ -22,6 +22,7 @@ export namespace LangFileSchema {
 
     export interface TemplateObj {
         args: FunctionArgument[];
+        includes: string[];
         template: string;
     }
 
@@ -73,6 +74,6 @@ export namespace LangFileSchema {
         };
         templates: Templates;
         includes: string[];
-        expressions: string;
+        expressions: { [name: string]: string|TemplateObj };
     }
 }

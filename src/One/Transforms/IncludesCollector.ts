@@ -20,6 +20,14 @@ export class IncludesCollector extends AstVisitor<void> {
             this.includes.add(include);
     }
 
+    protected visitExpression(expression: one.Expression) {
+        super.visitExpression(expression, null);
+        const templateObj = this.lang.expressions[expression.exprKind.lcFirst()];
+        if (typeof templateObj === "object" && templateObj.includes)
+            for (const include of templateObj.includes)
+                this.includes.add(include);
+    }
+
     protected visitBinaryExpression(expr: one.BinaryExpression) {
         super.visitBinaryExpression(expr, null);
 

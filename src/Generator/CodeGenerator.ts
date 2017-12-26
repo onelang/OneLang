@@ -270,8 +270,7 @@ class CodeGeneratorModel {
             throw new Error(`Expression template not found: ${genName}!`);
 
         // TODO (hack): using global "result" and "resultType" variables
-        const exprName = CaseConverter.convert(genName, "camel");
-        const usingResult = this.generator.lang.expressions[exprName].includes("{{result}}");
+        const usingResult = genFunc.template.includes("{{result}}");
         
         if (usingResult)
             this.tempVarHandler.create();
@@ -452,8 +451,11 @@ export class CodeGenerator {
     }
 
     compileTemplates() {
-        for (const name of Object.keys(this.lang.expressions||{}))
-            this.expressionGenerators[name.ucFirst()] = new TemplateMethod(name.ucFirst(), ["expr"], this.lang.expressions[name]);
+        for (const name of Object.keys(this.lang.expressions||{})) {
+            const templateObj = this.lang.expressions[name];
+            const template = typeof(templateObj) === "string" ? templateObj : templateObj.template;
+            this.expressionGenerators[name.ucFirst()] = new TemplateMethod(name.ucFirst(), ["expr"], template);
+        }
 
         for (const name of Object.keys(this.lang.operators||{}))
             this.operatorGenerators[name] = new TemplateMethod(name, ["left", "right"], this.lang.operators[name].template);
