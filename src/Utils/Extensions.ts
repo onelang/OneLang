@@ -41,12 +41,17 @@ Array.prototype.remove = function<T>(item: T) {
 // tslint:disable-next-line
 interface String {
     ucFirst(): string;
+    lcFirst(): string;
     repeat(count: number): string;
     endsWith(searchString: string, position: number): boolean;
 }
 
 String.prototype.ucFirst = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
+};
+
+String.prototype.lcFirst = function() {
+    return this.charAt(0).toLowerCase() + this.slice(1);
 };
 
 if (!String.prototype.endsWith) {
