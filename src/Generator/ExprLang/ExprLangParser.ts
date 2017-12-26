@@ -3,20 +3,20 @@ import { ExprLangLexer, Token } from "./ExprLangLexer";
 
 // http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
 
-export const operators = ["**", "+", "-", "*", "/", "<<", ">>", ">=", "==", "<=", "<", ">", "~", "(", ")", "[", "]", ",", ".", "?", ":", "not", "!", "or", "||", "and", "&&"];
+export const operators = ["**", "+", "-", "*", "/", "<<", ">>", ">=", "!=", "==", "<=", "<", ">", "~", "(", ")", "[", "]", ",", ".", "?", ":", "not", "!", "or", "||", "and", "&&"];
 
 export class ExprLangParser {
     tokens: Token[];
     tokenMap = { not: '!', and: '&&', or: '||' };
     unary = ['!', '+', '-', '~'];
-    binary = ['+', '-', '*', '**', '/', '<<', '>>', '>=', '==', '<=', '>', '<', '&&', '||'];
+    binary = ['+', '-', '*', '**', '/', '<<', '>>', '>=', '!=', '==', '<=', '>', '<', '&&', '||'];
     rightAssoc = ['**']
     precedenceLevels: { name: string, operators?: string[], precedence?: number }[] = [
         { name: "assignment", operators: ['='] },
         { name: "conditional", operators: ['?'] },
         { name: "or", operators: ['||'] },
         { name: "and", operators: ['&&'] },
-        { name: "comparison", operators: ['>=', '==', '<=', '>', '<'] },
+        { name: "comparison", operators: ['>=', '!=', '==', '<=', '>', '<'] },
         { name: "sum", operators: ['+','-'] },
         { name: "product", operators: ['*','/'] },
         { name: "exponent", operators: ['**'] },
