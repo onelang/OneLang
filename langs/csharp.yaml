@@ -74,6 +74,10 @@ classes:
     methods:
       raise:
         template: throw new Exception({{message}})
+  OneReflectMethod:
+    methods:
+      call:
+        template: "{{self}}.Call({{obj}}, ({{args}}).ToArray())"
 operators:
   OneString + OneBoolean:
     template: '{{gen(left)}} + ({{gen(right)}} ? "true" : "false")'
@@ -110,6 +114,11 @@ templates:
     {{for class in classes|sep=\n\n}}
       public class {{class.name}}
       {
+          static {{class.name}}()
+          {
+              OneReflect.Publish(typeof({{class.name}}));
+          }
+
           {{for field in class.fields|sep=\n}}
             {{field.visibility}} {{if field.static}}static {{/if}}{{field.type}} {{field.name}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}};
           {{/for}}
