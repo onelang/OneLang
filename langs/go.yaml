@@ -7,6 +7,7 @@ casing:
   enumMember: upper_case
 primitiveTypes:
   void: ""
+  any: "interface{}"
 classes:
   OneString:
     type: string
@@ -86,9 +87,10 @@ classes:
         template: panic({{message}})
   OneRegex:
     includes: [one]
-    methods:
-      matchFromIndex:
-        template: "one.Regex_MatchFromIndex({{pattern}}, {{input}}, {{offset}})"
+    template: "one.Regex"
+  OneReflect:
+    includes: [one]
+    template: "one.Reflect"
 operators:
   OneString + OneNumber:
     includes: [strconv]
@@ -169,6 +171,29 @@ templates:
       {{/for}}
     {{/for}}
 
+    func init() {
+      {{for class in classes|sep=\n\n}}
+        one.Reflect_SetupClass((*{{class.name}})(nil), 
+            []*one.Field{
+              {{for field in class.fields}}
+                {{if field.static}}
+                  one.Reflect_StaticField("{{field.name}}", &{{class.name}}{{field.name}}),
+                {{else}}
+                  one.Reflect_InstanceField("{{field.name}}"),
+                {{/if}}
+              {{/for}}
+            },
+            []*one.Method{
+              {{for method in class.methods}}
+                {{if method.static}}
+                  one.Reflect_StaticMethod("{{method.name}}", {{class.name}}_{{method.name}}),
+                {{else}}
+                  one.Reflect_InstanceMethod("{{method.name}}"),
+                {{/if}}
+              {{/for}}
+            });
+      {{/for}}
+    }
   getType:
     args:
       - name: item
@@ -228,7 +253,7 @@ expressions:
   numericLiteral: "{{expr.value}}"
   variableDeclaration: "{{genVar(expr)}}"
   new: "New{{gen(expr.cls)}}({{genParams(expr.arguments)}})"
-  classReference: "{{expr.classRef.outName}}"
+  classReference: "{{clsName(expr.classRef)}}"
   enumMemberReference: "{{expr.enumRef.outName}}_{{expr.enumMemberRef.outName}}"
   arrayLiteral: "[]{{getType(expr.valueType.typeArguments[0])}}{{{genParams(expr.items)}}}"
   mapLiteral: |- 
@@ -239,7 +264,7 @@ expressions:
     }
   expressionStatement: "{{gen(expr.expression)}}"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
-  staticMethod: "{{expr.methodRef.classRef.outName}}_{{expr.methodRef.outName}}"
+  staticMethod: "{{clsName(expr.methodRef.classRef)}}_{{expr.methodRef.outName}}"
   localVar: "{{expr.varRef.name}}"
   methodArgument: "{{expr.varRef.name}}"
   instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.outName}}"
