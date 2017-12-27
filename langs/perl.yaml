@@ -62,6 +62,9 @@ classes:
     methods:
       raise:
         template: die {{message}}."\n"
+  OneReflect:
+    includes: [one]
+    template: "OneReflect"
 operators:
   OneString + OneString:
     template: "{{gen(left)}} . {{gen(right)}}"
@@ -118,7 +121,7 @@ templates:
     use warnings;
 
     {{for include in includes}}
-      require "{{include}}.pl";
+      use {{include}};
     {{/for}}
 
     {{for enum in enums|sep=\n\n}}
@@ -181,6 +184,20 @@ templates:
             {{genBody(method.body)}}
         }
       {{/for}}
+
+      OneReflect::setupClass(new OneClass("{{class.name}}", [
+          {{for field in class.fields|sep=\n}}
+            new OneField("{{field.name}}", {{if field.static}}1{{else}}0{{/if}}, "{{field.type}}"),
+          {{/for}}
+        ], [
+          {{for method in class.methods|sep=\n}}
+            new OneMethod("{{method.name}}", {{if method.static}}1{{else}}0{{/if}}, "{{method.returnType}}", [
+              {{for param in method.parameters|sep=\n}}
+                new OneMethodArgument("{{param.name}}", "{{param.type}}"),
+              {{/for}}
+            ]),
+          {{/for}}
+        ]));
     {{/for}}
 
   genBody:

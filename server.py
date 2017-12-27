@@ -80,7 +80,7 @@ langs = {
     "Perl": {
         "ext": "pl",
         "mainFn": "main.pl",
-        "stdlibFn": "one.pl",
+        "stdlibFn": "one.pm",
         "cmd": "perl -I. main.pl",
     },
     "Swift": {
