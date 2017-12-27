@@ -156,8 +156,9 @@ export class TemplateGenerator implements IMethodHandler {
             const varSource = new VariableSource(`for: ${node.itemName}`)
             const newVars = vars.inherit(varSource);
 
-            for (const item of array) {
-                varSource.setVariable(node.itemName, item, true);
+            for (let itemIdx = 0; itemIdx < array.length; itemIdx++) {
+                varSource.setVariable(node.itemName, array[itemIdx], true);
+                varSource.setVariable(`${node.itemName}_idx`, itemIdx, true);
                 const line = this.generateNode(node.body, newVars);
                 if (line !== null)
                     lines.push(line);
