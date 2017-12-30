@@ -19,6 +19,19 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "Compile Swift",
+            "type": "shell",
+            "command": "bash -i tmp_build.sh",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
         }
     ]
 }
