@@ -33,6 +33,10 @@ export class ExprLangParser {
         this.setupPrecedenceMap();
     }
 
+    fail(message: string) {
+        throw new Error(`[ExprLangParser] ${message}`);
+    }
+
     setupPrecedenceMap() {
         for (let i = 0; i < this.precedenceLevels.length; i++) {
             const level = this.precedenceLevels[i];
@@ -44,12 +48,16 @@ export class ExprLangParser {
         }
     }
 
-    consume() { return this.tokens.shift(); }
+    consume() { 
+        if (this.tokens.length === 0)
+            this.fail("No more tokens are available!");
+        return this.tokens.shift();
+    }
     
     consumeOp(op: string) {
         const token = this.consume();
         if (token.kind !== "operator" || token.value !== op)
-            throw new Error(`Expected operator '${op}', got token '${token.value}' (${token.kind})`);
+            this.fail(`Expected operator '${op}', got token '${token.value}' (${token.kind})`);
     }
 
     consumeOpIf(op: string) {
@@ -85,7 +93,7 @@ export class ExprLangParser {
         }
 
         if (!left)
-            throw new Error(`Could not parse token: '${token.value}' (${token.kind})`);
+            this.fail(`Could not parse token: '${token.value}' (${token.kind})`);
 
         while(this.tokens.length > 0) {
             const nextToken = this.tokens[0];
@@ -126,11 +134,11 @@ export class ExprLangParser {
                 do {
                     const prop = this.consume();
                     if (prop.kind !== "identifier")
-                        throw new Error(`Expected identifier as property name, got token '${prop.value}' (${prop.kind})`);
+                        this.fail(`Expected identifier as property name, got token '${prop.value}' (${prop.kind})`);
                     left = <Ast.PropertyAccessExpression> { kind: "propertyAccess", object: left, propertyName: prop.value };
                 } while (this.consumeOpIf("."));
             } else {
-                throw new Error(`Could not parse infix operator: '${op}'`);
+                this.fail(`Could not parse infix operator: '${op}'`);
             }
         }
 
@@ -140,7 +148,7 @@ export class ExprLangParser {
     parse() {
         const result = this.process();
         if (this.tokens.length > 0)
-            throw new Error("Not all tokens were consumed!");
+            this.fail("Not all tokens were consumed!");
         return result;
     }
 
