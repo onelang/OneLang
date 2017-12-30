@@ -64,7 +64,7 @@ export namespace OneAst {
 
         get isPrimitiveType() { return Type.PrimitiveTypeKinds.includes(this.typeKind); }
         get isClass() { return this.typeKind === TypeKind.Class; }
-        get isComplexClass() { return this.typeKind === TypeKind.Class && !this.isNumber && !this.isString && !this.isBoolean; }
+        get isComplexClass() { return this.canBeNull && !this.isAny; } // TODO: hack for C++ (any) & Go (interface{})
         get isEnum() { return this.typeKind === TypeKind.Enum; }
         get isMethod() { return this.typeKind === TypeKind.Method; }
         get isGenerics() { return this.typeKind === TypeKind.Generics; }
@@ -77,6 +77,8 @@ export namespace OneAst {
         get isBoolean() { return this.className === "OneBoolean"; }
         get isOneArray() { return this.className === "OneArray"; }
         get isOneMap() { return this.className === "OneMap"; }
+
+        get canBeNull() { return (this.typeKind === TypeKind.Class && !this.isNumber && !this.isCharacter && !this.isString && !this.isBoolean) || this.isAny; }
 
         equals(other: Type) {
             if (this.typeKind !== other.typeKind)
