@@ -24,70 +24,70 @@ class OneRegex
 
 class OneReflect
 {
-    public static Map<String, OneReflectClass> publishedTypes = new TreeMap<String, OneReflectClass>(String.CASE_INSENSITIVE_ORDER);
+    public static Map<String, OneClass> publishedTypes = new TreeMap<String, OneClass>(String.CASE_INSENSITIVE_ORDER);
 
-    public static OneReflectClass getClass(Object obj) {
+    public static OneClass getClass(Object obj) {
         return getClassByName(obj.getClass().getName());
     }
 
-    public static OneReflectClass getClassByName(String name) {
+    public static OneClass getClassByName(String name) {
         return publishedTypes.get(name);
     }
     
     public static void publish(Class clazz) {
-        publishedTypes.put(clazz.getName(), new OneReflectClass(clazz));
+        publishedTypes.put(clazz.getName(), new OneClass(clazz));
     }
 }
 
-class OneReflectClass
+class OneClass
 {
     public Class clazz;
     public String name;
 
-    public static Map<String, OneReflectField> fields = new TreeMap<String, OneReflectField>(String.CASE_INSENSITIVE_ORDER);
-    public static Map<String, OneReflectMethod> methods = new TreeMap<String, OneReflectMethod>(String.CASE_INSENSITIVE_ORDER);
+    public static Map<String, OneField> fields = new TreeMap<String, OneField>(String.CASE_INSENSITIVE_ORDER);
+    public static Map<String, OneMethod> methods = new TreeMap<String, OneMethod>(String.CASE_INSENSITIVE_ORDER);
 
-    public OneReflectClass(Class clazz)
+    public OneClass(Class clazz)
     {
         this.clazz = clazz;
         this.name = clazz.getName();
 
         for (Field field : clazz.getDeclaredFields()) {
-            OneReflectField oneField = new OneReflectField(field);
+            OneField oneField = new OneField(field);
             this.fields.put(oneField.name, oneField);
         } 
 
         for (Method method : clazz.getDeclaredMethods()) {
-            OneReflectMethod oneMethod = new OneReflectMethod(method);
+            OneMethod oneMethod = new OneMethod(method);
             this.methods.put(oneMethod.name, oneMethod);
         } 
     }
 
-    public OneReflectField getField(String name) {
+    public OneField getField(String name) {
         return fields.get(name);
     }
 
-    public OneReflectMethod getMethod(String name) {
+    public OneMethod getMethod(String name) {
         return methods.get(name);
     }
     
-    public List<OneReflectField> getFields() {
+    public List<OneField> getFields() {
         return new ArrayList(fields.values());
     }
 
-    public List<OneReflectMethod> getMethods() {
+    public List<OneMethod> getMethods() {
         return new ArrayList(methods.values());
     }
 }
 
-class OneReflectField
+class OneField
 {
     public Field field;
 
     public String name;
     public boolean isStatic;
 
-    public OneReflectField(Field field)
+    public OneField(Field field)
     {
         this.field = field;
         this.name = field.getName();
@@ -103,14 +103,14 @@ class OneReflectField
     }
 }
 
-class OneReflectMethod
+class OneMethod
 {
     public Method method;
 
     public String name;
     public boolean isStatic;
 
-    public OneReflectMethod(Method method)
+    public OneMethod(Method method)
     {
         this.method = method;
         this.name = method.getName();

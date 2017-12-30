@@ -78,10 +78,6 @@ classes:
     methods:
       raise:
         template: throw new Exception({{message}})
-  OneReflectMethod:
-    methods:
-      call:
-        template: "{{self}}.call({{obj}}, ({{args}}))"
 operators:
   OneString == OneString:
     template: "{{gen(left)}}.equals({{gen(right)}})"

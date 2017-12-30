@@ -74,7 +74,7 @@ classes:
     methods:
       raise:
         template: throw new Exception({{message}})
-  OneReflectMethod:
+  OneMethod:
     methods:
       call:
         template: "{{self}}.Call({{obj}}, ({{args}}).ToArray())"
