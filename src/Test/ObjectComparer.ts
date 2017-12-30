@@ -1,4 +1,4 @@
-import { _ } from "./Underscore";
+import { _ } from "../Utils/Underscore";
 
 export class ObjectComparer {
     issues: string[] = [];
