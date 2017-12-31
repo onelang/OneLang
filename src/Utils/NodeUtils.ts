@@ -1,5 +1,5 @@
 
-export function readFile(fn: string) {
+export function readFile(fn: string): string {
     const fs = require("fs");
     return fs.readFileSync(fn, "utf8");
 }

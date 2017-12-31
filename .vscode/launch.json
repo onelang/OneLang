@@ -7,6 +7,13 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Launch App",
+            "program": "${workspaceRoot}/js/app.js",
+            "sourceMaps": true
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Launch Template Test",
             "program": "${workspaceRoot}/js/Test/TemplateTest.js",
             "sourceMaps": true
@@ -14,8 +21,8 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch App",
-            "program": "${workspaceRoot}/js/app.js",
+            "name": "Launch ParserTest",
+            "program": "${workspaceRoot}/js/Test/ParserTest.js",
             "sourceMaps": true
         }
     ]

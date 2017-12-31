@@ -190,6 +190,7 @@ export namespace OneAst {
         throws: boolean;
         mutates: boolean;
         visibility?: Visibility;
+        leadingTrivia: string;
     }
 
     export type MethodLike = Method | Constructor;
