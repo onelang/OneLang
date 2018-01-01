@@ -41,12 +41,12 @@ class CursorPositionSearch {
 }
 
 class ParseError {
-    constructor(public message: string, public offset: number = -1, public reader: Reader = null) { }
+    constructor(public message: string, public cursor: Cursor = null, public reader: Reader = null) { }
 }
 
 class Reader {
     offset = 0;
-    line = 0;
+    line = 1;
     cursorSearch: CursorPositionSearch;
 
     lineComment = "//";
@@ -54,13 +54,19 @@ class Reader {
     blockCommentStart = "/*";
     blockCommentEnd = "*/";
 
+    identifierRegex = "[A-Za-z_][A-Za-z0-9_]*";
+    numberRegex = "[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)";
+
     errors: ParseError[] = [];
+    errorCallback: (error: ParseError) => void = null;
 
     constructor(public input: string) {
         this.cursorSearch = new CursorPositionSearch(input);
     }
 
     get eof() { return this.offset >= this.input.length; }
+
+    get cursor() { return this.cursorSearch.getCursorForOffset(this.offset); }
 
     get preview() {
         let preview = this.input.substr(this.offset, 20).replace(/\n/g, "\\n");
@@ -70,9 +76,13 @@ class Reader {
     }
 
     fail(message: string) {
-        this.errors.push(new ParseError(message, this.offset, this));
-        const cursor = this.cursorSearch.getCursorForOffset(this.offset);
-        throw new Error(`${message} at ${cursor.line}:${cursor.column}: "${this.preview}"`);
+        const error = new ParseError(message, this.cursor, this);
+        this.errors.push(error);
+
+        if (this.errorCallback)
+            this.errorCallback(error);
+        else
+            throw new Error(`${message} at ${error.cursor.line}:${error.cursor.column}: "${this.preview}"`);
     }
 
     skipWhitespace() {
@@ -93,7 +103,7 @@ class Reader {
         const index = this.input.indexOf(token, this.offset);
         if (index === -1)
             return false;
-        this.offset += index + token.length;
+        this.offset = index + token.length;
         return true;
     }
 
@@ -114,6 +124,13 @@ class Reader {
         } else {
             return false;
         }
+    }
+
+    readAnyOf(tokens: string[]) {
+        for (const token of tokens)
+            if (this.readToken(token))
+                return token;
+        return "";
     }
 
     expectToken(token: string, errorMsg: string = null) {
@@ -161,8 +178,29 @@ export class TypeScriptParser2 extends Reader {
     }
 
     readIdentifier() {
-        const result = this.readRegex("[A-Za-z_][A-Za-z0-9_]*\\b");
-        return result === null ? "" : result[0];
+        const idMatch = this.readRegex(this.identifierRegex);
+        if (idMatch === null) return "";
+
+        return idMatch[0];
+    }
+
+    readNumber() {
+        const numMatch = this.readRegex(this.numberRegex);
+        if (numMatch === null) return "";
+
+        if (this.readRegex("[0-9a-zA-Z]") !== null)
+            this.fail("invalid character in number");
+
+        return numMatch[0];
+    }
+
+    readString() {
+        const strMatch = this.readRegex("'(\\\\'|[^'])*'") || this.readRegex('"(\\\\"|[^"])*"');
+        if (!strMatch) return "";
+
+        let str = strMatch[0].substr(1, strMatch.length - 2);
+        str = strMatch[0] === "'" ? str.replace("\\'", "'") : str.replace('\\"', '"');
+        return str;
     }
 
     expectIdentifier(errorMsg: string = null) {
