@@ -2,7 +2,7 @@ import { OneAst as ast } from "../../One/Ast";
 import { Reader } from "./Reader";
 
 class Operator {
-    constructor(public text: string, public precedence: number, public isBinary: boolean, public isRightAssoc: boolean, public aliases: string[] = []) { }
+    constructor(public text: string, public precedence: number, public isBinary: boolean, public isRightAssoc: boolean, public isPostfix: boolean, public aliases: string[] = []) { }
 }
 
 export interface ExpressionParserConfig {
@@ -16,7 +16,7 @@ export class ExpressionParser {
     static defaultConfig = <ExpressionParserConfig> {
         unary: ['!', '+', '-', '~'],
         precedenceLevels: [
-            { name: "assignment", operators: ['='] },
+            { name: "assignment", operators: ['=', '+='], binary: true },
             { name: "conditional", operators: ['?'] },
             { name: "or", operators: ['||'], binary: true },
             { name: "and", operators: ['&&'], binary: true },
@@ -25,7 +25,7 @@ export class ExpressionParser {
             { name: "product", operators: ['*','/'], binary: true },
             { name: "exponent", operators: ['**'], binary: true },
             { name: "prefix" },
-            { name: "postfix" },
+            { name: "postfix", operators: ['++', '--'] },
             { name: "call", operators: ['('] },
             { name: "propertyAccess", operators: ['.', '['] },
         ],
@@ -34,6 +34,7 @@ export class ExpressionParser {
     };
 
     operatorMap: { [name: string]: Operator } = {};
+    operators: string[];
     prefixPrecedence: number;
 
     constructor(public reader: Reader, public config: ExpressionParserConfig = ExpressionParser.defaultConfig) {
@@ -51,32 +52,34 @@ export class ExpressionParser {
 
             for (const opText of level.operators) {
                 const op = new Operator(opText, precedence, level.binary, 
-                    this.config.rightAssoc.includes(opText), this.config.aliases[opText] || []);
+                    this.config.rightAssoc.includes(opText), level.name == "postfix", this.config.aliases[opText] || []);
 
                 this.operatorMap[opText] = op;
                 for (const alias of op.aliases)
                     this.operatorMap[alias] = op;
             }
         }
+
+        this.operators = Object.keys(this.operatorMap).sort((a,b) => b.length - a.length);
     }
 
     parseLeft(): ast.Expression {
         const id = this.reader.readIdentifier();
-        if (id !== "") {
-            if (this.operatorMap[id]) return null;
+        if (id !== null) {
+            if (this.operators.includes(id)) return null;
             return <ast.Identifier> { exprKind: "Identifier", text: id };
         }
 
         const num = this.reader.readNumber();
-        if (num !== "")
+        if (num !== null)
             return <ast.Literal> { exprKind: "Literal", literalType: "numeric", value: num };
 
         const str = this.reader.readString();
-        if (str !== "")
+        if (str !== null)
             return <ast.Literal> { exprKind: "Literal", literalType: "string", value: str };
 
         const unary = this.reader.readAnyOf(this.config.unary);
-        if (unary !== "") {
+        if (unary !== null) {
             const right = this.parse(this.prefixPrecedence);
             return <ast.UnaryExpression> { exprKind: "Unary", unaryType: "prefix", operator: unary, operand: right };
         }
@@ -104,12 +107,25 @@ export class ExpressionParser {
             return mapLiteral;
         }
 
+        if (this.reader.readToken("[")) {
+            const arrayLiteral = <ast.ArrayLiteral> { exprKind: "ArrayLiteral", items: [] };
+            if (!this.reader.readToken("]")) {
+                do {
+                    const item = this.parse();
+                    arrayLiteral.items.push(item);
+                } while(this.reader.readToken(","));
+
+                this.reader.expectToken("]");
+            }
+            return arrayLiteral;
+        }
+
         this.reader.fail(`unknown (literal / unary) token in expression`);
     }
 
     parseOperator() {
         let op: Operator = null;
-        for (const opText of Object.keys(this.operatorMap))
+        for (const opText of this.operators)
             if (this.reader.readToken(opText))
                 return this.operatorMap[opText];
 
@@ -126,6 +142,8 @@ export class ExpressionParser {
             if (op.isBinary) {
                 const right = this.parse(op.isRightAssoc ? op.precedence - 1 : op.precedence);
                 left = <ast.BinaryExpression> { exprKind: "Binary", operator: op.text, left, right };
+            } else if (op.isPostfix) {
+                left = <ast.UnaryExpression> { exprKind: "Unary", unaryType: "postfix", operator: op.text, operand: left };
             } else if (op.text === "?") {
                 const whenTrue = this.parse();
                 this.reader.expectToken(":");
