@@ -10,10 +10,11 @@ export class TypeScriptParser2 {
 
     constructor(source: string) {
         this.reader = new Reader(source);
-        this.expressionParser = new ExpressionParser(this.reader);
         this.reader.errorCallback = error => {
             throw new Error(`[TypeScriptParser] ${error.message} at ${error.cursor.line}:${error.cursor.column} (context: ${this.context.join("/")})\n${this.reader.linePreview}`);
         };
+        this.expressionParser = new ExpressionParser(this.reader);
+        this.expressionParser.unaryPrehook = () => this.parseExpressionToken();
     }
 
     parseType() {
@@ -47,6 +48,45 @@ export class TypeScriptParser2 {
         return this.expressionParser.parse();
     }
 
+    parseExpressionToken(): ast.Expression {
+        if (this.reader.readToken("`")) {
+            const tmplStr = <ast.TemplateString> { exprKind: ast.ExpressionKind.TemplateString, parts: [] };
+            while (true) {
+                const litMatch = this.reader.readRegex("([^$`]|\\$[^{]|\\\\${|\\\\`)*");
+                tmplStr.parts.push(<ast.TemplateStringPart> { literal: true, text: litMatch[0] });
+                if (this.reader.readToken("`"))
+                    break;
+                else {
+                    this.reader.expectToken("${");
+                    const expr = this.parseExpression();
+                    tmplStr.parts.push(<ast.TemplateStringPart> { literal: false, expr });
+                    this.reader.expectToken("}");
+                }
+            }
+            return tmplStr;
+        } else if (this.reader.readToken("new")) {
+            const type = this.parseType();
+            this.reader.expectToken("(");
+            const args = this.expressionParser.parseCallArguments();
+
+            // TODO: shouldn't we use just one `type` field instead of `cls` and `typeArguments`?
+            return <ast.NewExpression> {
+                exprKind: ast.ExpressionKind.New,
+                cls: <ast.Identifier> { text: type.className },
+                typeArguments: type.typeArguments,
+                arguments: args
+            };
+        } else if (this.reader.readToken("<")) {
+            const castExpr = <ast.CastExpression> { exprKind: ast.ExpressionKind.Cast };
+            castExpr.newType = this.parseType();
+            this.reader.expectToken(">");
+            castExpr.expression = this.parseExpression();
+            return castExpr;
+        }
+
+        return null;
+    }
+
     parseVarDeclTypeAndInit(varDecl: ast.VariableDeclaration, optional: boolean = false) {
         if (this.reader.readToken(":"))
             varDecl.type = this.parseType();
@@ -74,6 +114,7 @@ export class TypeScriptParser2 {
 
         const leadingTrivia = this.reader.readLeadingTrivia();
 
+        let requiresClosing = true;
         const varDeclMatches = this.reader.readRegex("(const|let|var)\\b");
         if (varDeclMatches !== null) {
             const varDecl = statement = <ast.VariableDeclaration> { stmtType: ast.StatementType.VariableDeclaration };
@@ -83,6 +124,7 @@ export class TypeScriptParser2 {
             const unsetStmt = statement = <ast.UnsetStatement> { stmtType: ast.StatementType.Unset };
             unsetStmt.expression = this.parseExpression();
         } else if (this.reader.readToken("if")) {
+            requiresClosing = false;
             const ifStmt = statement = <ast.IfStatement> { stmtType: ast.StatementType.If };
             this.reader.expectToken("(");
             ifStmt.condition = this.parseExpression();
@@ -90,7 +132,15 @@ export class TypeScriptParser2 {
             ifStmt.then = this.parseBlockOrStatement();
             if (this.reader.readToken("else"))
                 ifStmt.else = this.parseBlockOrStatement();
+        } else if (this.reader.readToken("while")) {
+            requiresClosing = false;
+            const whileStmt = statement = <ast.WhileStatement> { stmtType: ast.StatementType.While };
+            this.reader.expectToken("(");
+            whileStmt.condition = this.parseExpression();
+            this.reader.expectToken(")");
+            whileStmt.body = this.parseBlockOrStatement();
         } else if (this.reader.readToken("for")) {
+            requiresClosing = false;
             this.reader.expectToken("(");
             const varDeclMod = this.reader.readAnyOf(["const", "let", "var"]);
             const itemVarName = this.reader.readIdentifier();
@@ -117,7 +167,7 @@ export class TypeScriptParser2 {
             }
         } else if (this.reader.readToken("return")) {
             const returnStmt = statement = <ast.ReturnStatement> { stmtType: ast.StatementType.Return };
-            returnStmt.expression = this.parseExpression();
+            returnStmt.expression = this.reader.peekToken(";") ? null : this.parseExpression();
         } else {
             const expr = this.parseExpression();
             statement = <ast.ExpressionStatement> { stmtType: ast.StatementType.ExpressionStatement, expression: expr };
@@ -127,8 +177,10 @@ export class TypeScriptParser2 {
             this.reader.fail("unknown statement");
 
         statement.leadingTrivia = leadingTrivia;
+        const statementLastLine = this.reader.wsLineCounter;
+        if (!this.reader.readToken(";") && requiresClosing && this.reader.wsLineCounter === statementLastLine)
+            debugger;
 
-        this.reader.readToken(";");
         return statement;
     }
 
@@ -146,12 +198,26 @@ export class TypeScriptParser2 {
         return block;
     }
 
-    tryToParseClass() {
+    parseTypeArguments(): string[] {
+        const typeArguments = [];
+        if (this.reader.readToken("<")) {
+            do {
+                const generics = this.reader.readIdentifier();
+                typeArguments.push(generics);
+            } while(this.reader.readToken(","));
+            this.reader.expectToken(">");
+        }
+        return typeArguments;
+    }
+
+    parseClass() {
         if (!this.reader.readToken("class")) return null;
 
         const cls = <ast.Class> { methods: {}, fields: {} };
         cls.name = this.reader.expectIdentifier("expected identifier after 'class' keyword");
         this.context.push(`C:${cls.name}`);
+
+        cls.typeArguments = this.parseTypeArguments();
 
         this.reader.expectToken("{");
         while(!this.reader.readToken("}")) {
@@ -168,11 +234,13 @@ export class TypeScriptParser2 {
                 cls.methods[method.name] = method;
                 this.context.push(`M:${method.name}`);
 
+                const isConstructor = method.name === "constructor";
                 if (!this.reader.readToken(")")) {
                     do {
                         const param = <ast.MethodParameter> {};
                         method.parameters.push(param);
     
+                        const isPublic = isConstructor && this.reader.readToken("public");
                         param.name = this.reader.readIdentifier();
                         this.context.push(`arg:${param.name}`);
                         this.parseVarDeclTypeAndInit(param);
@@ -206,17 +274,49 @@ export class TypeScriptParser2 {
         return cls;
     }
 
+    parseEnum() {
+        if (!this.reader.readToken("enum")) return null;
+
+        const enumObj = <ast.Enum> { values: [] };
+        enumObj.name = this.reader.expectIdentifier("expected identifier after 'enum' keyword");
+        this.context.push(`E:${enumObj.name}`);
+
+        this.reader.expectToken("{");
+        if (!this.reader.readToken("}")) {
+            do {
+                const enumMemberName = this.reader.readIdentifier();
+                enumObj.values.push(<ast.EnumMember> { name: enumMemberName });
+            } while(this.reader.readToken(","));
+            this.reader.expectToken("}");
+        }
+
+        this.context.pop();
+        return enumObj;
+    }
+
     parseFile() {
-        const schema = <ast.Schema> { classes: {} };
+        const schema = <ast.Schema> { classes: {}, enums: {} };
         while (!this.reader.eof) {
             const leadingTrivia = this.reader.readLeadingTrivia();
             if (this.reader.eof) break;
 
-            const cls = this.tryToParseClass();
-            if (cls === null)
-                this.reader.fail("expected 'class' here");
-            cls.leadingTrivia = leadingTrivia;
-            schema.classes[cls.name] = cls;
+            const modifiers = this.reader.readModifiers(["export"]);
+
+            const cls = this.parseClass();
+            if (cls !== null) {
+                cls.leadingTrivia = leadingTrivia;
+                schema.classes[cls.name] = cls;
+                continue;
+            }
+
+            const enumObj = this.parseEnum();
+            if (enumObj !== null) {
+                enumObj.leadingTrivia = leadingTrivia;
+                schema.enums[enumObj.name] = enumObj;
+                continue;
+            }
+
+            this.reader.fail("expected 'class' or 'enum' here");
         }
         return schema;
     }

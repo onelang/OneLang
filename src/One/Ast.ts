@@ -17,6 +17,7 @@ export namespace OneAst {
         name?: string;
         values: EnumMember[];
         type?: Type;
+        leadingTrivia: string;
     }
 
     export interface EnumMember extends NamedItem {
@@ -210,6 +211,7 @@ export namespace OneAst {
         TemplateString = "TemplateString",
         Parenthesized = "Parenthesized",
         Unary = "Unary",
+        Cast = "Cast",
         ArrayLiteral = "ArrayLiteral",
         MapLiteral = "MapLiteral",
         VariableReference = "VariableReference",
@@ -350,6 +352,11 @@ export namespace OneAst {
         unaryType: "postfix"|"prefix";
         operator: string; //"++" | "--" | "+" | "-" | "~" | "!";
         operand: Expression;
+    }
+
+    export interface CastExpression extends Expression {
+        expression: Expression;
+        newType: Type;
     }
 
     export interface ParenthesizedExpression extends Expression {

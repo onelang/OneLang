@@ -10,7 +10,6 @@ export class ParseError {
 
 export class Reader {
     offset = 0;
-    line = 1;
     cursorSearch: CursorPositionSearch;
 
     lineComment = "//";
@@ -23,6 +22,8 @@ export class Reader {
 
     errors: ParseError[] = [];
     errorCallback: (error: ParseError) => void = null;
+
+    wsLineCounter = 0;
 
     constructor(public input: string) {
         this.cursorSearch = new CursorPositionSearch(input);
@@ -58,14 +59,12 @@ export class Reader {
     skipWhitespace() {
         for (; this.offset < this.input.length; this.offset++) {
             const c = this.input[this.offset];
-            const isNl = c === '\n';
-            const isWs = isNl || c === '\r' || c === '\t' || c === ' ';
+            
+            if (c === '\n')
+                this.wsLineCounter++;
 
-            if (!isWs)
+            if (!(c === '\n' || c === '\r' || c === '\t' || c === ' '))
                 break;
-
-            if (isNl)
-                this.line++;
         }
     }
 
@@ -81,19 +80,28 @@ export class Reader {
         return this.skipUntil("\n");
     }
 
-    readToken(token: string) {
-        this.skipWhitespace();
+    isAlphaNum(c: string) {
+        return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9') || c === '_';
+    }
 
-        // TODO: hackish way to make sure space comes after word tokens
-        if ('a' <= token[0] && token[0] <= 'z')
-            token += ' ';
+    peekToken(token: string) {
+        this.skipWhitespaceAndComment();
 
         if (this.input.startsWith(token, this.offset)) {
-            this.offset += token.length;
+            // TODO: hackish way to make sure space comes after word tokens
+            if (this.isAlphaNum(token[0]) && this.isAlphaNum(this.input[this.offset + token.length])) return false;
             return true;
         } else {
             return false;
         }
+    }
+
+    readToken(token: string) {
+        if (this.peekToken(token)) {
+            this.offset += token.length;
+            return true;
+        }
+        return false;
     }
 
     readAnyOf(tokens: string[]) {
@@ -116,8 +124,6 @@ export class Reader {
     }
 
     readRegex(pattern: string) {
-        this.skipWhitespace();
-
         const matches = one.Regex.matchFromIndex(pattern, this.input, this.offset);
         if (matches !== null)
             this.offset += matches[0].length;
@@ -127,9 +133,9 @@ export class Reader {
     skipWhitespaceAndComment() {
         while (true) {
             this.skipWhitespace();
-            if (this.readToken(this.lineComment)) {
+            if (this.input.startsWith(this.lineComment, this.offset)) {
                 this.skipLine();
-            } else if (this.supportsBlockComment && this.readToken(this.blockCommentStart)) {
+            } else if (this.supportsBlockComment && this.input.startsWith(this.blockCommentStart, this.offset)) {
                 if (!this.skipUntil(this.blockCommentEnd))
                     this.fail(`block comment end ("${this.blockCommentEnd}") was not found`);
             } else {
@@ -147,6 +153,7 @@ export class Reader {
     }
 
     readIdentifier() {
+        this.skipWhitespace();
         const idMatch = this.readRegex(this.identifierRegex);
         if (idMatch === null) return null;
 
@@ -154,6 +161,7 @@ export class Reader {
     }
 
     readNumber() {
+        this.skipWhitespace();
         const numMatch = this.readRegex(this.numberRegex);
         if (numMatch === null) return null;
 
@@ -164,6 +172,7 @@ export class Reader {
     }
 
     readString() {
+        this.skipWhitespace();
         const strMatch = this.readRegex("'(\\\\'|[^'])*'") || this.readRegex('"(\\\\"|[^"])*"');
         if (!strMatch) return null;
 
@@ -212,7 +221,9 @@ class CursorPositionSearch {
         while (low <= high) {
             const middle = Math.floor((low + high) / 2);
             const middleOffset = this.lineOffsets[middle];
-            if (offset <= middleOffset)
+            if (offset == middleOffset)
+                return middle;
+            else if (offset <= middleOffset)
                 high = middle - 1;
             else
                 low = middle + 1;

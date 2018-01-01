@@ -2,25 +2,24 @@ import { OneAst as ast } from "../../One/Ast";
 import { Reader } from "./Reader";
 
 class Operator {
-    constructor(public text: string, public precedence: number, public isBinary: boolean, public isRightAssoc: boolean, public isPostfix: boolean, public aliases: string[] = []) { }
+    constructor(public text: string, public precedence: number, public isBinary: boolean, public isRightAssoc: boolean, public isPostfix: boolean) { }
 }
 
 export interface ExpressionParserConfig {
     unary: string[];
     precedenceLevels: { name: string, operators?: string[], binary?: boolean }[];
     rightAssoc: string[];
-    aliases: { [opName: string]: string[] };
 }
 
 export class ExpressionParser {
     static defaultConfig = <ExpressionParserConfig> {
-        unary: ['!', '+', '-', '~'],
+        unary: ['!', 'not', '+', '-', '~'],
         precedenceLevels: [
-            { name: "assignment", operators: ['=', '+='], binary: true },
+            { name: "assignment", operators: ['=', '+=', '-=', '*=', '/=', '<<=', '>>='], binary: true },
             { name: "conditional", operators: ['?'] },
-            { name: "or", operators: ['||'], binary: true },
-            { name: "and", operators: ['&&'], binary: true },
-            { name: "comparison", operators: ['>=', '!=', '==', '<=', '>', '<'], binary: true },
+            { name: "or", operators: ['||', 'or'], binary: true },
+            { name: "and", operators: ['&&', 'and'], binary: true },
+            { name: "comparison", operators: ['>=', '!=', '===', '!==', '==', '<=', '>', '<'], binary: true },
             { name: "sum", operators: ['+','-'], binary: true },
             { name: "product", operators: ['*','/'], binary: true },
             { name: "exponent", operators: ['**'], binary: true },
@@ -29,19 +28,24 @@ export class ExpressionParser {
             { name: "call", operators: ['('] },
             { name: "propertyAccess", operators: ['.', '['] },
         ],
-        rightAssoc: ['**'],
-        aliases: { '!': ["not"], '&&': ["and"], '||': ["or"] },
+        rightAssoc: ['**']
     };
 
-    operatorMap: { [name: string]: Operator } = {};
+    config: ExpressionParserConfig;
+    operatorMap: { [name: string]: Operator };
     operators: string[];
     prefixPrecedence: number;
 
-    constructor(public reader: Reader, public config: ExpressionParserConfig = ExpressionParser.defaultConfig) {
+    unaryPrehook: () => ast.Expression = null;
+
+    constructor(public reader: Reader) {
+        this.config = JSON.parse(JSON.stringify(ExpressionParser.defaultConfig));
         this.reconfigure();
     }
 
     reconfigure() {
+        this.operatorMap = {};
+
         for (let i = 0; i < this.config.precedenceLevels.length; i++) {
             const level = this.config.precedenceLevels[i];
             const precedence = i + 1;
@@ -52,11 +56,9 @@ export class ExpressionParser {
 
             for (const opText of level.operators) {
                 const op = new Operator(opText, precedence, level.binary, 
-                    this.config.rightAssoc.includes(opText), level.name == "postfix", this.config.aliases[opText] || []);
+                    this.config.rightAssoc.includes(opText), level.name == "postfix");
 
                 this.operatorMap[opText] = op;
-                for (const alias of op.aliases)
-                    this.operatorMap[alias] = op;
             }
         }
 
@@ -64,11 +66,18 @@ export class ExpressionParser {
     }
 
     parseLeft(): ast.Expression {
-        const id = this.reader.readIdentifier();
-        if (id !== null) {
-            if (this.operators.includes(id)) return null;
-            return <ast.Identifier> { exprKind: "Identifier", text: id };
+        const result = this.unaryPrehook && this.unaryPrehook();
+        if (result !== null) return result;
+
+        const unary = this.reader.readAnyOf(this.config.unary);
+        if (unary !== null) {
+            const right = this.parse(this.prefixPrecedence);
+            return <ast.UnaryExpression> { exprKind: "Unary", unaryType: "prefix", operator: unary, operand: right };
         }
+
+        const id = this.reader.readIdentifier();
+        if (id !== null)
+            return <ast.Identifier> { exprKind: "Identifier", text: id };
 
         const num = this.reader.readNumber();
         if (num !== null)
@@ -77,12 +86,6 @@ export class ExpressionParser {
         const str = this.reader.readString();
         if (str !== null)
             return <ast.Literal> { exprKind: "Literal", literalType: "string", value: str };
-
-        const unary = this.reader.readAnyOf(this.config.unary);
-        if (unary !== null) {
-            const right = this.parse(this.prefixPrecedence);
-            return <ast.UnaryExpression> { exprKind: "Unary", unaryType: "prefix", operator: unary, operand: right };
-        }
 
         if (this.reader.readToken("(")) {
             const expr = this.parse();
@@ -126,10 +129,25 @@ export class ExpressionParser {
     parseOperator() {
         let op: Operator = null;
         for (const opText of this.operators)
-            if (this.reader.readToken(opText))
+            if (this.reader.peekToken(opText))
                 return this.operatorMap[opText];
 
         return null;
+    }
+
+    parseCallArguments() {
+        const args: ast.Expression[] = [];
+
+        if (!this.reader.readToken(")")) {
+            do {
+                const arg = this.parse();
+                args.push(arg);
+            } while (this.reader.readToken(","));
+
+            this.reader.expectToken(")");
+        }
+
+        return args;
     }
 
     parse(precedence = 0): ast.Expression {
@@ -138,6 +156,7 @@ export class ExpressionParser {
         while(true) {
             const op = this.parseOperator();
             if (op === null || op.precedence <= precedence) break;
+            this.reader.expectToken(op.text);
 
             if (op.isBinary) {
                 const right = this.parse(op.isRightAssoc ? op.precedence - 1 : op.precedence);
@@ -150,17 +169,7 @@ export class ExpressionParser {
                 const whenFalse = this.parse(op.precedence - 1);
                 left = <ast.ConditionalExpression> { exprKind: "Conditional", condition: left, whenTrue, whenFalse };
             } else if (op.text === "(") {
-                const args = [];
-
-                if (!this.reader.readToken(")")) {
-                    do {
-                        const arg = this.parse();
-                        args.push(arg);
-                    } while (this.reader.readToken(","));
-
-                    this.reader.expectToken(")");
-                }
-
+                const args = this.parseCallArguments();
                 left = <ast.CallExpression> { exprKind: "Call", method: left, arguments: args };
             } else if (op.text === "[") {
                 const elementExpr = this.parse();
