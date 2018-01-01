@@ -1,7 +1,7 @@
 import * as one from "../../StdLib/one";
 
 export class Cursor {
-    constructor(public offset: number, public line: number, public column: number) { }
+    constructor(public offset: number, public line: number, public column: number, public lineStart: number, public lineEnd: number) { }
 }
 
 export class ParseError {
@@ -32,6 +32,12 @@ export class Reader {
 
     get cursor() { return this.cursorSearch.getCursorForOffset(this.offset); }
 
+    get linePreview() {
+        const cursor = this.cursor;
+        const line = this.input.substring(cursor.lineStart, cursor.lineEnd);
+        return line + " ".repeat(cursor.column - 1) + "^^^";
+    }
+
     get preview() {
         let preview = this.input.substr(this.offset, 20).replace(/\n/g, "\\n");
         if (preview.length === 20)
@@ -46,7 +52,7 @@ export class Reader {
         if (this.errorCallback)
             this.errorCallback(error);
         else
-            throw new Error(`${message} at ${error.cursor.line}:${error.cursor.column}: "${this.preview}"`);
+            throw new Error(`${message} at ${error.cursor.line}:${error.cursor.column}\n${this.linePreview}`);
     }
 
     skipWhitespace() {
@@ -94,12 +100,19 @@ export class Reader {
         for (const token of tokens)
             if (this.readToken(token))
                 return token;
-        return "";
+        return null;
     }
 
     expectToken(token: string, errorMsg: string = null) {
         if (!this.readToken(token))
             this.fail(errorMsg || `expected token '${token}'`);
+    }
+
+    expectOneOf(tokens: string[]) {
+        const result = this.readAnyOf(tokens);
+        if (result === null)
+            this.fail(`expected one of ${tokens.map(x => `'${x}'`).join(", ")}`);
+        return result;
     }
 
     readRegex(pattern: string) {
@@ -135,14 +148,14 @@ export class Reader {
 
     readIdentifier() {
         const idMatch = this.readRegex(this.identifierRegex);
-        if (idMatch === null) return "";
+        if (idMatch === null) return null;
 
         return idMatch[0];
     }
 
     readNumber() {
         const numMatch = this.readRegex(this.numberRegex);
-        if (numMatch === null) return "";
+        if (numMatch === null) return null;
 
         if (this.readRegex("[0-9a-zA-Z]") !== null)
             this.fail("invalid character in number");
@@ -152,16 +165,16 @@ export class Reader {
 
     readString() {
         const strMatch = this.readRegex("'(\\\\'|[^'])*'") || this.readRegex('"(\\\\"|[^"])*"');
-        if (!strMatch) return "";
+        if (!strMatch) return null;
 
-        let str = strMatch[0].substr(1, strMatch.length - 2);
+        let str = strMatch[0].substr(1, strMatch[0].length - 2);
         str = strMatch[0] === "'" ? str.replace("\\'", "'") : str.replace('\\"', '"');
         return str;
     }
 
     expectIdentifier(errorMsg: string = null) {
         const id = this.readIdentifier();
-        if (id === "")
+        if (id === null)
             this.fail(errorMsg || "expected identifier");
         return id;
     }
@@ -190,30 +203,31 @@ class CursorPositionSearch {
         for (let i = 0; i < input.length; i++)
             if (input[i] === '\n')
                 this.lineOffsets.push(i + 1);
+        this.lineOffsets.push(input.length);
     }
 
     getLineIdxForOffset(offset: number) {
-        let start = 0, end = this.lineOffsets.length - 1;
+        let low = 0, high = this.lineOffsets.length - 1;
 
-        while (start < end) {
-            const middle = Math.floor((start + end) / 2);
+        while (low <= high) {
+            const middle = Math.floor((low + high) / 2);
             const middleOffset = this.lineOffsets[middle];
-            if (offset < middleOffset)
-                end = middle - 1;
-            else if (offset > middleOffset)
-                start = middle + 1;
+            if (offset <= middleOffset)
+                high = middle - 1;
             else
-                return middle;
+                low = middle + 1;
         }
 
-        if (start !== end)
-            debugger;
-
-        return start - 1;
+        return low - 1;
     }
 
     getCursorForOffset(offset: number) {
         const lineIdx = this.getLineIdxForOffset(offset);
-        return new Cursor(offset, lineIdx + 1, offset - this.lineOffsets[lineIdx] + 1);
+        const lineStart = this.lineOffsets[lineIdx];
+        const lineEnd = this.lineOffsets[lineIdx + 1];
+        const column = offset - lineStart + 1;
+        if (column < 1)
+            debugger;
+        return new Cursor(offset, lineIdx + 1, offset - lineStart + 1, lineStart, lineEnd);
     }
 }
