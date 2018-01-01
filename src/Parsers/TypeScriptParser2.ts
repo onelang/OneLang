@@ -12,7 +12,7 @@ export class TypeScriptParser2 {
         this.reader = new Reader(source);
         this.expressionParser = new ExpressionParser(this.reader);
         this.reader.errorCallback = error => {
-            throw new Error(`[TypeScriptParser] ${error.message} at ${error.cursor.line}:${error.cursor.column}: "${this.reader.preview}" (context: ${this.context.join("/")})`);
+            throw new Error(`[TypeScriptParser] ${error.message} at ${error.cursor.line}:${error.cursor.column} (context: ${this.context.join("/")})\n${this.reader.linePreview}`);
         };
     }
 
@@ -58,28 +58,88 @@ export class TypeScriptParser2 {
             this.reader.fail(`expected type declaration or initializer`);
     }
 
-    parseBlock() {
-        const block = <ast.Block> { statements: [] };
+    parseBlockOrStatement() {
+        const block = this.parseBlock();
+        if (block !== null) return block;
 
-        this.reader.expectToken("{");
+        const stmt = this.parseStatement();
+        if (stmt === null)
+            this.reader.fail("expected block or statement");
+
+        return <ast.Block> { statements: [stmt] };
+    }
+
+    parseStatement() {
+        let statement: ast.Statement = null;
+
+        const leadingTrivia = this.reader.readLeadingTrivia();
+
+        const varDeclMatches = this.reader.readRegex("(const|let|var)\\b");
+        if (varDeclMatches !== null) {
+            const varDecl = statement = <ast.VariableDeclaration> { stmtType: ast.StatementType.VariableDeclaration };
+            varDecl.name = this.reader.expectIdentifier("expected variable name");
+            this.parseVarDeclTypeAndInit(varDecl);
+        } else if (this.reader.readToken("delete")) {
+            const unsetStmt = statement = <ast.UnsetStatement> { stmtType: ast.StatementType.Unset };
+            unsetStmt.expression = this.parseExpression();
+        } else if (this.reader.readToken("if")) {
+            const ifStmt = statement = <ast.IfStatement> { stmtType: ast.StatementType.If };
+            this.reader.expectToken("(");
+            ifStmt.condition = this.parseExpression();
+            this.reader.expectToken(")");
+            ifStmt.then = this.parseBlockOrStatement();
+            if (this.reader.readToken("else"))
+                ifStmt.else = this.parseBlockOrStatement();
+        } else if (this.reader.readToken("for")) {
+            this.reader.expectToken("(");
+            const varDeclMod = this.reader.readAnyOf(["const", "let", "var"]);
+            const itemVarName = this.reader.readIdentifier();
+            if (this.reader.readToken("of")) {
+                const foreachStmt = statement = <ast.ForeachStatement> { 
+                    stmtType: ast.StatementType.Foreach,
+                    itemVariable: <ast.VariableBase> { name: itemVarName }
+                };
+                foreachStmt.items = this.parseExpression();
+                this.reader.expectToken(")");
+                foreachStmt.body = this.parseBlockOrStatement();
+            } else {
+                const forStmt = statement = <ast.ForStatement> {
+                    stmtType: ast.StatementType.For,
+                    itemVariable: <ast.VariableDeclaration> { name: itemVarName }
+                };
+                this.parseVarDeclTypeAndInit(forStmt.itemVariable);
+                this.reader.expectToken(";");
+                forStmt.condition = this.parseExpression();
+                this.reader.expectToken(";");
+                forStmt.incrementor = this.parseExpression();
+                this.reader.expectToken(")");
+                forStmt.body = this.parseBlockOrStatement();
+            }
+        } else if (this.reader.readToken("return")) {
+            const returnStmt = statement = <ast.ReturnStatement> { stmtType: ast.StatementType.Return };
+            returnStmt.expression = this.parseExpression();
+        } else {
+            const expr = this.parseExpression();
+            statement = <ast.ExpressionStatement> { stmtType: ast.StatementType.ExpressionStatement, expression: expr };
+        }
+
+        if (statement === null)
+            this.reader.fail("unknown statement");
+
+        statement.leadingTrivia = leadingTrivia;
+
+        this.reader.readToken(";");
+        return statement;
+    }
+
+    parseBlock() {
+        if (!this.reader.readToken("{")) return null;
+
+        const block = <ast.Block> { statements: [] };
         if (this.reader.readToken("}")) return block;
 
         do {
-            let statement: ast.Statement = null;
-
-            const leadingTrivia = this.reader.readLeadingTrivia();
-
-            const varDeclMatches = this.reader.readRegex("(const|let|var)\\b");
-            if (varDeclMatches !== null) {
-                const varDecl = statement = <ast.VariableDeclaration> { stmtType: ast.StatementType.VariableDeclaration };
-                varDecl.name = this.reader.expectIdentifier("expected variable name");
-                this.parseVarDeclTypeAndInit(varDecl);
-            }
-
-            if (statement === null)
-                this.reader.fail("unknown statement");
-
-            this.reader.expectToken(";");
+            const statement = this.parseStatement();
             block.statements.push(statement);
         } while(!this.reader.readToken("}"));
 
@@ -126,6 +186,8 @@ export class TypeScriptParser2 {
                     method.returns = this.parseType();
 
                 method.body = this.parseBlock();
+                if (method.body === null)
+                    this.reader.fail("method body is missing");
 
                 this.context.pop();
             } else {
@@ -145,15 +207,21 @@ export class TypeScriptParser2 {
     }
 
     parseFile() {
+        const schema = <ast.Schema> { classes: {} };
         while (!this.reader.eof) {
             const leadingTrivia = this.reader.readLeadingTrivia();
+            if (this.reader.eof) break;
+
             const cls = this.tryToParseClass();
             if (cls === null)
                 this.reader.fail("expected 'class' here");
+            cls.leadingTrivia = leadingTrivia;
+            schema.classes[cls.name] = cls;
         }
+        return schema;
     }
 
     parse() {
-        this.parseFile();
+        return this.parseFile();
     }
 }

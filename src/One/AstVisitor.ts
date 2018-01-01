@@ -51,7 +51,7 @@ export abstract class AstVisitor<TContext> {
     }
 
     protected visitForeachStatement(stmt: one.ForeachStatement, context: TContext) {
-        this.visitVariableDeclaration(stmt.itemVariable, context);
+        this.visitVariable(stmt.itemVariable, context);
         this.visitExpression(stmt.items, context);
         this.visitBlock(stmt.body, context);
     }

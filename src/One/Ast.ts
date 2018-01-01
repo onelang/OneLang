@@ -35,7 +35,8 @@ export namespace OneAst {
             iterable?: boolean;
             overlay?: boolean;
             stdlib?: boolean;
-        }
+        };
+        leadingTrivia: string;
     }
 
     export enum Visibility { Public = "public", Protected = "protected", Private = "private" }
@@ -383,6 +384,7 @@ export namespace OneAst {
         Foreach = "Foreach",
         For = "For",
         Break = "Break",
+        Unset = "Unset",
     }
 
     export interface Statement {
@@ -410,6 +412,10 @@ export namespace OneAst {
         expression: Expression;
     }
 
+    export interface UnsetStatement extends Statement {
+        expression: Expression;
+    }
+
     export interface VariableDeclaration extends Statement, VariableBase {
         initializer?: Expression;
     }
@@ -420,7 +426,7 @@ export namespace OneAst {
     }
 
     export interface ForeachStatement extends Statement, NamedItem {
-        itemVariable: VariableDeclaration;
+        itemVariable: VariableBase;
         items: Expression;
         body: Block;
     }

@@ -1,3 +1,4 @@
+require("../Utils/Extensions.js");
 import { writeFile, readFile } from "../Utils/NodeUtils";
 import { TypeScriptParser2 } from "../Parsers/TypeScriptParser2";
 
