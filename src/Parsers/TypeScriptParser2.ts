@@ -168,9 +168,15 @@ export class TypeScriptParser2 {
         } else if (this.reader.readToken("return")) {
             const returnStmt = statement = <ast.ReturnStatement> { stmtType: ast.StatementType.Return };
             returnStmt.expression = this.reader.peekToken(";") ? null : this.parseExpression();
+        } else if (this.reader.readToken("break")) {
+            statement = <ast.Statement> { stmtType: ast.StatementType.Break };
         } else {
             const expr = this.parseExpression();
             statement = <ast.ExpressionStatement> { stmtType: ast.StatementType.ExpressionStatement, expression: expr };
+            if (!(expr.exprKind === ast.ExpressionKind.Call ||
+                (expr.exprKind === ast.ExpressionKind.Binary && ["=", "+=", "-="].includes((<ast.BinaryExpression> expr).operator)) ||
+                (expr.exprKind === ast.ExpressionKind.Unary && ["++", "--"].includes((<ast.UnaryExpression> expr).operator))))
+                this.reader.fail("this expression is not allowed as statement");
         }
 
         if (statement === null)
@@ -179,7 +185,7 @@ export class TypeScriptParser2 {
         statement.leadingTrivia = leadingTrivia;
         const statementLastLine = this.reader.wsLineCounter;
         if (!this.reader.readToken(";") && requiresClosing && this.reader.wsLineCounter === statementLastLine)
-            debugger;
+            this.reader.fail("statement is not closed");
 
         return statement;
     }
