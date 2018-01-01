@@ -1,6 +1,7 @@
 import * as one from "../StdLib/one";
 import { OneAst as ast } from "../One/Ast";
 import { Reader } from "./Common/Reader";
+import { ExpressionParser } from "./Common/ExpressionParser";
 
 export class TypeScriptParser2 {
     context: string[] = [];
@@ -9,6 +10,7 @@ export class TypeScriptParser2 {
 
     constructor(source: string) {
         this.reader = new Reader(source);
+        this.expressionParser = new ExpressionParser(this.reader);
         this.reader.errorCallback = error => {
             throw new Error(`[TypeScriptParser] ${error.message} at ${error.cursor.line}:${error.cursor.column}: "${this.reader.preview}" (context: ${this.context.join("/")})`);
         };
@@ -42,8 +44,7 @@ export class TypeScriptParser2 {
     }
 
     parseExpression() {
-        this.fail("expression parsing is not implemented yet");
-        return null;
+        return this.expressionParser.parse();
     }
 
     parseVarDeclTypeAndInit(varDecl: ast.VariableDeclaration, optional: boolean = false) {

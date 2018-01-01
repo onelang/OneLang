@@ -347,7 +347,7 @@ export namespace OneAst {
 
     export interface UnaryExpression extends Expression {
         unaryType: "postfix"|"prefix";
-        operator: "++" | "--" | "+" | "-" | "~" | "!";
+        operator: string; //"++" | "--" | "+" | "-" | "~" | "!";
         operand: Expression;
     }
 
