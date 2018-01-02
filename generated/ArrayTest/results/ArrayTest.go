@@ -10,12 +10,12 @@ func NewTestClass() *TestClass {
 }
 
 func (this *TestClass) TestMethod() {
-    constant_arr := []int{5}
+    constantArr := []int{5}
     
-    mutable_arr := []int{1}
-    mutable_arr = append(mutable_arr, 2)
+    mutableArr := []int{1}
+    mutableArr = append(mutableArr, 2)
     
-    fmt.Println(fmt.Sprintf("len1: %v, len2: %v", len(constant_arr), len(mutable_arr)))
+    fmt.Println(fmt.Sprintf("len1: %v, len2: %v", len(constantArr), len(mutableArr)))
 }
 
 func init() {

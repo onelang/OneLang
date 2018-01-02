@@ -10,13 +10,13 @@ func NewMapTestClass() *MapTestClass {
 }
 
 func (this *MapTestClass) MapTest() {
-    map_obj := map[string]int{
+    mapObj := map[string]int{
       "x": 5,
     }
     //let containsX = "x" in mapObj;
     //delete mapObj["x"];
-    map_obj["x"] = 3
-    return map_obj["x"]
+    mapObj["x"] = 3
+    return mapObj["x"]
 }
 
 func init() {

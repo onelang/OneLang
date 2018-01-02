@@ -13,8 +13,8 @@ func NewTestClass() *TestClass {
 
 func (this *TestClass) TestMethod() string {
     file_content_bytes, _ := ioutil.ReadFile("../../input/test.txt")
-    file_content := string(file_content_bytes)
-    return file_content
+    fileContent := string(file_content_bytes)
+    return fileContent
 }
 
 func init() {

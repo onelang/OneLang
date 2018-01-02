@@ -9,7 +9,7 @@ func NewTestClass() *TestClass {
     return this
 }
 
-func (this *TestClass) MethodTest(method_param []string) {
+func (this *TestClass) MethodTest(methodParam []string) {
 }
 
 func (this *TestClass) TestMethod() {

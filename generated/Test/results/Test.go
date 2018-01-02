@@ -10,24 +10,24 @@ func NewTestClass() *TestClass {
 }
 
 func (this *TestClass) MapTest() int {
-    map_obj := map[string]int{
+    mapObj := map[string]int{
       "x": 5,
       "y": 3,
     }
     
     //let containsX = "x" in mapObj;
-    map_obj["z"] = 9
-    delete(map_obj, "x")
+    mapObj["z"] = 9
+    delete(mapObj, "x")
     
-    keys_var := make([]string, 0, len(map_obj))
-    for  key, _ := range map_obj {
-      keys_var = append(keys_var, key)
+    keysVar := make([]string, 0, len(mapObj))
+    for  key, _ := range mapObj {
+      keysVar = append(keysVar, key)
     }
-    values_var := make([]int, 0, len(map_obj))
-    for  _, value := range map_obj {
-      values_var = append(values_var, value)
+    valuesVar := make([]int, 0, len(mapObj))
+    for  _, value := range mapObj {
+      valuesVar = append(valuesVar, value)
     }
-    return map_obj["z"]
+    return mapObj["z"]
 }
 
 func (this *TestClass) ExplicitTypeTest() {
@@ -64,26 +64,26 @@ func (this *TestClass) IfTest(x int) string {
 func (this *TestClass) ArrayTest() {
     //const c2 = new Class2();
     
-    mutable_arr := []int{1, 2}
-    mutable_arr = append(mutable_arr, 3)
-    mutable_arr = append(mutable_arr, 4)
+    mutableArr := []int{1, 2}
+    mutableArr = append(mutableArr, 3)
+    mutableArr = append(mutableArr, 4)
     // mutableArr.push(c2.property);
     // mutableArr.push(c2.child.property);
     // mutableArr.push(c2.child.child.property);
     
-    constant_arr := []int{5, 6}
+    constantArr := []int{5, 6}
     
     // some comment
     //   some comment line 2
-    for _, item := range mutable_arr {
+    for _, item := range mutableArr {
         fmt.Println(item)
     }
     
     /* some other comment
        multiline and stuff
     */
-    for i := 0; i < len(constant_arr); i++ {
-        fmt.Println(constant_arr[i])
+    for i := 0; i < len(constantArr); i++ {
+        fmt.Println(constantArr[i])
     }
 }
 

@@ -12,14 +12,14 @@ func NewTestClass() *TestClass {
 }
 
 func (this *TestClass) TestMethod() {
-    str_val := "str"
+    strVal := "str"
     num := 1337
     b := true
-    result := fmt.Sprintf("before %v, num: %v, true: %v after", str_val, num, b)
+    result := fmt.Sprintf("before %v, num: %v, true: %v after", strVal, num, b)
     fmt.Println(result)
-    fmt.Println(fmt.Sprintf("before %v, num: %v, true: %v after", str_val, num, b))
+    fmt.Println(fmt.Sprintf("before %v, num: %v, true: %v after", strVal, num, b))
     
-    result2 := "before " + str_val + ", num: " + strconv.Itoa(num) + ", true: " + strconv.FormatBool(b) + " after"
+    result2 := "before " + strVal + ", num: " + strconv.Itoa(num) + ", true: " + strconv.FormatBool(b) + " after"
     fmt.Println(result2)
 }
 

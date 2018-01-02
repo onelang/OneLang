@@ -55,11 +55,11 @@ func NewExprLangLexer(expression string, operators []string) *ExprLangLexer {
 }
 
 func (this *ExprLangLexer) Fail(message string) {
-    end_offset := this.Offset + 30
-    if end_offset > len(this.Expression) {
-        end_offset = len(this.Expression)
+    endOffset := this.Offset + 30
+    if endOffset > len(this.Expression) {
+        endOffset = len(this.Expression)
     }
-    context := this.Expression[this.Offset:end_offset] + "..."
+    context := this.Expression[this.Offset:endOffset] + "..."
     panic(fmt.Sprintf("TokenizerException: %v at '%v' (offset: %v)", message, context, this.Offset))
 }
 

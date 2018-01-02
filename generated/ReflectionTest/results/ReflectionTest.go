@@ -53,16 +53,16 @@ func (this *TestClass) TestMethod() {
         fmt.Println("method1 is null!")
         return
     }
-    method1_result := method1.Call(obj, []interface{}{})
-    fmt.Println(fmt.Sprintf("instanceMethod: %v", method1_result))
+    method1Result := method1.Call(obj, []interface{}{})
+    fmt.Println(fmt.Sprintf("instanceMethod: %v", method1Result))
     
     method2 := cls.GetMethod("staticMethod")
     if method2 == nil {
         fmt.Println("method2 is null!")
         return
     }
-    method2_result := method2.Call(nil, []interface{}{"arg1value"})
-    fmt.Println(fmt.Sprintf("staticMethod: %v", method2_result))
+    method2Result := method2.Call(nil, []interface{}{"arg1value"})
+    fmt.Println(fmt.Sprintf("staticMethod: %v", method2Result))
     
     field1 := cls.GetField("instanceField")
     if field1 == nil {
@@ -70,8 +70,8 @@ func (this *TestClass) TestMethod() {
         return
     }
     field1.SetValue(obj, 6)
-    field1_new_val := field1.GetValue(obj)
-    fmt.Println(fmt.Sprintf("new instance field value: %v == %v", obj.InstanceField, field1_new_val))
+    field1NewVal := field1.GetValue(obj)
+    fmt.Println(fmt.Sprintf("new instance field value: %v == %v", obj.InstanceField, field1NewVal))
     
     field2 := cls.GetField("staticField")
     if field2 == nil {
@@ -79,8 +79,8 @@ func (this *TestClass) TestMethod() {
         return
     }
     field2.SetValue(nil, "bello")
-    field2_new_val := field2.GetValue(nil)
-    fmt.Println(fmt.Sprintf("new static field value: %v == %v", TargetClassStaticField, field2_new_val))
+    field2NewVal := field2.GetValue(nil)
+    fmt.Println(fmt.Sprintf("new static field value: %v == %v", TargetClassStaticField, field2NewVal))
 }
 
 func init() {

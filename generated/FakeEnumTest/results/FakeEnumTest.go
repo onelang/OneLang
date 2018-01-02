@@ -24,8 +24,8 @@ func NewTestClass() *TestClass {
 }
 
 func (this *TestClass) TestMethod() string {
-    casing_test := TokenTypeEndToken
-    return casing_test
+    casingTest := TokenTypeEndToken
+    return casingTest
 }
 
 func init() {

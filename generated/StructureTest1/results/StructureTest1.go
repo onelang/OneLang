@@ -16,12 +16,12 @@ type Item struct {
     StrConstr string
 }
 
-func NewItem(str_constr string) *Item {
+func NewItem(strConstr string) *Item {
     this := new(Item)
     this.Offset = 5
     this.StrTest = "test" + "test2"
     this.StrConstr = "constr"
-    this.StrConstr = str_constr
+    this.StrConstr = strConstr
     return this
 }
 

@@ -27,7 +27,7 @@ func NewMain() *Main {
 func (this *Main) Test() {
     map := NewMapX()
     map.Set("hello", 3)
-    num_value := map.Get("hello2")
+    numValue := map.Get("hello2")
 }
 
 func init() {

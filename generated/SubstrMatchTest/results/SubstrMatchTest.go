@@ -11,11 +11,11 @@ func NewTestClass() *TestClass {
 
 func (this *TestClass) TestMethod() {
     str := "ABCDEF"
-    t_a0_true := str[0:0 + len("A")] == "A"
-    t_a1_false := str[1:1 + len("A")] == "A"
-    t_b1_true := str[1:1 + len("B")] == "B"
-    t_c_d2_true := str[2:2 + len("CD")] == "CD"
-    fmt.Println(fmt.Sprintf("%v %v %v %v", t_a0_true, t_a1_false, t_b1_true, t_c_d2_true))
+    tA0True := str[0:0 + len("A")] == "A"
+    tA1False := str[1:1 + len("A")] == "A"
+    tB1True := str[1:1 + len("B")] == "B"
+    tCD2True := str[2:2 + len("CD")] == "CD"
+    fmt.Println(fmt.Sprintf("%v %v %v %v", tA0True, tA1False, tB1True, tCD2True))
 }
 
 func init() {

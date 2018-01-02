@@ -19,9 +19,9 @@ type Token struct {
     IsOperator bool
 }
 
-func NewToken(value string, is_operator bool) *Token {
+func NewToken(value string, isOperator bool) *Token {
     this := new(Token)
-    this.IsOperator = is_operator
+    this.IsOperator = isOperator
     this.Value = value
     return this
 }
@@ -77,18 +77,18 @@ func (this *Tokenizer) Tokenize() []*Token {
     result := []*Token{}
     
     for this.Offset < len(this.Text) {
-        char_type := this.GetTokenType()
+        charType := this.GetTokenType()
         
-        if char_type == TokenTypeWhitespace {
+        if charType == TokenTypeWhitespace {
             for this.GetTokenType() == TokenTypeWhitespace {
                 this.Offset++
             }
-        } else if char_type == TokenTypeIdentifier {
-            start_offset := this.Offset
+        } else if charType == TokenTypeIdentifier {
+            startOffset := this.Offset
             for this.GetTokenType() == TokenTypeIdentifier {
                 this.Offset++
             }
-            identifier := this.Text[start_offset:this.Offset]
+            identifier := this.Text[startOffset:this.Offset]
             result = append(result, NewToken(identifier, false))
         } else {
             op := ""
