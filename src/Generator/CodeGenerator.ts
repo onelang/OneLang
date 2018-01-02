@@ -133,7 +133,7 @@ class CodeGeneratorModel {
         });
 
         const stdMethod = this.generator.stdlib.classes[className].methods[methodName];
-        const methodArgs = stdMethod.parameters.map(x => x.name);
+        const methodArgs = stdMethod.parameters.map(x => x.outName);
         const exprCallArgs = callExpr.arguments.map(x => this.gen(x));
 
         if (methodArgs.length !== exprCallArgs.length)
@@ -174,7 +174,7 @@ class CodeGeneratorModel {
 
             // TODO: move this to AST visitor
             for (let i = 0; i < methodArgs.length; i++)
-                callExpr.arguments[i].paramName = methodArgs[i].name;
+                callExpr.arguments[i].paramName = methodArgs[i].outName;
         } else if (type === one.ExpressionKind.New) {
             const callExpr = <one.NewExpression> obj;
 
@@ -189,7 +189,7 @@ class CodeGeneratorModel {
 
             // TODO: move this to AST visitor
             for (let i = 0; i < methodArgs.length; i++)
-                callExpr.arguments[i].paramName = methodArgs[i].name;
+                callExpr.arguments[i].paramName = methodArgs[i].outName;
         } else if (type === one.ExpressionKind.VariableReference) {
             const varRef = <one.VariableRef> obj;
             if (varRef.varType === one.VariableRefType.InstanceField) {
@@ -255,7 +255,7 @@ class CodeGeneratorModel {
                     && this.generator.expressionGenerators["MapLiteralDeclaration"])
                 genName = "MapLiteralDeclaration";
             else if (initType === one.ExpressionKind.Call) {
-                const overlayCall = this.getOverlayCallCode(<one.CallExpression> varDecl.initializer, { result: varDecl.name });
+                const overlayCall = this.getOverlayCallCode(<one.CallExpression> varDecl.initializer, { result: varDecl.outName });
                 if (overlayCall)
                     return overlayCall;
             }
@@ -379,7 +379,7 @@ export class CodeGenerator {
     genParameters(method: one.Method|one.Constructor) {
         return method.parameters.map((param, idx) => <CodeGeneratorModel.MethodParameter> {
             idx,
-            name: param.name,
+            name: param.outName,
             type: this.getTypeName(param.type),
             typeInfo: param.type
         });
@@ -482,7 +482,7 @@ export class CodeGenerator {
             for (const methodName of Object.keys(cls.methods||[])) {
                 const funcInfo = cls.methods[methodName]; 
                 const stdMethod = this.stdlib.classes[clsName].methods[methodName]; 
-                const methodArgs = stdMethod ? stdMethod.parameters.map(x => x.outName || x.name) : []; 
+                const methodArgs = stdMethod ? stdMethod.parameters.map(x => x.outName) : []; 
                 const funcArgs = ["self", "typeArgs", ...methodArgs, ...funcInfo.extraArgs||[]];
                 clsGen.methods[methodName] = new TemplateMethod(methodName, funcArgs, funcInfo.template);
             }
