@@ -1,5 +1,5 @@
 extension: pl
-casing:
+casing: # based on https://swift.org/documentation/api-design-guidelines/
   class: pascal_case
   method: snake_case
   field: snake_case
@@ -239,7 +239,7 @@ templates:
   
   varName:
     args: [{ name: item }]
-    template: "{{genType(item.type)}}{{item.name}}"
+    template: "{{genType(item.type)}}{{item.outName}}"
 expressions:
   call: |-
     {{gen(expr.method)}}(

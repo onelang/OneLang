@@ -1,11 +1,11 @@
 extension: cs
-casing:
+casing: # based on https://msdn.microsoft.com/en-us/library/x2dbyw72(v=vs.71).aspx
   class: pascal_case
   method: pascal_case
   enum: pascal_case
   enumMember: pascal_case
   variable: camel_case
-  field: pascal_case
+  field: pascal_case # TODO: private
   property: pascal_case
 primitiveTypes:
   void: void
@@ -164,7 +164,7 @@ templates:
   genVar:
     args:
       - name: itemVar
-    template: "{{if itemVar.isUnused}}/* UNUSED: {{/if}}var {{itemVar.name}} = {{if itemVar.isUnused}}*/ {{/if}}{{gen(itemVar.initializer)}}"
+    template: "{{if itemVar.isUnused}}/* UNUSED: {{/if}}var {{itemVar.outName}} = {{if itemVar.isUnused}}*/ {{/if}}{{gen(itemVar.initializer)}}"
 expressions:
   call: "{{gen(expr.method)}}({{genParams(expr.arguments)}})"
   propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
@@ -197,8 +197,8 @@ expressions:
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
   staticMethod: "{{expr.methodRef.classRef.outName}}.{{expr.methodRef.outName}}"
-  localVar: "{{expr.varRef.name}}"
-  methodArgument: "{{expr.varRef.name}}"
+  localVar: "{{expr.varRef.outName}}"
+  methodArgument: "{{expr.varRef.outName}}"
   instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.outName}}"
   staticField: "{{if expr.thisExpr.exprKind != 'ThisReference'}}{{gen(expr.thisExpr)}}.{{/if}}{{expr.varRef.outName}}"
   falseLiteral: "false"
@@ -223,7 +223,7 @@ expressions:
     {{/for}}
     "
   foreach: |-
-    foreach (var {{expr.itemVariable.name}} in {{gen(expr.items)}})
+    foreach (var {{expr.itemVariable.outName}} in {{gen(expr.items)}})
     {
         {{genBody(expr.body)}}
     }

@@ -102,7 +102,7 @@ export class SchemaCaseConverter extends AstVisitor<void> {
 
     protected visitVariable(stmt: one.VariableBase) {
         super.visitVariable(stmt, null);
-        stmt.name = this.getName(stmt.name, "variable");
+        stmt.outName = this.getName(stmt.name, "variable");
     }
 
     process(schema: one.Schema) {

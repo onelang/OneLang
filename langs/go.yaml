@@ -1,8 +1,10 @@
 extension: go
-casing:
+casing: # based on https://golang.org/doc/effective_go.html#mixed-caps
   class: pascal_case
   method: pascal_case
-  field: pascal_case
+  field: pascal_case # TODO: private
+  variable: camel_case # TODO: private
+  property: pascal_case # TODO: private
   enum: pascal_case
   enumMember: upper_case
 primitiveTypes:
@@ -233,7 +235,7 @@ templates:
   genVar:
     args:
       - name: itemVar
-    template: "{{itemVar.name}} := {{gen(itemVar.initializer)}}"
+    template: "{{itemVar.outName}} := {{gen(itemVar.initializer)}}"
 expressions:
   call: |-
     {{gen(expr.method)}}(
@@ -267,8 +269,8 @@ expressions:
   expressionStatement: "{{gen(expr.expression)}}"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
   staticMethod: "{{clsName(expr.methodRef.classRef)}}_{{expr.methodRef.outName}}"
-  localVar: "{{expr.varRef.name}}"
-  methodArgument: "{{expr.varRef.name}}"
+  localVar: "{{expr.varRef.outName}}"
+  methodArgument: "{{expr.varRef.outName}}"
   instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.outName}}"
   staticField: "{{gen(expr.thisExpr)}}{{expr.varRef.outName}}"
   falseLiteral: "false"
@@ -300,7 +302,7 @@ expressions:
       {{result}} = {{gen(expr.whenFalse)}}
     }
   foreach: |-
-    for _, {{expr.itemVariable.name}} := range {{gen(expr.items)}} {
+    for _, {{expr.itemVariable.outName}} := range {{gen(expr.items)}} {
         {{genBody(expr.body)}}
     }
   for: |-

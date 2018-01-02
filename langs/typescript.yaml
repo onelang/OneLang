@@ -4,6 +4,7 @@ casing:
   method: camel_case
   field: camel_case
   property: camel_case
+  variable: camel_case
   enum: pascal_case
   enumMember: pascal_case
 primitiveTypes:
@@ -158,7 +159,7 @@ templates:
   genVar:
     args:
       - name: itemVar
-    template: "{{if itemVar.isMutable}}let{{else}}const{{/if}} {{itemVar.name}} = {{gen(itemVar.initializer)}}"
+    template: "{{if itemVar.isMutable}}let{{else}}const{{/if}} {{itemVar.outName}} = {{gen(itemVar.initializer)}}"
 expressions:
   call: |-
     {{gen(expr.method)}}(
@@ -193,8 +194,8 @@ expressions:
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
   staticMethod: "{{clsName(expr.methodRef.classRef)}}.{{expr.methodRef.outName}}"
-  localVar: "{{expr.varRef.name}}"
-  methodArgument: "{{expr.varRef.name}}"
+  localVar: "{{expr.varRef.outName}}"
+  methodArgument: "{{expr.varRef.outName}}"
   instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.outName}}"
   staticField: "{{gen(expr.thisExpr)}}.{{expr.varRef.outName}}"
   falseLiteral: "false"
@@ -214,7 +215,7 @@ expressions:
     {{/for}}
     `
   foreach: |-
-    for (const {{expr.itemVariable.name}} of {{gen(expr.items)}}) {
+    for (const {{expr.itemVariable.outName}} of {{gen(expr.items)}}) {
         {{genBody(expr.body)}}
     }
   for: |-

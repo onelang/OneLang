@@ -1,7 +1,10 @@
 extension: py
-casing:
+casing: # based on https://www.python.org/dev/peps/pep-0008/
   class: pascal_case
   method: snake_case
+  field: snake_case
+  property: snake_case
+  variable: snake_case
   enum: pascal_case
   enumMember: upper_case
 classes:
@@ -176,7 +179,7 @@ templates:
   genVar:
     args:
       - name: itemVar
-    template: "{{itemVar.name}} = {{gen(itemVar.initializer)}}"
+    template: "{{itemVar.outName}} = {{gen(itemVar.initializer)}}"
 
 expressions:
   call: |-
@@ -217,8 +220,8 @@ expressions:
   expressionStatement: "{{gen(expr.expression)}}"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
   staticMethod: "{{clsName(expr.methodRef.classRef)}}.{{expr.methodRef.outName}}"
-  localVar: "{{expr.varRef.name}}"
-  methodArgument: "{{expr.varRef.name}}"
+  localVar: "{{expr.varRef.outName}}"
+  methodArgument: "{{expr.varRef.outName}}"
   instanceField: "{{gen(expr.thisExpr)}}.{{expr.varRef.outName}}"
   staticField: "{{gen(expr.thisExpr)}}.{{expr.varRef.outName}}"
   falseLiteral: "False"
@@ -248,7 +251,7 @@ expressions:
     {{/for}}
     )
   foreach: |-
-    for {{expr.itemVariable.name}} in {{gen(expr.items)}}:
+    for {{expr.itemVariable.outName}} in {{gen(expr.items)}}:
         {{genBody(expr.body)}}
   while: |-
     while {{gen(expr.condition)}}:

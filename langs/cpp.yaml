@@ -1,9 +1,12 @@
 extension: cpp
 casing:
   class: pascal_case
-  enum: pascal_case
-  enumMember: pascal_case
   method: camel_case
+  field: snake_case
+  property: snake_case
+  variable: snake_case
+  enum: pascal_case
+  enumMember: upper_case
 primitiveTypes:
   void: void
   any: any
@@ -232,7 +235,7 @@ templates:
     args:
       - name: itemVar
     template: |-
-      {{if itemVar.type.isNumber}}int{{else}}auto{{/if}} {{itemVar.name}} = {{gen(itemVar.initializer)}}
+      {{if itemVar.type.isNumber}}int{{else}}auto{{/if}} {{itemVar.outName}} = {{gen(itemVar.initializer)}}
 expressions:
   call: |-
     {{gen(expr.method)}}(
@@ -267,8 +270,8 @@ expressions:
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}->{{expr.methodRef.outName}}"
   staticMethod: "{{expr.methodRef.classRef.outName}}::{{expr.methodRef.outName}}"
-  localVar: "{{expr.varRef.name}}"
-  methodArgument: "{{expr.varRef.name}}"
+  localVar: "{{expr.varRef.outName}}"
+  methodArgument: "{{expr.varRef.outName}}"
   instanceField: "{{gen(expr.thisExpr)}}->{{expr.varRef.outName}}"
   staticField: "{{gen(expr.thisExpr)}}::{{expr.varRef.outName}}"
   falseLiteral: "false"
@@ -294,7 +297,7 @@ expressions:
     {{/for}}
   foreach: |-
     for (auto it = {{gen(expr.items)}}->begin(); it != {{gen(expr.items)}}->end(); ++it) {
-        auto {{expr.itemVariable.name}} = *it;
+        auto {{expr.itemVariable.outName}} = *it;
         {{genBody(expr.body)}}
     }
   for: |-
