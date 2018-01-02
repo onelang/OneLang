@@ -83,9 +83,9 @@ class Tokenizer {
             } else {
                 auto op = string("");
                 for (auto it = this->operators->begin(); it != this->operators->end(); ++it) {
-                    auto currOp = *it;
-                    if (StringHelper::startsWithAtIndex(this->text, currOp, this->offset)) {
-                        op = currOp;
+                    auto curr_op = *it;
+                    if (StringHelper::startsWithAtIndex(this->text, curr_op, this->offset)) {
+                        op = curr_op;
                         break;
                     }
                 }
