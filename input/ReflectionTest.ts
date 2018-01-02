@@ -1,5 +1,6 @@
 /// <reference path="../langs/StdLibs/stdlib.d.ts"/>
 
+// @reflect
 class TargetClass {
     instanceField = 5;
     static staticField = "hello";
