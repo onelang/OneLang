@@ -13,6 +13,17 @@ class TargetClass {
   }
 }
 
+one.Reflect.setupClass(new one.Class(TargetClass, [
+    new one.Field("instanceField", false, "number"),
+    new one.Field("staticField", true, "string"),
+  ], [
+    new one.Method("staticMethod", true, "string", [
+      new one.MethodArgument("arg1", "string"),
+    ]),
+    new one.Method("instanceMethod", false, "string", [
+    ]),
+  ]));
+
 class TestClass {
   testMethod() {
     const obj = new TargetClass();

@@ -84,6 +84,15 @@ func (this *TestClass) TestMethod() {
 }
 
 func init() {
+  one.Reflect_SetupClass((*TargetClass)(nil), 
+      []*one.Field{
+        one.Reflect_InstanceField("InstanceField"),
+        one.Reflect_StaticField("StaticField", &TargetClassStaticField),
+      },
+      []*one.Method{
+        one.Reflect_StaticMethod("StaticMethod", TargetClass_StaticMethod),
+        one.Reflect_InstanceMethod("InstanceMethod"),
+      });
 }
 
 func main() {

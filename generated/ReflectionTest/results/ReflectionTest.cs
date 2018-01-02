@@ -3,6 +3,11 @@ using System.Collections.Generic;
 
 public class TargetClass
 {
+    static TargetClass()
+    {
+        OneReflect.Publish(typeof(TargetClass));
+    }
+
     public int InstanceField = 5;
     public static string StaticField = "hello";
 

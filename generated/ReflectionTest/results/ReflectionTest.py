@@ -13,6 +13,17 @@ class TargetClass:
 
 TargetClass.static_field = "hello";
 
+one.Reflect.setup_class(one.Class(TargetClass, [
+    one.Field("instance_field", False, "OneNumber"),
+    one.Field("static_field", True, "OneString"),
+  ], [
+    one.Method("static_method", True, "OneString", [
+      one.MethodArgument("arg1", "OneString"),
+    ]),
+    one.Method("instance_method", False, "OneString", [
+    ]),
+  ]));
+
 class TestClass:
     def test_method(self):
         obj = TargetClass()

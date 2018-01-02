@@ -5,7 +5,7 @@
 #include <map>
 #include <iostream>
 
-class TargetClass {
+class TargetClass : public ReflectedClass {
   public:
     int instance_field = 5;
     static string static_field;
@@ -22,6 +22,31 @@ class TargetClass {
 };
 
 string TargetClass::static_field = string("hello");
+
+static struct ReflectionTargetClass
+{
+  ReflectionTargetClass() {
+    OneReflect::addClass("TargetClass", typeid(TargetClass))
+      .addField(make_shared<OneField>("instance_field", /*isStatic*/ false, "int", 
+          [](sp<ReflectedClass> obj){ return (any)static_pointer_cast<TargetClass>(obj)->instance_field; },
+          [](sp<ReflectedClass> obj, any value){ static_pointer_cast<TargetClass>(obj)->instance_field = any_cast<int>(value); }))
+      .addField(make_shared<OneField>("static_field", /*isStatic*/ true, "string", 
+          [](sp<ReflectedClass> obj){ return (any)TargetClass::static_field; },
+          [](sp<ReflectedClass> obj, any value){ TargetClass::static_field = any_cast<string>(value); }))
+      .addMethod(make_shared<OneMethod>("staticMethod", /*isStatic*/ true, "string", vector<OneMethodArgument> {
+          OneMethodArgument("arg1", "string"),
+        }, 
+        [](sp<ReflectedClass> obj, vec<any> args){ 
+          return (any)TargetClass::staticMethod(any_cast<string>(args->at(0))); 
+        }))
+      .addMethod(make_shared<OneMethod>("instanceMethod", /*isStatic*/ false, "string", vector<OneMethodArgument> {
+        }, 
+        [](sp<ReflectedClass> obj, vec<any> args){ 
+          return (any)static_pointer_cast<TargetClass>(obj)->instanceMethod(); 
+        }))
+      ;
+  }
+} _reflectionTargetClass;
 
 class TestClass {
   public:

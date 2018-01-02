@@ -26,6 +26,17 @@ sub instance_method {
     return "instanceField = @{[$self->{instance_field}]}";
 }
 
+OneReflect::setup_class(new OneClass("TargetClass", [
+    new OneField("instance_field", 0, "OneNumber"),
+    new OneField("static_field", 1, "OneString"),
+  ], [
+    new OneMethod("static_method", 1, "OneString", [
+      new OneMethodArgument("arg1", "OneString"),
+    ]),
+    new OneMethod("instance_method", 0, "OneString", [
+    ]),
+  ]));
+
 package TestClass;
 
 sub new

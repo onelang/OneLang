@@ -2,6 +2,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 class TargetClass {
+    static {
+        OneReflect.publish(TargetClass.class);
+    }
+
     public Integer instanceField = 5;
     public static String staticField = "hello";
 

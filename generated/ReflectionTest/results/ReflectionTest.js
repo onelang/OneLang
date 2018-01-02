@@ -16,6 +16,17 @@ class TargetClass {
 
 TargetClass.staticField = "hello";
 
+one.Reflect.setupClass(new one.Class(TargetClass, [
+    new one.Field("instanceField", false, "OneNumber"),
+    new one.Field("staticField", true, "OneString"),
+  ], [
+    new one.Method("staticMethod", true, "OneString", [
+      new one.MethodArgument("arg1", "OneString"),
+    ]),
+    new one.Method("instanceMethod", false, "OneString", [
+    ]),
+  ]));
+
 class TestClass {
   testMethod() {
     const obj = new TargetClass();

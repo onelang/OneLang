@@ -13,6 +13,17 @@ class TargetClass {
     }
 }
 
+OneReflect::setupClass(new OneClass("TargetClass", [
+    new OneField("instance_field", false, "OneNumber"),
+    new OneField("static_field", true, "OneString"),
+  ], [
+    new OneMethod("staticMethod", true, "OneString", [
+      new OneMethodArgument("arg1", "OneString"),
+    ]),
+    new OneMethod("instanceMethod", false, "OneString", [
+    ]),
+  ]));
+
 class TestClass {
     function testMethod() {
         $obj = new TargetClass();

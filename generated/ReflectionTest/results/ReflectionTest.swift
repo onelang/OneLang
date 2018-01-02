@@ -11,6 +11,17 @@ class TargetClass {
   }
 }
 
+let _ = OneReflect.addClass(OneClass(name: "TargetClass"))
+  .addField(OneField("instance_field", false, "Int", { ($0 as! TargetClass).instance_field }, { ($0 as! TargetClass).instance_field = $1 as! Int }))
+  .addField(OneField("static_field", true, "String", { _ in TargetClass.static_field }, { TargetClass.static_field = $1 as! String }))
+  .addMethod(OneMethod("staticMethod", true, "String", [
+      OneMethodArgument("arg1", "String"),
+    ],
+    { obj, args in TargetClass.staticMethod(arg1: args[0] as! String) }))
+  .addMethod(OneMethod("instanceMethod", false, "String", [
+    ],
+    { obj, args in (obj as! TargetClass).instanceMethod() }))
+
 class TestClass {
   func testMethod() -> Void {
       let obj: TargetClass? = TargetClass()

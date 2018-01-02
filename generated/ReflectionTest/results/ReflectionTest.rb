@@ -21,6 +21,17 @@ class TargetClass
   end
 end
 
+One::Reflect::setup_class(One::Class.new(TargetClass, [
+    One::Field.new("instance_field", false, "OneNumber"),
+    One::Field.new("static_field", true, "OneString"),
+  ], [
+    One::Method.new("static_method", true, "OneString", [
+      One::MethodArgument.new("arg1", "OneString"),
+    ]),
+    One::Method.new("instance_method", false, "OneString", [
+    ]),
+  ]));
+
 class TestClass 
   def initialize()
   end
