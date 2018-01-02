@@ -6,7 +6,7 @@
 
 class TestClass {
   public:
-    void methodTest(vector<string> method_param) {
+    void methodTest(vec<string> method_param) {
     }
     
     void testMethod() {

@@ -46,9 +46,9 @@ class Tokenizer {
   public:
     int offset;
     string text;
-    vector<string> operators;
+    vec<string> operators;
 
-    Tokenizer(string text, vector<string> operators) {
+    Tokenizer(string text, vec<string> operators) {
         this->operators = operators;
         this->text = text;
         this->offset = 0;
@@ -63,8 +63,8 @@ class Tokenizer {
         return c == ' ' || c == '\n' || c == '\t' || c == '\r' ? TokenType::whitespace : ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || ('0' <= c && c <= '9') || c == '_' ? TokenType::identifier : TokenType::operator_x;
     }
     
-    vector<sp<Token>> tokenize() {
-        auto result = vector<sp<Token>> {  };
+    vec<sp<Token>> tokenize() {
+        auto result = make_shared<vector<sp<Token>>>(initializer_list<sp<Token>>{  });
         
         while (this->offset < this->text.size()) {
             auto char_type = this->getTokenType();
@@ -79,13 +79,13 @@ class Tokenizer {
                     this->offset++;
                 }
                 auto identifier = this->text.substr(start_offset, this->offset - start_offset);
-                result.push_back(make_shared<Token>(identifier, false));
+                result->push_back(make_shared<Token>(identifier, false));
             } else {
                 auto op = string("");
-                for (auto it = this->operators.begin(); it != this->operators.end(); ++it) {
-                    auto curr_op = *it;
-                    if (StringHelper::startsWithAtIndex(this->text, curr_op, this->offset)) {
-                        op = curr_op;
+                for (auto it = this->operators->begin(); it != this->operators->end(); ++it) {
+                    auto currOp = *it;
+                    if (StringHelper::startsWithAtIndex(this->text, currOp, this->offset)) {
+                        op = currOp;
                         break;
                     }
                 }
@@ -95,7 +95,7 @@ class Tokenizer {
                 }
                 
                 this->offset += op.size();
-                result.push_back(make_shared<Token>(op, true));
+                result->push_back(make_shared<Token>(op, true));
             }
         }
         
@@ -108,15 +108,15 @@ class Tokenizer {
 class TestClass {
   public:
     void testMethod() {
-        auto operators = vector<string> { string("<<"), string(">>"), string("++"), string("--"), string("=="), string("!="), string("!"), string("<"), string(">"), string("="), string("("), string(")"), string("["), string("]"), string("{"), string("}"), string(";"), string("+"), string("-"), string("*"), string("/"), string("&&"), string("&"), string("%"), string("||"), string("|"), string("^"), string(","), string(".") };
+        auto operators = make_shared<vector<string>>(initializer_list<string>{ string("<<"), string(">>"), string("++"), string("--"), string("=="), string("!="), string("!"), string("<"), string(">"), string("="), string("("), string(")"), string("["), string("]"), string("{"), string("}"), string(";"), string("+"), string("-"), string("*"), string("/"), string("&&"), string("&"), string("%"), string("||"), string("|"), string("^"), string(","), string(".") });
         
         auto input = string("hello * 5");
         auto tokenizer = make_shared<Tokenizer>(input, operators);
         auto result = tokenizer->tokenize();
         
         cout << (string("token count:")) << endl;
-        cout << (result.size()) << endl;
-        for (auto it = result.begin(); it != result.end(); ++it) {
+        cout << (result->size()) << endl;
+        for (auto it = result->begin(); it != result->end(); ++it) {
             auto item = *it;
             cout << (item->value + string("(") + (item->is_operator ? string("op") : string("id")) + string(")")) << endl;
         }

@@ -8,7 +8,7 @@
 class TestClass {
   public:
     void testMethod() {
-        auto result = vector<string> {  };
+        auto result = make_shared<vector<string>>(initializer_list<string>{  });
         auto map = map<string, int> {
           { "x", 5 }
         };

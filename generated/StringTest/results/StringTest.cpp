@@ -17,7 +17,7 @@ class TestClass {
         auto a = string("abcdef").substr(2, 4 - 2);
         auto arr = OneStringHelper::split(string("ab  cd ef"), string(" "));
         
-        return z + string("|") + x + y + string("|") + a + string("|") + arr.at(2);
+        return z + string("|") + x + y + string("|") + a + string("|") + arr->at(2);
     }
 
   private:

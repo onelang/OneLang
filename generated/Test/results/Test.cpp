@@ -15,7 +15,7 @@ class TestClass {
         
         //let containsX = "x" in mapObj;
         map_obj[string("z")] = 9;
-        map_obj.erase(string("x"));
+        map_obj->erase(string("x"));
         
         auto keys_var = OneMapHelper::keys(map_obj);
         auto values_var = OneMapHelper::values(map_obj);
@@ -56,18 +56,18 @@ class TestClass {
     void arrayTest() {
         //const c2 = new Class2();
         
-        auto mutable_arr = vector<int> { 1, 2 };
-        mutable_arr.push_back(3);
-        mutable_arr.push_back(4);
+        auto mutable_arr = make_shared<vector<int>>(initializer_list<int>{ 1, 2 });
+        mutable_arr->push_back(3);
+        mutable_arr->push_back(4);
         // mutableArr.push(c2.property);
         // mutableArr.push(c2.child.property);
         // mutableArr.push(c2.child.child.property);
         
-        auto constant_arr = vector<int> { 5, 6 };
+        auto constant_arr = make_shared<vector<int>>(initializer_list<int>{ 5, 6 });
         
         // some comment
         //   some comment line 2
-        for (auto it = mutable_arr.begin(); it != mutable_arr.end(); ++it) {
+        for (auto it = mutable_arr->begin(); it != mutable_arr->end(); ++it) {
             auto item = *it;
             cout << (item) << endl;
         }
@@ -75,8 +75,8 @@ class TestClass {
         /* some other comment
            multiline and stuff
         */
-        for (int i = 0; i < constant_arr.size(); i++) {
-            cout << (constant_arr.at(i)) << endl;
+        for (int i = 0; i < constant_arr->size(); i++) {
+            cout << (constant_arr->at(i)) << endl;
         }
     }
     

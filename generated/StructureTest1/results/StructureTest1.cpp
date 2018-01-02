@@ -6,16 +6,16 @@
 
 class List {
   public:
-    vector<> items;
+    vec<> items;
 
   private:
 };
 
 class Item {
   public:
-    int offset;
-    string str_test;
-    string str_constr;
+    int offset = 5;
+    string str_test = string("test") + string("test2");
+    string str_constr = string("constr");
 
     Item(string str_constr) {
         this->str_constr = str_constr;
