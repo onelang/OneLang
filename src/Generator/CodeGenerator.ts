@@ -437,6 +437,7 @@ export class CodeGenerator {
                 name: cls.outName,
                 methods: methods,
                 constructor,
+                reflect: cls.leadingTrivia.includes("@reflect"), // TODO: replace this with real attribute/decorator handling
                 publicMethods: methods.filter(x => x.visibility === "public"),
                 protectedMethods: methods.filter(x => x.visibility === "protected"),
                 privateMethods: methods.filter(x => x.visibility === "private"),

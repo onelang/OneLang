@@ -173,25 +173,27 @@ templates:
 
     func init() {
       {{for class in classes|sep=\n\n}}
-        one.Reflect_SetupClass((*{{class.name}})(nil), 
-            []*one.Field{
-              {{for field in class.fields}}
-                {{if field.static}}
-                  one.Reflect_StaticField("{{field.name}}", &{{class.name}}{{field.name}}),
-                {{else}}
-                  one.Reflect_InstanceField("{{field.name}}"),
-                {{/if}}
-              {{/for}}
-            },
-            []*one.Method{
-              {{for method in class.methods}}
-                {{if method.static}}
-                  one.Reflect_StaticMethod("{{method.name}}", {{class.name}}_{{method.name}}),
-                {{else}}
-                  one.Reflect_InstanceMethod("{{method.name}}"),
-                {{/if}}
-              {{/for}}
-            });
+        {{if class.reflect}}
+          one.Reflect_SetupClass((*{{class.name}})(nil), 
+              []*one.Field{
+                {{for field in class.fields}}
+                  {{if field.static}}
+                    one.Reflect_StaticField("{{field.name}}", &{{class.name}}{{field.name}}),
+                  {{else}}
+                    one.Reflect_InstanceField("{{field.name}}"),
+                  {{/if}}
+                {{/for}}
+              },
+              []*one.Method{
+                {{for method in class.methods}}
+                  {{if method.static}}
+                    one.Reflect_StaticMethod("{{method.name}}", {{class.name}}_{{method.name}}),
+                  {{else}}
+                    one.Reflect_InstanceMethod("{{method.name}}"),
+                  {{/if}}
+                {{/for}}
+              });
+        {{/if}}
       {{/for}}
     }
   getType:

@@ -108,9 +108,11 @@ templates:
 
     {{for class in classes|sep=\n\n}}
       class {{class.name}} {
-          static {
-              OneReflect.publish({{class.name}}.class);
-          }
+          {{if class.reflect}}
+            static {
+                OneReflect.publish({{class.name}}.class);
+            }
+          {{/if}}
 
           {{for field in class.fields|sep=\n}}
             {{field.visibility}} {{if field.static}}static {{/if}}{{field.type}} {{field.name}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}};

@@ -123,19 +123,21 @@ templates:
         {{/if}}
       {{/for}}
 
-      one.Reflect.setup_class(one.Class({{class.name}}, [
-          {{for field in class.fields|sep=\n}}
-            one.Field("{{field.name}}", {{if field.static}}True{{else}}False{{/if}}, "{{field.type}}"),
-          {{/for}}
-        ], [
-          {{for method in class.methods|sep=\n}}
-            one.Method("{{method.name}}", {{if method.static}}True{{else}}False{{/if}}, "{{method.returnType}}", [
-              {{for param in method.parameters|sep=\n}}
-                one.MethodArgument("{{param.name}}", "{{param.type}}"),
-              {{/for}}
-            ]),
-          {{/for}}
-        ]));
+      {{if class.reflect}}
+        one.Reflect.setup_class(one.Class({{class.name}}, [
+            {{for field in class.fields|sep=\n}}
+              one.Field("{{field.name}}", {{if field.static}}True{{else}}False{{/if}}, "{{field.type}}"),
+            {{/for}}
+          ], [
+            {{for method in class.methods|sep=\n}}
+              one.Method("{{method.name}}", {{if method.static}}True{{else}}False{{/if}}, "{{method.returnType}}", [
+                {{for param in method.parameters|sep=\n}}
+                  one.MethodArgument("{{param.name}}", "{{param.type}}"),
+                {{/for}}
+              ]),
+            {{/for}}
+          ]));
+      {{/if}}
     {{/for}}
 
   genBody:
