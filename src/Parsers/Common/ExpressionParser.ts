@@ -9,6 +9,7 @@ export interface ExpressionParserConfig {
     unary: string[];
     precedenceLevels: { name: string, operators?: string[], binary?: boolean }[];
     rightAssoc: string[];
+    aliases: { [alias: string]: string };
 }
 
 export class ExpressionParser {
@@ -28,7 +29,8 @@ export class ExpressionParser {
             { name: "call", operators: ['('] },
             { name: "propertyAccess", operators: ['.', '['] },
         ],
-        rightAssoc: ['**']
+        rightAssoc: ['**'],
+        aliases: { "===": "==", "!==": "!=", "not": "!", "and": "&&", "or": "||" },
     };
 
     config: ExpressionParserConfig;
@@ -158,12 +160,13 @@ export class ExpressionParser {
             const op = this.parseOperator();
             if (op === null || op.precedence <= precedence) break;
             this.reader.expectToken(op.text);
+            const opText = op.text in this.config.aliases ? this.config.aliases[op.text] : op.text;
 
             if (op.isBinary) {
                 const right = this.parse(op.isRightAssoc ? op.precedence - 1 : op.precedence);
-                left = <ast.BinaryExpression> { exprKind: "Binary", operator: op.text, left, right };
+                left = <ast.BinaryExpression> { exprKind: "Binary", operator: opText, left, right };
             } else if (op.isPostfix) {
-                left = <ast.UnaryExpression> { exprKind: "Unary", unaryType: "postfix", operator: op.text, operand: left };
+                left = <ast.UnaryExpression> { exprKind: "Unary", unaryType: "postfix", operator: opText, operand: left };
             } else if (op.text === "?") {
                 const whenTrue = this.parse();
                 this.reader.expectToken(":");

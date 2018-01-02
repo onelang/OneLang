@@ -28,6 +28,8 @@ export class TypeScriptParser2 {
             type = ast.Type.Class("TsBoolean");
         } else if (typeName === "number") {
             type = ast.Type.Class("TsNumber");
+        } else if (typeName === "any") {
+            type = ast.Type.Any;
         } else {
             type = ast.Type.Class(typeName);
             if (this.reader.readToken("<")) {
