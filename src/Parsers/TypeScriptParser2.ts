@@ -217,9 +217,11 @@ export class TypeScriptParser2 {
     }
 
     parseClass() {
+        const clsModifiers = this.reader.readModifiers(["declare"]);
+        const declarationOnly = clsModifiers.includes("declare");
         if (!this.reader.readToken("class")) return null;
 
-        const cls = <ast.Class> { methods: {}, fields: {} };
+        const cls = <ast.Class> { methods: {}, fields: {}, properties: {} };
         cls.name = this.reader.expectIdentifier("expected identifier after 'class' keyword");
         this.context.push(`C:${cls.name}`);
 
@@ -235,8 +237,9 @@ export class TypeScriptParser2 {
                 modifiers.includes("protected") ? ast.Visibility.Protected : ast.Visibility.Public;
 
             const memberName = this.reader.readIdentifier();
+            const methodTypeArguments = this.parseTypeArguments();
             if (this.reader.readToken("(")) { // method
-                const method = <ast.Method> { name: memberName, static: isStatic, visibility, leadingTrivia, parameters: [] };
+                const method = <ast.Method> { name: memberName, static: isStatic, visibility, leadingTrivia, parameters: [], typeArguments: methodTypeArguments };
                 cls.methods[method.name] = method;
                 this.context.push(`M:${method.name}`);
 
@@ -246,7 +249,10 @@ export class TypeScriptParser2 {
                         const param = <ast.MethodParameter> {};
                         method.parameters.push(param);
     
-                        const isPublic = isConstructor && this.reader.readToken("public");
+                        const isPublic = this.reader.readToken("public");
+                        if (isPublic && !isConstructor)
+                            this.reader.fail("public modifier is only allowed in constructor definition");
+
                         param.name = this.reader.readIdentifier();
                         this.context.push(`arg:${param.name}`);
                         this.parseVarDeclTypeAndInit(param);
@@ -259,10 +265,34 @@ export class TypeScriptParser2 {
                 if (this.reader.readToken(":"))
                     method.returns = this.parseType();
 
-                method.body = this.parseBlock();
-                if (method.body === null)
-                    this.reader.fail("method body is missing");
+                if (declarationOnly) {
+                    this.reader.expectToken(";");
+                } else {
+                    method.body = this.parseBlock();
+                    if (method.body === null)
+                        this.reader.fail("method body is missing");
+                }
 
+                this.context.pop();
+            } else if (memberName === "get" || memberName === "set") { // property
+                const propName = this.reader.readIdentifier();
+                const prop = cls.properties[propName] || (cls.properties[propName] = <ast.Property> { name: propName });
+                if (memberName === "get") {
+                    this.context.push(`P[G]:${prop.name}`);
+                    this.reader.expectToken("()", "expected '()' after property getter name");
+                    if (this.reader.readToken(":"))
+                        prop.type = this.parseType();
+                    prop.getter = this.parseBlock();
+                    if (!prop.getter)
+                        this.reader.fail("property getter body is missing");
+                } else {
+                    this.context.push(`P[S]:${prop.name}`);
+                    this.reader.readIdentifier();
+                    this.parseVarDeclTypeAndInit(<ast.VariableDeclaration>{});
+                    prop.setter = this.parseBlock();
+                    if (!prop.setter)
+                        this.reader.fail("property setter body is missing");
+                }
                 this.context.pop();
             } else {
                 const field = <ast.Field> { name: memberName, static: isStatic, visibility, leadingTrivia };
@@ -300,7 +330,7 @@ export class TypeScriptParser2 {
         return enumObj;
     }
 
-    parseFile() {
+    parseSchema() {
         const schema = <ast.Schema> { classes: {}, enums: {} };
         while (!this.reader.eof) {
             const leadingTrivia = this.reader.readLeadingTrivia();
@@ -328,6 +358,10 @@ export class TypeScriptParser2 {
     }
 
     parse() {
-        return this.parseFile();
+        return this.parseSchema();
+    }
+
+    static parseFile(source: string) {
+        return new TypeScriptParser2(source).parse();
     }
 }
