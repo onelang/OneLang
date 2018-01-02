@@ -349,19 +349,24 @@ export class TypeScriptParser {
 
         oneStmts = oneStmts || (oneStmt ? [oneStmt] : []);
 
-        if (oneStmts.length > 0) {
-            const triviaStart = tsStatement.pos;
-            const triviaEnd = tsStatement.getStart();
-            const realEnd = this.sourceCode.lastIndexOf("\n", triviaEnd) + 1;
-
-            if (realEnd > triviaStart) {
-                const trivia = this.sourceCode.substring(triviaStart, realEnd);
-                oneStmts[0].leadingTrivia = deindent(trivia);
-            }
-        }
+        if (oneStmts.length > 0)
+            oneStmts[0].leadingTrivia = this.getLeadingTrivia(tsStatement);
 
         return oneStmts;
     }
+
+    getLeadingTrivia(node: ts.Node) {
+        const triviaStart = node.pos;
+        const triviaEnd = node.getStart();
+        const realEnd = this.sourceCode.lastIndexOf("\n", triviaEnd) + 1;
+
+        if (realEnd > triviaStart) {
+            const trivia = this.sourceCode.substring(triviaStart, realEnd);
+            return deindent(trivia);
+        }
+
+        return null;
+}
 
     convertBlock(tsBlock: ts.BlockLike|ts.Statement): one.Block {
         if (typeof tsBlock === "undefined") return undefined;
@@ -403,6 +408,7 @@ export class TypeScriptParser {
             const classSchema = schema.classes[tsClass.getName()] = <one.Class> { fields: {}, methods: {}, properties: {} };
             this.currClass = classSchema;
             classSchema.typeArguments = tsClass.getTypeParameters().map(x => x.compilerNode.name.text);
+            classSchema.leadingTrivia = this.getLeadingTrivia(tsClass.compilerNode);
 
             for (const tsProp of tsClass.getInstanceProperties().concat(tsClass.getStaticProperties())) {
                 const modifiers = tsProp.compilerNode.modifiers && tsProp.compilerNode.modifiers.map(x => x.kind) || [];
