@@ -1,5 +1,5 @@
 transforms:
-  propertySetter:
+  - description: "$object[$elementExpr] = $newValue -> $object.set($elementExpr, $newValue)"
     input:
       exprKind: Binary
       operator: =
@@ -15,7 +15,23 @@ transforms:
         object: $object
         propertyName: set
       arguments: [$elementExpr, $newValue]
-  propertyGetter:
+  - description: "unset $object[$elementExpr] -> $object.delete($elementExpr)"
+    input:
+      stmtType: Unset
+      expression:
+        exprKind: ElementAccess
+        object: $object
+        elementExpr: $elementExpr
+    output:
+      stmtType: ExpressionStatement
+      expression:
+        exprKind: Call
+        method:
+          exprKind: PropertyAccess
+          object: $object
+          propertyName: delete
+        arguments: [$elementExpr]
+  - description: "$object[$elementExpr] -> $object.get($elementExpr)"
     input:
       exprKind: ElementAccess
       object: $object

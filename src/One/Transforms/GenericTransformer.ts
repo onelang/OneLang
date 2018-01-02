@@ -7,7 +7,7 @@ import { AstHelper } from "../AstHelper";
 import { LangFileSchema } from "../../Generator/LangFileSchema";
 
 export interface GenericTransformerFile {
-    transforms: { [name: string]: { input: any; output: any; } };
+    transforms: { input: any; output: any; description?: string; }[];
 }
 
 class VariableContext {
@@ -108,7 +108,15 @@ export class GenericTransformer extends AstVisitor<void> {
 
     constructor(file: GenericTransformerFile) {
         super();
-        this.transforms = Object.values(file.transforms).map(x => new GenericTransform(x.input, x.output));
+        this.transforms = file.transforms.map(x => new GenericTransform(x.input, x.output));
+    }
+
+    protected visitStatement(statement: one.Statement) {
+        for (const transform of this.transforms)
+            if (transform.execute(statement))
+                break;
+
+        super.visitStatement(statement, null);
     }
 
     protected visitExpression(expression: one.Expression) {

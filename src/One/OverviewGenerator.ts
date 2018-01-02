@@ -108,6 +108,10 @@ export class OverviewGenerator extends AstVisitor<void> {
             super.visitStatement(statement, null);
         } else if (statement.stmtType === one.StatementType.Break) {
             addHdr(`Break`);
+        } else if (statement.stmtType === one.StatementType.Unset) {
+            const unsetStmt = <one.UnsetStatement> statement;
+            addHdr(`Unset`);
+            super.visitExpression(unsetStmt.expression, null);
         } else {
             addHdr(`${statement.stmtType}`);
             super.visitStatement(statement, null);
