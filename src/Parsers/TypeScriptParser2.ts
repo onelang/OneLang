@@ -60,9 +60,9 @@ export class TypeScriptParser2 {
         if (this.reader.readToken("null")) {
             return <ast.Literal> { exprKind: "Literal", literalType: "null" };
         } else if (this.reader.readToken("true")) {
-            return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: true };
+            return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: true, literalClassName: "TsBoolean" };
         } else if (this.reader.readToken("false")) {
-            return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: false };
+            return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: false, literalClassName: "TsBoolean" };
         } else if (this.reader.readToken("`")) {
             const tmplStr = <ast.TemplateString> { exprKind: ast.ExpressionKind.TemplateString, parts: [] };
             while (true) {
