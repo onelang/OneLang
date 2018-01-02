@@ -171,6 +171,10 @@ export abstract class AstVisitor<TContext> {
 
     protected visitEnumMemberReference(expr: one.EnumReference, context: TContext) { }
 
+    protected visitCastExpression(expr: one.CastExpression, context: TContext) { 
+        this.visitExpression(expr.expression, context);
+    }
+
     protected visitExpression(expression: one.Expression, context: TContext) {
         if (expression.exprKind === one.ExpressionKind.Binary) {
             return this.visitBinaryExpression(<one.BinaryExpression> expression, context);
@@ -210,6 +214,8 @@ export abstract class AstVisitor<TContext> {
             return this.visitEnumReference(<one.EnumReference> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.EnumMemberReference) {
             return this.visitEnumMemberReference(<one.EnumMemberReference> expression, context);
+        } else if (expression.exprKind === one.ExpressionKind.Cast) {
+            return this.visitCastExpression(<one.CastExpression> expression, context);
         } else {
             return this.visitUnknownExpression(expression, context);
         }

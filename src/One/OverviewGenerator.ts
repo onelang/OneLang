@@ -192,6 +192,10 @@ export class OverviewGenerator extends AstVisitor<void> {
             const className = (<one.Identifier> expr.cls).text || (<one.ClassReference> expr.cls).classRef.name;
             const typeArgsText = expr.typeArguments && expr.typeArguments.length > 0 ? `<${expr.typeArguments.join(", ")}>` : "";
             addHdr(`New ${className}${typeArgsText}`);
+        } else if (expression.exprKind === one.ExpressionKind.Cast) {
+            const expr = <one.CastExpression> expression;
+            addHdr(`Cast -> ${expr.newType.repr()}`);
+            super.visitExpression(expr.expression, null);
         } else if (expression.exprKind === one.ExpressionKind.MapLiteral) {
             const expr = <one.MapLiteral> expression;
             addHdr(expression.exprKind);

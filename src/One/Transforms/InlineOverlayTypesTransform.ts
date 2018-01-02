@@ -159,6 +159,11 @@ class ReplaceVariables extends AstVisitor<void> {
             this.convertType(typeArg);
     }
 
+    protected visitCastExpression(expr: one.CastExpression) { 
+        super.visitCastExpression(expr, null);
+        this.convertType(expr.newType);
+    }
+
     protected visitExpression(expr: one.Expression) {
         super.visitExpression(expr, null);
         this.convertType(expr.valueType);

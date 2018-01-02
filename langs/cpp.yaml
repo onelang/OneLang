@@ -273,6 +273,7 @@ expressions:
   trueLiteral: "true"
   elementAccess: "(*{{gen(expr.object)}})[{{gen(expr.elementExpr)}}]"
   thisReference: this
+  cast: "static_cast<{{typeName(expr.newType)}}>({{gen(expr.expression)}})"
   conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : {{gen(expr.whenFalse)}}"
   templateString: |-
     string() + 

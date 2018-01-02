@@ -114,6 +114,12 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
             stmt.type = this.syncTypes(stmt.type, stmt.initializer.valueType);
     }
 
+    protected visitCastExpression(expr: one.CastExpression, context: Context) {
+        expr.expression.valueType = expr.newType;
+        AstHelper.replaceProperties(expr, expr.expression);
+        this.visitExpression(expr, context);
+    }
+
     protected visitForeachStatement(stmt: one.ForeachStatement, context: Context) {
         this.visitExpression(stmt.items, context);
         
