@@ -13,7 +13,11 @@ let prgNames = fs.readdirSync("input").filter(x => x.endsWith(".ts")).map(x => x
 for (const prgName of prgNames) {
     console.log(`parsing ${prgName}...`);
     const sourceCode = readFile(`input/${prgName}.ts`);
-    const parser = new TypeScriptParser2(sourceCode);
-    const result = parser.parse();
-    //console.log(result);
+    TypeScriptParser2.parseFile(sourceCode);
 }
+
+console.log(`parsing StdLib...`);
+TypeScriptParser2.parseFile(readFile(`langs/StdLibs/stdlib.d.ts`));
+
+console.log(`parsing NativeResolver...`);
+TypeScriptParser2.parseFile(readFile(`langs/NativeResolvers/typescript.ts`));

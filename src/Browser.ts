@@ -1,7 +1,6 @@
 import { Layout, LangUi, EditorChangeHandler } from "./UI/AppLayout";
 import { CodeGenerator } from "./Generator/CodeGenerator";
 import { langConfigs, LangConfig, CompileResult, LangConfigs } from "./Generator/LangConfigs";
-import { TypeScriptParser } from "./Parsers/TypeScriptParser";
 import { ExposedPromise } from "./Utils/ExposedPromise";
 import { LangFileSchema } from "./Generator/LangFileSchema";
 import { OneCompiler } from "./OneCompiler";
