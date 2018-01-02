@@ -16,6 +16,6 @@ public class Main
     {
         var map = new MapX();
         map.Set("hello", 3);
-        // UNUSED: var numValue = map.Get("hello2");
+        /* UNUSED: var numValue = */ map.Get("hello2");
     }
 }

@@ -16,8 +16,8 @@ public class TestClass
         mapObj["z"] = 9;
         mapObj.Remove("x");
         
-        // UNUSED: var keysVar = mapObj.Keys.ToArray();
-        // UNUSED: var valuesVar = mapObj.Values.ToArray();
+        /* UNUSED: var keysVar = */ mapObj.Keys.ToArray();
+        /* UNUSED: var valuesVar = */ mapObj.Values.ToArray();
         return mapObj["z"];
     }
     
