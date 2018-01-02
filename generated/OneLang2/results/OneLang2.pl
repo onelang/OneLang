@@ -37,16 +37,16 @@ sub new
     $self->{tokens} = [];
     $self->{operators} = $operators;
     $self->{expression} = $expression;
-    if (!$self->tryToReadNumber()) {
-        $self->tryToReadOperator();
-        $self->tryToReadLiteral();
+    if (!$self->try_to_read_number()) {
+        $self->try_to_read_operator();
+        $self->try_to_read_literal();
     }
     
-    while ($self->hasMoreToken()) {
-        if (!$self->tryToReadOperator()) {
+    while ($self->has_more_token()) {
+        if (!$self->try_to_read_operator()) {
             $self->fail("expected operator here");
         }
-        if (!$self->tryToReadLiteral()) {
+        if (!$self->try_to_read_literal()) {
             $self->fail("expected literal here");
         }
     }
@@ -63,9 +63,9 @@ sub fail {
     die "TokenizerException: @{[$message]} at '@{[$context]}' (offset: @{[$self->{offset}]})"."\n";
 }
 
-sub hasMoreToken {
+sub has_more_token {
     my ( $self ) = @_;
-    $self->skipWhitespace();
+    $self->skip_whitespace();
     return !$self->eof();
 }
 
@@ -75,15 +75,15 @@ sub add {
     $self->{offset} += length($value);
 }
 
-sub tryToMatch {
+sub try_to_match {
     my ( $self, $pattern ) = @_;
-    my $matches = OneRegex::matchFromIndex($pattern, $self->{expression}, $self->{offset});
+    my $matches = OneRegex::match_from_index($pattern, $self->{expression}, $self->{offset});
     return !defined $matches ? "" : ${$matches}[0];
 }
 
-sub tryToReadOperator {
+sub try_to_read_operator {
     my ( $self ) = @_;
-    $self->skipWhitespace();
+    $self->skip_whitespace();
     foreach my $op (@{$self->{operators}}) {
         if ((substr $self->{expression}, $self->{offset}, length($op)) eq ($op)) {
             $self->add(TokenKind->OPERATOR_, $op);
@@ -93,28 +93,28 @@ sub tryToReadOperator {
     return 0;
 }
 
-sub tryToReadNumber {
+sub try_to_read_number {
     my ( $self ) = @_;
-    $self->skipWhitespace();
+    $self->skip_whitespace();
     
-    my $number = $self->tryToMatch("[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)");
+    my $number = $self->try_to_match("[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)");
     if ($number eq "") {
         return 0;
     }
     
     $self->add(TokenKind->NUMBER, $number);
     
-    if ($self->tryToMatch("[0-9a-zA-Z]") ne "") {
+    if ($self->try_to_match("[0-9a-zA-Z]") ne "") {
         $self->fail("invalid character in number");
     }
     
     return 1;
 }
 
-sub tryToReadIdentifier {
+sub try_to_read_identifier {
     my ( $self ) = @_;
-    $self->skipWhitespace();
-    my $identifier = $self->tryToMatch("[a-zA-Z_][a-zA-Z0-9_]*");
+    $self->skip_whitespace();
+    my $identifier = $self->try_to_match("[a-zA-Z_][a-zA-Z0-9_]*");
     if ($identifier eq "") {
         return 0;
     }
@@ -123,13 +123,13 @@ sub tryToReadIdentifier {
     return 1;
 }
 
-sub tryToReadString {
+sub try_to_read_string {
     my ( $self ) = @_;
-    $self->skipWhitespace();
+    $self->skip_whitespace();
     
-    my $match = $self->tryToMatch("'(\\\\'|[^'])*'");
+    my $match = $self->try_to_match("'(\\\\'|[^'])*'");
     if ($match eq "") {
-        $match = $self->tryToMatch("\"(\\\\\"|[^\"])*\"");
+        $match = $self->try_to_match("\"(\\\\\"|[^\"])*\"");
     }
     if ($match eq "") {
         return 0;
@@ -147,7 +147,7 @@ sub eof {
     return $self->{offset} >= length($self->{expression});
 }
 
-sub skipWhitespace {
+sub skip_whitespace {
     my ( $self ) = @_;
     while (!$self->eof()) {
         my $c = (substr $self->{expression}, $self->{offset}, 1);
@@ -159,9 +159,9 @@ sub skipWhitespace {
     }
 }
 
-sub tryToReadLiteral {
+sub try_to_read_literal {
     my ( $self ) = @_;
-    my $success = $self->tryToReadIdentifier() || $self->tryToReadNumber() || $self->tryToReadString();
+    my $success = $self->try_to_read_identifier() || $self->try_to_read_number() || $self->try_to_read_string();
     return $success;
 }
 
@@ -175,7 +175,7 @@ sub new
     return $self;
 }
 
-sub testMethod {
+sub test_method {
     my ( $self ) = @_;
     my $lexer = new ExprLangLexer("1+2", ["+"]);
     my $result = "";
@@ -193,7 +193,7 @@ package Program;
 
 eval {
     my $c = new TestClass();
-    $c->testMethod();
+    $c->test_method();
 };
 if ($@) {
     print "Exception: " . $@

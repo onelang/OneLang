@@ -11,7 +11,7 @@ sub new
     return $self;
 }
 
-sub mapTest {
+sub map_test {
     my ( $self ) = @_;
     my $map_obj = {
       x => 5,
@@ -27,13 +27,13 @@ sub mapTest {
     return ${$map_obj}{"z"};
 }
 
-sub explicitTypeTest {
+sub explicit_type_test {
     my ( $self ) = @_;
     my $op = "";
     print((length($op)) . "\n");
 }
 
-sub ifTest {
+sub if_test {
     my ( $self, $x ) = @_;
     my $result = "<unk>";
     
@@ -60,13 +60,13 @@ sub ifTest {
     return $result;
 }
 
-sub arrayTest {
+sub array_test {
     my ( $self ) = @_;
     #const c2 = new Class2();
     
     my $mutable_arr = [1, 2];
-    push @$mutable_arr, 3;
-    push @$mutable_arr, 4;
+    push @{$mutable_arr}, 3;
+    push @{$mutable_arr}, 4;
     # mutableArr.push(c2.property);
     # mutableArr.push(c2.child.property);
     # mutableArr.push(c2.child.child.property);
@@ -91,13 +91,13 @@ sub calc {
     return (1 + 2) * 3;
 }
 
-sub methodWithArgs {
+sub method_with_args {
     my ( $self, $arg1, $arg2, $arg3 ) = @_;
     my $stuff = $arg1 + $arg2 + $arg3 * $self->calc();
     return $stuff;
 }
 
-sub stringTest {
+sub string_test {
     my ( $self ) = @_;
     my $x = "x";
     my $y = "y";
@@ -109,7 +109,7 @@ sub stringTest {
     return $z . "|" . $x . $y;
 }
 
-sub reverseString {
+sub reverse_string {
     my ( $self, $str ) = @_;
     my $result = "";
     for (my $i = length($str) - 1; $i >= 0; $i--) {
@@ -118,25 +118,25 @@ sub reverseString {
     return $result;
 }
 
-sub getBoolResult {
+sub get_bool_result {
     my ( $self, $value ) = @_;
     return $value;
 }
 
-sub testMethod {
+sub test_method {
     my ( $self ) = @_;
-    $self->arrayTest();
-    print(($self->mapTest()) . "\n");
-    print(($self->stringTest()) . "\n");
-    print(($self->reverseString("print value")) . "\n");
-    print(($self->getBoolResult(1) ? "true" : "false") . "\n");
+    $self->array_test();
+    print(($self->map_test()) . "\n");
+    print(($self->string_test()) . "\n");
+    print(($self->reverse_string("print value")) . "\n");
+    print(($self->get_bool_result(1) ? "true" : "false") . "\n");
 }
 
 package Program;
 
 eval {
     my $c = new TestClass();
-    $c->testMethod();
+    $c->test_method();
 };
 if ($@) {
     print "Exception: " . $@

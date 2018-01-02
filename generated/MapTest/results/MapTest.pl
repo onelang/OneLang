@@ -11,7 +11,7 @@ sub new
     return $self;
 }
 
-sub mapTest {
+sub map_test {
     my ( $self ) = @_;
     my $map_obj = {
       x => 5,

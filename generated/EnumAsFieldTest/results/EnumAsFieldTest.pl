@@ -20,7 +20,7 @@ sub new
     return $self;
 }
 
-sub testMethod {
+sub test_method {
     my ( $self ) = @_;
     print(("Value: @{[$self->{enum_field}]}") . "\n");
 }
@@ -29,7 +29,7 @@ package Program;
 
 eval {
     my $c = new TestClass();
-    $c->testMethod();
+    $c->test_method();
 };
 if ($@) {
     print "Exception: " . $@

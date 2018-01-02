@@ -11,7 +11,7 @@ sub new
     return $self;
 }
 
-sub testMethod {
+sub test_method {
     my ( $self ) = @_;
     my $str = "ABCDEF";
     my $t_a0_true = (substr $str, 0, length("A")) eq ("A");
@@ -25,7 +25,7 @@ package Program;
 
 eval {
     my $c = new TestClass();
-    $c->testMethod();
+    $c->test_method();
 };
 if ($@) {
     print "Exception: " . $@

@@ -11,7 +11,7 @@ sub new
     return $self;
 }
 
-sub reverseString {
+sub reverse_string {
     my ( $self, $str ) = @_;
     my $result = "";
     for (my $i = length($str) - 1; $i >= 0; $i--) {
@@ -20,9 +20,9 @@ sub reverseString {
     return $result;
 }
 
-sub testMethod {
+sub test_method {
     my ( $self ) = @_;
-    print(($self->reverseString("print value")) . "\n");
+    print(($self->reverse_string("print value")) . "\n");
     return "return value";
 }
 
@@ -30,7 +30,7 @@ package Program;
 
 eval {
     my $c = new TestClass();
-    $c->testMethod();
+    $c->test_method();
 };
 if ($@) {
     print "Exception: " . $@

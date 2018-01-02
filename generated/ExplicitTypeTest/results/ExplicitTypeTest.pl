@@ -11,7 +11,7 @@ sub new
     return $self;
 }
 
-sub testMethod {
+sub test_method {
     my ( $self ) = @_;
     my $op = undef;
     print((length($op)) . "\n");
@@ -21,7 +21,7 @@ package Program;
 
 eval {
     my $c = new TestClass();
-    $c->testMethod();
+    $c->test_method();
 };
 if ($@) {
     print "Exception: " . $@

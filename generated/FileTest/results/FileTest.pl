@@ -11,7 +11,7 @@ sub new
     return $self;
 }
 
-sub testMethod {
+sub test_method {
     my ( $self ) = @_;
     open my $fh, '<', "../../input/test.txt" or die "Can't open file $!";
     read $fh, my $file_content, -s $fh;
@@ -23,7 +23,7 @@ package Program;
 
 eval {
     my $c = new TestClass();
-    $c->testMethod();
+    $c->test_method();
 };
 if ($@) {
     print "Exception: " . $@

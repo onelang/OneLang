@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-require "one.pl";
+use one;
 
 package TestClass;
 
@@ -13,7 +13,7 @@ sub new
     return $self;
 }
 
-sub testMethod {
+sub test_method {
     my ( $self ) = @_;
     my $str = "A x B x C x D";
     my $result = One::str_replace($str, "x", "y");
@@ -24,7 +24,7 @@ package Program;
 
 eval {
     my $c = new TestClass();
-    $c->testMethod();
+    $c->test_method();
 };
 if ($@) {
     print "Exception: " . $@

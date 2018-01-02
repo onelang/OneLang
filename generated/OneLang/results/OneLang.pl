@@ -39,7 +39,7 @@ sub new
     return $self;
 }
 
-sub startsWithAtIndex {
+sub starts_with_at_index {
     my ( $str, $substr, $idx ) = @_;
     return (substr $str, $idx, ($idx + length($substr) - $idx)) eq $substr;
 }
@@ -58,7 +58,7 @@ sub new
     return $self;
 }
 
-sub getTokenType {
+sub get_token_type {
     my ( $self ) = @_;
     if ($self->{offset} >= length($self->{text})) {
         return $TokenType::end_token;
@@ -73,22 +73,22 @@ sub tokenize {
     my $result = [];
     
     while ($self->{offset} < length($self->{text})) {
-        my $char_type = $self->getTokenType();
+        my $char_type = $self->get_token_type();
         if ($char_type eq $TokenType::whitespace) {
-            while ($self->getTokenType() eq $TokenType::whitespace) {
+            while ($self->get_token_type() eq $TokenType::whitespace) {
                 $self->{offset}++;
             }
         } elsif ($char_type eq $TokenType::identifier) {
             my $start_offset = $self->{offset};
-            while ($self->getTokenType() eq $TokenType::identifier) {
+            while ($self->get_token_type() eq $TokenType::identifier) {
                 $self->{offset}++;
             }
             my $identifier = (substr $self->{text}, $start_offset, ($self->{offset} - $start_offset));
-            push @$result, new Token($identifier, 0);
+            push @{$result}, new Token($identifier, 0);
         } else {
             my $op = "";
             foreach my $curr_op (@{$self->{operators}}) {
-                if (StringHelper::startsWithAtIndex($self->{text}, $curr_op, $self->{offset})) {
+                if (StringHelper::starts_with_at_index($self->{text}, $curr_op, $self->{offset})) {
                     $op = $curr_op;
                     last;
                 }
@@ -97,7 +97,7 @@ sub tokenize {
                 last;
             }
             $self->{offset} += length($op);
-            push @$result, new Token($op, 1);
+            push @{$result}, new Token($op, 1);
         }
     }
     
@@ -114,7 +114,7 @@ sub new
     return $self;
 }
 
-sub testMethod {
+sub test_method {
     my ( $self ) = @_;
     my $operators = ["<<", ">>", "++", "--", "==", "!=", "!", "<", ">", "=", "(", ")", "[", "]", "{", "}", ";", "+", "-", "*", "/", "&&", "&", "%", "||", "|", "^", ",", "."];
     
@@ -133,7 +133,7 @@ package Program;
 
 eval {
     my $c = new TestClass();
-    $c->testMethod();
+    $c->test_method();
 };
 if ($@) {
     print "Exception: " . $@

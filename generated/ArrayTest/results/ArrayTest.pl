@@ -11,12 +11,12 @@ sub new
     return $self;
 }
 
-sub testMethod {
+sub test_method {
     my ( $self ) = @_;
     my $constant_arr = [5];
     
     my $mutable_arr = [1];
-    push @$mutable_arr, 2;
+    push @{$mutable_arr}, 2;
     
     print(("len1: @{[scalar(@{$constant_arr})]}, len2: @{[scalar(@{$mutable_arr})]}") . "\n");
 }
@@ -25,7 +25,7 @@ package Program;
 
 eval {
     my $c = new TestClass();
-    $c->testMethod();
+    $c->test_method();
 };
 if ($@) {
     print "Exception: " . $@

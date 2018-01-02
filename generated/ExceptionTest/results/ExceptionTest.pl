@@ -11,27 +11,27 @@ sub new
     return $self;
 }
 
-sub notThrows {
+sub not_throws {
     my ( $self ) = @_;
     return 5;
 }
 
-sub fThrows {
+sub f_throws {
     my ( $self ) = @_;
     die "exception message"."\n";
 }
 
-sub testMethod {
+sub test_method {
     my ( $self ) = @_;
-    print(($self->notThrows()) . "\n");
-    $self->fThrows();
+    print(($self->not_throws()) . "\n");
+    $self->f_throws();
 }
 
 package Program;
 
 eval {
     my $c = new TestClass();
-    $c->testMethod();
+    $c->test_method();
 };
 if ($@) {
     print "Exception: " . $@

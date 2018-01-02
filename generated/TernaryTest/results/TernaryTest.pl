@@ -11,21 +11,21 @@ sub new
     return $self;
 }
 
-sub getResult {
+sub get_result {
     my ( $self ) = @_;
     return 1;
 }
 
-sub testMethod {
+sub test_method {
     my ( $self ) = @_;
-    print(($self->getResult() ? "true" : "false") . "\n");
+    print(($self->get_result() ? "true" : "false") . "\n");
 }
 
 package Program;
 
 eval {
     my $c = new TestClass();
-    $c->testMethod();
+    $c->test_method();
 };
 if ($@) {
     print "Exception: " . $@

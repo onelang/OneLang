@@ -19,6 +19,9 @@ sub new
     my $self = {};
     bless $self, $class;
     my ( $str_constr ) = @_;
+    $self->{offset} = 5;
+    $self->{str_test} = "test" . "test2";
+    $self->{str_constr} = "constr";
     $self->{str_constr} = $str_constr;
     return $self;
 }
