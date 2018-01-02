@@ -9,8 +9,8 @@ class Token {
   value: string;
   isOperator: bool;
 
-  constructor(value: string, is_operator: bool) {
-      this.isOperator = is_operator;
+  constructor(value: string, isOperator: bool) {
+      this.isOperator = isOperator;
       this.value = value;
   }
 }
@@ -45,18 +45,18 @@ class Tokenizer {
     const result = [];
     
     while (this.offset < this.text.length) {
-        const char_type = this.getTokenType();
+        const charType = this.getTokenType();
         
-        if (char_type == TokenType.whitespace) {
+        if (charType == TokenType.whitespace) {
             while (this.getTokenType() == TokenType.whitespace) {
                 this.offset++;
             }
-        } else if (char_type == TokenType.identifier) {
-            const start_offset = this.offset;
+        } else if (charType == TokenType.identifier) {
+            const startOffset = this.offset;
             while (this.getTokenType() == TokenType.identifier) {
                 this.offset++;
             }
-            const identifier = this.text.substring(start_offset, this.offset);
+            const identifier = this.text.substring(startOffset, this.offset);
             result.push(new Token(identifier, false));
         } else {
             let op = "";

@@ -1,5 +1,5 @@
 class TestClass {
-  methodTest(method_param: OneArray) {
+  methodTest(methodParam: OneArray) {
   }
   
   testMethod() {

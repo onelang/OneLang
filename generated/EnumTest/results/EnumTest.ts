@@ -5,15 +5,15 @@ enum TestEnum {
 
 class TestClass {
   testMethod() {
-    let enum_v = TestEnum.Item1;
+    let enumV = TestEnum.Item1;
     if (3 * 2 == 6) {
-        enum_v = TestEnum.Item2;
+        enumV = TestEnum.Item2;
     }
     
-    const check1 = enum_v == TestEnum.Item2 ? "SUCCESS" : "FAIL";
-    const check2 = enum_v == TestEnum.Item1 ? "FAIL" : "SUCCESS";
+    const check1 = enumV == TestEnum.Item2 ? "SUCCESS" : "FAIL";
+    const check2 = enumV == TestEnum.Item1 ? "FAIL" : "SUCCESS";
     
-    console.log(`Item1: ${TestEnum.Item1}, Item2: ${enum_v}, checks: ${check1} ${check2}`);
+    console.log(`Item1: ${TestEnum.Item1}, Item2: ${enumV}, checks: ${check1} ${check2}`);
   }
 }
 

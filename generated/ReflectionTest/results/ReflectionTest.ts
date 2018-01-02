@@ -47,16 +47,16 @@ class TestClass {
         console.log("method1 is null!");
         return;
     }
-    const method1_result = method1.call(obj, []);
-    console.log(`instanceMethod: ${method1_result}`);
+    const method1Result = method1.call(obj, []);
+    console.log(`instanceMethod: ${method1Result}`);
     
     const method2 = cls.getMethod("staticMethod");
     if (method2 == null) {
         console.log("method2 is null!");
         return;
     }
-    const method2_result = method2.call(null, ["arg1value"]);
-    console.log(`staticMethod: ${method2_result}`);
+    const method2Result = method2.call(null, ["arg1value"]);
+    console.log(`staticMethod: ${method2Result}`);
     
     const field1 = cls.getField("instanceField");
     if (field1 == null) {
@@ -64,8 +64,8 @@ class TestClass {
         return;
     }
     field1.setValue(obj, 6);
-    const field1_new_val = field1.getValue(obj);
-    console.log(`new instance field value: ${obj.instanceField} == ${field1_new_val}`);
+    const field1NewVal = field1.getValue(obj);
+    console.log(`new instance field value: ${obj.instanceField} == ${field1NewVal}`);
     
     const field2 = cls.getField("staticField");
     if (field2 == null) {
@@ -73,8 +73,8 @@ class TestClass {
         return;
     }
     field2.setValue(null, "bello");
-    const field2_new_val = field2.getValue(null);
-    console.log(`new static field value: ${TargetClass.staticField} == ${field2_new_val}`);
+    const field2NewVal = field2.getValue(null);
+    console.log(`new static field value: ${TargetClass.staticField} == ${field2NewVal}`);
   }
 }
 

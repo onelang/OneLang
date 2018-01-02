@@ -1,11 +1,11 @@
 class TestClass {
   testMethod() {
-    const constant_arr = [5];
+    const constantArr = [5];
     
-    const mutable_arr = [1];
-    mutable_arr.push(2);
+    const mutableArr = [1];
+    mutableArr.push(2);
     
-    console.log(`len1: ${constant_arr.length}, len2: ${mutable_arr.length}`);
+    console.log(`len1: ${constantArr.length}, len2: ${mutableArr.length}`);
   }
 }
 

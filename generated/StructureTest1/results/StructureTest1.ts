@@ -7,8 +7,8 @@ class Item {
   strTest: string = "test" + "test2";
   strConstr: string = "constr";
 
-  constructor(str_constr: string) {
-      this.strConstr = str_constr;
+  constructor(strConstr: string) {
+      this.strConstr = strConstr;
   }
 }
 

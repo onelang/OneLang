@@ -3,10 +3,10 @@ class TestClass {
     const str = "a1A";
     for (let i = 0; i < str.length; i++) {
         const c = str[i];
-        const is_upper = "A" <= c && c <= "Z";
-        const is_lower = "a" <= c && c <= "z";
-        const is_number = "0" <= c && c <= "9";
-        console.log(is_upper ? "upper" : is_lower ? "lower" : is_number ? "number" : "other");
+        const isUpper = "A" <= c && c <= "Z";
+        const isLower = "a" <= c && c <= "z";
+        const isNumber = "0" <= c && c <= "9";
+        console.log(isUpper ? "upper" : isLower ? "lower" : isNumber ? "number" : "other");
     }
   }
 }
