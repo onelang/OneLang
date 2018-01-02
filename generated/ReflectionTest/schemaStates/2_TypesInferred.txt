@@ -1,0 +1,176 @@
+TargetClass::instanceField: TsNumber
+- Variable: instanceField [TsNumber]
+  - Literal (numeric): "5" [TsNumber]
+
+TargetClass::staticField: TsString
+- Variable: staticField [TsString]
+  - Literal (string): "hello" [TsString]
+
+TargetClass::staticMethod(arg1: TsString): TsString [static]
+  - Return
+    - TemplateString [any]
+      - MethodArgument: arg1 [TsString]
+      - StaticField: staticField [any]
+        - ClassReference [TargetClass]
+
+TargetClass::instanceMethod(): TsString
+  - Return
+    - TemplateString [any]
+      - InstanceField (this): instanceField [any]
+
+TestClass::testMethod(): void
+  - Variable: obj [TargetClass]
+    - New TargetClass [TargetClass]
+  - Comment: "//console.log(`instanceMethod (direct): ${obj.instanceMethod()}`);\n//console.log(`staticMethod (direct): ${TargetClass.staticMethod("arg1value")}`);\n//console.log(`instanceField (direct): ${obj.instanceField}`);\n//console.log(`staticField (direct): ${TargetClass.staticField}`);\n"
+  - Variable: cls [OneClass]
+    - Call [OneClass]
+      - MethodReference (static) [OneReflect::getClass]
+      - LocalVar: obj [TargetClass]
+  - If
+    - Binary: == [OneBoolean]
+      - LocalVar: cls [OneClass]
+      - Literal (null): "null" [null]
+    Then
+      - ExpressionStatement
+        - Call [void]
+          - MethodReference (static) [console::log]
+          - Literal (string): "cls is null!" [TsString]
+      - Return
+  - Variable: cls2 [OneClass]
+    - Call [OneClass]
+      - MethodReference (static) [OneReflect::getClassByName]
+      - Literal (string): "TargetClass" [TsString]
+  - If
+    - Binary: == [OneBoolean]
+      - LocalVar: cls2 [OneClass]
+      - Literal (null): "null" [null]
+    Then
+      - ExpressionStatement
+        - Call [void]
+          - MethodReference (static) [console::log]
+          - Literal (string): "cls2 is null!" [TsString]
+      - Return
+  - Comment: "\n"
+  - Variable: method1 [OneMethod]
+    - Call [OneMethod]
+      - MethodReference [OneClass::getMethod]
+        - LocalVar: cls [OneClass]
+      - Literal (string): "instanceMethod" [TsString]
+  - If
+    - Binary: == [OneBoolean]
+      - LocalVar: method1 [OneMethod]
+      - Literal (null): "null" [null]
+    Then
+      - ExpressionStatement
+        - Call [void]
+          - MethodReference (static) [console::log]
+          - Literal (string): "method1 is null!" [TsString]
+      - Return
+  - Variable: method1Result [any]
+    - Call [any]
+      - MethodReference [OneMethod::call]
+        - LocalVar: method1 [OneMethod]
+      - LocalVar: obj [TargetClass]
+      - ArrayLiteral [TsArray<any>]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - TemplateString [any]
+        - LocalVar: method1Result [any]
+  - Comment: "\n"
+  - Variable: method2 [OneMethod]
+    - Call [OneMethod]
+      - MethodReference [OneClass::getMethod]
+        - LocalVar: cls [OneClass]
+      - Literal (string): "staticMethod" [TsString]
+  - If
+    - Binary: == [OneBoolean]
+      - LocalVar: method2 [OneMethod]
+      - Literal (null): "null" [null]
+    Then
+      - ExpressionStatement
+        - Call [void]
+          - MethodReference (static) [console::log]
+          - Literal (string): "method2 is null!" [TsString]
+      - Return
+  - Variable: method2Result [any]
+    - Call [any]
+      - MethodReference [OneMethod::call]
+        - LocalVar: method2 [OneMethod]
+      - Literal (null): "null" [null]
+      - ArrayLiteral [TsArray<any>]
+        - Literal (string): "arg1value" [TsString]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - TemplateString [any]
+        - LocalVar: method2Result [any]
+  - Comment: "\n"
+  - Variable: field1 [OneField]
+    - Call [OneField]
+      - MethodReference [OneClass::getField]
+        - LocalVar: cls [OneClass]
+      - Literal (string): "instanceField" [TsString]
+  - If
+    - Binary: == [OneBoolean]
+      - LocalVar: field1 [OneField]
+      - Literal (null): "null" [null]
+    Then
+      - ExpressionStatement
+        - Call [void]
+          - MethodReference (static) [console::log]
+          - Literal (string): "field1 is null!" [TsString]
+      - Return
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference [OneField::setValue]
+        - LocalVar: field1 [OneField]
+      - LocalVar: obj [TargetClass]
+      - Literal (numeric): "6" [TsNumber]
+  - Variable: field1NewVal [any]
+    - Call [any]
+      - MethodReference [OneField::getValue]
+        - LocalVar: field1 [OneField]
+      - LocalVar: obj [TargetClass]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - TemplateString [any]
+        - InstanceField: instanceField [TsNumber]
+          - LocalVar: obj [TargetClass]
+        - LocalVar: field1NewVal [any]
+  - Comment: "\n"
+  - Variable: field2 [OneField]
+    - Call [OneField]
+      - MethodReference [OneClass::getField]
+        - LocalVar: cls [OneClass]
+      - Literal (string): "staticField" [TsString]
+  - If
+    - Binary: == [OneBoolean]
+      - LocalVar: field2 [OneField]
+      - Literal (null): "null" [null]
+    Then
+      - ExpressionStatement
+        - Call [void]
+          - MethodReference (static) [console::log]
+          - Literal (string): "field2 is null!" [TsString]
+      - Return
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference [OneField::setValue]
+        - LocalVar: field2 [OneField]
+      - Literal (null): "null" [null]
+      - Literal (string): "bello" [TsString]
+  - Variable: field2NewVal [any]
+    - Call [any]
+      - MethodReference [OneField::getValue]
+        - LocalVar: field2 [OneField]
+      - Literal (null): "null" [null]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [console::log]
+      - TemplateString [any]
+        - StaticField: staticField [TsString]
+          - ClassReference [TargetClass]
+        - LocalVar: field2NewVal [any]
+

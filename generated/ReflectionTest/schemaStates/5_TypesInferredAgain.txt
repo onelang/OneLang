@@ -1,0 +1,176 @@
+TargetClass::instanceField: OneNumber
+- Variable: instanceField [OneNumber]
+  - Literal (numeric): "5" [OneNumber]
+
+TargetClass::staticField: OneString
+- Variable: staticField [OneString]
+  - Literal (string): "hello" [OneString]
+
+TargetClass::staticMethod(arg1: OneString): OneString [static]
+  - Return
+    - TemplateString [any]
+      - MethodArgument: arg1 [OneString]
+      - StaticField: staticField [OneString]
+        - ClassReference [TargetClass]
+
+TargetClass::instanceMethod(): OneString
+  - Return
+    - TemplateString [any]
+      - InstanceField (this): instanceField [OneNumber]
+
+TestClass::testMethod(): void
+  - Variable: obj [TargetClass]
+    - New TargetClass [TargetClass]
+  - Comment: "//console.log(`instanceMethod (direct): ${obj.instanceMethod()}`);\n//console.log(`staticMethod (direct): ${TargetClass.staticMethod("arg1value")}`);\n//console.log(`instanceField (direct): ${obj.instanceField}`);\n//console.log(`staticField (direct): ${TargetClass.staticField}`);\n"
+  - Variable: cls [OneClass]
+    - Call [OneClass]
+      - MethodReference (static) [OneReflect::getClass]
+      - LocalVar: obj [TargetClass]
+  - If
+    - Binary: == [OneBoolean]
+      - LocalVar: cls [OneClass]
+      - Literal (null): "null" [null]
+    Then
+      - ExpressionStatement
+        - Call [void]
+          - MethodReference (static) [OneConsole::print]
+          - Literal (string): "cls is null!" [OneString]
+      - Return
+  - Variable: cls2 [OneClass]
+    - Call [OneClass]
+      - MethodReference (static) [OneReflect::getClassByName]
+      - Literal (string): "TargetClass" [OneString]
+  - If
+    - Binary: == [OneBoolean]
+      - LocalVar: cls2 [OneClass]
+      - Literal (null): "null" [null]
+    Then
+      - ExpressionStatement
+        - Call [void]
+          - MethodReference (static) [OneConsole::print]
+          - Literal (string): "cls2 is null!" [OneString]
+      - Return
+  - Comment: "\n"
+  - Variable: method1 [OneMethod]
+    - Call [OneMethod]
+      - MethodReference [OneClass::getMethod]
+        - LocalVar: cls [OneClass]
+      - Literal (string): "instanceMethod" [OneString]
+  - If
+    - Binary: == [OneBoolean]
+      - LocalVar: method1 [OneMethod]
+      - Literal (null): "null" [null]
+    Then
+      - ExpressionStatement
+        - Call [void]
+          - MethodReference (static) [OneConsole::print]
+          - Literal (string): "method1 is null!" [OneString]
+      - Return
+  - Variable: method1Result [any]
+    - Call [any]
+      - MethodReference [OneMethod::call]
+        - LocalVar: method1 [OneMethod]
+      - LocalVar: obj [TargetClass]
+      - ArrayLiteral [OneArray<any>]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [OneConsole::print]
+      - TemplateString [any]
+        - LocalVar: method1Result [any]
+  - Comment: "\n"
+  - Variable: method2 [OneMethod]
+    - Call [OneMethod]
+      - MethodReference [OneClass::getMethod]
+        - LocalVar: cls [OneClass]
+      - Literal (string): "staticMethod" [OneString]
+  - If
+    - Binary: == [OneBoolean]
+      - LocalVar: method2 [OneMethod]
+      - Literal (null): "null" [null]
+    Then
+      - ExpressionStatement
+        - Call [void]
+          - MethodReference (static) [OneConsole::print]
+          - Literal (string): "method2 is null!" [OneString]
+      - Return
+  - Variable: method2Result [any]
+    - Call [any]
+      - MethodReference [OneMethod::call]
+        - LocalVar: method2 [OneMethod]
+      - Literal (null): "null" [null]
+      - ArrayLiteral [OneArray<any>]
+        - Literal (string): "arg1value" [OneString]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [OneConsole::print]
+      - TemplateString [any]
+        - LocalVar: method2Result [any]
+  - Comment: "\n"
+  - Variable: field1 [OneField]
+    - Call [OneField]
+      - MethodReference [OneClass::getField]
+        - LocalVar: cls [OneClass]
+      - Literal (string): "instanceField" [OneString]
+  - If
+    - Binary: == [OneBoolean]
+      - LocalVar: field1 [OneField]
+      - Literal (null): "null" [null]
+    Then
+      - ExpressionStatement
+        - Call [void]
+          - MethodReference (static) [OneConsole::print]
+          - Literal (string): "field1 is null!" [OneString]
+      - Return
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference [OneField::setValue]
+        - LocalVar: field1 [OneField]
+      - LocalVar: obj [TargetClass]
+      - Literal (numeric): "6" [OneNumber]
+  - Variable: field1NewVal [any]
+    - Call [any]
+      - MethodReference [OneField::getValue]
+        - LocalVar: field1 [OneField]
+      - LocalVar: obj [TargetClass]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [OneConsole::print]
+      - TemplateString [any]
+        - InstanceField: instanceField [OneNumber]
+          - LocalVar: obj [TargetClass]
+        - LocalVar: field1NewVal [any]
+  - Comment: "\n"
+  - Variable: field2 [OneField]
+    - Call [OneField]
+      - MethodReference [OneClass::getField]
+        - LocalVar: cls [OneClass]
+      - Literal (string): "staticField" [OneString]
+  - If
+    - Binary: == [OneBoolean]
+      - LocalVar: field2 [OneField]
+      - Literal (null): "null" [null]
+    Then
+      - ExpressionStatement
+        - Call [void]
+          - MethodReference (static) [OneConsole::print]
+          - Literal (string): "field2 is null!" [OneString]
+      - Return
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference [OneField::setValue]
+        - LocalVar: field2 [OneField]
+      - Literal (null): "null" [null]
+      - Literal (string): "bello" [OneString]
+  - Variable: field2NewVal [any]
+    - Call [any]
+      - MethodReference [OneField::getValue]
+        - LocalVar: field2 [OneField]
+      - Literal (null): "null" [null]
+  - ExpressionStatement
+    - Call [void]
+      - MethodReference (static) [OneConsole::print]
+      - TemplateString [any]
+        - StaticField: staticField [OneString]
+          - ClassReference [TargetClass]
+        - LocalVar: field2NewVal [any]
+
