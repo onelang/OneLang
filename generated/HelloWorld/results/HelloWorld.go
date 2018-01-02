@@ -13,6 +13,9 @@ func (this *TestClass) TestMethod() {
     fmt.Println("Hello world!")
 }
 
+func init() {
+}
+
 func main() {
     defer func() {
       if r := recover(); r != nil {
@@ -20,6 +23,6 @@ func main() {
       }
     }()
 
-    c := (TestClass{})
+    c := NewTestClass()
     c.TestMethod();
 }

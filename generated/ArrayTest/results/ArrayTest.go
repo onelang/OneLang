@@ -18,6 +18,9 @@ func (this *TestClass) TestMethod() {
     fmt.Println(fmt.Sprintf("len1: %v, len2: %v", len(constant_arr), len(mutable_arr)))
 }
 
+func init() {
+}
+
 func main() {
     defer func() {
       if r := recover(); r != nil {
@@ -25,6 +28,6 @@ func main() {
       }
     }()
 
-    c := (TestClass{})
+    c := NewTestClass()
     c.TestMethod();
 }

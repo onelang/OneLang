@@ -17,6 +17,9 @@ func (this *TestClass) TestMethod() {
     fmt.Println(fmt.Sprintf("a: %v, b: %v, c: %v, d: %v", a, b, c, d))
 }
 
+func init() {
+}
+
 func main() {
     defer func() {
       if r := recover(); r != nil {
@@ -24,6 +27,6 @@ func main() {
       }
     }()
 
-    c := (TestClass{})
+    c := NewTestClass()
     c.TestMethod();
 }

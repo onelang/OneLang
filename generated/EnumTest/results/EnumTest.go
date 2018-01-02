@@ -1,6 +1,7 @@
 package main
 
 import "fmt"
+type TestEnum int
 const (
     TestEnum_ITEM1 = 0
     TestEnum_ITEM2 = 1
@@ -38,6 +39,9 @@ func (this *TestClass) TestMethod() {
     fmt.Println(fmt.Sprintf("Item1: %v, Item2: %v, checks: %v %v", TestEnum_ITEM1, enum_v, check1, check2))
 }
 
+func init() {
+}
+
 func main() {
     defer func() {
       if r := recover(); r != nil {
@@ -45,6 +49,6 @@ func main() {
       }
     }()
 
-    c := (TestClass{})
+    c := NewTestClass()
     c.TestMethod();
 }

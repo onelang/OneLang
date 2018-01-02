@@ -11,13 +11,16 @@ func NewList() *List {
 }
 
 type Item struct {
-    Offset int = 5
-    StrTest string = "test" + "test2"
-    StrConstr string = "constr"
+    Offset int
+    StrTest string
+    StrConstr string
 }
 
 func NewItem(str_constr string) *Item {
     this := new(Item)
+    this.Offset = 5
+    this.StrTest = "test" + "test2"
+    this.StrConstr = "constr"
     this.StrConstr = str_constr
     return this
 }
@@ -37,4 +40,7 @@ func (this *Container) Method0() {
 
 func (this *Container) Method1(str string) {
     return str
+}
+
+func init() {
 }

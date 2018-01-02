@@ -10,12 +10,15 @@ func NewTestClass() *TestClass {
 }
 
 func (this *TestClass) TestMethod() {
-    map := map[string]{
+    map := map[string]interface{}{
     }
     keys := make([]string, 0, len(map))
     for  key, _ := range map {
       keys = append(keys, key)
     }
+}
+
+func init() {
 }
 
 func main() {
@@ -25,6 +28,6 @@ func main() {
       }
     }()
 
-    c := (TestClass{})
+    c := NewTestClass()
     c.TestMethod();
 }

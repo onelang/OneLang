@@ -29,3 +29,6 @@ func (this *Main) Test() {
     map.Set("hello", 3)
     num_value := map.Get("hello2")
 }
+
+func init() {
+}

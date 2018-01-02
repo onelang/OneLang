@@ -15,6 +15,9 @@ func (this *TestClass) MethodTest(method_param []string) {
 func (this *TestClass) TestMethod() {
 }
 
+func init() {
+}
+
 func main() {
     defer func() {
       if r := recover(); r != nil {
@@ -22,6 +25,6 @@ func main() {
       }
     }()
 
-    c := (TestClass{})
+    c := NewTestClass()
     c.TestMethod();
 }

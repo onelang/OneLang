@@ -17,6 +17,9 @@ func (this *TestClass) TestMethod() string {
     return file_content
 }
 
+func init() {
+}
+
 func main() {
     defer func() {
       if r := recover(); r != nil {
@@ -24,6 +27,6 @@ func main() {
       }
     }()
 
-    c := (TestClass{})
+    c := NewTestClass()
     c.TestMethod();
 }

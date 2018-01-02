@@ -92,9 +92,9 @@ func (this *Tokenizer) Tokenize() []*Token {
             result = append(result, NewToken(identifier, false))
         } else {
             op := ""
-            for _, curr_op := range this.Operators {
-                if StringHelper_StartsWithAtIndex(this.Text, curr_op, this.Offset) {
-                    op = curr_op
+            for _, currOp := range this.Operators {
+                if StringHelper_StartsWithAtIndex(this.Text, currOp, this.Offset) {
+                    op = currOp
                     break
                 }
             }
@@ -139,6 +139,9 @@ func (this *TestClass) TestMethod() {
     }
 }
 
+func init() {
+}
+
 func main() {
     defer func() {
       if r := recover(); r != nil {
@@ -146,6 +149,6 @@ func main() {
       }
     }()
 
-    c := (TestClass{})
+    c := NewTestClass()
     c.TestMethod();
 }

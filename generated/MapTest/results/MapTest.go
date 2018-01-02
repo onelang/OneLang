@@ -18,3 +18,6 @@ func (this *MapTestClass) MapTest() {
     map_obj["x"] = 3
     return map_obj["x"]
 }
+
+func init() {
+}

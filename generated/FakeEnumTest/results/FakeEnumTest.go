@@ -28,6 +28,9 @@ func (this *TestClass) TestMethod() string {
     return casing_test
 }
 
+func init() {
+}
+
 func main() {
     defer func() {
       if r := recover(); r != nil {
@@ -35,6 +38,6 @@ func main() {
       }
     }()
 
-    c := (TestClass{})
+    c := NewTestClass()
     c.TestMethod();
 }
