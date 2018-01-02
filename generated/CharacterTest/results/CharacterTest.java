@@ -4,10 +4,10 @@ class TestClass {
         String str = "a1A";
         for (Integer i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
-            boolean is_upper = 'A' <= c && c <= 'Z';
-            boolean is_lower = 'a' <= c && c <= 'z';
-            boolean is_number = '0' <= c && c <= '9';
-            System.out.println(is_upper ? "upper" : is_lower ? "lower" : is_number ? "number" : "other");
+            boolean isUpper = 'A' <= c && c <= 'Z';
+            boolean isLower = 'a' <= c && c <= 'z';
+            boolean isNumber = '0' <= c && c <= '9';
+            System.out.println(isUpper ? "upper" : isLower ? "lower" : isNumber ? "number" : "other");
         }
     }
 }

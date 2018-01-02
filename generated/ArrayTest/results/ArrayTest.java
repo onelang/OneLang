@@ -1,16 +1,16 @@
-import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 class TestClass {
     public void testMethod() throws Exception
     {
-        List<Integer> constant_arr = new ArrayList<Integer>(Arrays.asList(5));
+        List<Integer> constantArr = new ArrayList<Integer>(Arrays.asList(5));
         
-        List<Integer> mutable_arr = new ArrayList<Integer>(Arrays.asList(1));
-        mutable_arr.add(2);
+        List<Integer> mutableArr = new ArrayList<Integer>(Arrays.asList(1));
+        mutableArr.add(2);
         
-        System.out.println("len1: " + constant_arr.size() + ", len2: " + mutable_arr.size());
+        System.out.println("len1: " + constantArr.size() + ", len2: " + mutableArr.size());
     }
 }
 

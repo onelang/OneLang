@@ -4,17 +4,17 @@ class List {
 
 class Item {
     public Integer offset = 5;
-    public String str_test = "test" + "test2";
-    public String str_constr = "constr";
+    public String strTest = "test" + "test2";
+    public String strConstr = "constr";
 
-    public Item(String str_constr) {
-        this.str_constr = str_constr;
+    public Item(String strConstr) throws Exception {
+        this.strConstr = strConstr;
     }
 }
 
 class Container {
-    public List item_list;
-    public List string_list;
+    public List itemList;
+    public List stringList;
 
     public void method0() throws Exception
     {

@@ -2,11 +2,11 @@ class TestClass {
     public void testMethod() throws Exception
     {
         String str = "ABCDEF";
-        boolean t_a0_true = str.startsWith("A", 0);
-        boolean t_a1_false = str.startsWith("A", 1);
-        boolean t_b1_true = str.startsWith("B", 1);
-        boolean t_c_d2_true = str.startsWith("CD", 2);
-        System.out.println(t_a0_true + " " + t_a1_false + " " + t_b1_true + " " + t_c_d2_true);
+        boolean tA0True = str.startsWith("A", 0);
+        boolean tA1False = str.startsWith("A", 1);
+        boolean tB1True = str.startsWith("B", 1);
+        boolean tCD2True = str.startsWith("CD", 2);
+        System.out.println(tA0True + " " + tA1False + " " + tB1True + " " + tCD2True);
     }
 }
 

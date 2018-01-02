@@ -4,8 +4,8 @@ import java.nio.file.Files;
 class TestClass {
     public String testMethod() throws Exception
     {
-        String file_content = new String(Files.readAllBytes(Paths.get("../../input/test.txt")));;
-        return file_content;
+        String fileContent = new String(Files.readAllBytes(Paths.get("../../input/test.txt")));;
+        return fileContent;
     }
 }
 

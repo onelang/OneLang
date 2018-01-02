@@ -14,6 +14,6 @@ class Main {
     {
         MapX map = new MapX();
         map.set("hello", 3);
-        Integer num_value = map.get("hello2");
+        Integer numValue = map.get("hello2");
     }
 }

@@ -1,22 +1,22 @@
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
 
 class TestClass {
     public Integer mapTest() throws Exception
     {
-        HashMap<String, Integer> map_obj = new HashMap<String, Integer>();
-        map_obj.put("x", 5);
-        map_obj.put("y", 3);
+        HashMap<String, Integer> mapObj = new HashMap<String, Integer>();
+        mapObj.put("x", 5);
+        mapObj.put("y", 3);
         
         //let containsX = "x" in mapObj;
-        map_obj.put("z", 9);
-        map_obj.remove("x");
+        mapObj.put("z", 9);
+        mapObj.remove("x");
         
-        List<String> keys_var = new ArrayList(map_obj.keySet());
-        List<Integer> values_var = new ArrayList(map_obj.values());
-        return map_obj.get("z");
+        List<String> keysVar = new ArrayList(mapObj.keySet());
+        List<Integer> valuesVar = new ArrayList(mapObj.values());
+        return mapObj.get("z");
     }
     
     public void explicitTypeTest() throws Exception
@@ -56,26 +56,26 @@ class TestClass {
     {
         //const c2 = new Class2();
         
-        List<Integer> mutable_arr = new ArrayList<Integer>(Arrays.asList(1, 2));
-        mutable_arr.add(3);
-        mutable_arr.add(4);
+        List<Integer> mutableArr = new ArrayList<Integer>(Arrays.asList(1, 2));
+        mutableArr.add(3);
+        mutableArr.add(4);
         // mutableArr.push(c2.property);
         // mutableArr.push(c2.child.property);
         // mutableArr.push(c2.child.child.property);
         
-        List<Integer> constant_arr = new ArrayList<Integer>(Arrays.asList(5, 6));
+        List<Integer> constantArr = new ArrayList<Integer>(Arrays.asList(5, 6));
         
         // some comment
         //   some comment line 2
-        for (Integer item : mutable_arr) {
+        for (Integer item : mutableArr) {
             System.out.println(item);
         }
         
         /* some other comment
            multiline and stuff
         */
-        for (Integer i = 0; i < constant_arr.size(); i++) {
-            System.out.println(constant_arr.get(i));
+        for (Integer i = 0; i < constantArr.size(); i++) {
+            System.out.println(constantArr.get(i));
         }
     }
     

@@ -1,16 +1,16 @@
 class TokenType {
-    public static String end_token = "EndToken";
+    public static String endToken = "EndToken";
     public static String whitespace = "Whitespace";
     public static String identifier = "Identifier";
-    public static String operator_x = "Operator";
-    public static String no_initializer;
+    public static String operatorX = "Operator";
+    public static String noInitializer;
 }
 
 class TestClass {
     public String testMethod() throws Exception
     {
-        String casing_test = TokenType.end_token;
-        return casing_test;
+        String casingTest = TokenType.endToken;
+        return casingTest;
     }
 }
 

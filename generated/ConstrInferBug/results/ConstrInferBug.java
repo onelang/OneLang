@@ -1,5 +1,5 @@
 class TestClass {
-    public void methodTest(List<String> method_param) throws Exception
+    public void methodTest(List<String> methodParam) throws Exception
     {
     }
     

@@ -1,14 +1,14 @@
 class TestClass {
     public void testMethod() throws Exception
     {
-        String str_val = "str";
+        String strVal = "str";
         Integer num = 1337;
         boolean b = true;
-        Object result = "before " + str_val + ", num: " + num + ", true: " + b + " after";
+        Object result = "before " + strVal + ", num: " + num + ", true: " + b + " after";
         System.out.println(result);
-        System.out.println("before " + str_val + ", num: " + num + ", true: " + b + " after");
+        System.out.println("before " + strVal + ", num: " + num + ", true: " + b + " after");
         
-        String result2 = "before " + str_val + ", num: " + num + ", true: " + b + " after";
+        String result2 = "before " + strVal + ", num: " + num + ", true: " + b + " after";
         System.out.println(result2);
     }
 }
