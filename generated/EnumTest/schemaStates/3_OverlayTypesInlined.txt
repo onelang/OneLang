@@ -1,8 +1,8 @@
 enum TestEnum: Item1, Item2
 
 TestClass::testMethod(): void
-  - Variable: enumV [TestEnum]
-    - EnumMemberReference [TestEnum]
+  - Variable: enumV [TestEnum (enum)]
+    - EnumMemberReference [TestEnum (enum)]
   - If
     - Binary: == [OneBoolean]
       - Binary: * [any]
@@ -12,22 +12,21 @@ TestClass::testMethod(): void
     Then
       - ExpressionStatement
         - Binary: = [any]
-          - LocalVar: enumV [TestEnum]
-          - EnumMemberReference [TestEnum]
-    Else
+          - LocalVar: enumV [TestEnum (enum)]
+          - EnumMemberReference [TestEnum (enum)]
   - Comment: "\n"
   - Variable: check1 [OneString]
     - Conditional [OneString]
       - Binary: == [OneBoolean]
-        - LocalVar: enumV [TestEnum]
-        - EnumMemberReference [TestEnum]
+        - LocalVar: enumV [TestEnum (enum)]
+        - EnumMemberReference [TestEnum (enum)]
       - Literal (string): "SUCCESS" [OneString]
       - Literal (string): "FAIL" [OneString]
   - Variable: check2 [OneString]
     - Conditional [OneString]
       - Binary: == [OneBoolean]
-        - LocalVar: enumV [TestEnum]
-        - EnumMemberReference [TestEnum]
+        - LocalVar: enumV [TestEnum (enum)]
+        - EnumMemberReference [TestEnum (enum)]
       - Literal (string): "FAIL" [OneString]
       - Literal (string): "SUCCESS" [OneString]
   - Comment: "\n"
@@ -35,8 +34,8 @@ TestClass::testMethod(): void
     - Call [void]
       - MethodReference (static) [OneConsole::print]
       - TemplateString [any]
-        - EnumMemberReference [TestEnum]
-        - LocalVar: enumV [TestEnum]
+        - EnumMemberReference [TestEnum (enum)]
+        - LocalVar: enumV [TestEnum (enum)]
         - LocalVar: check1 [OneString]
         - LocalVar: check2 [OneString]
 

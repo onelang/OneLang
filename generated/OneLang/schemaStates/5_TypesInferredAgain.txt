@@ -1,17 +1,22 @@
 TokenType::EndToken: OneString
 - Variable: EndToken [OneString]
   - Literal (string): "EndToken" [OneString]
+
 TokenType::Whitespace: OneString
 - Variable: Whitespace [OneString]
   - Literal (string): "Whitespace" [OneString]
+
 TokenType::Identifier: OneString
 - Variable: Identifier [OneString]
   - Literal (string): "Identifier" [OneString]
+
 TokenType::OperatorX: OneString
 - Variable: OperatorX [OneString]
   - Literal (string): "Operator" [OneString]
+
 Token::value: OneString
 Token::isOperator: OneBoolean
+
 Token::constructor
   - ExpressionStatement
     - Binary: = [OneBoolean]
@@ -21,6 +26,7 @@ Token::constructor
     - Binary: = [OneString]
       - InstanceField (this): value [OneString]
       - MethodArgument: value [OneString]
+
 StringHelper::startsWithAtIndex(str: OneString, substr: OneString, idx: OneNumber): OneBoolean [static]
   - Return
     - Binary: == [OneBoolean]
@@ -37,6 +43,7 @@ StringHelper::startsWithAtIndex(str: OneString, substr: OneString, idx: OneNumbe
 Tokenizer::offset: OneNumber
 Tokenizer::text: OneString
 Tokenizer::operators: OneArray<OneString>
+
 Tokenizer::constructor
   - ExpressionStatement
     - Binary: = [any]
@@ -50,6 +57,7 @@ Tokenizer::constructor
     - Binary: = [OneNumber]
       - InstanceField (this): offset [OneNumber]
       - Literal (numeric): "0" [OneNumber]
+
 Tokenizer::getTokenType(): OneString
   - If
     - Binary: >= [OneBoolean]
@@ -60,7 +68,6 @@ Tokenizer::getTokenType(): OneString
       - Return
         - StaticField: EndToken [OneString]
           - ClassReference [TokenType]
-    Else
   - Comment: "\n"
   - Variable: c [OneCharacter]
     - Call [OneCharacter]
@@ -201,7 +208,6 @@ Tokenizer::tokenize(): OneArray<Token>
                           - LocalVar: op [OneString]
                           - LocalVar: currOp [OneString]
                       - Break
-                    Else
               - Comment: "\n"
               - If
                 - Binary: == [OneBoolean]
@@ -209,7 +215,6 @@ Tokenizer::tokenize(): OneArray<Token>
                   - Literal (string): "" [OneString]
                 Then
                   - Break
-                Else
               - Comment: "\n"
               - ExpressionStatement
                 - Binary: += [OneNumber]

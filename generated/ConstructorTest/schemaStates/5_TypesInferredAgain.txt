@@ -1,5 +1,6 @@
 ConstructorTest::field2: OneNumber
 ConstructorTest::field1: OneNumber
+
 ConstructorTest::constructor
   - ExpressionStatement
     - Binary: = [OneNumber]
@@ -13,6 +14,7 @@ ConstructorTest::constructor
           - MethodArgument: field1 [OneNumber]
           - InstanceField (this): field1 [OneNumber]
         - Literal (numeric): "5" [OneNumber]
+
 TestClass::testMethod(): void
   - Variable: test [ConstructorTest]
     - New ConstructorTest [ConstructorTest]

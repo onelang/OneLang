@@ -24,9 +24,11 @@ Object::values(map: OneMap<K, V>): OneArray<V> [static]
         - MethodArgument: map [OneMap<K, V>]
 
 TsArray::_one: OneArray<T>
+
 TsArray::length: TsNumber
   - Return
     - InstanceField (this): length [TsNumber]
+
 TsArray::push(item: T): void
   - ExpressionStatement
     - Call [void]
@@ -47,6 +49,7 @@ TsArray::set(index: TsNumber, value: T): void
       - MethodArgument: value [T]
 
 TsMap::_one: OneMap<K, V>
+
 TsMap::get(key: K): void
   - ExpressionStatement
     - Call [V]
@@ -67,9 +70,11 @@ TsMap::delete(key: K): void
       - MethodArgument: key [K]
 
 TsString::_one: OneString
+
 TsString::length: OneNumber
   - Return
     - InstanceField (this): length [OneNumber]
+
 TsString::get(idx: TsNumber): OneCharacter
   - Return
     - Call [OneCharacter]
@@ -106,5 +111,8 @@ TsString::startsWith(str: TsString, position: TsNumber): OneBoolean
       - MethodArgument: position [TsNumber]
 
 TsNumber::_one: OneNumber
+
 TsCharacter::_one: OneCharacter
+
 TsBoolean::_one: OneBoolean
+

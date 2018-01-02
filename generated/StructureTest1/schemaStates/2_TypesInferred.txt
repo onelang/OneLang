@@ -1,22 +1,28 @@
 List::items: TsArray<T>
+
 Item::offset: TsNumber
 - Variable: offset [TsNumber]
   - Literal (numeric): "5" [TsNumber]
+
 Item::strTest: TsString
 - Variable: strTest [TsString]
   - Binary: + [any]
     - Literal (string): "test" [TsString]
     - Literal (string): "test2" [TsString]
+
 Item::strConstr: TsString
 - Variable: strConstr [TsString]
   - Literal (string): "constr" [TsString]
+
 Item::constructor
   - ExpressionStatement
     - Binary: = [any]
       - InstanceField (this): strConstr [TsString]
       - MethodArgument: strConstr [TsString]
+
 Container::itemList: List<Item>
 Container::stringList: List<TsString>
+
 Container::method0(): void
 
 Container::method1(str: TsString): void

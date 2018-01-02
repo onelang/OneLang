@@ -2,7 +2,7 @@ MapX::set(key: K, value: V): void
 
 MapX::get(key: K): V
   - Return
-    - Literal (null): "null" [any]
+    - Literal (null): "null" [null]
 
 Main::test(): void
   - Variable: map [MapX<OneString, OneNumber>]

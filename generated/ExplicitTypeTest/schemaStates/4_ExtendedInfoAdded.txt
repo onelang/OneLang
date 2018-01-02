@@ -1,6 +1,6 @@
 TestClass::testMethod(): void
   - Variable: op [OneString]
-    - Literal (null): "null" [any]
+    - Literal (null): "null" [null]
   - ExpressionStatement
     - Call [void]
       - MethodReference (static) [OneConsole::print]

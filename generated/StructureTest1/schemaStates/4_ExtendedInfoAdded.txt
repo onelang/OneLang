@@ -1,22 +1,28 @@
 List::items: OneArray<T>
+
 Item::offset: OneNumber
 - Variable: offset [OneNumber]
   - Literal (numeric): "5" [OneNumber]
+
 Item::strTest: OneString
 - Variable: strTest [OneString]
   - Binary: + [any]
     - Literal (string): "test" [OneString]
     - Literal (string): "test2" [OneString]
+
 Item::strConstr: OneString
 - Variable: strConstr [OneString]
   - Literal (string): "constr" [OneString]
+
 Item::constructor
   - ExpressionStatement
     - Binary: = [any]
       - InstanceField (this): strConstr [OneString]
       - MethodArgument: strConstr [OneString]
+
 Container::itemList: List<Item>
 Container::stringList: List<OneString>
+
 Container::method0(): void
 
 Container::method1(str: OneString): void

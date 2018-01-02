@@ -91,7 +91,6 @@ TestClass::ifTest(x: TsNumber): TsString
         - Binary: =
           - Identifier: result
           - Literal (string): "z"
-    Else
   - Comment: "\n"
   - If
     - Binary: >

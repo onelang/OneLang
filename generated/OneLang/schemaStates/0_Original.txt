@@ -1,17 +1,22 @@
 TokenType::EndToken: TsString
 - Variable: EndToken [TsString]
   - Literal (string): "EndToken"
+
 TokenType::Whitespace: TsString
 - Variable: Whitespace [TsString]
   - Literal (string): "Whitespace"
+
 TokenType::Identifier: TsString
 - Variable: Identifier [TsString]
   - Literal (string): "Identifier"
+
 TokenType::OperatorX: TsString
 - Variable: OperatorX [TsString]
   - Literal (string): "Operator"
+
 Token::value: TsString
 Token::isOperator: TsBoolean
+
 Token::constructor
   - ExpressionStatement
     - Binary: =
@@ -23,6 +28,7 @@ Token::constructor
       - PropertyAccess (.value)
         - Identifier: this
       - Identifier: value
+
 StringHelper::startsWithAtIndex(str: TsString, substr: TsString, idx: TsNumber): TsBoolean [static]
   - Return
     - Binary: ==
@@ -37,6 +43,7 @@ StringHelper::startsWithAtIndex(str: TsString, substr: TsString, idx: TsNumber):
 Tokenizer::offset: TsNumber
 Tokenizer::text: TsString
 Tokenizer::operators: TsArray<TsString>
+
 Tokenizer::constructor
   - ExpressionStatement
     - Binary: =
@@ -53,6 +60,7 @@ Tokenizer::constructor
       - PropertyAccess (.offset)
         - Identifier: this
       - Literal (numeric): "0"
+
 Tokenizer::getTokenType(): TsString
   - If
     - Binary: >=
@@ -65,7 +73,6 @@ Tokenizer::getTokenType(): TsString
       - Return
         - PropertyAccess (.EndToken)
           - Identifier: TokenType
-    Else
   - Comment: "\n"
   - Variable: c
     - ElementAccess
@@ -221,7 +228,6 @@ Tokenizer::tokenize(): TsArray<Token>
                           - Identifier: op
                           - Identifier: currOp
                       - Break
-                    Else
               - Comment: "\n"
               - If
                 - Binary: ==
@@ -229,7 +235,6 @@ Tokenizer::tokenize(): TsArray<Token>
                   - Literal (string): ""
                 Then
                   - Break
-                Else
               - Comment: "\n"
               - ExpressionStatement
                 - Binary: +=

@@ -1,17 +1,22 @@
 TokenType::EndToken: TsString
 - Variable: EndToken [TsString]
   - Literal (string): "EndToken" [TsString]
+
 TokenType::Whitespace: TsString
 - Variable: Whitespace [TsString]
   - Literal (string): "Whitespace" [TsString]
+
 TokenType::Identifier: TsString
 - Variable: Identifier [TsString]
   - Literal (string): "Identifier" [TsString]
+
 TokenType::OperatorX: TsString
 - Variable: OperatorX [TsString]
   - Literal (string): "Operator" [TsString]
+
 Token::value: TsString
 Token::isOperator: TsBoolean
+
 Token::constructor
   - ExpressionStatement
     - Binary: = [any]
@@ -21,6 +26,7 @@ Token::constructor
     - Binary: = [any]
       - InstanceField (this): value [TsString]
       - MethodArgument: value [TsString]
+
 StringHelper::startsWithAtIndex(str: TsString, substr: TsString, idx: TsNumber): TsBoolean [static]
   - Return
     - Binary: == [OneBoolean]
@@ -35,6 +41,7 @@ StringHelper::startsWithAtIndex(str: TsString, substr: TsString, idx: TsNumber):
 Tokenizer::offset: TsNumber
 Tokenizer::text: TsString
 Tokenizer::operators: TsArray<TsString>
+
 Tokenizer::constructor
   - ExpressionStatement
     - Binary: = [any]
@@ -48,6 +55,7 @@ Tokenizer::constructor
     - Binary: = [any]
       - InstanceField (this): offset [TsNumber]
       - Literal (numeric): "0" [TsNumber]
+
 Tokenizer::getTokenType(): TsString
   - If
     - Binary: >= [OneBoolean]
@@ -58,7 +66,6 @@ Tokenizer::getTokenType(): TsString
       - Return
         - StaticField: EndToken [TsString]
           - ClassReference [TokenType]
-    Else
   - Comment: "\n"
   - Variable: c [OneCharacter]
     - Call [OneCharacter]
@@ -199,7 +206,6 @@ Tokenizer::tokenize(): TsArray<Token>
                           - LocalVar: op [TsString]
                           - LocalVar: currOp [TsString]
                       - Break
-                    Else
               - Comment: "\n"
               - If
                 - Binary: == [OneBoolean]
@@ -207,7 +213,6 @@ Tokenizer::tokenize(): TsArray<Token>
                   - Literal (string): "" [TsString]
                 Then
                   - Break
-                Else
               - Comment: "\n"
               - ExpressionStatement
                 - Binary: += [any]

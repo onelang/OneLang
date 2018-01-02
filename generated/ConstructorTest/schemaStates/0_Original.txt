@@ -1,5 +1,6 @@
 ConstructorTest::field2: TsNumber
 ConstructorTest::field1: TsNumber
+
 ConstructorTest::constructor
   - ExpressionStatement
     - Binary: =
@@ -16,6 +17,7 @@ ConstructorTest::constructor
           - PropertyAccess (.field1)
             - Identifier: this
         - Literal (numeric): "5"
+
 TestClass::testMethod(): void
   - Variable: test
     - New ConstructorTest

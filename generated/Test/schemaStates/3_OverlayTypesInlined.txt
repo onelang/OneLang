@@ -89,7 +89,6 @@ TestClass::ifTest(x: OneNumber): OneString
         - Binary: = [any]
           - LocalVar: result [OneString]
           - Literal (string): "z" [OneString]
-    Else
   - Comment: "\n"
   - If
     - Binary: > [any]

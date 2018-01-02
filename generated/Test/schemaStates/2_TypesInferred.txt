@@ -89,7 +89,6 @@ TestClass::ifTest(x: TsNumber): TsString
         - Binary: = [any]
           - LocalVar: result [TsString]
           - Literal (string): "z" [TsString]
-    Else
   - Comment: "\n"
   - If
     - Binary: > [any]

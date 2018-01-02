@@ -16,7 +16,6 @@ TestClass::testMethod(): void
           - Identifier: enumV
           - PropertyAccess (.Item2)
             - Identifier: TestEnum
-    Else
   - Comment: "\n"
   - Variable: check1
     - Conditional
