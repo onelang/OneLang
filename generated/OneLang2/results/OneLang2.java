@@ -2,18 +2,13 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 
-class TokenKind {
-    public static String number = "number";
-    public static String identifier = "identifier";
-    public static String operator_x = "operator";
-    public static String string_x = "string";
-}
+enum TokenKind { NUMBER, IDENTIFIER, OPERATOR_, STRING_ };
 
 class Token {
-    public String kind;
+    public TokenKind kind;
     public String value;
 
-    public Token(String kind, String value) {
+    public Token(TokenKind kind, String value) throws Exception {
         this.value = value;
         this.kind = kind;
     }
@@ -25,7 +20,7 @@ class ExprLangLexer {
     public String expression;
     public List<String> operators;
 
-    public ExprLangLexer(String expression, List<String> operators) {
+    public ExprLangLexer(String expression, List<String> operators) throws Exception {
         this.operators = operators;
         this.expression = expression;
         if (!this.tryToReadNumber()) {
@@ -38,13 +33,19 @@ class ExprLangLexer {
                 this.fail("expected operator here");
             }
             
-            this.tryToReadLiteral();
+            if (!this.tryToReadLiteral()) {
+                this.fail("expected literal here");
+            }
         }
     }
 
     public void fail(String message) throws Exception
     {
-        String context = this.expression.substring(this.offset, this.offset + 30) + "...";
+        Integer endOffset = this.offset + 30;
+        if (endOffset > this.expression.length()) {
+            endOffset = this.expression.length();
+        }
+        String context = this.expression.substring(this.offset, endOffset) + "...";
         throw new Exception("TokenizerException: " + message + " at '" + context + "' (offset: " + this.offset + ")");
     }
     
@@ -54,7 +55,7 @@ class ExprLangLexer {
         return !this.eof();
     }
     
-    public void add(String kind, String value) throws Exception
+    public void add(TokenKind kind, String value) throws Exception
     {
         this.tokens.add(new Token(kind, value));
         this.offset += value.length();
@@ -63,7 +64,7 @@ class ExprLangLexer {
     public String tryToMatch(String pattern) throws Exception
     {
         List<String> matches = OneRegex.matchFromIndex(pattern, this.expression, this.offset);
-        return matches.get(0);
+        return matches == null ? "" : matches.get(0);
     }
     
     public boolean tryToReadOperator() throws Exception
@@ -71,7 +72,7 @@ class ExprLangLexer {
         this.skipWhitespace();
         for (String op : this.operators) {
             if (this.expression.startsWith(op, this.offset)) {
-                this.add(TokenKind.operator_x, op);
+                this.add(TokenKind.OPERATOR_, op);
                 return true;
             }
         }
@@ -81,13 +82,15 @@ class ExprLangLexer {
     public boolean tryToReadNumber() throws Exception
     {
         this.skipWhitespace();
+        
         String number = this.tryToMatch("[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)");
         if (number.equals("")) {
             return false;
         }
         
-        this.add(TokenKind.number, number);
-        if (this.tryToMatch("[0-9a-zA-Z]")) {
+        this.add(TokenKind.NUMBER, number);
+        
+        if (this.tryToMatch("[0-9a-zA-Z]") != "") {
             this.fail("invalid character in number");
         }
         
@@ -102,7 +105,7 @@ class ExprLangLexer {
             return false;
         }
         
-        this.add(TokenKind.identifier, identifier);
+        this.add(TokenKind.IDENTIFIER, identifier);
         return true;
     }
     
@@ -110,17 +113,17 @@ class ExprLangLexer {
     {
         this.skipWhitespace();
         
-        String match = this.tryToMatch("\'(\\\\\'|[^\'])*\'");
-        if (match == null) {
+        String match = this.tryToMatch("'(\\\\'|[^'])*'");
+        if (match.equals("")) {
             match = this.tryToMatch("\"(\\\\\"|[^\"])*\"");
         }
-        if (match == null) {
+        if (match.equals("")) {
             return false;
         }
         
         String str = match.substring(1, 1 + match.length() - 2);
-        str = match.charAt(0) == '\'' ? str.replace("\\\'", "\'") : str.replace("\\\"", "\"");
-        this.tokens.add(new Token(TokenKind.string_x, str));
+        str = match.charAt(0) == '\'' ? str.replace("\\'", "'") : str.replace("\\\"", "\"");
+        this.tokens.add(new Token(TokenKind.STRING_, str));
         this.offset += match.length();
         return true;
     }
@@ -153,7 +156,15 @@ class TestClass {
     public void testMethod() throws Exception
     {
         ExprLangLexer lexer = new ExprLangLexer("1+2", new ArrayList<String>(Arrays.asList("+")));
-        System.out.println("Token count: " + lexer.tokens.size());
+        String result = "";
+        for (Token token : lexer.tokens) {
+            if (result != "") {
+                result += ", ";
+            }
+            result += token.value;
+        }
+        
+        System.out.println("[" + lexer.tokens.size() + "]: " + result);
     }
 }
 

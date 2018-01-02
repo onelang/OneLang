@@ -1,20 +1,14 @@
 using System;
 using System.Collections.Generic;
 
-public class TokenKind
-{
-    public static string Number = "number";
-    public static string Identifier = "identifier";
-    public static string OperatorX = "operator";
-    public static string StringX = "string";
-}
+public enum TokenKind { Number, Identifier, Operator_, String_ };
 
 public class Token
 {
-    public string Kind;
+    public TokenKind Kind;
     public string Value;
 
-    public Token(string kind, string value)
+    public Token(TokenKind kind, string value)
     {
         this.Value = value;
         this.Kind = kind;
@@ -45,13 +39,21 @@ public class ExprLangLexer
                 this.Fail("expected operator here");
             }
             
-            this.TryToReadLiteral();
+            if (!this.TryToReadLiteral())
+            {
+                this.Fail("expected literal here");
+            }
         }
     }
 
     public void Fail(string message)
     {
-        var context = this.Expression.Substring(this.Offset, this.Offset + 30 - this.Offset) + "...";
+        var endOffset = this.Offset + 30;
+        if (endOffset > this.Expression.Length)
+        {
+            endOffset = this.Expression.Length;
+        }
+        var context = this.Expression.Substring(this.Offset, endOffset - this.Offset) + "...";
         throw new Exception($"TokenizerException: {message} at '{context}' (offset: {this.Offset})");
     }
     
@@ -61,7 +63,7 @@ public class ExprLangLexer
         return !this.Eof();
     }
     
-    public void Add(string kind, string value)
+    public void Add(TokenKind kind, string value)
     {
         this.Tokens.Add(new Token(kind, value));
         this.Offset += value.Length;
@@ -70,7 +72,7 @@ public class ExprLangLexer
     public string TryToMatch(string pattern)
     {
         var matches = OneRegex.MatchFromIndex(pattern, this.Expression, this.Offset);
-        return matches[0];
+        return matches == null ? "" : matches[0];
     }
     
     public bool TryToReadOperator()
@@ -80,7 +82,7 @@ public class ExprLangLexer
         {
             if (String.Compare(this.Expression, this.Offset, op, 0, (op).Length) == 0)
             {
-                this.Add(TokenKind.OperatorX, op);
+                this.Add(TokenKind.Operator_, op);
                 return true;
             }
         }
@@ -90,6 +92,7 @@ public class ExprLangLexer
     public bool TryToReadNumber()
     {
         this.SkipWhitespace();
+        
         var number = this.TryToMatch("[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)");
         if (number == "")
         {
@@ -97,7 +100,8 @@ public class ExprLangLexer
         }
         
         this.Add(TokenKind.Number, number);
-        if (this.TryToMatch("[0-9a-zA-Z]"))
+        
+        if (this.TryToMatch("[0-9a-zA-Z]") != "")
         {
             this.Fail("invalid character in number");
         }
@@ -122,19 +126,19 @@ public class ExprLangLexer
     {
         this.SkipWhitespace();
         
-        var match = this.TryToMatch("\'(\\\\\'|[^\'])*\'");
-        if (match == null)
+        var match = this.TryToMatch("'(\\\\'|[^'])*'");
+        if (match == "")
         {
             match = this.TryToMatch("\"(\\\\\"|[^\"])*\"");
         }
-        if (match == null)
+        if (match == "")
         {
             return false;
         }
         
         var str = match.Substring(1, 1 + match.Length - 2 - 1);
-        str = match[0] == '\'' ? str.Replace("\\\'", "\'") : str.Replace("\\\"", "\"");
-        this.Tokens.Add(new Token(TokenKind.StringX, str));
+        str = match[0] == '\'' ? str.Replace("\\'", "'") : str.Replace("\\\"", "\"");
+        this.Tokens.Add(new Token(TokenKind.String_, str));
         this.Offset += match.Length;
         return true;
     }
@@ -172,7 +176,17 @@ public class TestClass
     public void TestMethod()
     {
         var lexer = new ExprLangLexer("1+2", new List<string> { "+" });
-        Console.WriteLine($"Token count: {lexer.Tokens.Count}");
+        var result = "";
+        foreach (var token in lexer.Tokens)
+        {
+            if (result != "")
+            {
+                result += ", ";
+            }
+            result += token.Value;
+        }
+        
+        Console.WriteLine($"[{lexer.Tokens.Count}]: {result}");
     }
 }
 

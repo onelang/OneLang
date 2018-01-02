@@ -1,17 +1,8 @@
-TokenKind::Number: OneString
-- Variable: Number [OneString]
-  - Literal (string): "number" [OneString]
-TokenKind::Identifier: OneString
-- Variable: Identifier [OneString]
-  - Literal (string): "identifier" [OneString]
-TokenKind::OperatorX: OneString
-- Variable: OperatorX [OneString]
-  - Literal (string): "operator" [OneString]
-TokenKind::StringX: OneString
-- Variable: StringX [OneString]
-  - Literal (string): "string" [OneString]
-Token::kind: OneString
+enum TokenKind: Number, Identifier, Operator_, String_
+
+Token::kind: TokenKind (enum)
 Token::value: OneString
+
 Token::constructor
   - ExpressionStatement
     - Binary: = [any]
@@ -19,16 +10,20 @@ Token::constructor
       - MethodArgument: value [OneString]
   - ExpressionStatement
     - Binary: = [any]
-      - InstanceField (this): kind [OneString]
-      - MethodArgument: kind [OneString]
+      - InstanceField (this): kind [TokenKind (enum)]
+      - MethodArgument: kind [TokenKind (enum)]
+
 ExprLangLexer::offset: OneNumber
 - Variable: offset [OneNumber]
   - Literal (numeric): "0" [OneNumber]
+
 ExprLangLexer::tokens: OneArray<Token>
 - Variable: tokens [OneArray<Token>]
   - ArrayLiteral [OneArray<Token>]
+
 ExprLangLexer::expression: OneString
 ExprLangLexer::operators: OneArray<OneString>
+
 ExprLangLexer::constructor
   - ExpressionStatement
     - Binary: = [any]
@@ -49,7 +44,6 @@ ExprLangLexer::constructor
       - ExpressionStatement
         - Call [OneBoolean]
           - MethodReference (this) [ExprLangLexer::tryToReadLiteral]
-    Else
   - Comment: "\n"
   - While
       - Call [OneBoolean]
@@ -64,21 +58,40 @@ ExprLangLexer::constructor
             - Call [void]
               - MethodReference (this) [ExprLangLexer::fail]
               - Literal (string): "expected operator here" [OneString]
-        Else
       - Comment: "\n"
-      - ExpressionStatement
-        - Call [OneBoolean]
-          - MethodReference (this) [ExprLangLexer::tryToReadLiteral]
+      - If
+        - Unary (prefix): ! [any]
+          - Call [OneBoolean]
+            - MethodReference (this) [ExprLangLexer::tryToReadLiteral]
+        Then
+          - ExpressionStatement
+            - Call [void]
+              - MethodReference (this) [ExprLangLexer::fail]
+              - Literal (string): "expected literal here" [OneString]
+
 ExprLangLexer::fail(message: OneString): void
+  - Variable: endOffset [any]
+    - Binary: + [any]
+      - InstanceField (this): offset [any]
+      - Literal (numeric): "30" [OneNumber]
+  - If
+    - Binary: > [any]
+      - LocalVar: endOffset [any]
+      - InstanceField: length [OneNumber]
+        - InstanceField (this): expression [OneString]
+    Then
+      - ExpressionStatement
+        - Binary: = [any]
+          - LocalVar: endOffset [any]
+          - InstanceField: length [OneNumber]
+            - InstanceField (this): expression [OneString]
   - Variable: context [OneString]
     - Binary: + [OneString]
       - Call [OneString]
         - MethodReference [OneString::substring]
           - InstanceField (this): expression [OneString]
         - InstanceField (this): offset [any]
-        - Binary: + [any]
-          - InstanceField (this): offset [any]
-          - Literal (numeric): "30" [OneNumber]
+        - LocalVar: endOffset [any]
       - Literal (string): "..." [OneString]
   - ExpressionStatement
     - Call [void]
@@ -97,7 +110,7 @@ ExprLangLexer::hasMoreToken(): OneBoolean
       - Call [OneBoolean]
         - MethodReference (this) [ExprLangLexer::eof]
 
-ExprLangLexer::add(kind: OneString, value: OneString): void
+ExprLangLexer::add(kind: TokenKind (enum), value: OneString): void
   - ExpressionStatement
     - Call [void]
       - MethodReference [OneArray<T>::add]
@@ -117,10 +130,15 @@ ExprLangLexer::tryToMatch(pattern: OneString): OneString
       - InstanceField (this): expression [OneString]
       - InstanceField (this): offset [any]
   - Return
-    - Call [OneString]
-      - MethodReference [OneArray<OneString>::get]
+    - Conditional [any]
+      - Binary: == [OneBoolean]
         - LocalVar: matches [OneArray<OneString>]
-      - Literal (numeric): "0" [OneNumber]
+        - Literal (null): "null" [null]
+      - Literal (string): "" [OneString]
+      - Call [OneString]
+        - MethodReference [OneArray<OneString>::get]
+          - LocalVar: matches [OneArray<OneString>]
+        - Literal (numeric): "0" [OneNumber]
 
 ExprLangLexer::tryToReadOperator(): OneBoolean
   - ExpressionStatement
@@ -140,12 +158,10 @@ ExprLangLexer::tryToReadOperator(): OneBoolean
           - ExpressionStatement
             - Call [void]
               - MethodReference (this) [ExprLangLexer::add]
-              - StaticField: OperatorX [OneString]
-                - ClassReference [TokenKind]
+              - EnumMemberReference [TokenKind (enum)]
               - LocalVar: op [OneString]
           - Return
             - Literal (boolean): true [OneBoolean]
-        Else
   - Return
     - Literal (boolean): false [OneBoolean]
 
@@ -153,6 +169,7 @@ ExprLangLexer::tryToReadNumber(): OneBoolean
   - ExpressionStatement
     - Call [void]
       - MethodReference (this) [ExprLangLexer::skipWhitespace]
+  - Comment: "\n"
   - Variable: number [OneString]
     - Call [OneString]
       - MethodReference (this) [ExprLangLexer::tryToMatch]
@@ -164,24 +181,24 @@ ExprLangLexer::tryToReadNumber(): OneBoolean
     Then
       - Return
         - Literal (boolean): false [OneBoolean]
-    Else
   - Comment: "\n"
   - ExpressionStatement
     - Call [void]
       - MethodReference (this) [ExprLangLexer::add]
-      - StaticField: Number [OneString]
-        - ClassReference [TokenKind]
+      - EnumMemberReference [TokenKind (enum)]
       - LocalVar: number [OneString]
+  - Comment: "\n"
   - If
-    - Call [OneString]
-      - MethodReference (this) [ExprLangLexer::tryToMatch]
-      - Literal (string): "[0-9a-zA-Z]" [OneString]
+    - Binary: != [OneBoolean]
+      - Call [OneString]
+        - MethodReference (this) [ExprLangLexer::tryToMatch]
+        - Literal (string): "[0-9a-zA-Z]" [OneString]
+      - Literal (string): "" [OneString]
     Then
       - ExpressionStatement
         - Call [void]
           - MethodReference (this) [ExprLangLexer::fail]
           - Literal (string): "invalid character in number" [OneString]
-    Else
   - Comment: "\n"
   - Return
     - Literal (boolean): true [OneBoolean]
@@ -201,13 +218,11 @@ ExprLangLexer::tryToReadIdentifier(): OneBoolean
     Then
       - Return
         - Literal (boolean): false [OneBoolean]
-    Else
   - Comment: "\n"
   - ExpressionStatement
     - Call [void]
       - MethodReference (this) [ExprLangLexer::add]
-      - StaticField: Identifier [OneString]
-        - ClassReference [TokenKind]
+      - EnumMemberReference [TokenKind (enum)]
       - LocalVar: identifier [OneString]
   - Return
     - Literal (boolean): true [OneBoolean]
@@ -224,7 +239,7 @@ ExprLangLexer::tryToReadString(): OneBoolean
   - If
     - Binary: == [OneBoolean]
       - LocalVar: match [OneString]
-      - Literal (null): "null" [any]
+      - Literal (string): "" [OneString]
     Then
       - ExpressionStatement
         - Binary: = [any]
@@ -232,15 +247,13 @@ ExprLangLexer::tryToReadString(): OneBoolean
           - Call [OneString]
             - MethodReference (this) [ExprLangLexer::tryToMatch]
             - Literal (string): "\"(\\\\\"|[^\"])*\"" [OneString]
-    Else
   - If
     - Binary: == [OneBoolean]
       - LocalVar: match [OneString]
-      - Literal (null): "null" [any]
+      - Literal (string): "" [OneString]
     Then
       - Return
         - Literal (boolean): false [OneBoolean]
-    Else
   - Comment: "\n"
   - Variable: str [OneString]
     - Call [OneString]
@@ -343,6 +356,28 @@ ExprLangLexer::tryToReadLiteral(): OneBoolean
 TestClass::testMethod(): void
   - Variable: lexer [ExprLangLexer]
     - New ExprLangLexer [ExprLangLexer]
+  - Variable: result [OneString]
+    - Literal (string): "" [OneString]
+  - Foreach token: Token
+    Items
+      - InstanceField: tokens [OneArray<Token>]
+        - LocalVar: lexer [ExprLangLexer]
+    Body
+      - If
+        - Binary: != [OneBoolean]
+          - LocalVar: result [OneString]
+          - Literal (string): "" [OneString]
+        Then
+          - ExpressionStatement
+            - Binary: += [any]
+              - LocalVar: result [OneString]
+              - Literal (string): ", " [OneString]
+      - ExpressionStatement
+        - Binary: += [any]
+          - LocalVar: result [OneString]
+          - InstanceField: value [OneString]
+            - LocalVar: token [Token]
+  - Comment: "\n"
   - ExpressionStatement
     - Call [void]
       - MethodReference (static) [OneConsole::print]
@@ -350,4 +385,5 @@ TestClass::testMethod(): void
         - InstanceField: length [OneNumber]
           - InstanceField: tokens [OneArray<Token>]
             - LocalVar: lexer [ExprLangLexer]
+        - LocalVar: result [OneString]
 

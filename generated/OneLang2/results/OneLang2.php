@@ -1,11 +1,11 @@
 <?php
 
-class TokenKind {
-    public static $number = "number";
-    public static $identifier = "identifier";
-    public static $operator_x = "operator";
-    public static $string_x = "string";
-}
+class TokenKind { 
+    const Number = 0;
+    const Identifier = 1;
+    const Operator_ = 2;
+    const String_ = 3;
+};
 
 class Token {
     public $kind;
@@ -36,12 +36,18 @@ class ExprLangLexer {
                 $this->fail("expected operator here");
             }
             
-            $this->tryToReadLiteral();
+            if (!$this->tryToReadLiteral()) {
+                $this->fail("expected literal here");
+            }
         }
     }
 
     function fail($message) {
-        $context = substr($this->expression, $this->offset, $this->offset + 30 - $this->offset) . "...";
+        $end_offset = $this->offset + 30;
+        if ($end_offset > strlen($this->expression)) {
+            $end_offset = strlen($this->expression);
+        }
+        $context = substr($this->expression, $this->offset, $end_offset - $this->offset) . "...";
         throw new Exception("TokenizerException: " . ($message) . " at '" . ($context) . "' (offset: " . ($this->offset) . ")");
     }
     
@@ -57,14 +63,14 @@ class ExprLangLexer {
     
     function tryToMatch($pattern) {
         $matches = OneRegex::matchFromIndex($pattern, $this->expression, $this->offset);
-        return $matches[0];
+        return $matches == NULL ? "" : ($matches[0]);
     }
     
     function tryToReadOperator() {
         $this->skipWhitespace();
         foreach ($this->operators as $op) {
             if (substr_compare($this->expression, $op, $this->offset, strlen($op)) === 0) {
-                $this->add(TokenKind::$operator_x, $op);
+                $this->add(TokenKind::Operator_, $op);
                 return TRUE;
             }
         }
@@ -73,13 +79,15 @@ class ExprLangLexer {
     
     function tryToReadNumber() {
         $this->skipWhitespace();
+        
         $number = $this->tryToMatch("[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)");
         if ($number == "") {
             return FALSE;
         }
         
-        $this->add(TokenKind::$number, $number);
-        if ($this->tryToMatch("[0-9a-zA-Z]")) {
+        $this->add(TokenKind::Number, $number);
+        
+        if ($this->tryToMatch("[0-9a-zA-Z]") != "") {
             $this->fail("invalid character in number");
         }
         
@@ -93,24 +101,24 @@ class ExprLangLexer {
             return FALSE;
         }
         
-        $this->add(TokenKind::$identifier, $identifier);
+        $this->add(TokenKind::Identifier, $identifier);
         return TRUE;
     }
     
     function tryToReadString() {
         $this->skipWhitespace();
         
-        $match = $this->tryToMatch("\'(\\\\\'|[^\'])*\'");
-        if ($match == NULL) {
+        $match = $this->tryToMatch("'(\\\\'|[^'])*'");
+        if ($match == "") {
             $match = $this->tryToMatch("\"(\\\\\"|[^\"])*\"");
         }
-        if ($match == NULL) {
+        if ($match == "") {
             return FALSE;
         }
         
         $str = substr($match, 1, 1 + strlen($match) - 2 - 1);
-        $str = $match[0] == "\'" ? str_replace("\\\'", "\'", $str) : (str_replace("\\\"", "\"", $str));
-        $this->tokens[] = new Token(TokenKind::$string_x, $str);
+        $str = $match[0] == "'" ? str_replace("\\'", "'", $str) : (str_replace("\\\"", "\"", $str));
+        $this->tokens[] = new Token(TokenKind::String_, $str);
         $this->offset += strlen($match);
         return TRUE;
     }
@@ -139,7 +147,15 @@ class ExprLangLexer {
 class TestClass {
     function testMethod() {
         $lexer = new ExprLangLexer("1+2", array("+"));
-        print(("Token count: " . (count($lexer->tokens)) . "") . "\n");
+        $result = "";
+        foreach ($lexer->tokens as $token) {
+            if ($result != "") {
+                $result .= ", ";
+            }
+            $result .= $token->value;
+        }
+        
+        print(("[" . (count($lexer->tokens)) . "]: " . ($result) . "") . "\n");
     }
 }
 

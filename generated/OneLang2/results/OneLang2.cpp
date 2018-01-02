@@ -6,27 +6,15 @@
 #include <stdexcept>
 #include <iostream>
 
-class TokenKind {
-  public:
-    static string number;
-    static string identifier;
-    static string operator_x;
-    static string string_x;
-
-  private:
-};
-
-string TokenKind::number = string("number");
-string TokenKind::identifier = string("identifier");
-string TokenKind::operator_x = string("operator");
-string TokenKind::string_x = string("string");
+enum class TokenKind { Number, Identifier, Operator_, String_ };
+const char* TokenKindToStr[] = { "Number", "Identifier", "Operator_", "String_" };
 
 class Token {
   public:
-    string kind;
+    TokenKind kind;
     string value;
 
-    Token(string kind, string value) {
+    Token(TokenKind kind, string value) {
         this->value = value;
         this->kind = kind;
     }
@@ -36,12 +24,12 @@ class Token {
 
 class ExprLangLexer {
   public:
-    int offset;
-    vector<sp<Token>> tokens;
+    int offset = 0;
+    vec<sp<Token>> tokens = make_shared<vector<sp<Token>>>(initializer_list<sp<Token>>{  });
     string expression;
-    vector<string> operators;
+    vec<string> operators;
 
-    ExprLangLexer(string expression, vector<string> operators) {
+    ExprLangLexer(string expression, vec<string> operators) {
         this->operators = operators;
         this->expression = expression;
         if (!this->tryToReadNumber()) {
@@ -54,12 +42,18 @@ class ExprLangLexer {
                 this->fail(string("expected operator here"));
             }
             
-            this->tryToReadLiteral();
+            if (!this->tryToReadLiteral()) {
+                this->fail(string("expected literal here"));
+            }
         }
     }
 
     void fail(string message) {
-        auto context = this->expression.substr(this->offset, this->offset + 30 - this->offset) + string("...");
+        int end_offset = this->offset + 30;
+        if (end_offset > this->expression.size()) {
+            end_offset = this->expression.size();
+        }
+        auto context = this->expression.substr(this->offset, end_offset - this->offset) + string("...");
         throw std::runtime_error(string() + "TokenizerException: " + message + " at '" + context + "' (offset: " + to_string(this->offset) + ")");
     }
     
@@ -68,22 +62,22 @@ class ExprLangLexer {
         return !this->eof();
     }
     
-    void add(string kind, string value) {
-        this->tokens.push_back(make_shared<Token>(kind, value));
+    void add(TokenKind kind, string value) {
+        this->tokens->push_back(make_shared<Token>(kind, value));
         this->offset += value.size();
     }
     
     string tryToMatch(string pattern) {
         auto matches = OneRegex::matchFromIndex(pattern, this->expression, this->offset);
-        return matches.at(0);
+        return matches == nullptr ? string("") : matches->at(0);
     }
     
     bool tryToReadOperator() {
         this->skipWhitespace();
-        for (auto it = this->operators.begin(); it != this->operators.end(); ++it) {
+        for (auto it = this->operators->begin(); it != this->operators->end(); ++it) {
             auto op = *it;
             if (this->expression.compare(this->offset, op.size(), op) == 0) {
-                this->add(TokenKind::operator_x, op);
+                this->add(TokenKind::Operator_, op);
                 return true;
             }
         }
@@ -92,13 +86,15 @@ class ExprLangLexer {
     
     bool tryToReadNumber() {
         this->skipWhitespace();
+        
         auto number = this->tryToMatch(string("[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)"));
         if (number == string("")) {
             return false;
         }
         
-        this->add(TokenKind::number, number);
-        if (this->tryToMatch(string("[0-9a-zA-Z]"))) {
+        this->add(TokenKind::Number, number);
+        
+        if (this->tryToMatch(string("[0-9a-zA-Z]")) != string("")) {
             this->fail(string("invalid character in number"));
         }
         
@@ -112,24 +108,24 @@ class ExprLangLexer {
             return false;
         }
         
-        this->add(TokenKind::identifier, identifier);
+        this->add(TokenKind::Identifier, identifier);
         return true;
     }
     
     bool tryToReadString() {
         this->skipWhitespace();
         
-        auto match = this->tryToMatch(string("\'(\\\\\'|[^\'])*\'"));
-        if (match == nullptr) {
+        auto match = this->tryToMatch(string("'(\\\\'|[^'])*'"));
+        if (match == string("")) {
             match = this->tryToMatch(string("\"(\\\\\"|[^\"])*\""));
         }
-        if (match == nullptr) {
+        if (match == string("")) {
             return false;
         }
         
         auto str = match.substr(1, 1 + match.size() - 2 - 1);
-        str = match[0] == '\'' ? OneStringHelper::replace(str, string("\\\'"), string("\'")) : OneStringHelper::replace(str, string("\\\""), string("\""));
-        this->tokens.push_back(make_shared<Token>(TokenKind::string_x, str));
+        str = match[0] == '\'' ? OneStringHelper::replace(str, string("\\'"), string("'")) : OneStringHelper::replace(str, string("\\\""), string("\""));
+        this->tokens->push_back(make_shared<Token>(TokenKind::String_, str));
         this->offset += match.size();
         return true;
     }
@@ -160,8 +156,17 @@ class ExprLangLexer {
 class TestClass {
   public:
     void testMethod() {
-        auto lexer = make_shared<ExprLangLexer>(string("1+2"), vector<string> { string("+") });
-        cout << (string() + "Token count: " + to_string(lexer->tokens.size())) << endl;
+        auto lexer = make_shared<ExprLangLexer>(string("1+2"), make_shared<vector<string>>(initializer_list<string>{ string("+") }));
+        auto result = string("");
+        for (auto it = lexer->tokens->begin(); it != lexer->tokens->end(); ++it) {
+            auto token = *it;
+            if (result != string("")) {
+                result += string(", ");
+            }
+            result += token->value;
+        }
+        
+        cout << (string() + "[" + to_string(lexer->tokens->size()) + "]: " + result) << endl;
     }
 
   private:

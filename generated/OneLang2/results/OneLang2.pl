@@ -1,22 +1,16 @@
 use strict;
 use warnings;
 
-require "one.pl";
+use one;
 
 package TokenKind;
 
-sub new
-{
-    my $class = shift;
-    my $self = {};
-    bless $self, $class;
-    return $self;
-}
-
-our $number = "number";
-our $identifier = "identifier";
-our $operator_x = "operator";
-our $string_x = "string";
+use constant {      
+    NUMBER => 'Number',
+    IDENTIFIER => 'Identifier',
+    OPERATOR_ => 'Operator_',
+    STRING_ => 'String_',
+};
 
 package Token;
 
@@ -39,6 +33,8 @@ sub new
     my $self = {};
     bless $self, $class;
     my ( $expression, $operators ) = @_;
+    $self->{offset} = 0;
+    $self->{tokens} = [];
     $self->{operators} = $operators;
     $self->{expression} = $expression;
     if (!$self->tryToReadNumber()) {
@@ -50,14 +46,20 @@ sub new
         if (!$self->tryToReadOperator()) {
             $self->fail("expected operator here");
         }
-        $self->tryToReadLiteral();
+        if (!$self->tryToReadLiteral()) {
+            $self->fail("expected literal here");
+        }
     }
     return $self;
 }
 
 sub fail {
     my ( $self, $message ) = @_;
-    my $context = (substr $self->{expression}, $self->{offset}, ($self->{offset} + 30 - $self->{offset})) . "...";
+    my $end_offset = $self->{offset} + 30;
+    if ($end_offset > length($self->{expression})) {
+        $end_offset = length($self->{expression});
+    }
+    my $context = (substr $self->{expression}, $self->{offset}, ($end_offset - $self->{offset})) . "...";
     die "TokenizerException: @{[$message]} at '@{[$context]}' (offset: @{[$self->{offset}]})"."\n";
 }
 
@@ -69,14 +71,14 @@ sub hasMoreToken {
 
 sub add {
     my ( $self, $kind, $value ) = @_;
-    push @$self->{tokens}, new Token($kind, $value);
+    push @{$self->{tokens}}, new Token($kind, $value);
     $self->{offset} += length($value);
 }
 
 sub tryToMatch {
     my ( $self, $pattern ) = @_;
     my $matches = OneRegex::matchFromIndex($pattern, $self->{expression}, $self->{offset});
-    return ${$matches}[0];
+    return !defined $matches ? "" : ${$matches}[0];
 }
 
 sub tryToReadOperator {
@@ -84,7 +86,7 @@ sub tryToReadOperator {
     $self->skipWhitespace();
     foreach my $op (@{$self->{operators}}) {
         if ((substr $self->{expression}, $self->{offset}, length($op)) eq ($op)) {
-            $self->add($TokenKind::operator_x, $op);
+            $self->add(TokenKind->OPERATOR_, $op);
             return 1;
         }
     }
@@ -94,13 +96,15 @@ sub tryToReadOperator {
 sub tryToReadNumber {
     my ( $self ) = @_;
     $self->skipWhitespace();
+    
     my $number = $self->tryToMatch("[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)");
     if ($number eq "") {
         return 0;
     }
     
-    $self->add($TokenKind::number, $number);
-    if ($self->tryToMatch("[0-9a-zA-Z]")) {
+    $self->add(TokenKind->NUMBER, $number);
+    
+    if ($self->tryToMatch("[0-9a-zA-Z]") ne "") {
         $self->fail("invalid character in number");
     }
     
@@ -115,7 +119,7 @@ sub tryToReadIdentifier {
         return 0;
     }
     
-    $self->add($TokenKind::identifier, $identifier);
+    $self->add(TokenKind->IDENTIFIER, $identifier);
     return 1;
 }
 
@@ -123,17 +127,17 @@ sub tryToReadString {
     my ( $self ) = @_;
     $self->skipWhitespace();
     
-    my $match = $self->tryToMatch("\'(\\\\\'|[^\'])*\'");
-    if ($match == undef) {
+    my $match = $self->tryToMatch("'(\\\\'|[^'])*'");
+    if ($match eq "") {
         $match = $self->tryToMatch("\"(\\\\\"|[^\"])*\"");
     }
-    if ($match == undef) {
+    if ($match eq "") {
         return 0;
     }
     
     my $str = (substr $match, 1, (1 + length($match) - 2 - 1));
-    $str = (substr $match, 0, 1) eq "\'" ? One::str_replace($str, "\\\'", "\'") : One::str_replace($str, "\\\"", "\"");
-    push @$self->{tokens}, new Token($TokenKind::string_x, $str);
+    $str = (substr $match, 0, 1) eq "'" ? One::str_replace($str, "\\'", "'") : One::str_replace($str, "\\\"", "\"");
+    push @{$self->{tokens}}, new Token(TokenKind->STRING_, $str);
     $self->{offset} += length($match);
     return 1;
 }
@@ -174,7 +178,15 @@ sub new
 sub testMethod {
     my ( $self ) = @_;
     my $lexer = new ExprLangLexer("1+2", ["+"]);
-    print(("Token count: @{[scalar(@{$lexer->{tokens}})]}") . "\n");
+    my $result = "";
+    foreach my $token (@{$lexer->{tokens}}) {
+        if ($result ne "") {
+            $result .= ", ";
+        }
+        $result .= $token->{value};
+    }
+    
+    print(("[@{[scalar(@{$lexer->{tokens}})]}]: @{[$result]}") . "\n");
 }
 
 package Program;

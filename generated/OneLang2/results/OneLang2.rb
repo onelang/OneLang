@@ -1,15 +1,10 @@
-class TokenKind 
-  @number = "number"
-  @identifier = "identifier"
-  @operator_x = "operator"
-  @string_x = "string"
+require 'one'
 
-  class << self
-    attr_accessor :number, :identifier, :operator_x, :string_x
-  end
-
-  def initialize()
-  end
+module TokenKind
+  NUMBER = 0
+  IDENTIFIER = 1
+  OPERATOR_ = 2
+  STRING_ = 3
 end
 
 class Token 
@@ -43,12 +38,18 @@ class ExprLangLexer
           if !self.try_to_read_operator()
               self.fail("expected operator here")
           end
-          self.try_to_read_literal()
+          if !self.try_to_read_literal()
+              self.fail("expected literal here")
+          end
       end
   end
 
   def fail(message)
-      context = self.expression[self.offset...self.offset + 30] + "..."
+      end_offset = self.offset + 30
+      if end_offset > self.expression.length
+          end_offset = self.expression.length
+      end
+      context = self.expression[self.offset...end_offset] + "..."
       raise "TokenizerException: #{message} at '#{context}' (offset: #{self.offset})"
   end
 
@@ -63,15 +64,15 @@ class ExprLangLexer
   end
 
   def try_to_match(pattern)
-      matches = OneRegex.match_from_index(pattern, self.expression, self.offset)
-      return matches[0]
+      matches = One::Regex.match_from_index(pattern, self.expression, self.offset)
+      return matches == nil ? "" : matches[0]
   end
 
   def try_to_read_operator()
       self.skip_whitespace()
       for op in self.operators
           if self.expression[self.offset...self.offset + op.length] == op
-              self.add(TokenKind.operator_x, op)
+              self.add(TokenKind::OPERATOR_, op)
               return true
           end
       end
@@ -80,13 +81,15 @@ class ExprLangLexer
 
   def try_to_read_number()
       self.skip_whitespace()
+      
       number = self.try_to_match("[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)")
       if number == ""
           return false
       end
       
-      self.add(TokenKind.number, number)
-      if self.try_to_match("[0-9a-zA-Z]")
+      self.add(TokenKind::NUMBER, number)
+      
+      if self.try_to_match("[0-9a-zA-Z]") != ""
           self.fail("invalid character in number")
       end
       
@@ -100,24 +103,24 @@ class ExprLangLexer
           return false
       end
       
-      self.add(TokenKind.identifier, identifier)
+      self.add(TokenKind::IDENTIFIER, identifier)
       return true
   end
 
   def try_to_read_string()
       self.skip_whitespace()
       
-      match = self.try_to_match("\'(\\\\\'|[^\'])*\'")
-      if match == nil
+      match = self.try_to_match("'(\\\\'|[^'])*'")
+      if match == ""
           match = self.try_to_match("\"(\\\\\"|[^\"])*\"")
       end
-      if match == nil
+      if match == ""
           return false
       end
       
       str = match[1...1 + match.length - 2]
-      str = match[0] == "\'" ? str.gsub(/#{Regexp.escape("\\\'")}/, "\'") : str.gsub(/#{Regexp.escape("\\\"")}/, "\"")
-      self.tokens << Token.new(TokenKind.string_x, str)
+      str = match[0] == "'" ? str.gsub(/#{Regexp.escape("\\'")}/, "'") : str.gsub(/#{Regexp.escape("\\\"")}/, "\"")
+      self.tokens << Token.new(TokenKind::STRING_, str)
       self.offset += match.length
       return true
   end
@@ -149,7 +152,15 @@ class TestClass
 
   def test_method()
       lexer = ExprLangLexer.new("1+2", ["+"])
-      puts "Token count: #{lexer.tokens.length}"
+      result = ""
+      for token in lexer.tokens
+          if result != ""
+              result += ", "
+          end
+          result += token.value
+      end
+      
+      puts "[#{lexer.tokens.length}]: #{result}"
   end
 end
 

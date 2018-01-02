@@ -1,17 +1,14 @@
 import Foundation
 
-class TokenKind {
-  static var number: String = "number"
-  static var identifier: String = "identifier"
-  static var operator_x: String = "operator"
-  static var string_x: String = "string"
+enum TokenKind {
+    case number, identifier, operator_, string_
 }
 
 class Token {
-  var kind: String
+  var kind: TokenKind
   var value: String
 
-  init(kind: String, value: String) {
+  init(kind: TokenKind, value: String) {
       self.value = value
       self.kind = kind
   }
@@ -19,52 +16,58 @@ class Token {
 
 class ExprLangLexer {
   var offset: Int = 0
-  var tokens: [Token] = [Token]()
+  var tokens: [Token]? = [Token]()
   var expression: String
-  var operators: [String]
+  var operators: [String]?
 
   init(expression: String, operators: [String]) {
       self.operators = operators
       self.expression = expression
-      if !try self.tryToReadNumber() {
-          self.tryToReadOperator()
-          try self.tryToReadLiteral()
+      if !(try self.tryToReadNumber()) {
+          _ = self.tryToReadOperator()
+          _ = try self.tryToReadLiteral()
       }
       
       while self.hasMoreToken() {
-          if !self.tryToReadOperator() {
+          if !(self.tryToReadOperator()) {
               try self.fail(message: "expected operator here")
           }
           
-          try self.tryToReadLiteral()
+          if !(try self.tryToReadLiteral()) {
+              try self.fail(message: "expected literal here")
+          }
       }
   }
 
   func fail(message: String) throws -> Void {
-      let context = String(self.expression[self.expression.index(self.expression.startIndex, offsetBy: self.offset) ..< self.expression.index(self.expression.startIndex, offsetBy: self.offset + 30)]) + "..."
+      var end_offset: Int = self.offset + 30
+      if end_offset > self.expression.count {
+          end_offset = self.expression.count
+      }
+      let context: String = String(self.expression[self.expression.index(self.expression.startIndex, offsetBy: self.offset) ..< self.expression.index(self.expression.startIndex, offsetBy: end_offset)]) + "..."
       throw OneError.RuntimeError("TokenizerException: \(message) at '\(context)' (offset: \(self.offset))")
   }
 
   func hasMoreToken() -> Bool {
       self.skipWhitespace()
-      return !self.eof()
+      return !(self.eof())
   }
 
-  func add(kind: String, value: String) -> Void {
+  func add(kind: TokenKind, value: String) -> Void {
       self.tokens.append(Token(kind: kind, value: value))
       self.offset += value.count
   }
 
   func tryToMatch(pattern: String) -> String {
-      let matches = OneRegex.matchFromIndex(pattern: pattern, input: self.expression, offset: self.offset)
-      return matches[0]
+      let matches: [String]? = OneRegex.matchFromIndex(pattern: pattern, input: self.expression, offset: self.offset)
+      return matches == nil ? "" : matches[0]
   }
 
   func tryToReadOperator() -> Bool {
       self.skipWhitespace()
       for op in self.operators {
-          if self.expression[self.expression.index(self.expression.startIndex, offsetBy: self.offset) ..< self.expression.endIndex].hasPrefix(op) {
-              self.add(kind: TokenKind.operator_x, value: op)
+          if String(self.expression[self.expression.index(self.expression.startIndex, offsetBy: self.offset) ..< self.expression.endIndex]).hasPrefix(op) {
+              self.add(kind: TokenKind.operator_, value: op)
               return true
           }
       }
@@ -73,13 +76,15 @@ class ExprLangLexer {
 
   func tryToReadNumber() throws -> Bool {
       self.skipWhitespace()
-      let number = self.tryToMatch(pattern: "[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)")
+      
+      let number: String = self.tryToMatch(pattern: "[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)")
       if number == "" {
           return false
       }
       
       self.add(kind: TokenKind.number, value: number)
-      if self.tryToMatch(pattern: "[0-9a-zA-Z]") {
+      
+      if self.tryToMatch(pattern: "[0-9a-zA-Z]") != "" {
           try self.fail(message: "invalid character in number")
       }
       
@@ -88,7 +93,7 @@ class ExprLangLexer {
 
   func tryToReadIdentifier() -> Bool {
       self.skipWhitespace()
-      let identifier = self.tryToMatch(pattern: "[a-zA-Z_][a-zA-Z0-9_]*")
+      let identifier: String = self.tryToMatch(pattern: "[a-zA-Z_][a-zA-Z0-9_]*")
       if identifier == "" {
           return false
       }
@@ -100,17 +105,17 @@ class ExprLangLexer {
   func tryToReadString() -> Bool {
       self.skipWhitespace()
       
-      var match = self.tryToMatch(pattern: "\'(\\\\\'|[^\'])*\'")
-      if match == nil {
+      var match: String = self.tryToMatch(pattern: "'(\\\\'|[^'])*'")
+      if match == "" {
           match = self.tryToMatch(pattern: "\"(\\\\\"|[^\"])*\"")
       }
-      if match == nil {
+      if match == "" {
           return false
       }
       
-      var str = String(match[match.index(match.startIndex, offsetBy: 1) ..< match.index(match.startIndex, offsetBy: 1 + match.count - 2)])
-      str = String(match[match.index(match.startIndex, offsetBy: 0)]) == "\'" ? str.replacingOccurrences(of: "\\\'", with: "\'") : str.replacingOccurrences(of: "\\\"", with: "\"")
-      self.tokens.append(Token(kind: TokenKind.string_x, value: str))
+      var str: String = String(match[match.index(match.startIndex, offsetBy: 1) ..< match.index(match.startIndex, offsetBy: 1 + match.count - 2)])
+      str = String(match[match.index(match.startIndex, offsetBy: 0)]) == "'" ? str.replacingOccurrences(of: "\\'", with: "'") : str.replacingOccurrences(of: "\\\"", with: "\"")
+      self.tokens.append(Token(kind: TokenKind.string_, value: str))
       self.offset += match.count
       return true
   }
@@ -120,8 +125,8 @@ class ExprLangLexer {
   }
 
   func skipWhitespace() -> Void {
-      while !self.eof() {
-          let c = String(self.expression[self.expression.index(self.expression.startIndex, offsetBy: self.offset)])
+      while !(self.eof()) {
+          let c: OneCharacter = String(self.expression[self.expression.index(self.expression.startIndex, offsetBy: self.offset)])
           if c == " " || c == "\n" || c == "\t" || c == "\r" {
               self.offset += 1
           } else {
@@ -131,15 +136,23 @@ class ExprLangLexer {
   }
 
   func tryToReadLiteral() throws -> Bool {
-      let success = self.tryToReadIdentifier() || try self.tryToReadNumber() || self.tryToReadString()
+      let success: Bool = self.tryToReadIdentifier() || try self.tryToReadNumber() || self.tryToReadString()
       return success
   }
 }
 
 class TestClass {
   func testMethod() -> Void {
-      let lexer = ExprLangLexer(expression: "1+2", operators: ["+"])
-      print("Token count: \(lexer.tokens.count)")
+      let lexer: ExprLangLexer? = ExprLangLexer(expression: "1+2", operators: ["+"])
+      var result: String = ""
+      for token in lexer!.tokens {
+          if result != "" {
+              result += ", "
+          }
+          result += token!.value
+      }
+      
+      print("[\(lexer!.tokens.count)]: \(result)")
   }
 }
 

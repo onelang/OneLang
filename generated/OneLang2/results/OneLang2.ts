@@ -1,25 +1,27 @@
-class TokenKind {
-  public static number: string = "number";
-  public static identifier: string = "identifier";
-  public static operatorX: string = "operator";
-  public static stringX: string = "string";
+const one = require('one');
+
+enum TokenKind {
+  Number = "Number",
+  Identifier = "Identifier",
+  Operator_ = "Operator_",
+  String_ = "String_",
 }
 
 class Token {
-  public kind: string;
-  public value: string;
+  kind: TokenKind;
+  value: string;
 
-  constructor(kind: string, value: string) {
+  constructor(kind: TokenKind, value: string) {
       this.value = value;
       this.kind = kind;
   }
 }
 
 class ExprLangLexer {
-  public offset: number = 0;
-  public tokens: OneArray = [];
-  public expression: string;
-  public operators: OneArray;
+  offset: number = 0;
+  tokens: OneArray = [];
+  expression: string;
+  operators: OneArray;
 
   constructor(expression: string, operators: OneArray) {
       this.operators = operators;
@@ -34,90 +36,98 @@ class ExprLangLexer {
               this.fail("expected operator here");
           }
           
-          this.tryToReadLiteral();
+          if (!this.tryToReadLiteral()) {
+              this.fail("expected literal here");
+          }
       }
   }
 
-  public fail(message: string) {
-    const context = this.expression.substring(this.offset, this.offset + 30) + "...";
+  fail(message: string) {
+    let end_offset = this.offset + 30;
+    if (end_offset > this.expression.length) {
+        end_offset = this.expression.length;
+    }
+    const context = this.expression.substring(this.offset, end_offset) + "...";
     throw new Error(`TokenizerException: ${message} at '${context}' (offset: ${this.offset})`);
   }
   
-  public hasMoreToken() {
+  hasMoreToken() {
     this.skipWhitespace();
     return !this.eof();
   }
   
-  public add(kind: string, value: string) {
+  add(kind: TokenKind, value: string) {
     this.tokens.push(new Token(kind, value));
     this.offset += value.length;
   }
   
-  public tryToMatch(pattern: string) {
-    const matches = OneRegex.matchFromIndex(pattern, this.expression, this.offset);
-    return matches[0];
+  tryToMatch(pattern: string) {
+    const matches = one.Regex.matchFromIndex(pattern, this.expression, this.offset);
+    return matches == null ? "" : matches[0];
   }
   
-  public tryToReadOperator() {
+  tryToReadOperator() {
     this.skipWhitespace();
     for (const op of this.operators) {
         if (this.expression.startsWith(op, this.offset)) {
-            this.add(TokenKind.operatorX, op);
+            this.add(TokenKind.Operator_, op);
             return true;
         }
     }
     return false;
   }
   
-  public tryToReadNumber() {
+  tryToReadNumber() {
     this.skipWhitespace();
+    
     const number = this.tryToMatch("[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)");
     if (number == "") {
         return false;
     }
     
-    this.add(TokenKind.number, number);
-    if (this.tryToMatch("[0-9a-zA-Z]")) {
+    this.add(TokenKind.Number, number);
+    
+    if (this.tryToMatch("[0-9a-zA-Z]") != "") {
         this.fail("invalid character in number");
     }
     
     return true;
   }
   
-  public tryToReadIdentifier() {
+  tryToReadIdentifier() {
     this.skipWhitespace();
     const identifier = this.tryToMatch("[a-zA-Z_][a-zA-Z0-9_]*");
     if (identifier == "") {
         return false;
     }
     
-    this.add(TokenKind.identifier, identifier);
+    this.add(TokenKind.Identifier, identifier);
     return true;
   }
   
-  public tryToReadString() {
+  tryToReadString() {
     this.skipWhitespace();
     
-    let match = this.tryToMatch("\'(\\\\\'|[^\'])*\'");
-    if (match == null) {
+    let match = this.tryToMatch("'(\\\\'|[^'])*'");
+    if (match == "") {
         match = this.tryToMatch("\"(\\\\\"|[^\"])*\"");
     }
-    if (match == null) {
+    if (match == "") {
         return false;
     }
     
     let str = match.substring(1, 1 + match.length - 2);
-    str = match[0] == "\'" ? str.split("\\\'").join("\'") : str.split("\\\"").join("\"");
-    this.tokens.push(new Token(TokenKind.stringX, str));
+    str = match[0] == "'" ? str.split("\\'").join("'") : str.split("\\\"").join("\"");
+    this.tokens.push(new Token(TokenKind.String_, str));
     this.offset += match.length;
     return true;
   }
   
-  public eof() {
+  eof() {
     return this.offset >= this.expression.length;
   }
   
-  public skipWhitespace() {
+  skipWhitespace() {
     while (!this.eof()) {
         const c = this.expression[this.offset];
         if (c == " " || c == "\n" || c == "\t" || c == "\r") {
@@ -128,16 +138,24 @@ class ExprLangLexer {
     }
   }
   
-  public tryToReadLiteral() {
+  tryToReadLiteral() {
     const success = this.tryToReadIdentifier() || this.tryToReadNumber() || this.tryToReadString();
     return success;
   }
 }
 
 class TestClass {
-  public testMethod() {
+  testMethod() {
     const lexer = new ExprLangLexer("1+2", ["+"]);
-    console.log(`Token count: ${lexer.tokens.length}`);
+    let result = "";
+    for (const token of lexer.tokens) {
+        if (result != "") {
+            result += ", ";
+        }
+        result += token.value;
+    }
+    
+    console.log(`[${lexer.tokens.length}]: ${result}`);
   }
 }
 

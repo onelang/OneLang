@@ -1,10 +1,11 @@
-class TokenKind:
-    pass
+from enum import Enum
+import one
 
-TokenKind.number = "number";
-TokenKind.identifier = "identifier";
-TokenKind.operator_x = "operator";
-TokenKind.string_x = "string";
+class TokenKind(Enum):
+    NUMBER = 0
+    IDENTIFIER = 1
+    OPERATOR_ = 2
+    STRING_ = 3
 
 class Token:
     def __init__(self, kind, value):
@@ -13,49 +14,57 @@ class Token:
 
 class ExprLangLexer:
     def __init__(self, expression, operators):
+        self.offset = 0
+        self.tokens = []
         self.operators = operators
         self.expression = expression
-        if !self.try_to_read_number():
+        if not self.try_to_read_number():
             self.try_to_read_operator()
             self.try_to_read_literal()
         
         while self.has_more_token():
-            if !self.try_to_read_operator():
+            if not self.try_to_read_operator():
                 self.fail("expected operator here")
-            self.try_to_read_literal()
+            if not self.try_to_read_literal():
+                self.fail("expected literal here")
 
     def fail(self, message):
-        context = self.expression[self.offset:self.offset + 30] + "..."
+        end_offset = self.offset + 30
+        if end_offset > len(self.expression):
+            end_offset = len(self.expression)
+        context = self.expression[self.offset:end_offset] + "..."
         raise Exception("TokenizerException: %s at '%s' (offset: %s)" % (message, context, self.offset, ))
     
     def has_more_token(self):
         self.skip_whitespace()
-        return !self.eof()
+        return not self.eof()
     
     def add(self, kind, value):
         self.tokens.append(Token(kind, value))
         self.offset += len(value)
     
     def try_to_match(self, pattern):
-        matches = OneRegex.match_from_index(pattern, self.expression, self.offset)
-        return matches[0]
+        matches = one.Regex.match_from_index(pattern, self.expression, self.offset)
+        return "" if matches == None else matches[0]
     
     def try_to_read_operator(self):
         self.skip_whitespace()
         for op in self.operators:
             if self.expression.startswith(op, self.offset):
-                self.add(TokenKind.operator_x, op)
+                self.add(TokenKind.OPERATOR_, op)
                 return True
         return False
     
     def try_to_read_number(self):
         self.skip_whitespace()
+        
         number = self.try_to_match("[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)")
         if number == "":
             return False
         
-        self.add(TokenKind.number, number)
-        if self.try_to_match("[0-9a-zA-Z]"):
+        self.add(TokenKind.NUMBER, number)
+        
+        if self.try_to_match("[0-9a-zA-Z]") != "":
             self.fail("invalid character in number")
         
         return True
@@ -66,21 +75,21 @@ class ExprLangLexer:
         if identifier == "":
             return False
         
-        self.add(TokenKind.identifier, identifier)
+        self.add(TokenKind.IDENTIFIER, identifier)
         return True
     
     def try_to_read_string(self):
         self.skip_whitespace()
         
-        match = self.try_to_match("\'(\\\\\'|[^\'])*\'")
-        if match == None:
+        match = self.try_to_match("'(\\\\'|[^'])*'")
+        if match == "":
             match = self.try_to_match("\"(\\\\\"|[^\"])*\"")
-        if match == None:
+        if match == "":
             return False
         
         str = match[1:1 + len(match) - 2]
-        str = str.replace("\\\'", "\'") if match[0] == "\'" else str.replace("\\\"", "\"")
-        self.tokens.append(Token(TokenKind.string_x, str))
+        str = str.replace("\\'", "'") if match[0] == "'" else str.replace("\\\"", "\"")
+        self.tokens.append(Token(TokenKind.STRING_, str))
         self.offset += len(match)
         return True
     
@@ -88,7 +97,7 @@ class ExprLangLexer:
         return self.offset >= len(self.expression)
     
     def skip_whitespace(self):
-        while !self.eof():
+        while not self.eof():
             c = self.expression[self.offset]
             if c == " " or c == "\n" or c == "\t" or c == "\r":
                 self.offset += 1
@@ -102,7 +111,13 @@ class ExprLangLexer:
 class TestClass:
     def test_method(self):
         lexer = ExprLangLexer("1+2", ["+"])
-        print "Token count: %s" % (len(lexer.tokens), )
+        result = ""
+        for token in lexer.tokens:
+            if result != "":
+                result += ", "
+            result += token.value
+        
+        print "[%s]: %s" % (len(lexer.tokens), result, )
 
 try:
     TestClass().test_method()

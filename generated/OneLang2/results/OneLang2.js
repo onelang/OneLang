@@ -1,10 +1,11 @@
-class TokenKind {
-}
+const one = require('one');
 
-TokenKind.number = "number";
-TokenKind.identifier = "identifier";
-TokenKind.operatorX = "operator";
-TokenKind.stringX = "string";
+const TokenKind = Object.freeze({
+  NUMBER: "Number",
+  IDENTIFIER: "Identifier",
+  OPERATOR_: "Operator_",
+  STRING_: "String_",
+});
 
 class Token {
   constructor(kind, value) {
@@ -15,6 +16,8 @@ class Token {
 
 class ExprLangLexer {
   constructor(expression, operators) {
+      this.offset = 0;
+      this.tokens = [];
       this.operators = operators;
       this.expression = expression;
       if (!this.tryToReadNumber()) {
@@ -27,12 +30,18 @@ class ExprLangLexer {
               this.fail("expected operator here");
           }
           
-          this.tryToReadLiteral();
+          if (!this.tryToReadLiteral()) {
+              this.fail("expected literal here");
+          }
       }
   }
 
   fail(message) {
-    const context = this.expression.substring(this.offset, this.offset + 30) + "...";
+    let end_offset = this.offset + 30;
+    if (end_offset > this.expression.length) {
+        end_offset = this.expression.length;
+    }
+    const context = this.expression.substring(this.offset, end_offset) + "...";
     throw new Error(`TokenizerException: ${message} at '${context}' (offset: ${this.offset})`);
   }
   
@@ -47,15 +56,15 @@ class ExprLangLexer {
   }
   
   tryToMatch(pattern) {
-    const matches = OneRegex.matchFromIndex(pattern, this.expression, this.offset);
-    return matches[0];
+    const matches = one.Regex.matchFromIndex(pattern, this.expression, this.offset);
+    return matches == null ? "" : matches[0];
   }
   
   tryToReadOperator() {
     this.skipWhitespace();
     for (const op of this.operators) {
         if (this.expression.startsWith(op, this.offset)) {
-            this.add(TokenKind.operatorX, op);
+            this.add(TokenKind.OPERATOR_, op);
             return true;
         }
     }
@@ -64,13 +73,15 @@ class ExprLangLexer {
   
   tryToReadNumber() {
     this.skipWhitespace();
+    
     const number = this.tryToMatch("[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)");
     if (number == "") {
         return false;
     }
     
-    this.add(TokenKind.number, number);
-    if (this.tryToMatch("[0-9a-zA-Z]")) {
+    this.add(TokenKind.NUMBER, number);
+    
+    if (this.tryToMatch("[0-9a-zA-Z]") != "") {
         this.fail("invalid character in number");
     }
     
@@ -84,24 +95,24 @@ class ExprLangLexer {
         return false;
     }
     
-    this.add(TokenKind.identifier, identifier);
+    this.add(TokenKind.IDENTIFIER, identifier);
     return true;
   }
   
   tryToReadString() {
     this.skipWhitespace();
     
-    let match = this.tryToMatch("\'(\\\\\'|[^\'])*\'");
-    if (match == null) {
+    let match = this.tryToMatch("'(\\\\'|[^'])*'");
+    if (match == "") {
         match = this.tryToMatch("\"(\\\\\"|[^\"])*\"");
     }
-    if (match == null) {
+    if (match == "") {
         return false;
     }
     
     let str = match.substring(1, 1 + match.length - 2);
-    str = match[0] == "\'" ? str.split("\\\'").join("\'") : str.split("\\\"").join("\"");
-    this.tokens.push(new Token(TokenKind.stringX, str));
+    str = match[0] == "'" ? str.split("\\'").join("'") : str.split("\\\"").join("\"");
+    this.tokens.push(new Token(TokenKind.STRING_, str));
     this.offset += match.length;
     return true;
   }
@@ -130,7 +141,15 @@ class ExprLangLexer {
 class TestClass {
   testMethod() {
     const lexer = new ExprLangLexer("1+2", ["+"]);
-    console.log(`Token count: ${lexer.tokens.length}`);
+    let result = "";
+    for (const token of lexer.tokens) {
+        if (result != "") {
+            result += ", ";
+        }
+        result += token.value;
+    }
+    
+    console.log(`[${lexer.tokens.length}]: ${result}`);
   }
 }
 

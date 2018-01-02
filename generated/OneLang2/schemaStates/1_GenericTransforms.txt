@@ -1,17 +1,8 @@
-TokenKind::Number: null
-- Variable: Number
-  - Literal (string): "number"
-TokenKind::Identifier: null
-- Variable: Identifier
-  - Literal (string): "identifier"
-TokenKind::OperatorX: null
-- Variable: OperatorX
-  - Literal (string): "operator"
-TokenKind::StringX: null
-- Variable: StringX
-  - Literal (string): "string"
-Token::kind: TsString
+enum TokenKind: Number, Identifier, Operator_, String_
+
+Token::kind: TokenKind (enum)
 Token::value: TsString
+
 Token::constructor
   - ExpressionStatement
     - Binary: =
@@ -23,14 +14,18 @@ Token::constructor
       - PropertyAccess (.kind)
         - Identifier: this
       - Identifier: kind
+
 ExprLangLexer::offset: null
 - Variable: offset
   - Literal (numeric): "0"
+
 ExprLangLexer::tokens: TsArray<Token>
 - Variable: tokens [TsArray<Token>]
   - ArrayLiteral
+
 ExprLangLexer::expression: TsString
 ExprLangLexer::operators: TsArray<TsString>
+
 ExprLangLexer::constructor
   - ExpressionStatement
     - Binary: =
@@ -56,7 +51,6 @@ ExprLangLexer::constructor
         - Call
           - PropertyAccess (.tryToReadLiteral)
             - Identifier: this
-    Else
   - Comment: "\n"
   - While
       - Call
@@ -74,22 +68,47 @@ ExprLangLexer::constructor
               - PropertyAccess (.fail)
                 - Identifier: this
               - Literal (string): "expected operator here"
-        Else
       - Comment: "\n"
-      - ExpressionStatement
-        - Call
-          - PropertyAccess (.tryToReadLiteral)
-            - Identifier: this
+      - If
+        - Unary (prefix): !
+          - Call
+            - PropertyAccess (.tryToReadLiteral)
+              - Identifier: this
+        Then
+          - ExpressionStatement
+            - Call
+              - PropertyAccess (.fail)
+                - Identifier: this
+              - Literal (string): "expected literal here"
+
 ExprLangLexer::fail(message: TsString): void
+  - Variable: endOffset
+    - Binary: +
+      - PropertyAccess (.offset)
+        - Identifier: this
+      - Literal (numeric): "30"
+  - If
+    - Binary: >
+      - Identifier: endOffset
+      - PropertyAccess (.length)
+        - PropertyAccess (.expression)
+          - Identifier: this
+    Then
+      - ExpressionStatement
+        - Binary: =
+          - Identifier: endOffset
+          - PropertyAccess (.length)
+            - PropertyAccess (.expression)
+              - Identifier: this
   - Variable: context
     - Binary: +
       - Call
-        - PropertyAccess (.substr)
+        - PropertyAccess (.substring)
           - PropertyAccess (.expression)
             - Identifier: this
         - PropertyAccess (.offset)
           - Identifier: this
-        - Literal (numeric): "30"
+        - Identifier: endOffset
       - Literal (string): "..."
   - ExpressionStatement
     - Call
@@ -112,7 +131,7 @@ ExprLangLexer::hasMoreToken(): TsBoolean
         - PropertyAccess (.eof)
           - Identifier: this
 
-ExprLangLexer::add(kind: TsString, value: TsString): void
+ExprLangLexer::add(kind: TokenKind (enum), value: TsString): void
   - ExpressionStatement
     - Call
       - PropertyAccess (.push)
@@ -137,10 +156,15 @@ ExprLangLexer::tryToMatch(pattern: TsString): TsString
       - PropertyAccess (.offset)
         - Identifier: this
   - Return
-    - Call
-      - PropertyAccess (.get)
+    - Conditional
+      - Binary: ==
         - Identifier: matches
-      - Literal (numeric): "0"
+        - Literal (null): "null"
+      - Literal (string): ""
+      - Call
+        - PropertyAccess (.get)
+          - Identifier: matches
+        - Literal (numeric): "0"
 
 ExprLangLexer::tryToReadOperator(): TsBoolean
   - ExpressionStatement
@@ -165,12 +189,11 @@ ExprLangLexer::tryToReadOperator(): TsBoolean
             - Call
               - PropertyAccess (.add)
                 - Identifier: this
-              - PropertyAccess (.OperatorX)
+              - PropertyAccess (.Operator_)
                 - Identifier: TokenKind
               - Identifier: op
           - Return
             - Literal (boolean): true
-        Else
   - Return
     - Literal (boolean): false
 
@@ -179,6 +202,7 @@ ExprLangLexer::tryToReadNumber(): TsBoolean
     - Call
       - PropertyAccess (.skipWhitespace)
         - Identifier: this
+  - Comment: "\n"
   - Variable: number
     - Call
       - PropertyAccess (.tryToMatch)
@@ -191,7 +215,6 @@ ExprLangLexer::tryToReadNumber(): TsBoolean
     Then
       - Return
         - Literal (boolean): false
-    Else
   - Comment: "\n"
   - ExpressionStatement
     - Call
@@ -200,18 +223,20 @@ ExprLangLexer::tryToReadNumber(): TsBoolean
       - PropertyAccess (.Number)
         - Identifier: TokenKind
       - Identifier: number
+  - Comment: "\n"
   - If
-    - Call
-      - PropertyAccess (.tryToMatch)
-        - Identifier: this
-      - Literal (string): "[0-9a-zA-Z]"
+    - Binary: !=
+      - Call
+        - PropertyAccess (.tryToMatch)
+          - Identifier: this
+        - Literal (string): "[0-9a-zA-Z]"
+      - Literal (string): ""
     Then
       - ExpressionStatement
         - Call
           - PropertyAccess (.fail)
             - Identifier: this
           - Literal (string): "invalid character in number"
-    Else
   - Comment: "\n"
   - Return
     - Literal (boolean): true
@@ -233,7 +258,6 @@ ExprLangLexer::tryToReadIdentifier(): TsBoolean
     Then
       - Return
         - Literal (boolean): false
-    Else
   - Comment: "\n"
   - ExpressionStatement
     - Call
@@ -259,7 +283,7 @@ ExprLangLexer::tryToReadString(): TsBoolean
   - If
     - Binary: ==
       - Identifier: match
-      - Literal (null): "null"
+      - Literal (string): ""
     Then
       - ExpressionStatement
         - Binary: =
@@ -268,15 +292,13 @@ ExprLangLexer::tryToReadString(): TsBoolean
             - PropertyAccess (.tryToMatch)
               - Identifier: this
             - Literal (string): "\"(\\\\\"|[^\"])*\""
-    Else
   - If
     - Binary: ==
       - Identifier: match
-      - Literal (null): "null"
+      - Literal (string): ""
     Then
       - Return
         - Literal (boolean): false
-    Else
   - Comment: "\n"
   - Variable: str
     - Call
@@ -388,6 +410,28 @@ ExprLangLexer::tryToReadLiteral(): TsBoolean
 TestClass::testMethod(): void
   - Variable: lexer
     - New ExprLangLexer
+  - Variable: result
+    - Literal (string): ""
+  - Foreach token: undefined
+    Items
+      - PropertyAccess (.tokens)
+        - Identifier: lexer
+    Body
+      - If
+        - Binary: !=
+          - Identifier: result
+          - Literal (string): ""
+        Then
+          - ExpressionStatement
+            - Binary: +=
+              - Identifier: result
+              - Literal (string): ", "
+      - ExpressionStatement
+        - Binary: +=
+          - Identifier: result
+          - PropertyAccess (.value)
+            - Identifier: token
+  - Comment: "\n"
   - ExpressionStatement
     - Call
       - PropertyAccess (.log)
@@ -396,4 +440,5 @@ TestClass::testMethod(): void
         - PropertyAccess (.length)
           - PropertyAccess (.tokens)
             - Identifier: lexer
+        - Identifier: result
 
