@@ -35,6 +35,7 @@ export class ExpressionParser {
     operatorMap: { [name: string]: Operator };
     operators: string[];
     prefixPrecedence: number;
+    literalClassNames: { string: string, numeric: string };
 
     unaryPrehook: () => ast.Expression = null;
 
@@ -81,11 +82,11 @@ export class ExpressionParser {
 
         const num = this.reader.readNumber();
         if (num !== null)
-            return <ast.Literal> { exprKind: "Literal", literalType: "numeric", value: num };
+            return <ast.Literal> { exprKind: "Literal", literalType: "numeric", value: num, literalClassName: this.literalClassNames.numeric };
 
         const str = this.reader.readString();
         if (str !== null)
-            return <ast.Literal> { exprKind: "Literal", literalType: "string", value: str };
+            return <ast.Literal> { exprKind: "Literal", literalType: "string", value: str, literalClassName: this.literalClassNames.string };
 
         if (this.reader.readToken("(")) {
             const expr = this.parse();

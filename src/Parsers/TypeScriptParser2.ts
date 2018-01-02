@@ -15,10 +15,11 @@ export class TypeScriptParser2 {
         };
         this.expressionParser = new ExpressionParser(this.reader);
         this.expressionParser.unaryPrehook = () => this.parseExpressionToken();
+        this.expressionParser.literalClassNames = { string: "TsString", numeric: "TsNumber" };
     }
 
     parseType() {
-        const typeName = this.reader.readIdentifier();
+        const typeName = this.reader.expectIdentifier();
 
         let type: ast.Type;
         if (typeName === "string") {
@@ -49,7 +50,13 @@ export class TypeScriptParser2 {
     }
 
     parseExpressionToken(): ast.Expression {
-        if (this.reader.readToken("`")) {
+        if (this.reader.readToken("null")) {
+            return <ast.Literal> { exprKind: "Literal", literalType: "null" };
+        } else if (this.reader.readToken("true")) {
+            return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: true };
+        } else if (this.reader.readToken("false")) {
+            return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: false };
+        } else if (this.reader.readToken("`")) {
             const tmplStr = <ast.TemplateString> { exprKind: ast.ExpressionKind.TemplateString, parts: [] };
             while (true) {
                 const litMatch = this.reader.readRegex("([^$`]|\\$[^{]|\\\\${|\\\\`)*");
@@ -72,7 +79,7 @@ export class TypeScriptParser2 {
             // TODO: shouldn't we use just one `type` field instead of `cls` and `typeArguments`?
             return <ast.NewExpression> {
                 exprKind: ast.ExpressionKind.New,
-                cls: <ast.Identifier> { text: type.className },
+                cls: <ast.Identifier> { exprKind: ast.ExpressionKind.Identifier, text: type.className },
                 typeArguments: type.typeArguments,
                 arguments: args
             };
@@ -143,7 +150,7 @@ export class TypeScriptParser2 {
             requiresClosing = false;
             this.reader.expectToken("(");
             const varDeclMod = this.reader.readAnyOf(["const", "let", "var"]);
-            const itemVarName = this.reader.readIdentifier();
+            const itemVarName = this.reader.expectIdentifier();
             if (this.reader.readToken("of")) {
                 const foreachStmt = statement = <ast.ForeachStatement> { 
                     stmtType: ast.StatementType.Foreach,
@@ -208,7 +215,7 @@ export class TypeScriptParser2 {
         const typeArguments = [];
         if (this.reader.readToken("<")) {
             do {
-                const generics = this.reader.readIdentifier();
+                const generics = this.reader.expectIdentifier();
                 typeArguments.push(generics);
             } while(this.reader.readToken(","));
             this.reader.expectToken(">");
@@ -221,7 +228,7 @@ export class TypeScriptParser2 {
         const declarationOnly = clsModifiers.includes("declare");
         if (!this.reader.readToken("class")) return null;
 
-        const cls = <ast.Class> { methods: {}, fields: {}, properties: {} };
+        const cls = <ast.Class> { methods: {}, fields: {}, properties: {}, constructor: null };
         cls.name = this.reader.expectIdentifier("expected identifier after 'class' keyword");
         this.context.push(`C:${cls.name}`);
 
@@ -236,14 +243,17 @@ export class TypeScriptParser2 {
             const visibility = modifiers.includes("private") ? ast.Visibility.Private :
                 modifiers.includes("protected") ? ast.Visibility.Protected : ast.Visibility.Public;
 
-            const memberName = this.reader.readIdentifier();
+            const memberName = this.reader.expectIdentifier();
             const methodTypeArguments = this.parseTypeArguments();
             if (this.reader.readToken("(")) { // method
                 const method = <ast.Method> { name: memberName, static: isStatic, visibility, leadingTrivia, parameters: [], typeArguments: methodTypeArguments };
-                cls.methods[method.name] = method;
+                const isConstructor = memberName === "constructor";
+                if (isConstructor)
+                    cls.constructor = method;
+                else
+                    cls.methods[method.name] = method;
                 this.context.push(`M:${method.name}`);
 
-                const isConstructor = method.name === "constructor";
                 if (!this.reader.readToken(")")) {
                     do {
                         const param = <ast.MethodParameter> {};
@@ -253,7 +263,7 @@ export class TypeScriptParser2 {
                         if (isPublic && !isConstructor)
                             this.reader.fail("public modifier is only allowed in constructor definition");
 
-                        param.name = this.reader.readIdentifier();
+                        param.name = this.reader.expectIdentifier();
                         this.context.push(`arg:${param.name}`);
                         this.parseVarDeclTypeAndInit(param);
                         this.context.pop();
@@ -262,8 +272,7 @@ export class TypeScriptParser2 {
                     this.reader.expectToken(")");
                 }
 
-                if (this.reader.readToken(":"))
-                    method.returns = this.parseType();
+                method.returns = this.reader.readToken(":") ? this.parseType() : ast.Type.Void;
 
                 if (declarationOnly) {
                     this.reader.expectToken(";");
@@ -275,7 +284,7 @@ export class TypeScriptParser2 {
 
                 this.context.pop();
             } else if (memberName === "get" || memberName === "set") { // property
-                const propName = this.reader.readIdentifier();
+                const propName = this.reader.expectIdentifier();
                 const prop = cls.properties[propName] || (cls.properties[propName] = <ast.Property> { name: propName });
                 if (memberName === "get") {
                     this.context.push(`P[G]:${prop.name}`);
@@ -287,7 +296,7 @@ export class TypeScriptParser2 {
                         this.reader.fail("property getter body is missing");
                 } else {
                     this.context.push(`P[S]:${prop.name}`);
-                    this.reader.readIdentifier();
+                    this.reader.expectIdentifier();
                     this.parseVarDeclTypeAndInit(<ast.VariableDeclaration>{});
                     prop.setter = this.parseBlock();
                     if (!prop.setter)
@@ -320,7 +329,7 @@ export class TypeScriptParser2 {
         this.reader.expectToken("{");
         if (!this.reader.readToken("}")) {
             do {
-                const enumMemberName = this.reader.readIdentifier();
+                const enumMemberName = this.reader.expectIdentifier();
                 enumObj.values.push(<ast.EnumMember> { name: enumMemberName });
             } while(this.reader.readToken(","));
             this.reader.expectToken("}");
@@ -331,7 +340,7 @@ export class TypeScriptParser2 {
     }
 
     parseSchema() {
-        const schema = <ast.Schema> { classes: {}, enums: {} };
+        const schema = <ast.Schema> { classes: {}, enums: {}, globals: {} };
         while (!this.reader.eof) {
             const leadingTrivia = this.reader.readLeadingTrivia();
             if (this.reader.eof) break;
