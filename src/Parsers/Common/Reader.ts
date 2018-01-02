@@ -77,7 +77,8 @@ export class Reader {
     }
 
     skipLine() {
-        return this.skipUntil("\n");
+        if(!this.skipUntil("\n"))
+            this.offset = this.input.length;
     }
 
     isAlphaNum(c: string) {
