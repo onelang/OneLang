@@ -6,7 +6,7 @@ casing:
   property: snake_case
   variable: snake_case
   enum: pascal_case
-  enumMember: upper_case
+  enumMember: pascal_case
 primitiveTypes:
   void: void
   any: any
