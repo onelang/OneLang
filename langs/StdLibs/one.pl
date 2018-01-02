@@ -16,7 +16,7 @@ sub str_replace
 
 package OneRegex;
 
-sub matchFromIndex
+sub match_from_index
 {
     my ($pattern, $input, $offset) = @_;
     pos($input) = $offset;
@@ -39,40 +39,40 @@ sub new
     $self->{fields} = {};
     foreach my $field (@{$fields}) {
         $field->{cls} = $self;
-        my $key = OneReflect::nameKey($field->{name});
+        my $key = OneReflect::name_key($field->{name});
         $self->{fields}{$key} = $field;
     }
 
     $self->{methods} = {};
     foreach my $method (@{$methods}) {
         $method->{cls} = $self;
-        my $key = OneReflect::nameKey($method->{name});
+        my $key = OneReflect::name_key($method->{name});
         $self->{methods}{$key} = $method;
     }
     
     return $self;
 }
 
-sub getField
+sub get_field
 {
     my ( $self, $name ) = @_;
-    my $key = OneReflect::nameKey($name);
+    my $key = OneReflect::name_key($name);
     return $self->{fields}{$key};
 }
 
-sub getMethod
+sub get_method
 {
     my ( $self, $name ) = @_;
-    my $key = OneReflect::nameKey($name);
+    my $key = OneReflect::name_key($name);
     return $self->{methods}{$key};
 }
 
-sub getFields
+sub get_fields
 {
     my ( $self ) = @_;
     return values(@{$self->fields});
 }
-sub getMethods
+sub get_methods
 {
     my ( $self ) = @_;
     return values(@{$self->methods});
@@ -92,7 +92,7 @@ sub new
     return $self;
 }
 
-sub getValue
+sub get_value
 {
     my ( $self, $obj ) = @_;
     my $fieldName = $self->{name};
@@ -104,7 +104,7 @@ sub getValue
     }
 }
 
-sub setValue
+sub set_value
 {
     my ( $self, $obj, $value ) = @_;
     my $fieldName = $self->{name};
@@ -160,28 +160,28 @@ package OneReflect;
 
 our $classes = {};
 
-sub getClass
+sub get_class
 {
     my ($obj) = @_;
     my $name = ref $obj;
-    return getClassByName($name);
+    return get_class_by_name($name);
 }
 
-sub getClassByName
+sub get_class_by_name
 {
     my ($name) = @_;
-    my $key = nameKey($name);
+    my $key = name_key($name);
     return $classes{$key};
 }
 
-sub setupClass
+sub setup_class
 {
     my ($cls) = @_;
-    my $key = nameKey($cls->{name});
+    my $key = name_key($cls->{name});
     $classes{$key} = $cls;
 }
 
-sub nameKey
+sub name_key
 {
     my ($name) = @_;
     my $key = lc($name);

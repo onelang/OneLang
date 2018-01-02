@@ -1,7 +1,10 @@
 extension: pl
 casing:
   class: pascal_case
-  method: camel_case
+  method: snake_case
+  field: snake_case
+  property: snake_case
+  variable: snake_case
   enum: pascal_case
   enumMember: upper_case
 classes:
@@ -186,7 +189,7 @@ templates:
       {{/for}}
 
       {{if class.reflect}}
-        OneReflect::setupClass(new OneClass("{{class.name}}", [
+        OneReflect::setup_class(new OneClass("{{class.name}}", [
             {{for field in class.fields|sep=\n}}
               new OneField("{{field.name}}", {{if field.static}}1{{else}}0{{/if}}, "{{field.type}}"),
             {{/for}}
@@ -301,7 +304,7 @@ expressions:
     {{/for}}
     "
   foreach: |-
-    foreach my ${{expr.itemVariable.name}} (@{{{gen(expr.items)}}}) {
+    foreach my {{varName(expr.itemVariable)}} (@{{{gen(expr.items)}}}) {
         {{genBody(expr.body)}}
     }
   for: |-

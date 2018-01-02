@@ -100,8 +100,8 @@ export class SchemaCaseConverter extends AstVisitor<void> {
         enumMember.outName = this.getName(enumMember.name, "enumMember");
     }
 
-    protected visitVariableDeclaration(stmt: one.VariableDeclaration) {
-        super.visitVariableDeclaration(stmt, null);
+    protected visitVariable(stmt: one.VariableBase) {
+        super.visitVariable(stmt, null);
         stmt.name = this.getName(stmt.name, "variable");
     }
 
