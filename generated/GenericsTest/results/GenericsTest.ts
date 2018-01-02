@@ -1,14 +1,14 @@
 class MapX {
-  public set(key: , value: ) {
+  set(key: , value: ) {
   }
   
-  public get(key: ) {
+  get(key: ) {
     return null;
   }
 }
 
 class Main {
-  public test() {
+  test() {
     const map = new MapX();
     map.set("hello", 3);
     const num_value = map.get("hello2");

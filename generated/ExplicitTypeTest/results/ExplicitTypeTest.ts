@@ -1,5 +1,5 @@
 class TestClass {
-  public testMethod() {
+  testMethod() {
     const op = null;
     console.log(op.length);
   }

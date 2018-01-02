@@ -1,5 +1,5 @@
 class MapTestClass {
-  public mapTest() {
+  mapTest() {
     const map_obj = {
       x: 5
     };

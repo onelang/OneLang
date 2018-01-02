@@ -1,5 +1,5 @@
 class TestClass {
-  public testMethod() {
+  testMethod() {
     const str = "ABCDEF";
     const t_a0_true = str.startsWith("A", 0);
     const t_a1_false = str.startsWith("A", 1);

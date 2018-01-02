@@ -1,8 +1,8 @@
 class TestClass {
-  public methodTest(method_param: OneArray) {
+  methodTest(method_param: OneArray) {
   }
   
-  public testMethod() {
+  testMethod() {
   }
 }
 

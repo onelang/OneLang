@@ -1,5 +1,5 @@
 class TestClass {
-  public reverseString(str: string) {
+  reverseString(str: string) {
     let result = "";
     for (let i = str.length - 1; i >= 0; i--) {
         result += str[i];
@@ -7,7 +7,7 @@ class TestClass {
     return result;
   }
   
-  public testMethod() {
+  testMethod() {
     console.log(this.reverseString("print value"));
     return "return value";
   }

@@ -1,9 +1,9 @@
 class TestClass {
-  public getResult() {
+  getResult() {
     return true;
   }
   
-  public testMethod() {
+  testMethod() {
     console.log(this.getResult() ? "true" : "false");
   }
 }

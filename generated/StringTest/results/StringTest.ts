@@ -1,5 +1,5 @@
 class TestClass {
-  public testMethod() {
+  testMethod() {
     const x = "x";
     const y = "y";
     

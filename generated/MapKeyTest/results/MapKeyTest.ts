@@ -1,5 +1,5 @@
 class TestClass {
-  public testMethod() {
+  testMethod() {
     const map = {
     };
     const keys = Object.keys(map);

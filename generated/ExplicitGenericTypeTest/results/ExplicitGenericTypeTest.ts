@@ -1,5 +1,5 @@
 class TestClass {
-  public testMethod() {
+  testMethod() {
     const result = [];
     const map = {
       x: 5

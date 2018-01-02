@@ -1,5 +1,5 @@
 class TestClass {
-  public mapTest() {
+  mapTest() {
     const map_obj = {
       x: 5,
       y: 3
@@ -14,12 +14,12 @@ class TestClass {
     return map_obj["z"];
   }
   
-  public explicitTypeTest() {
+  explicitTypeTest() {
     const op = "";
     console.log(op.length);
   }
   
-  public ifTest(x: number) {
+  ifTest(x: number) {
     let result = "<unk>";
     
     if (x > 3) {
@@ -45,7 +45,7 @@ class TestClass {
     return result;
   }
   
-  public arrayTest() {
+  arrayTest() {
     //const c2 = new Class2();
     
     const mutable_arr = [1, 2];
@@ -71,16 +71,16 @@ class TestClass {
     }
   }
   
-  public calc() {
+  calc() {
     return (1 + 2) * 3;
   }
   
-  public methodWithArgs(arg1: number, arg2: number, arg3: number) {
+  methodWithArgs(arg1: number, arg2: number, arg3: number) {
     const stuff = arg1 + arg2 + arg3 * this.calc();
     return stuff;
   }
   
-  public stringTest() {
+  stringTest() {
     const x = "x";
     const y = "y";
     
@@ -91,7 +91,7 @@ class TestClass {
     return z + "|" + x + y;
   }
   
-  public reverseString(str: string) {
+  reverseString(str: string) {
     let result = "";
     for (let i = str.length - 1; i >= 0; i--) {
         result += str[i];
@@ -99,11 +99,11 @@ class TestClass {
     return result;
   }
   
-  public getBoolResult(value: bool) {
+  getBoolResult(value: bool) {
     return value;
   }
   
-  public testMethod() {
+  testMethod() {
     this.arrayTest();
     console.log(this.mapTest());
     console.log(this.stringTest());

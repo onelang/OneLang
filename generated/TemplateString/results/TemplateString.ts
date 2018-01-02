@@ -1,5 +1,5 @@
 class TestClass {
-  public testMethod() {
+  testMethod() {
     const str_val = "str";
     const num = 1337;
     const b = true;

@@ -1,5 +1,5 @@
 class NumberUnaryIssue {
-  public test(num: number) {
+  test(num: number) {
     num--;
   }
 }

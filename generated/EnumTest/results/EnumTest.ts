@@ -4,7 +4,7 @@ enum TestEnum {
 }
 
 class TestClass {
-  public testMethod() {
+  testMethod() {
     let enum_v = TestEnum.Item1;
     if (3 * 2 == 6) {
         enum_v = TestEnum.Item2;

@@ -1,13 +1,13 @@
 class TokenType {
-  public static endToken: string = "EndToken";
-  public static whitespace: string = "Whitespace";
-  public static identifier: string = "Identifier";
-  public static operatorX: string = "Operator";
+  static endToken: string = "EndToken";
+  static whitespace: string = "Whitespace";
+  static identifier: string = "Identifier";
+  static operatorX: string = "Operator";
 }
 
 class Token {
-  public value: string;
-  public isOperator: bool;
+  value: string;
+  isOperator: bool;
 
   constructor(value: string, is_operator: bool) {
       this.isOperator = is_operator;
@@ -16,15 +16,15 @@ class Token {
 }
 
 class StringHelper {
-  public static startsWithAtIndex(str: string, substr: string, idx: number) {
+  static startsWithAtIndex(str: string, substr: string, idx: number) {
     return str.substring(idx, idx + substr.length) == substr;
   }
 }
 
 class Tokenizer {
-  public offset: number;
-  public text: string;
-  public operators: OneArray;
+  offset: number;
+  text: string;
+  operators: OneArray;
 
   constructor(text: string, operators: OneArray) {
       this.operators = operators;
@@ -32,7 +32,7 @@ class Tokenizer {
       this.offset = 0;
   }
 
-  public getTokenType() {
+  getTokenType() {
     if (this.offset >= this.text.length) {
         return TokenType.endToken;
     }
@@ -41,7 +41,7 @@ class Tokenizer {
     return c == " " || c == "\n" || c == "\t" || c == "\r" ? TokenType.whitespace : ("A" <= c && c <= "Z") || ("a" <= c && c <= "z") || ("0" <= c && c <= "9") || c == "_" ? TokenType.identifier : TokenType.operatorX;
   }
   
-  public tokenize() {
+  tokenize() {
     const result = [];
     
     while (this.offset < this.text.length) {
@@ -60,9 +60,9 @@ class Tokenizer {
             result.push(new Token(identifier, false));
         } else {
             let op = "";
-            for (const curr_op of this.operators) {
-                if (StringHelper.startsWithAtIndex(this.text, curr_op, this.offset)) {
-                    op = curr_op;
+            for (const currOp of this.operators) {
+                if (StringHelper.startsWithAtIndex(this.text, currOp, this.offset)) {
+                    op = currOp;
                     break
                 }
             }
@@ -81,7 +81,7 @@ class Tokenizer {
 }
 
 class TestClass {
-  public testMethod() {
+  testMethod() {
     const operators = ["<<", ">>", "++", "--", "==", "!=", "!", "<", ">", "=", "(", ")", "[", "]", "{", "}", ";", "+", "-", "*", "/", "&&", "&", "%", "||", "|", "^", ",", "."];
     
     const input = "hello * 5";

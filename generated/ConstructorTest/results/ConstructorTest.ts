@@ -1,6 +1,6 @@
 class ConstructorTest {
-  public field2: number;
-  public field1: number;
+  field2: number;
+  field1: number;
 
   constructor(field1: number) {
       this.field1 = field1;
@@ -9,7 +9,7 @@ class ConstructorTest {
 }
 
 class TestClass {
-  public testMethod() {
+  testMethod() {
     const test = new ConstructorTest(3);
     console.log(test.field2);
   }

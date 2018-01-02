@@ -1,5 +1,5 @@
 class TestClass {
-  public testMethod() {
+  testMethod() {
     const constant_arr = [5];
     
     const mutable_arr = [1];

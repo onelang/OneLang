@@ -1,5 +1,5 @@
 class TestClass {
-  public testMethod() {
+  testMethod() {
     const str = "a1A";
     for (let i = 0; i < str.length; i++) {
         const c = str[i];

@@ -1,11 +1,11 @@
 class List {
-  public items: OneArray;
+  items: OneArray;
 }
 
 class Item {
-  public offset: number = 5;
-  public strTest: string = "test" + "test2";
-  public strConstr: string = "constr";
+  offset: number = 5;
+  strTest: string = "test" + "test2";
+  strConstr: string = "constr";
 
   constructor(str_constr: string) {
       this.strConstr = str_constr;
@@ -13,13 +13,13 @@ class Item {
 }
 
 class Container {
-  public itemList: List;
-  public stringList: List;
+  itemList: List;
+  stringList: List;
 
-  public method0() {
+  method0() {
   }
   
-  public method1(str: string) {
+  method1(str: string) {
     return str;
   }
 }
