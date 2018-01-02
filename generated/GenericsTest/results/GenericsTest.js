@@ -11,6 +11,6 @@ class Main {
   test() {
     const map = new MapX();
     map.set("hello", 3);
-    const num_value = map.get("hello2");
+    const numValue = map.get("hello2");
   }
 }

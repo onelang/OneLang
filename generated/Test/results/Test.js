@@ -1,17 +1,17 @@
 class TestClass {
   mapTest() {
-    const map_obj = {
+    const mapObj = {
       x: 5,
       y: 3
     };
     
     //let containsX = "x" in mapObj;
-    map_obj["z"] = 9;
-    delete map_obj["x"];
+    mapObj["z"] = 9;
+    delete mapObj["x"];
     
-    const keys_var = Object.keys(map_obj);
-    const values_var = Object.values(map_obj);
-    return map_obj["z"];
+    const keysVar = Object.keys(mapObj);
+    const valuesVar = Object.values(mapObj);
+    return mapObj["z"];
   }
   
   explicitTypeTest() {
@@ -48,26 +48,26 @@ class TestClass {
   arrayTest() {
     //const c2 = new Class2();
     
-    const mutable_arr = [1, 2];
-    mutable_arr.push(3);
-    mutable_arr.push(4);
+    const mutableArr = [1, 2];
+    mutableArr.push(3);
+    mutableArr.push(4);
     // mutableArr.push(c2.property);
     // mutableArr.push(c2.child.property);
     // mutableArr.push(c2.child.child.property);
     
-    const constant_arr = [5, 6];
+    const constantArr = [5, 6];
     
     // some comment
     //   some comment line 2
-    for (const item of mutable_arr) {
+    for (const item of mutableArr) {
         console.log(item);
     }
     
     /* some other comment
        multiline and stuff
     */
-    for (let i = 0; i < constant_arr.length; i++) {
-        console.log(constant_arr[i]);
+    for (let i = 0; i < constantArr.length; i++) {
+        console.log(constantArr[i]);
     }
   }
   

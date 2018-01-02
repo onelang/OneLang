@@ -5,15 +5,15 @@ const TestEnum = Object.freeze({
 
 class TestClass {
   testMethod() {
-    let enum_v = TestEnum.ITEM1;
+    let enumV = TestEnum.ITEM1;
     if (3 * 2 == 6) {
-        enum_v = TestEnum.ITEM2;
+        enumV = TestEnum.ITEM2;
     }
     
-    const check1 = enum_v == TestEnum.ITEM2 ? "SUCCESS" : "FAIL";
-    const check2 = enum_v == TestEnum.ITEM1 ? "FAIL" : "SUCCESS";
+    const check1 = enumV == TestEnum.ITEM2 ? "SUCCESS" : "FAIL";
+    const check2 = enumV == TestEnum.ITEM1 ? "FAIL" : "SUCCESS";
     
-    console.log(`Item1: ${TestEnum.ITEM1}, Item2: ${enum_v}, checks: ${check1} ${check2}`);
+    console.log(`Item1: ${TestEnum.ITEM1}, Item2: ${enumV}, checks: ${check1} ${check2}`);
   }
 }
 

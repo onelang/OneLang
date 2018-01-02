@@ -7,8 +7,8 @@ TokenType.identifier = "Identifier";
 TokenType.operatorX = "Operator";
 
 class Token {
-  constructor(value, is_operator) {
-      this.isOperator = is_operator;
+  constructor(value, isOperator) {
+      this.isOperator = isOperator;
       this.value = value;
   }
 }
@@ -39,24 +39,24 @@ class Tokenizer {
     const result = [];
     
     while (this.offset < this.text.length) {
-        const char_type = this.getTokenType();
+        const charType = this.getTokenType();
         
-        if (char_type == TokenType.whitespace) {
+        if (charType == TokenType.whitespace) {
             while (this.getTokenType() == TokenType.whitespace) {
                 this.offset++;
             }
-        } else if (char_type == TokenType.identifier) {
-            const start_offset = this.offset;
+        } else if (charType == TokenType.identifier) {
+            const startOffset = this.offset;
             while (this.getTokenType() == TokenType.identifier) {
                 this.offset++;
             }
-            const identifier = this.text.substring(start_offset, this.offset);
+            const identifier = this.text.substring(startOffset, this.offset);
             result.push(new Token(identifier, false));
         } else {
             let op = "";
-            for (const curr_op of this.operators) {
-                if (StringHelper.startsWithAtIndex(this.text, curr_op, this.offset)) {
-                    op = curr_op;
+            for (const currOp of this.operators) {
+                if (StringHelper.startsWithAtIndex(this.text, currOp, this.offset)) {
+                    op = currOp;
                     break
                 }
             }

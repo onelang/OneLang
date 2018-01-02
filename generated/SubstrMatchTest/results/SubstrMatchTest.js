@@ -1,11 +1,11 @@
 class TestClass {
   testMethod() {
     const str = "ABCDEF";
-    const t_a0_true = str.startsWith("A", 0);
-    const t_a1_false = str.startsWith("A", 1);
-    const t_b1_true = str.startsWith("B", 1);
-    const t_c_d2_true = str.startsWith("CD", 2);
-    console.log(`${t_a0_true} ${t_a1_false} ${t_b1_true} ${t_c_d2_true}`);
+    const tA0True = str.startsWith("A", 0);
+    const tA1False = str.startsWith("A", 1);
+    const tB1True = str.startsWith("B", 1);
+    const tCD2True = str.startsWith("CD", 2);
+    console.log(`${tA0True} ${tA1False} ${tB1True} ${tCD2True}`);
   }
 }
 

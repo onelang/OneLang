@@ -8,8 +8,8 @@ TokenType.operatorX = "Operator";
 
 class TestClass {
   testMethod() {
-    const casing_test = TokenType.endToken;
-    return casing_test;
+    const casingTest = TokenType.endToken;
+    return casingTest;
   }
 }
 

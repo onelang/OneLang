@@ -2,8 +2,11 @@ class List {
 }
 
 class Item {
-  constructor(str_constr) {
-      this.strConstr = str_constr;
+  constructor(strConstr) {
+      this.offset = 5;
+      this.strTest = "test" + "test2";
+      this.strConstr = "constr";
+      this.strConstr = strConstr;
   }
 }
 

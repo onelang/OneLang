@@ -37,11 +37,11 @@ class ExprLangLexer {
   }
 
   fail(message) {
-    let end_offset = this.offset + 30;
-    if (end_offset > this.expression.length) {
-        end_offset = this.expression.length;
+    let endOffset = this.offset + 30;
+    if (endOffset > this.expression.length) {
+        endOffset = this.expression.length;
     }
-    const context = this.expression.substring(this.offset, end_offset) + "...";
+    const context = this.expression.substring(this.offset, endOffset) + "...";
     throw new Error(`TokenizerException: ${message} at '${context}' (offset: ${this.offset})`);
   }
   
