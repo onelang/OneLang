@@ -4,15 +4,15 @@ enum TestEnum {
 
 class TestClass {
   func testMethod() -> Void {
-      var enum_v = TestEnum.item1
+      var enumV = TestEnum.item1
       if 3 * 2 == 6 {
-          enum_v = TestEnum.item2
+          enumV = TestEnum.item2
       }
       
-      let check1 = enum_v == TestEnum.item2 ? "SUCCESS" : "FAIL"
-      let check2 = enum_v == TestEnum.item1 ? "FAIL" : "SUCCESS"
+      let check1 = enumV == TestEnum.item2 ? "SUCCESS" : "FAIL"
+      let check2 = enumV == TestEnum.item1 ? "FAIL" : "SUCCESS"
       
-      print("Item1: \(TestEnum.item1), Item2: \(enum_v), checks: \(check1) \(check2)")
+      print("Item1: \(TestEnum.item1), Item2: \(enumV), checks: \(check1) \(check2)")
   }
 }
 

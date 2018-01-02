@@ -40,11 +40,11 @@ class ExprLangLexer {
   }
 
   func fail(message: String) throws -> Void {
-      var end_offset: Int = self.offset + 30
-      if end_offset > self.expression.count {
-          end_offset = self.expression.count
+      var endOffset = self.offset + 30
+      if endOffset > self.expression.count {
+          endOffset = self.expression.count
       }
-      let context: String = String(self.expression[self.expression.index(self.expression.startIndex, offsetBy: self.offset) ..< self.expression.index(self.expression.startIndex, offsetBy: end_offset)]) + "..."
+      let context = String(self.expression[self.expression.index(self.expression.startIndex, offsetBy: self.offset) ..< self.expression.index(self.expression.startIndex, offsetBy: endOffset)]) + "..."
       throw OneError.RuntimeError("TokenizerException: \(message) at '\(context)' (offset: \(self.offset))")
   }
 
@@ -54,13 +54,13 @@ class ExprLangLexer {
   }
 
   func add(kind: TokenKind, value: String) -> Void {
-      self.tokens.append(Token(kind: kind, value: value))
+      self.tokens!.append(Token(kind: kind, value: value))
       self.offset += value.count
   }
 
   func tryToMatch(pattern: String) -> String {
       let matches: [String]? = OneRegex.matchFromIndex(pattern: pattern, input: self.expression, offset: self.offset)
-      return matches == nil ? "" : matches[0]
+      return matches == nil ? "" : matches![0]
   }
 
   func tryToReadOperator() -> Bool {
@@ -77,7 +77,7 @@ class ExprLangLexer {
   func tryToReadNumber() throws -> Bool {
       self.skipWhitespace()
       
-      let number: String = self.tryToMatch(pattern: "[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)")
+      let number = self.tryToMatch(pattern: "[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)")
       if number == "" {
           return false
       }
@@ -93,7 +93,7 @@ class ExprLangLexer {
 
   func tryToReadIdentifier() -> Bool {
       self.skipWhitespace()
-      let identifier: String = self.tryToMatch(pattern: "[a-zA-Z_][a-zA-Z0-9_]*")
+      let identifier = self.tryToMatch(pattern: "[a-zA-Z_][a-zA-Z0-9_]*")
       if identifier == "" {
           return false
       }
@@ -105,7 +105,7 @@ class ExprLangLexer {
   func tryToReadString() -> Bool {
       self.skipWhitespace()
       
-      var match: String = self.tryToMatch(pattern: "'(\\\\'|[^'])*'")
+      var match = self.tryToMatch(pattern: "'(\\\\'|[^'])*'")
       if match == "" {
           match = self.tryToMatch(pattern: "\"(\\\\\"|[^\"])*\"")
       }
@@ -113,9 +113,9 @@ class ExprLangLexer {
           return false
       }
       
-      var str: String = String(match[match.index(match.startIndex, offsetBy: 1) ..< match.index(match.startIndex, offsetBy: 1 + match.count - 2)])
+      var str = String(match[match.index(match.startIndex, offsetBy: 1) ..< match.index(match.startIndex, offsetBy: 1 + match.count - 2)])
       str = String(match[match.index(match.startIndex, offsetBy: 0)]) == "'" ? str.replacingOccurrences(of: "\\'", with: "'") : str.replacingOccurrences(of: "\\\"", with: "\"")
-      self.tokens.append(Token(kind: TokenKind.string_, value: str))
+      self.tokens!.append(Token(kind: TokenKind.string_, value: str))
       self.offset += match.count
       return true
   }
@@ -126,7 +126,7 @@ class ExprLangLexer {
 
   func skipWhitespace() -> Void {
       while !(self.eof()) {
-          let c: OneCharacter = String(self.expression[self.expression.index(self.expression.startIndex, offsetBy: self.offset)])
+          let c = String(self.expression[self.expression.index(self.expression.startIndex, offsetBy: self.offset)])
           if c == " " || c == "\n" || c == "\t" || c == "\r" {
               self.offset += 1
           } else {
@@ -136,7 +136,7 @@ class ExprLangLexer {
   }
 
   func tryToReadLiteral() throws -> Bool {
-      let success: Bool = self.tryToReadIdentifier() || try self.tryToReadNumber() || self.tryToReadString()
+      let success = self.tryToReadIdentifier() || try self.tryToReadNumber() || self.tryToReadString()
       return success
   }
 }
@@ -144,7 +144,7 @@ class ExprLangLexer {
 class TestClass {
   func testMethod() -> Void {
       let lexer: ExprLangLexer? = ExprLangLexer(expression: "1+2", operators: ["+"])
-      var result: String = ""
+      var result = ""
       for token in lexer!.tokens {
           if result != "" {
               result += ", "
@@ -152,7 +152,7 @@ class TestClass {
           result += token!.value
       }
       
-      print("[\(lexer!.tokens.count)]: \(result)")
+      print("[\(lexer!.tokens!.count)]: \(result)")
   }
 }
 

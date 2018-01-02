@@ -1,20 +1,20 @@
 class List {
-  var items: []
+  var items: []?
 }
 
 class Item {
   var offset: Int = 5
-  var str_test: String = "test" + "test2"
-  var str_constr: String = "constr"
+  var strTest: String = "test" + "test2"
+  var strConstr: String = "constr"
 
-  init(str_constr: String) {
-      self.str_constr = str_constr
+  init(strConstr: String) {
+      self.strConstr = strConstr
   }
 }
 
 class Container {
-  var item_list: List?
-  var string_list: List?
+  var itemList: List?
+  var stringList: List?
 
   func method0() -> Void {
   }

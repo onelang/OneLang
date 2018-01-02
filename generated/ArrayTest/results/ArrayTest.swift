@@ -1,11 +1,11 @@
 class TestClass {
   func testMethod() -> Void {
-      let constant_arr = [5]
+      let constantArr: [Int]? = [5]
       
-      var mutable_arr = [1]
-      mutable_arr.append(2)
+      var mutableArr: [Int]? = [1]
+      mutableArr!.append(2)
       
-      print("len1: \(constant_arr.count), len2: \(mutable_arr.count)")
+      print("len1: \(constantArr!.count), len2: \(mutableArr!.count)")
   }
 }
 

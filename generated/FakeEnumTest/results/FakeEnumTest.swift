@@ -1,15 +1,15 @@
 class TokenType {
-  static var end_token: String = "EndToken"
+  static var endToken: String = "EndToken"
   static var whitespace: String = "Whitespace"
   static var identifier: String = "Identifier"
-  static var operator_x: String = "Operator"
-  static var no_initializer: String
+  static var operatorX: String = "Operator"
+  static var noInitializer: String
 }
 
 class TestClass {
   func testMethod() -> String {
-      let casing_test = TokenType.end_token
-      return casing_test
+      let casingTest = TokenType.endToken
+      return casingTest
   }
 }
 

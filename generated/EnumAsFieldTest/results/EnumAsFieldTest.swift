@@ -1,12 +1,12 @@
 enum SomeKind {
-    case enum_val0, enum_val1, enum_val2
+    case enumVal0, enumVal1, enumVal2
 }
 
 class TestClass {
-  var enum_field: SomeKind = SomeKind.enum_val2
+  var enumField: SomeKind = SomeKind.enumVal2
 
   func testMethod() -> Void {
-      print("Value: \(self.enum_field)")
+      print("Value: \(self.enumField)")
   }
 }
 

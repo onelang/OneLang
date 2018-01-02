@@ -1,17 +1,17 @@
 class TestClass {
   func mapTest() -> Int {
-      var map_obj = [
+      var mapObj: OneMap? = [
         "x": 5,
         "y": 3
       ]
       
       //let containsX = "x" in mapObj;
-      map_obj["z"] = 9
-      map_obj["x"] = nil
+      mapObj!["z"] = 9
+      mapObj!["x"] = nil
       
-      let _ = Array(map_obj.keys)
-      let _ = Array(map_obj.values)
-      return map_obj["z"]!
+      let _: [String]? = Array(mapObj!.keys)
+      let _: [Int]? = Array(mapObj!.values)
+      return mapObj!["z"]!
   }
 
   func explicitTypeTest() -> Void {
@@ -48,18 +48,18 @@ class TestClass {
   func arrayTest() -> Void {
       //const c2 = new Class2();
       
-      var mutable_arr = [1, 2]
-      mutable_arr.append(3)
-      mutable_arr.append(4)
+      var mutableArr: [Int]? = [1, 2]
+      mutableArr!.append(3)
+      mutableArr!.append(4)
       // mutableArr.push(c2.property);
       // mutableArr.push(c2.child.property);
       // mutableArr.push(c2.child.child.property);
       
-      let constant_arr = [5, 6]
+      let constantArr: [Int]? = [5, 6]
       
       // some comment
       //   some comment line 2
-      for item in mutable_arr {
+      for item in mutableArr {
           print(item)
       }
       
@@ -67,8 +67,8 @@ class TestClass {
          multiline and stuff
       */
       var i = 0
-      while i < constant_arr.count {
-          print(constant_arr[i])
+      while i < constantArr!.count {
+          print(constantArr![i])
           i += 1
       }
   }

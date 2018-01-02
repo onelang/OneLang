@@ -8,9 +8,9 @@ class TestClass {
       z += x
       
       let a = String("abcdef"["abcdef".index("abcdef".startIndex, offsetBy: 2) ..< "abcdef".index("abcdef".startIndex, offsetBy: 4)])
-      let arr = "ab  cd ef".split(separator: " ", omittingEmptySubsequences: false)
+      let arr: [String]? = "ab  cd ef".split(separator: " ", omittingEmptySubsequences: false)
       
-      return z + "|" + x + y + "|" + a + "|" + arr[2]
+      return z + "|" + x + y + "|" + a + "|" + arr![2]
   }
 }
 

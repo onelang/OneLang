@@ -10,8 +10,8 @@ class ConstructorTest {
 
 class TestClass {
   func testMethod() -> Void {
-      let test = ConstructorTest(field1: 3)
-      print(test.field2)
+      let test: ConstructorTest? = ConstructorTest(field1: 3)
+      print(test!.field2)
   }
 }
 

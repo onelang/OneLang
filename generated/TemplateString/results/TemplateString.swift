@@ -1,13 +1,13 @@
 class TestClass {
   func testMethod() -> Void {
-      let str_val = "str"
+      let strVal = "str"
       let num = 1337
       let b = true
-      let result = "before \(str_val), num: \(num), true: \(b) after"
+      let result: Any? = "before \(strVal), num: \(num), true: \(b) after"
       print(result)
-      print("before \(str_val), num: \(num), true: \(b) after")
+      print("before \(strVal), num: \(num), true: \(b) after")
       
-      let result2 = "before " + str_val + ", num: " + num + ", true: " + b + " after"
+      let result2 = "before " + strVal + ", num: " + num + ", true: " + b + " after"
       print(result2)
   }
 }

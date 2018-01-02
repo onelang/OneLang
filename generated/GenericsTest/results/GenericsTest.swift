@@ -9,8 +9,8 @@ class MapX {
 
 class Main {
   func test() -> Void {
-      let map = MapX()
-      map.set(key: "hello", value: 3)
-      let _ = map.get(key: "hello2")
+      let map: MapX? = MapX()
+      map!.set(key: "hello", value: 3)
+      let _ = map!.get(key: "hello2")
   }
 }

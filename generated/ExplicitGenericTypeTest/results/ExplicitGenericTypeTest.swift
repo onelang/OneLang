@@ -1,10 +1,10 @@
 class TestClass {
   func testMethod() -> Void {
-      let result = [String]()
-      let map = [
+      let result: [String]? = [String]()
+      let map: OneMap? = [
         "x": 5
       ]
-      let keys = Array(map.keys)
+      let keys: [String]? = Array(map!.keys)
       print(result)
       print(keys)
   }

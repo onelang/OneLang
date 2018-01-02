@@ -1,19 +1,19 @@
 class TargetClass {
-  var instance_field: Int = 5
-  static var static_field: String = "hello"
+  var instanceField: Int = 5
+  static var staticField: String = "hello"
 
   class func staticMethod(arg1: String) -> String {
-      return "arg1 = \(arg1), staticField = \(TargetClass.static_field)"
+      return "arg1 = \(arg1), staticField = \(TargetClass.staticField)"
   }
 
   func instanceMethod() -> String {
-      return "instanceField = \(self.instance_field)"
+      return "instanceField = \(self.instanceField)"
   }
 }
 
 let _ = OneReflect.addClass(OneClass(name: "TargetClass"))
-  .addField(OneField("instance_field", false, "Int", { ($0 as! TargetClass).instance_field }, { ($0 as! TargetClass).instance_field = $1 as! Int }))
-  .addField(OneField("static_field", true, "String", { _ in TargetClass.static_field }, { TargetClass.static_field = $1 as! String }))
+  .addField(OneField("instanceField", false, "Int", { ($0 as! TargetClass).instanceField }, { ($0 as! TargetClass).instanceField = $1 as! Int }))
+  .addField(OneField("staticField", true, "String", { _ in TargetClass.staticField }, { TargetClass.staticField = $1 as! String }))
   .addMethod(OneMethod("staticMethod", true, "String", [
       OneMethodArgument("arg1", "String"),
     ],
@@ -45,16 +45,16 @@ class TestClass {
           print("method1 is null!")
           return
       }
-      let method1_result: Any? = method1!.call(obj: obj, args: [Any]())
-      print("instanceMethod: \(method1_result!)")
+      let method1Result: Any? = method1!.call(obj: obj, args: [Any]())
+      print("instanceMethod: \(method1Result!)")
       
       let method2: OneMethod? = cls!.getMethod(name: "staticMethod")
       if method2 == nil {
           print("method2 is null!")
           return
       }
-      let method2_result: Any? = method2!.call(obj: nil, args: ["arg1value"])
-      print("staticMethod: \(method2_result!)")
+      let method2Result: Any? = method2!.call(obj: nil, args: ["arg1value"])
+      print("staticMethod: \(method2Result!)")
       
       let field1: OneField? = cls!.getField(name: "instanceField")
       if field1 == nil {
@@ -62,8 +62,8 @@ class TestClass {
           return
       }
       field1!.setValue(obj: obj, value: 6)
-      let field1_new_val: Any? = field1!.getValue(obj: obj)
-      print("new instance field value: \(obj!.instance_field) == \(field1_new_val!)")
+      let field1NewVal: Any? = field1!.getValue(obj: obj)
+      print("new instance field value: \(obj!.instanceField) == \(field1NewVal!)")
       
       let field2: OneField? = cls!.getField(name: "staticField")
       if field2 == nil {
@@ -71,8 +71,8 @@ class TestClass {
           return
       }
       field2!.setValue(obj: nil, value: "bello")
-      let field2_new_val: Any? = field2!.getValue(obj: nil)
-      print("new static field value: \(TargetClass.static_field) == \(field2_new_val!)")
+      let field2NewVal: Any? = field2!.getValue(obj: nil)
+      print("new static field value: \(TargetClass.staticField) == \(field2NewVal!)")
   }
 }
 

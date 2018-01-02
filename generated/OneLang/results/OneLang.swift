@@ -1,16 +1,16 @@
 class TokenType {
-  static var end_token: String = "EndToken"
+  static var endToken: String = "EndToken"
   static var whitespace: String = "Whitespace"
   static var identifier: String = "Identifier"
-  static var operator_x: String = "Operator"
+  static var operatorX: String = "Operator"
 }
 
 class Token {
   var value: String
-  var is_operator: Bool
+  var isOperator: Bool
 
-  init(value: String, is_operator: Bool) {
-      self.is_operator = is_operator
+  init(value: String, isOperator: Bool) {
+      self.isOperator = isOperator
       self.value = value
   }
 }
@@ -24,7 +24,7 @@ class StringHelper {
 class Tokenizer {
   var offset: Int
   var text: String
-  var operators: [String]
+  var operators: [String]?
 
   init(text: String, operators: [String]) {
       self.operators = operators
@@ -34,35 +34,35 @@ class Tokenizer {
 
   func getTokenType() -> String {
       if self.offset >= self.text.count {
-          return TokenType.end_token
+          return TokenType.endToken
       }
       
       let c = String(self.text[self.text.index(self.text.startIndex, offsetBy: self.offset)])
-      return c == " " || c == "\n" || c == "\t" || c == "\r" ? TokenType.whitespace : ("A" <= c && c <= "Z") || ("a" <= c && c <= "z") || ("0" <= c && c <= "9") || c == "_" ? TokenType.identifier : TokenType.operator_x
+      return c == " " || c == "\n" || c == "\t" || c == "\r" ? TokenType.whitespace : ("A" <= c && c <= "Z") || ("a" <= c && c <= "z") || ("0" <= c && c <= "9") || c == "_" ? TokenType.identifier : TokenType.operatorX
   }
 
   func tokenize() -> [Token] {
-      var result = [Token]()
+      var result: [Token]? = [Token]()
       
       while self.offset < self.text.count {
-          let char_type = self.getTokenType()
+          let charType = self.getTokenType()
           
-          if char_type == TokenType.whitespace {
+          if charType == TokenType.whitespace {
               while self.getTokenType() == TokenType.whitespace {
                   self.offset += 1
               }
-          } else if char_type == TokenType.identifier {
-              let start_offset = self.offset
+          } else if charType == TokenType.identifier {
+              let startOffset = self.offset
               while self.getTokenType() == TokenType.identifier {
                   self.offset += 1
               }
-              let identifier = String(self.text[self.text.index(self.text.startIndex, offsetBy: start_offset) ..< self.text.index(self.text.startIndex, offsetBy: self.offset)])
-              result.append(Token(value: identifier, is_operator: false))
+              let identifier = String(self.text[self.text.index(self.text.startIndex, offsetBy: startOffset) ..< self.text.index(self.text.startIndex, offsetBy: self.offset)])
+              result!.append(Token(value: identifier, isOperator: false))
           } else {
               var op = ""
-              for curr_op in self.operators {
-                  if StringHelper.startsWithAtIndex(str: self.text, substr: curr_op, idx: self.offset) {
-                      op = curr_op
+              for currOp in self.operators {
+                  if StringHelper.startsWithAtIndex(str: self.text, substr: currOp, idx: self.offset) {
+                      op = currOp
                       break
                   }
               }
@@ -72,7 +72,7 @@ class Tokenizer {
               }
               
               self.offset += op.count
-              result.append(Token(value: op, is_operator: true))
+              result!.append(Token(value: op, isOperator: true))
           }
       }
       
@@ -82,16 +82,16 @@ class Tokenizer {
 
 class TestClass {
   func testMethod() -> Void {
-      let operators = ["<<", ">>", "++", "--", "==", "!=", "!", "<", ">", "=", "(", ")", "[", "]", "{", "}", ";", "+", "-", "*", "/", "&&", "&", "%", "||", "|", "^", ",", "."]
+      let operators: [String]? = ["<<", ">>", "++", "--", "==", "!=", "!", "<", ">", "=", "(", ")", "[", "]", "{", "}", ";", "+", "-", "*", "/", "&&", "&", "%", "||", "|", "^", ",", "."]
       
       let input = "hello * 5"
-      let tokenizer = Tokenizer(text: input, operators: operators)
-      let result = tokenizer.tokenize()
+      let tokenizer: Tokenizer? = Tokenizer(text: input, operators: operators)
+      let result: [Token]? = tokenizer!.tokenize()
       
       print("token count:")
-      print(result.count)
+      print(result!.count)
       for item in result {
-          print(item.value + "(" + (item.is_operator ? "op" : "id") + ")")
+          print(item!.value + "(" + (item!.isOperator ? "op" : "id") + ")")
       }
   }
 }
