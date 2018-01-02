@@ -5,6 +5,7 @@ OneFile::readText(fn: TsString): OneString [static]
   <no body>
 
 OneArray::length: TsNumber
+
 OneArray::add(item: T): void
   <no body>
 
@@ -33,6 +34,7 @@ OneMap::values(): OneArray<V>
   <no body>
 
 OneString::length: OneNumber
+
 OneString::substring(start: TsNumber, end: TsNumber): OneString
   <no body>
 
@@ -55,5 +57,40 @@ OneError::raise(message: TsString): void [static, throws]
   <no body>
 
 OneRegex::matchFromIndex(pattern: TsString, input: TsString, offset: TsNumber): OneArray<OneString> [static]
+  <no body>
+
+OneReflect::getClass(obj: any): OneClass [static]
+  <no body>
+
+OneReflect::getClassByName(name: any): OneClass [static]
+  <no body>
+
+OneClass::name: TsString
+
+OneClass::getField(name: TsString): OneField
+  <no body>
+
+OneClass::getMethod(name: TsString): OneMethod
+  <no body>
+
+OneClass::getFields(): TsArray<OneField>
+  <no body>
+
+OneClass::getMethods(): TsArray<OneMethod>
+  <no body>
+
+OneField::name: TsString
+OneField::isStatic: TsBoolean
+
+OneField::getValue(obj: any): any
+  <no body>
+
+OneField::setValue(obj: any, value: any): void
+  <no body>
+
+OneMethod::name: TsString
+OneMethod::isStatic: TsBoolean
+
+OneMethod::call(obj: any, args: TsArray<any>): any
   <no body>
 
