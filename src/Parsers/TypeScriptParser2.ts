@@ -13,9 +13,14 @@ export class TypeScriptParser2 {
         this.reader.errorCallback = error => {
             throw new Error(`[TypeScriptParser] ${error.message} at ${error.cursor.line}:${error.cursor.column} (context: ${this.context.join("/")})\n${this.reader.linePreview}`);
         };
-        this.expressionParser = new ExpressionParser(this.reader);
-        this.expressionParser.unaryPrehook = () => this.parseExpressionToken();
-        this.expressionParser.literalClassNames = { string: "TsString", numeric: "TsNumber" };
+        this.expressionParser = this.createExpressionParser(this.reader);
+    }
+
+    createExpressionParser(reader: Reader) {
+        const expressionParser = new ExpressionParser(reader);
+        expressionParser.unaryPrehook = () => this.parseExpressionToken();
+        expressionParser.literalClassNames = { string: "TsString", numeric: "TsNumber" };
+        return expressionParser;
     }
 
     parseType() {
@@ -225,6 +230,11 @@ export class TypeScriptParser2 {
         return typeArguments;
     }
 
+    parseExprStmtFromString(expression: string) {
+        const expr = this.createExpressionParser(new Reader(expression)).parse();
+        return <ast.ExpressionStatement> { stmtType: ast.StatementType.ExpressionStatement, expression: expr };
+    }
+
     parseClass() {
         const clsModifiers = this.reader.readModifiers(["declare"]);
         const declarationOnly = clsModifiers.includes("declare");
@@ -256,11 +266,12 @@ export class TypeScriptParser2 {
                     cls.methods[method.name] = method;
                 this.context.push(`M:${method.name}`);
 
+                const bodyPrefixStatements: ast.Statement[] = [];
                 if (!this.reader.readToken(")")) {
                     do {
                         const param = <ast.MethodParameter> {};
                         method.parameters.push(param);
-    
+
                         const isPublic = this.reader.readToken("public");
                         if (isPublic && !isConstructor)
                             this.reader.fail("public modifier is only allowed in constructor definition");
@@ -268,6 +279,13 @@ export class TypeScriptParser2 {
                         param.name = this.reader.expectIdentifier();
                         this.context.push(`arg:${param.name}`);
                         this.parseVarDeclTypeAndInit(param);
+
+                        if (isPublic) {
+                            const field = <ast.Field> { name: param.name, type: param.type, initializer: param.initializer };
+                            cls.fields[field.name] = field;
+                            bodyPrefixStatements.push(this.parseExprStmtFromString(`this.${param.name} = ${param.name}`));
+                        }
+
                         this.context.pop();
                     } while (this.reader.readToken(","));
     
@@ -282,6 +300,7 @@ export class TypeScriptParser2 {
                     method.body = this.parseBlock();
                     if (method.body === null)
                         this.reader.fail("method body is missing");
+                    method.body.statements = [...bodyPrefixStatements, ...method.body.statements];
                 }
 
                 this.context.pop();
