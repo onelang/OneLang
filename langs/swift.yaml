@@ -40,30 +40,30 @@ classes:
     type: "[{{typeArgs[0]}}]"
     fields:
       length:
-        template: "{{self}}.count"
+        template: "{{self}}!.count"
     methods:
       add:
         mutates: true
-        template: "{{self}}.append({{item}})"
+        template: "{{self}}!.append({{item}})"
       get:
-        template: "{{self}}[{{index}}]"
+        template: "{{self}}![{{index}}]"
       set:
-        template: "{{self}}[{{index}}] = {{value}}"
+        template: "{{self}}![{{index}}] = {{value}}"
   OneMap:
     methods:
       keys:
-        template: "Array({{self}}.keys)"
+        template: "Array({{self}}!.keys)"
       values:
-        template: "Array({{self}}.values)"
+        template: "Array({{self}}!.values)"
       remove:
         mutates: true
-        template: "{{self}}[{{key}}] = nil"
+        template: "{{self}}![{{key}}] = nil"
       hasKey:
-        template: "{{self}}[{{key}}] != nil"
+        template: "{{self}}![{{key}}] != nil"
       get:
-        template: "{{self}}[{{key}}]!"
+        template: "{{self}}![{{key}}]!"
       set:
-        template: "{{self}}[{{key}}] = {{value}}"
+        template: "{{self}}![{{key}}] = {{value}}"
   OneFile:
     methods:
       readText:
@@ -173,7 +173,7 @@ templates:
   genVar:
     args:
       - name: itemVar
-    template: "{{if itemVar.isMutable}}var{{else}}let{{/if}} {{if itemVar.isUnused}}_{{else}}{{itemVar.outName}}{{/if}}: {{genType(itemVar.type)}} = {{gen(itemVar.initializer)}}"
+    template: "{{if itemVar.isMutable}}var{{else}}let{{/if}} {{if itemVar.isUnused}}_{{else}}{{itemVar.outName}}{{/if}}{{if itemVar.type.canBeNull}}: {{genType(itemVar.type)}}{{/if}} = {{gen(itemVar.initializer)}}"
   genMethodArgs:
     args: 
       - name: methodArgs
