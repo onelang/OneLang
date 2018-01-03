@@ -58,7 +58,7 @@ export class TypeScriptParser2 {
 
     parseExpressionToken(): ast.Expression {
         if (this.reader.readToken("null")) {
-            return <ast.Literal> { exprKind: "Literal", literalType: "null" };
+            return <ast.Literal> { exprKind: "Literal", literalType: "null", value: "null" };
         } else if (this.reader.readToken("true")) {
             return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: true, literalClassName: "TsBoolean" };
         } else if (this.reader.readToken("false")) {
