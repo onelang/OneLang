@@ -1,4 +1,5 @@
 import * as one from "../../StdLib/one";
+import { deindent } from "../../Generator/Utils";
 
 export class Cursor {
     constructor(public offset: number, public line: number, public column: number, public lineStart: number, public lineEnd: number) { }
@@ -9,6 +10,7 @@ export class ParseError {
 }
 
 export class Reader {
+    wsOffset = 0;
     offset = 0;
     cursorSearch: CursorPositionSearch;
 
@@ -24,6 +26,7 @@ export class Reader {
     errorCallback: (error: ParseError) => void = null;
 
     wsLineCounter = 0;
+    moveWsOffset = true;
 
     constructor(public input: string) {
         this.cursorSearch = new CursorPositionSearch(input);
@@ -73,6 +76,8 @@ export class Reader {
         if (index === -1)
             return false;
         this.offset = index + token.length;
+        if (this.moveWsOffset)
+            this.wsOffset = this.offset;
         return true;
     }
 
@@ -99,7 +104,7 @@ export class Reader {
 
     readToken(token: string) {
         if (this.peekToken(token)) {
-            this.offset += token.length;
+            this.wsOffset = this.offset = this.offset + token.length;
             return true;
         }
         return false;
@@ -127,11 +132,12 @@ export class Reader {
     readRegex(pattern: string) {
         const matches = one.Regex.matchFromIndex(pattern, this.input, this.offset);
         if (matches !== null)
-            this.offset += matches[0].length;
+            this.wsOffset = this.offset = this.offset + matches[0].length;
         return matches;
     }
 
     skipWhitespaceAndComment() {
+        this.moveWsOffset = false;
         while (true) {
             this.skipWhitespace();
             if (this.input.startsWith(this.lineComment, this.offset)) {
@@ -143,13 +149,18 @@ export class Reader {
                 break;
             }
         }
+        this.moveWsOffset = true;
     }
 
     readLeadingTrivia() {
-        this.skipWhitespace();
-        const startOffset = this.offset;
         this.skipWhitespaceAndComment();
-        const result = this.input.substring(startOffset, this.offset);
+        const thisLineStart = this.input.lastIndexOf("\n", this.offset);
+        if (thisLineStart <= this.wsOffset)
+            return "";
+
+        let result = this.input.substring(this.wsOffset, thisLineStart + 1);
+        result = deindent(result);
+        this.wsOffset = thisLineStart;
         return result;
     }
 
