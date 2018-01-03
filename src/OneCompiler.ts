@@ -20,6 +20,7 @@ import { TriviaCommentTransform } from "./One/Transforms/TriviaCommentTransform"
 import { GenericTransformer, GenericTransformerFile } from "./One/Transforms/GenericTransformer";
 import { IncludesCollector } from "./One/Transforms/IncludesCollector";
 import { FillThrowsTransform } from "./One/Transforms/FillThrowsTransform";
+import { RemoveEmptyTemplateStringLiterals } from "./One/Transforms/RemoveEmptyTemplateStringLiterals";
 import { FixGenericAndEnumTypes } from "./One/Transforms/FixGenericAndEnumTypes";
 
 declare var YAML: any;
@@ -99,6 +100,7 @@ export class OneCompiler {
         this.schemaCtx.arrayType = "TsArray";
         this.schemaCtx.mapType = "TsMap";
 
+        new RemoveEmptyTemplateStringLiterals().process(this.schemaCtx.schema);
         new FixGenericAndEnumTypes().process(this.schemaCtx.schema);
         this.saveSchemaState(this.schemaCtx, `0_Original`);
         
