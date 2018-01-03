@@ -20,14 +20,14 @@ Token::isOperator: TsBoolean
 Token::constructor
   - ExpressionStatement
     - Binary: =
-      - PropertyAccess (.isOperator)
-        - Identifier: this
-      - Identifier: isOperator
-  - ExpressionStatement
-    - Binary: =
       - PropertyAccess (.value)
         - Identifier: this
       - Identifier: value
+  - ExpressionStatement
+    - Binary: =
+      - PropertyAccess (.isOperator)
+        - Identifier: this
+      - Identifier: isOperator
 
 StringHelper::startsWithAtIndex(str: TsString, substr: TsString, idx: TsNumber): TsBoolean [static]
   - Return
@@ -47,14 +47,14 @@ Tokenizer::operators: TsArray<TsString>
 Tokenizer::constructor
   - ExpressionStatement
     - Binary: =
-      - PropertyAccess (.operators)
-        - Identifier: this
-      - Identifier: operators
-  - ExpressionStatement
-    - Binary: =
       - PropertyAccess (.text)
         - Identifier: this
       - Identifier: text
+  - ExpressionStatement
+    - Binary: =
+      - PropertyAccess (.operators)
+        - Identifier: this
+      - Identifier: operators
   - ExpressionStatement
     - Binary: =
       - PropertyAccess (.offset)

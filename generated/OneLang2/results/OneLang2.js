@@ -9,8 +9,8 @@ const TokenKind = Object.freeze({
 
 class Token {
   constructor(kind, value) {
-      this.value = value;
       this.kind = kind;
+      this.value = value;
   }
 }
 
@@ -18,8 +18,8 @@ class ExprLangLexer {
   constructor(expression, operators) {
       this.offset = 0;
       this.tokens = [];
-      this.operators = operators;
       this.expression = expression;
+      this.operators = operators;
       if (!this.tryToReadNumber()) {
           this.tryToReadOperator();
           this.tryToReadLiteral();

@@ -10,8 +10,8 @@ public class Token
 
     public Token(TokenKind kind, string value)
     {
-        this.Value = value;
         this.Kind = kind;
+        this.Value = value;
     }
 }
 
@@ -24,8 +24,8 @@ public class ExprLangLexer
 
     public ExprLangLexer(string expression, List<string> operators)
     {
-        this.Operators = operators;
         this.Expression = expression;
+        this.Operators = operators;
         if (!this.TryToReadNumber())
         {
             this.TryToReadOperator();

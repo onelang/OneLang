@@ -15,8 +15,8 @@ class Token {
     string value;
 
     Token(TokenKind kind, string value) {
-        this->value = value;
         this->kind = kind;
+        this->value = value;
     }
 
   private:
@@ -30,8 +30,8 @@ class ExprLangLexer {
     vec<string> operators;
 
     ExprLangLexer(string expression, vec<string> operators) {
-        this->operators = operators;
         this->expression = expression;
+        this->operators = operators;
         if (!this->tryToReadNumber()) {
             this->tryToReadOperator();
             this->tryToReadLiteral();

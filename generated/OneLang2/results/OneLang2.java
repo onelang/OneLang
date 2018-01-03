@@ -9,8 +9,8 @@ class Token {
     public String value;
 
     public Token(TokenKind kind, String value) throws Exception {
-        this.value = value;
         this.kind = kind;
+        this.value = value;
     }
 }
 
@@ -21,8 +21,8 @@ class ExprLangLexer {
     public List<String> operators;
 
     public ExprLangLexer(String expression, List<String> operators) throws Exception {
-        this.operators = operators;
         this.expression = expression;
+        this.operators = operators;
         if (!this.tryToReadNumber()) {
             this.tryToReadOperator();
             this.tryToReadLiteral();

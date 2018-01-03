@@ -20,12 +20,12 @@ Token::isOperator: OneBoolean
 Token::constructor
   - ExpressionStatement
     - Binary: = [any]
-      - InstanceField (this): isOperator [OneBoolean]
-      - MethodArgument: isOperator [OneBoolean]
-  - ExpressionStatement
-    - Binary: = [any]
       - InstanceField (this): value [OneString]
       - MethodArgument: value [OneString]
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): isOperator [OneBoolean]
+      - MethodArgument: isOperator [OneBoolean]
 
 StringHelper::startsWithAtIndex(str: OneString, substr: OneString, idx: OneNumber): OneBoolean [static]
   - Return
@@ -47,12 +47,12 @@ Tokenizer::operators: OneArray<OneString>
 Tokenizer::constructor
   - ExpressionStatement
     - Binary: = [any]
-      - InstanceField (this): operators [OneArray<OneString>]
-      - MethodArgument: operators [OneArray<OneString>]
-  - ExpressionStatement
-    - Binary: = [any]
       - InstanceField (this): text [OneString]
       - MethodArgument: text [OneString]
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): operators [OneArray<OneString>]
+      - MethodArgument: operators [OneArray<OneString>]
   - ExpressionStatement
     - Binary: = [any]
       - InstanceField (this): offset [OneNumber]

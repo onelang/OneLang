@@ -6,12 +6,12 @@ Token::value: TsString
 Token::constructor
   - ExpressionStatement
     - Binary: = [any]
-      - InstanceField (this): value [TsString]
-      - MethodArgument: value [TsString]
-  - ExpressionStatement
-    - Binary: = [any]
       - InstanceField (this): kind [TokenKind (enum)]
       - MethodArgument: kind [TokenKind (enum)]
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): value [TsString]
+      - MethodArgument: value [TsString]
 
 ExprLangLexer::offset: TsNumber
 - Variable: offset [TsNumber]
@@ -27,12 +27,12 @@ ExprLangLexer::operators: TsArray<TsString>
 ExprLangLexer::constructor
   - ExpressionStatement
     - Binary: = [any]
-      - InstanceField (this): operators [TsArray<TsString>]
-      - MethodArgument: operators [TsArray<TsString>]
-  - ExpressionStatement
-    - Binary: = [any]
       - InstanceField (this): expression [TsString]
       - MethodArgument: expression [TsString]
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): operators [TsArray<TsString>]
+      - MethodArgument: operators [TsArray<TsString>]
   - If
     - Unary (prefix): ! [any]
       - Call [TsBoolean]

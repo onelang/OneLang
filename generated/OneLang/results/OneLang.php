@@ -12,8 +12,8 @@ class Token {
     public $is_operator;
 
     function __construct($value, $is_operator) {
-        $this->is_operator = $is_operator;
         $this->value = $value;
+        $this->is_operator = $is_operator;
     }
 }
 
@@ -29,8 +29,8 @@ class Tokenizer {
     public $operators;
 
     function __construct($text, $operators) {
-        $this->operators = $operators;
         $this->text = $text;
+        $this->operators = $operators;
         $this->offset = 0;
     }
 

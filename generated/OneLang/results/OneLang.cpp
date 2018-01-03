@@ -26,8 +26,8 @@ class Token {
     bool is_operator;
 
     Token(string value, bool is_operator) {
-        this->is_operator = is_operator;
         this->value = value;
+        this->is_operator = is_operator;
     }
 
   private:
@@ -49,8 +49,8 @@ class Tokenizer {
     vec<string> operators;
 
     Tokenizer(string text, vec<string> operators) {
-        this->operators = operators;
         this->text = text;
+        this->operators = operators;
         this->offset = 0;
     }
 

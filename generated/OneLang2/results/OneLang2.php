@@ -12,8 +12,8 @@ class Token {
     public $value;
 
     function __construct($kind, $value) {
-        $this->value = $value;
         $this->kind = $kind;
+        $this->value = $value;
     }
 }
 
@@ -24,8 +24,8 @@ class ExprLangLexer {
     public $operators;
 
     function __construct($expression, $operators) {
-        $this->operators = $operators;
         $this->expression = $expression;
+        $this->operators = $operators;
         if (!$this->tryToReadNumber()) {
             $this->tryToReadOperator();
             $this->tryToReadLiteral();

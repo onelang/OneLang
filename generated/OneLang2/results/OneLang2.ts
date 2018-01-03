@@ -12,8 +12,8 @@ class Token {
   value: string;
 
   constructor(kind: TokenKind, value: string) {
-      this.value = value;
       this.kind = kind;
+      this.value = value;
   }
 }
 
@@ -24,8 +24,8 @@ class ExprLangLexer {
   operators: OneArray;
 
   constructor(expression: string, operators: OneArray) {
-      this.operators = operators;
       this.expression = expression;
+      this.operators = operators;
       if (!this.tryToReadNumber()) {
           this.tryToReadOperator();
           this.tryToReadLiteral();

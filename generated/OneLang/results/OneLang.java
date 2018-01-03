@@ -14,8 +14,8 @@ class Token {
     public boolean isOperator;
 
     public Token(String value, boolean isOperator) throws Exception {
-        this.isOperator = isOperator;
         this.value = value;
+        this.isOperator = isOperator;
     }
 }
 
@@ -32,8 +32,8 @@ class Tokenizer {
     public List<String> operators;
 
     public Tokenizer(String text, List<String> operators) throws Exception {
-        this.operators = operators;
         this.text = text;
+        this.operators = operators;
         this.offset = 0;
     }
 

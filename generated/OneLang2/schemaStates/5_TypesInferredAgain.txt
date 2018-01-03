@@ -5,13 +5,13 @@ Token::value: OneString
 
 Token::constructor
   - ExpressionStatement
-    - Binary: = [OneString]
-      - InstanceField (this): value [OneString]
-      - MethodArgument: value [OneString]
-  - ExpressionStatement
     - Binary: = [any]
       - InstanceField (this): kind [TokenKind (enum)]
       - MethodArgument: kind [TokenKind (enum)]
+  - ExpressionStatement
+    - Binary: = [OneString]
+      - InstanceField (this): value [OneString]
+      - MethodArgument: value [OneString]
 
 ExprLangLexer::offset: OneNumber
 - Variable: offset [OneNumber]
@@ -26,13 +26,13 @@ ExprLangLexer::operators: OneArray<OneString>
 
 ExprLangLexer::constructor
   - ExpressionStatement
-    - Binary: = [any]
-      - InstanceField (this): operators [OneArray<OneString>]
-      - MethodArgument: operators [OneArray<OneString>]
-  - ExpressionStatement
     - Binary: = [OneString]
       - InstanceField (this): expression [OneString]
       - MethodArgument: expression [OneString]
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): operators [OneArray<OneString>]
+      - MethodArgument: operators [OneArray<OneString>]
   - If
     - Unary (prefix): ! [any]
       - Call [OneBoolean]

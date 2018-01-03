@@ -21,8 +21,8 @@ type Token struct {
 
 func NewToken(value string, isOperator bool) *Token {
     this := new(Token)
-    this.IsOperator = isOperator
     this.Value = value
+    this.IsOperator = isOperator
     return this
 }
 
@@ -46,8 +46,8 @@ type Tokenizer struct {
 
 func NewTokenizer(text string, operators []string) *Tokenizer {
     this := new(Tokenizer)
-    this.Operators = operators
     this.Text = text
+    this.Operators = operators
     this.Offset = 0
     return this
 }

@@ -8,8 +8,8 @@ TokenType.operator_x = "Operator";
 
 class Token:
     def __init__(self, value, is_operator):
-        self.is_operator = is_operator
         self.value = value
+        self.is_operator = is_operator
 
 class StringHelper:
     @staticmethod
@@ -18,8 +18,8 @@ class StringHelper:
 
 class Tokenizer:
     def __init__(self, text, operators):
-        self.operators = operators
         self.text = text
+        self.operators = operators
         self.offset = 0
 
     def get_token_type(self):

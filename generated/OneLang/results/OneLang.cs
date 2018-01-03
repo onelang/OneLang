@@ -16,8 +16,8 @@ public class Token
 
     public Token(string value, bool isOperator)
     {
-        this.IsOperator = isOperator;
         this.Value = value;
+        this.IsOperator = isOperator;
     }
 }
 
@@ -37,8 +37,8 @@ public class Tokenizer
 
     public Tokenizer(string text, List<string> operators)
     {
-        this.Operators = operators;
         this.Text = text;
+        this.Operators = operators;
         this.Offset = 0;
     }
 

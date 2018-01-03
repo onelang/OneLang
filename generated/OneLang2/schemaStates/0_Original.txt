@@ -6,14 +6,14 @@ Token::value: TsString
 Token::constructor
   - ExpressionStatement
     - Binary: =
-      - PropertyAccess (.value)
-        - Identifier: this
-      - Identifier: value
-  - ExpressionStatement
-    - Binary: =
       - PropertyAccess (.kind)
         - Identifier: this
       - Identifier: kind
+  - ExpressionStatement
+    - Binary: =
+      - PropertyAccess (.value)
+        - Identifier: this
+      - Identifier: value
 
 ExprLangLexer::offset: null
 - Variable: offset
@@ -29,14 +29,14 @@ ExprLangLexer::operators: TsArray<TsString>
 ExprLangLexer::constructor
   - ExpressionStatement
     - Binary: =
-      - PropertyAccess (.operators)
-        - Identifier: this
-      - Identifier: operators
-  - ExpressionStatement
-    - Binary: =
       - PropertyAccess (.expression)
         - Identifier: this
       - Identifier: expression
+  - ExpressionStatement
+    - Binary: =
+      - PropertyAccess (.operators)
+        - Identifier: this
+      - Identifier: operators
   - If
     - Unary (prefix): !
       - Call

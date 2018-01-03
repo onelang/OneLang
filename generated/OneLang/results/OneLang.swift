@@ -10,8 +10,8 @@ class Token {
   var isOperator: Bool
 
   init(value: String, isOperator: Bool) {
-      self.isOperator = isOperator
       self.value = value
+      self.isOperator = isOperator
   }
 }
 
@@ -27,8 +27,8 @@ class Tokenizer {
   var operators: [String]?
 
   init(text: String, operators: [String]) {
-      self.operators = operators
       self.text = text
+      self.operators = operators
       self.offset = 0
   }
 

@@ -17,8 +17,8 @@ class Token
   attr_accessor(:is_operator)
 
   def initialize(value, is_operator)
-      self.is_operator = is_operator
       self.value = value
+      self.is_operator = is_operator
   end
 end
 
@@ -37,8 +37,8 @@ class Tokenizer
   attr_accessor(:operators)
 
   def initialize(text, operators)
-      self.operators = operators
       self.text = text
+      self.operators = operators
       self.offset = 0
   end
 

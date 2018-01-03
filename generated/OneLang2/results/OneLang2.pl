@@ -20,8 +20,8 @@ sub new
     my $self = {};
     bless $self, $class;
     my ( $kind, $value ) = @_;
-    $self->{value} = $value;
     $self->{kind} = $kind;
+    $self->{value} = $value;
     return $self;
 }
 
@@ -35,8 +35,8 @@ sub new
     my ( $expression, $operators ) = @_;
     $self->{offset} = 0;
     $self->{tokens} = [];
-    $self->{operators} = $operators;
     $self->{expression} = $expression;
+    $self->{operators} = $operators;
     if (!$self->try_to_read_number()) {
         $self->try_to_read_operator();
         $self->try_to_read_literal();

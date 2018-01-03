@@ -19,8 +19,8 @@ type Token struct {
 
 func NewToken(kind TokenKind, value string) *Token {
     this := new(Token)
-    this.Value = value
     this.Kind = kind
+    this.Value = value
     return this
 }
 
@@ -35,8 +35,8 @@ func NewExprLangLexer(expression string, operators []string) *ExprLangLexer {
     this := new(ExprLangLexer)
     this.Offset = 0
     this.Tokens = []*Token{}
-    this.Operators = operators
     this.Expression = expression
+    this.Operators = operators
     if !this.TryToReadNumber() {
         this.TryToReadOperator()
         this.TryToReadLiteral()

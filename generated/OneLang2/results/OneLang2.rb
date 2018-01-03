@@ -12,8 +12,8 @@ class Token
   attr_accessor(:value)
 
   def initialize(kind, value)
-      self.value = value
       self.kind = kind
+      self.value = value
   end
 end
 
@@ -27,8 +27,8 @@ class ExprLangLexer
       @offset = 0
       @tokens = []
 
-      self.operators = operators
       self.expression = expression
+      self.operators = operators
       if !self.try_to_read_number()
           self.try_to_read_operator()
           self.try_to_read_literal()

@@ -10,8 +10,8 @@ class Token {
   isOperator: bool;
 
   constructor(value: string, isOperator: bool) {
-      this.isOperator = isOperator;
       this.value = value;
+      this.isOperator = isOperator;
   }
 }
 
@@ -27,8 +27,8 @@ class Tokenizer {
   operators: OneArray;
 
   constructor(text: string, operators: OneArray) {
-      this.operators = operators;
       this.text = text;
+      this.operators = operators;
       this.offset = 0;
   }
 

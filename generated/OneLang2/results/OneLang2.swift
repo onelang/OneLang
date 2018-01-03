@@ -9,8 +9,8 @@ class Token {
   var value: String
 
   init(kind: TokenKind, value: String) {
-      self.value = value
       self.kind = kind
+      self.value = value
   }
 }
 
@@ -21,8 +21,8 @@ class ExprLangLexer {
   var operators: [String]?
 
   init(expression: String, operators: [String]) {
-      self.operators = operators
       self.expression = expression
+      self.operators = operators
       if !(try self.tryToReadNumber()) {
           _ = self.tryToReadOperator()
           _ = try self.tryToReadLiteral()

@@ -20,12 +20,12 @@ Token::isOperator: TsBoolean
 Token::constructor
   - ExpressionStatement
     - Binary: = [any]
-      - InstanceField (this): isOperator [TsBoolean]
-      - MethodArgument: isOperator [TsBoolean]
-  - ExpressionStatement
-    - Binary: = [any]
       - InstanceField (this): value [TsString]
       - MethodArgument: value [TsString]
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): isOperator [TsBoolean]
+      - MethodArgument: isOperator [TsBoolean]
 
 StringHelper::startsWithAtIndex(str: TsString, substr: TsString, idx: TsNumber): TsBoolean [static]
   - Return
@@ -45,12 +45,12 @@ Tokenizer::operators: TsArray<TsString>
 Tokenizer::constructor
   - ExpressionStatement
     - Binary: = [any]
-      - InstanceField (this): operators [TsArray<TsString>]
-      - MethodArgument: operators [TsArray<TsString>]
-  - ExpressionStatement
-    - Binary: = [any]
       - InstanceField (this): text [TsString]
       - MethodArgument: text [TsString]
+  - ExpressionStatement
+    - Binary: = [any]
+      - InstanceField (this): operators [TsArray<TsString>]
+      - MethodArgument: operators [TsArray<TsString>]
   - ExpressionStatement
     - Binary: = [any]
       - InstanceField (this): offset [TsNumber]

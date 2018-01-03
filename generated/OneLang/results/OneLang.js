@@ -8,8 +8,8 @@ TokenType.operatorX = "Operator";
 
 class Token {
   constructor(value, isOperator) {
-      this.isOperator = isOperator;
       this.value = value;
+      this.isOperator = isOperator;
   }
 }
 
@@ -21,8 +21,8 @@ class StringHelper {
 
 class Tokenizer {
   constructor(text, operators) {
-      this.operators = operators;
       this.text = text;
+      this.operators = operators;
       this.offset = 0;
   }
 

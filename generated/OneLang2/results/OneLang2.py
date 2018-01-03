@@ -9,15 +9,15 @@ class TokenKind(Enum):
 
 class Token:
     def __init__(self, kind, value):
-        self.value = value
         self.kind = kind
+        self.value = value
 
 class ExprLangLexer:
     def __init__(self, expression, operators):
         self.offset = 0
         self.tokens = []
-        self.operators = operators
         self.expression = expression
+        self.operators = operators
         if not self.try_to_read_number():
             self.try_to_read_operator()
             self.try_to_read_literal()
