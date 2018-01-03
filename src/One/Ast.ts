@@ -124,6 +124,7 @@ export namespace OneAst {
         static Class(className: string, generics: Type[] = []) {
             if (!className)
                 throw new Error("expected className in Type.Class");
+
             const result = new Type(TypeKind.Class);
             result.className = className;
             result.typeArguments = generics;

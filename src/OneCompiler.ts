@@ -20,6 +20,7 @@ import { TriviaCommentTransform } from "./One/Transforms/TriviaCommentTransform"
 import { GenericTransformer, GenericTransformerFile } from "./One/Transforms/GenericTransformer";
 import { IncludesCollector } from "./One/Transforms/IncludesCollector";
 import { FillThrowsTransform } from "./One/Transforms/FillThrowsTransform";
+import { FixGenericAndEnumTypes } from "./One/Transforms/FixGenericAndEnumTypes";
 
 declare var YAML: any;
 
@@ -79,6 +80,7 @@ export class OneCompiler {
         stdlibSchema.sourceType = "stdlib";
 
         this.stdlibCtx = new SchemaContext(stdlibSchema, "stdlib");
+        new FixGenericAndEnumTypes().process(this.stdlibCtx.schema);
         this.saveSchemaState(this.stdlibCtx, "0_Original");
 
         this.stdlibCtx.ensureTransforms("fillMetaPath", "inferTypes");
@@ -86,6 +88,7 @@ export class OneCompiler {
         
         this.overlayCtx = new SchemaContext(overlaySchema, "overlay");
         this.overlayCtx.addDependencySchema(this.stdlibCtx);
+        new FixGenericAndEnumTypes().process(this.overlayCtx.schema);
         this.saveSchemaState(this.overlayCtx, "0_Original");
 
         this.overlayCtx.ensureTransforms("convertInlineThisRef", "fillMetaPath");
@@ -95,6 +98,8 @@ export class OneCompiler {
         // TODO: move to somewhere else...
         this.schemaCtx.arrayType = "TsArray";
         this.schemaCtx.mapType = "TsMap";
+
+        new FixGenericAndEnumTypes().process(this.schemaCtx.schema);
         this.saveSchemaState(this.schemaCtx, `0_Original`);
         
         this.genericTransformer.process(this.schemaCtx.schema);

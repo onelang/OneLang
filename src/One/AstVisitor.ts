@@ -6,6 +6,12 @@ export abstract class AstVisitor<TContext> {
         console.log(`[${thisClassName}]`, data);
     }
     
+    protected visitType(type: one.Type, context: TContext) {
+        if (type && type.isClass)
+            for (const typeArg of type.typeArguments)
+                this.visitType(typeArg, context);
+    }
+ 
     protected visitIdentifier(id: one.Identifier, context: TContext) { }
 
     protected visitReturnStatement(stmt: one.ReturnStatement, context: TContext) {
@@ -29,6 +35,7 @@ export abstract class AstVisitor<TContext> {
     }
 
     protected visitVariable(stmt: one.VariableBase, context: TContext) {
+        this.visitType(stmt.type, context);
     }
 
     protected visitVariableDeclaration(stmt: one.VariableDeclaration, context: TContext) {
@@ -237,6 +244,7 @@ export abstract class AstVisitor<TContext> {
 
     protected visitMethod(method: one.Method, context: TContext) {
         this.visitMethodLike(method, context);
+        this.visitType(method.returns, context);
     }
  
     protected visitConstructor(constructor: one.Constructor, context: TContext) {
@@ -251,7 +259,7 @@ export abstract class AstVisitor<TContext> {
         this.visitBlock(prop.getter, context);
         this.visitVariable(prop, context);
     }
- 
+
     protected visitClass(cls: one.Class, context: TContext) {
         if (cls.constructor)
             this.visitConstructor(cls.constructor, context);
