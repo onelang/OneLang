@@ -106,7 +106,7 @@ TestClass::testMethod(): void
       - PropertyAccess (.call)
         - Identifier: method2
       - Literal (null): "null"
-      - ArrayLiteral [TsArray<any>]
+      - Cast -> TsArray<any>
         - Literal (string): "arg1value"
   - ExpressionStatement
     - Call

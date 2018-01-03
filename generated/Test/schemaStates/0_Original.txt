@@ -12,11 +12,9 @@ TestClass::mapTest(): TsNumber
         - Identifier: mapObj
         - Literal (string): "z"
       - Literal (numeric): "9"
-  - ExpressionStatement
-    - Call
-      - PropertyAccess (.delete)
-        - Identifier: mapObj
-      - Literal (string): "x"
+  - Unset
+    - Identifier: mapObj
+    - Literal (string): "x"
   - Comment: "\n"
   - Variable: keysVar
     - Call
