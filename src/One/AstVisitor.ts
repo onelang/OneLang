@@ -5,9 +5,19 @@ export abstract class AstVisitor<TContext> {
         const thisClassName = (<any>this).constructor.name;
         console.log(`[${thisClassName}]`, data);
     }
+
+    protected visitNode(node: one.INode, context: TContext) {
+    }
+    
+    protected visitNamedItem(namedItem: one.NamedItem, context: TContext) {
+        this.visitNode(namedItem, context);
+    }
     
     protected visitType(type: one.Type, context: TContext) {
-        if (type && type.isClass)
+        if (!type) return;
+
+        this.visitNode(type, context);
+        if (type.isClass)
             for (const typeArg of type.typeArguments)
                 this.visitType(typeArg, context);
     }
@@ -35,6 +45,7 @@ export abstract class AstVisitor<TContext> {
     }
 
     protected visitVariable(stmt: one.VariableBase, context: TContext) {
+        this.visitNamedItem(stmt, context);
         this.visitType(stmt.type, context);
     }
 
@@ -74,6 +85,7 @@ export abstract class AstVisitor<TContext> {
     }
 
     protected visitStatement(statement: one.Statement, context: TContext) {
+        this.visitNode(statement, context);
         if (statement.stmtType === one.StatementType.Return) {
             return this.visitReturnStatement(<one.ReturnStatement> statement, context);
         } else if (statement.stmtType === one.StatementType.ExpressionStatement) {
@@ -100,6 +112,7 @@ export abstract class AstVisitor<TContext> {
     }
 
     protected visitBlock(block: one.Block, context: TContext) {
+        this.visitNamedItem(block, context);
         for (const statement of block.statements) {
             this.visitStatement(statement, context);
         }
@@ -189,6 +202,7 @@ export abstract class AstVisitor<TContext> {
     }
 
     protected visitExpression(expression: one.Expression, context: TContext) {
+        this.visitNode(expression, context);
         if (expression.exprKind === one.ExpressionKind.Binary) {
             return this.visitBinaryExpression(<one.BinaryExpression> expression, context);
         } else if (expression.exprKind === one.ExpressionKind.Call) {

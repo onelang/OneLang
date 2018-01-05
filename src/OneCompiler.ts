@@ -36,6 +36,7 @@ SchemaTransformer.instance.addTransform(new TriviaCommentTransform());
 SchemaTransformer.instance.addTransform(new InferCharacterTypes());
 
 export class OneCompiler {
+    parser: TypeScriptParser2;
     schemaCtx: SchemaContext;
     overlayCtx: SchemaContext;
     stdlibCtx: SchemaContext;
@@ -51,9 +52,10 @@ export class OneCompiler {
      */
     parseFromTS(programCode: string, overlayCode: string, stdlibCode: string, genericTransformerYaml: string) {
         overlayCode = overlayCode.replace(/^[^\n]*<reference.*stdlib.d.ts[^\n]*\n/, "");
-        const schema = TypeScriptParser2.parseFile(programCode.replace(/\r\n/g, "\n"));
-        const overlaySchema = TypeScriptParser2.parseFile(overlayCode.replace(/\r\n/g, "\n"));
-        const stdlibSchema = TypeScriptParser2.parseFile(stdlibCode.replace(/\r\n/g, "\n"));
+        this.parser = new TypeScriptParser2(programCode);
+        const schema = this.parser.parse();
+        const overlaySchema = TypeScriptParser2.parseFile(overlayCode);
+        const stdlibSchema = TypeScriptParser2.parseFile(stdlibCode);
         this.genericTransformer = new GenericTransformer(<GenericTransformerFile>
             YAML.parse(genericTransformerYaml));
 

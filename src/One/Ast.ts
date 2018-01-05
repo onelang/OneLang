@@ -1,4 +1,17 @@
 export namespace OneAst {
+    export interface TextRange {
+        start: number;
+        end: number;
+    }
+
+    export interface NodeData {
+        sourceRange: TextRange;
+    }
+
+    export interface INode {
+        node?: NodeData;
+    }
+
     export interface Schema {
         sourceType: "program"|"overlay"|"stdlib";
         meta: { transforms?: { [name: string]: boolean } };
@@ -7,7 +20,7 @@ export namespace OneAst {
         classes: { [name: string]: Class };
     }
 
-    export interface NamedItem {
+    export interface NamedItem extends INode {
         name?: string;
         outName?: string;
         metaPath?: string;
@@ -52,7 +65,7 @@ export namespace OneAst {
         Generics = "generics"
     }
 
-    export class Type {
+    export class Type implements INode {
         $objType = "Type";
         
         constructor(public typeKind: TypeKind = null) { }
@@ -63,6 +76,7 @@ export namespace OneAst {
         public classType: Type;
         public methodName: string;
         public genericsName: string;
+        node?: NodeData;        
 
         get isPrimitiveType() { return Type.PrimitiveTypeKinds.includes(this.typeKind); }
         get isClass() { return this.typeKind === TypeKind.Class; }
@@ -225,7 +239,7 @@ export namespace OneAst {
         EnumMemberReference = "EnumMemberReference",
     }
 
-    export interface Expression {
+    export interface Expression extends INode {
         exprKind: ExpressionKind;
         parentRef?: Expression|Statement;
         valueType?: Type;
@@ -397,7 +411,7 @@ export namespace OneAst {
         Unset = "Unset",
     }
 
-    export interface Statement {
+    export interface Statement extends INode {
         leadingTrivia?: string;
         leadingTrivia2?: string;
         parentRef?: Block;

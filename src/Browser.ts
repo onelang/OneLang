@@ -76,6 +76,7 @@ function escapeHtml(unsafe) {
 }
 
 class CompileHelper {
+    compiler: OneCompiler;
     astOverview: string;
     astJsonOverview: string;
 
@@ -102,19 +103,19 @@ class CompileHelper {
     }
 
     compile(programCode: string, langName: string) {
-        const compiler = new OneCompiler();
+        this.compiler = new OneCompiler();
 
         const overlayContent = layout.langs.typescript.overlayHandler.getContent();
         const oneStdLibContent = layout.oneStdLibHandler.getContent();
         const genericTransforms = layout.genericTransformsHandler.getContent();
         
-        compiler.parseFromTS(programCode, overlayContent, oneStdLibContent, genericTransforms);
-        this.astOverview = new OverviewGenerator().generate(compiler.schemaCtx);
-        this.astJsonOverview = AstHelper.toJson(compiler.schemaCtx.schema);
+        this.compiler.parseFromTS(programCode, overlayContent, oneStdLibContent, genericTransforms);
+        this.astOverview = new OverviewGenerator().generate(this.compiler.schemaCtx);
+        this.astJsonOverview = AstHelper.toJson(this.compiler.schemaCtx.schema);
 
         const lang = this.langConfigs[langName];
         const schemaYaml = layout.langs[langName].generatorHandler.getContent();
-        const code = compiler.compile(schemaYaml, langName, true);
+        const code = this.compiler.compile(schemaYaml, langName, true);
         return code;
     }
 }
@@ -181,6 +182,16 @@ function initLayout() {
             runLangUi(sourceLang, () => newContent);
         }
     };
+
+    window["layout"] = layout;
+
+    const inputEditor = layout.langs["typescript"].changeHandler.editor;
+    inputEditor.getSelection().on('changeCursor', () => { 
+        const index = inputEditor.getSession().getDocument().positionToIndex(inputEditor.getCursorPosition(), 0);
+        if (!compileHelper.compiler) return;
+        const node = compileHelper.compiler.parser.nodeManager.getNodeAtOffset(index);
+        console.log(index, node);
+    });
 }
 
 //runLangTests();

@@ -27,6 +27,7 @@ export class Reader {
 
     wsLineCounter = 0;
     moveWsOffset = true;
+    prevTokenOffset = -1;
 
     constructor(public input: string) {
         this.cursorSearch = new CursorPositionSearch(input);
@@ -104,6 +105,7 @@ export class Reader {
 
     readToken(token: string) {
         if (this.peekToken(token)) {
+            this.prevTokenOffset = this.offset;
             this.wsOffset = this.offset = this.offset + token.length;
             return true;
         }
@@ -131,8 +133,10 @@ export class Reader {
 
     readRegex(pattern: string) {
         const matches = one.Regex.matchFromIndex(pattern, this.input, this.offset);
-        if (matches !== null)
+        if (matches !== null) {
+            this.prevTokenOffset = this.offset;
             this.wsOffset = this.offset = this.offset + matches[0].length;
+        }
         return matches;
     }
 

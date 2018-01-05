@@ -1,14 +1,9 @@
 ﻿// #region Array
-interface IThenBy<T> {
-    thenBy(selector: ((item: T) => any)): IThenBy<T>;
-    sort(): T[];
-}
-
 // tslint:disable-next-line
 interface Array<T> {
     last(): T;
     remove(item: T): void;
-    sortBy(selector: ((item: T) => any)): IThenBy<T>;
+    sortBy(selector: (item: T) => any): T[];
     toDict(keySelector: ((item: T) => string)): { [key: string]: T; };
     toDict<T2>(keySelector: ((item: T) => string), valueSelector: ((item: T) => T2)): { [key: string]: T2; };
 }
@@ -34,6 +29,10 @@ Array.prototype.remove = function<T>(item: T) {
             this.splice(i, 1);
         }
     }
+};
+
+Array.prototype.sortBy = function<T>(selector: (item: T) => any): T[] {
+    return this.sort((a,b) => selector(a) - selector(b));
 };
 // #endregion
 

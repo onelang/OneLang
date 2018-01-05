@@ -1,5 +1,6 @@
 import { OneAst as ast } from "../../One/Ast";
 import { Reader } from "./Reader";
+import { NodeManager } from "./NodeManager";
 
 class Operator {
     constructor(public text: string, public precedence: number, public isBinary: boolean, public isRightAssoc: boolean, public isPostfix: boolean) { }
@@ -41,7 +42,7 @@ export class ExpressionParser {
 
     unaryPrehook: () => ast.Expression = null;
 
-    constructor(public reader: Reader) {
+    constructor(public reader: Reader, public nodeManager: NodeManager = null) {
         this.config = JSON.parse(JSON.stringify(ExpressionParser.defaultConfig));
         this.reconfigure();
     }
@@ -153,8 +154,15 @@ export class ExpressionParser {
         return args;
     }
 
+    addNode(node: ast.INode, start: number) {
+        if (this.nodeManager !== null)
+            this.nodeManager.addNode(node, start);
+    }
+
     parse(precedence = 0): ast.Expression {
+        const leftStart = this.reader.offset;
         let left = this.parseLeft();
+        this.addNode(left, leftStart);
 
         while(true) {
             const op = this.parseOperator();
@@ -183,10 +191,13 @@ export class ExpressionParser {
                 do {
                     const prop = this.reader.expectIdentifier("expected identifier as property name");
                     left = <ast.PropertyAccessExpression> { exprKind: "PropertyAccess", object: left, propertyName: prop };
+                    this.addNode(left, leftStart);
                 } while (this.reader.readToken("."));
             } else {
                 this.reader.fail(`parsing '${op.text}' is not yet implemented`);
             }
+
+            this.addNode(left, leftStart);
         }
 
         return left;

@@ -2,22 +2,25 @@ import * as one from "../StdLib/one";
 import { OneAst as ast } from "../One/Ast";
 import { Reader } from "./Common/Reader";
 import { ExpressionParser } from "./Common/ExpressionParser";
+import { NodeManager } from "./Common/NodeManager";
 
 export class TypeScriptParser2 {
     context: string[] = [];
     reader: Reader;
     expressionParser: ExpressionParser;
+    nodeManager: NodeManager;
 
     constructor(source: string) {
         this.reader = new Reader(source);
         this.reader.errorCallback = error => {
             throw new Error(`[TypeScriptParser] ${error.message} at ${error.cursor.line}:${error.cursor.column} (context: ${this.context.join("/")})\n${this.reader.linePreview}`);
         };
-        this.expressionParser = this.createExpressionParser(this.reader);
+        this.nodeManager = new NodeManager(this.reader);
+        this.expressionParser = this.createExpressionParser(this.reader, this.nodeManager);
     }
 
-    createExpressionParser(reader: Reader) {
-        const expressionParser = new ExpressionParser(reader);
+    createExpressionParser(reader: Reader, nodeManager: NodeManager = null) {
+        const expressionParser = new ExpressionParser(reader, nodeManager);
         expressionParser.unaryPrehook = () => this.parseExpressionToken();
         expressionParser.literalClassNames = { string: "TsString", numeric: "TsNumber" };
         return expressionParser;
@@ -25,6 +28,7 @@ export class TypeScriptParser2 {
 
     parseType() {
         const typeName = this.reader.expectIdentifier();
+        const startPos = this.reader.prevTokenOffset;
 
         let type: ast.Type;
         if (typeName === "string") {
@@ -46,8 +50,12 @@ export class TypeScriptParser2 {
             }
         }
 
-        while (this.reader.readToken("[]"))
+        this.nodeManager.addNode(type, startPos);
+        
+        while (this.reader.readToken("[]")) {
             type = ast.Type.Class("TsArray", [type]);
+            this.nodeManager.addNode(type, startPos);
+        }
 
         return type;
     }
@@ -127,6 +135,7 @@ export class TypeScriptParser2 {
         let statement: ast.Statement = null;
 
         const leadingTrivia = this.reader.readLeadingTrivia();
+        const startPos = this.reader.offset;
 
         let requiresClosing = true;
         const varDeclMatches = this.reader.readRegex("(const|let|var)\\b");
@@ -197,6 +206,8 @@ export class TypeScriptParser2 {
             this.reader.fail("unknown statement");
 
         statement.leadingTrivia = leadingTrivia;
+        this.nodeManager.addNode(statement, startPos);
+
         const statementLastLine = this.reader.wsLineCounter;
         if (!this.reader.readToken(";") && requiresClosing && this.reader.wsLineCounter === statementLastLine)
             this.reader.fail("statement is not closed");
@@ -206,6 +217,7 @@ export class TypeScriptParser2 {
 
     parseBlock() {
         if (!this.reader.readToken("{")) return null;
+        const startPos = this.reader.prevTokenOffset;
 
         const block = <ast.Block> { statements: [] };
         if (this.reader.readToken("}")) return block;
@@ -215,6 +227,7 @@ export class TypeScriptParser2 {
             block.statements.push(statement);
         } while(!this.reader.readToken("}"));
 
+        this.nodeManager.addNode(block, startPos);
         return block;
     }
 
