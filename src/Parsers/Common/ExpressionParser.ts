@@ -189,11 +189,8 @@ export class ExpressionParser {
                 this.reader.expectToken("]");
                 left = <ast.ElementAccessExpression> { exprKind: "ElementAccess", object: left, elementExpr };
             } else if (op.text === ".") {
-                do {
-                    const prop = this.reader.expectIdentifier("expected identifier as property name");
-                    left = <ast.PropertyAccessExpression> { exprKind: "PropertyAccess", object: left, propertyName: prop };
-                    this.addNode(left, leftStart);
-                } while (this.reader.readToken("."));
+                const prop = this.reader.expectIdentifier("expected identifier as property name");
+                left = <ast.PropertyAccessExpression> { exprKind: "PropertyAccess", object: left, propertyName: prop };
             } else {
                 this.reader.fail(`parsing '${op.text}' is not yet implemented`);
             }
