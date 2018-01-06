@@ -3,7 +3,7 @@ import { LangFileSchema } from "../Generator/LangFileSchema";
 
 export class AstHelper {
     static replaceProperties<T>(dest, src: T): T {
-        const keep = ["node"];
+        const keep = ["nodeData"];
         dest.__proto__ = (<any>src).__proto__;
 
         for (var i in dest)
