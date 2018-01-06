@@ -48,7 +48,7 @@ export class CallStackItem {
 }
 
 export class GeneratedNode {
-    node: one.INode;
+    astNode: one.INode;
     constructor(public text: string) { }
 }
 

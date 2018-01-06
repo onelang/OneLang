@@ -5,12 +5,12 @@ export namespace OneAst {
     }
 
     export interface NodeData {
-        sourceRange?: TextRange;
-        destRange?: TextRange;
+        sourceRange: TextRange;
+        destRanges: { [langName: string]: TextRange };
     }
 
     export interface INode {
-        node?: NodeData;
+        nodeData?: NodeData;
     }
 
     export interface Schema {
@@ -77,7 +77,7 @@ export namespace OneAst {
         public classType: Type;
         public methodName: string;
         public genericsName: string;
-        node?: NodeData;        
+        nodeData?: NodeData;        
 
         get isPrimitiveType() { return Type.PrimitiveTypeKinds.includes(this.typeKind); }
         get isClass() { return this.typeKind === TypeKind.Class; }

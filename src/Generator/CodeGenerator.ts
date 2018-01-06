@@ -294,8 +294,8 @@ class CodeGeneratorModel {
         }
 
         for (const item of genResult)
-            if (!item.node)
-                item.node = obj;
+            if (!item.astNode)
+                item.astNode = obj;
 
         return genResult;
     }
