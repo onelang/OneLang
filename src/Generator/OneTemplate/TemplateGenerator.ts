@@ -46,6 +46,10 @@ export class CallStackItem {
     constructor(public methodName: string, public vars: VariableContext) { }
 }
 
+export class GeneratedNode {
+    constructor(public text: string) { }
+}
+
 export class TemplateGenerator implements IMethodHandler {
     vm = new ExprLangVM();
     rootVars: VariableContext;
@@ -61,8 +65,8 @@ export class TemplateGenerator implements IMethodHandler {
         this.methods.addCallback(method.name, () => method);
     }
 
-    call(method: any, args: any[], thisObj: any, vars: VariableContext) {
-        let result;
+    call(method: any, args: any[], thisObj: any, vars: VariableContext): GeneratedNode[] {
+        let result: GeneratedNode[];
         this.callStack.push(new CallStackItem(<string> method.name, vars));
         
         if (method instanceof TemplateMethod) {
@@ -88,10 +92,30 @@ export class TemplateGenerator implements IMethodHandler {
         return node instanceof Ast.Line && node.items[0] instanceof Ast.TextNode;
     }
 
-    processBlockNode(node: Ast.Block, vars: VariableContext) {
+    join(items: GeneratedNode[], separator: string) {
+        const result: GeneratedNode[] = [];
+        for (const item of items) {
+            if (result.length !== 0)
+                result.push(new GeneratedNode(separator));
+            result.push(item);
+        }
+        return result;
+    }
+
+    joinLines(lines: GeneratedNode[][], separator: string) {
+        const result: GeneratedNode[] = [];
+        for (const line of lines) {
+            if (result.length !== 0)
+                result.push(new GeneratedNode(separator));
+            result.push(...line);
+        }
+        return result;
+    }
+
+    processBlockNode(node: Ast.Block, vars: VariableContext): GeneratedNode[] {
         const lines = node.lines.map(x => this.generateNode(x, vars));
         const removeWs = lines.map(x => x === null);
-        const resultLines = [];
+        const resultLines: GeneratedNode[][] = [];
         for (let iLine = 0; iLine < lines.length; iLine++) {
             const line = lines[iLine];
             if (line === null) continue;
@@ -113,22 +137,46 @@ export class TemplateGenerator implements IMethodHandler {
 
             resultLines.push(line);
         }
-        const result = resultLines.length > 0 ? resultLines.join("\n") : null;
+        const result = resultLines.length > 0 ? this.joinLines(resultLines, "\n") : null;
         return result;
     }
 
-    processLineNode(node: Ast.Line, vars: VariableContext) {
+    processLineNode(node: Ast.Line, vars: VariableContext): GeneratedNode[] {
         const lines = node.items.map(x => this.generateNode(x, vars));
         const nonNullLines = lines.filter(x => x !== null);
-        let result = lines.length === 0 ? "" : nonNullLines.length > 0 ? nonNullLines.join("") : null;
-        if (result !== null && node.indentLen > 0) {
-            const indent = " ".repeat(node.indentLen);
-            result = indent + result.replace(/\n/g, "\n" + indent);
+        
+        if (lines.length === 0) {
+            return [new GeneratedNode("")];
+        } else if (nonNullLines.length === 0) {
+            return null;
+        } else {
+            const hasIndent = node.indentLen > 0;
+            const indent = hasIndent ? new GeneratedNode(" ".repeat(node.indentLen)) : null;
+            
+            let result: GeneratedNode[] = [];
+            if (hasIndent)
+                result.push(indent);
+
+            for (const line of nonNullLines) {
+                if (hasIndent) {
+                    for (const item of line) {
+                        const parts = item.text.toString().split(/\n/g);
+                        if (parts.length === 1) {
+                            result.push(item);
+                        } else {
+                            result.push(new GeneratedNode(parts[0]), new GeneratedNode("\n"));
+                            result.push(...this.joinLines(parts.slice(1).map(x => [indent, new GeneratedNode(x)]), "\n"));
+                        }
+                    }
+                } else {
+                    result.push(...line);
+                }
+            }
+            return result;
         }
-        return result;
     }
 
-    processIfNode(node: Ast.IfNode, vars: VariableContext) {
+    processIfNode(node: Ast.IfNode, vars: VariableContext): GeneratedNode[] {
         let resultBlock = node.else;
 
         for (const item of node.items)
@@ -144,14 +192,14 @@ export class TemplateGenerator implements IMethodHandler {
         return result;
     }
 
-    processForNode(node: Ast.ForNode, vars: VariableContext) {
-        let result: string;
+    processForNode(node: Ast.ForNode, vars: VariableContext): GeneratedNode[] {
+        let result: GeneratedNode[];
 
         const array = <any[]> this.vm.evaluate(node.arrayExpr, vars);
         if (array.length === 0) {
             result = node.else ? this.generateNode(node.else, vars) : null;
         } else {
-            const lines = [];
+            const lines: GeneratedNode[][] = [];
 
             const varSource = new VariableSource(`for: ${node.itemName}`)
             const newVars = vars.inherit(varSource);
@@ -164,22 +212,23 @@ export class TemplateGenerator implements IMethodHandler {
                     lines.push(line);
             }
             
-            result = lines.length === 0 ? null : lines.join(node.separator);
+            result = lines.length === 0 ? null : this.joinLines(lines, node.separator);
         }
 
         return result;
     }
 
-    processTemplateNode(node: Ast.TemplateNode, vars: VariableContext) {
+    processTemplateNode(node: Ast.TemplateNode, vars: VariableContext): GeneratedNode[] {
         const result = this.vm.evaluate(node.expr, vars);
-        return result;
+        const tmplResult = typeof(result) === "object" ? <GeneratedNode[]> result : [new GeneratedNode(result)];
+        return tmplResult;
     }
 
-    generateNode(node: Ast.Node, vars: VariableContext) {
-        let result: string;
+    generateNode(node: Ast.Node, vars: VariableContext): GeneratedNode[] {
+        let result: GeneratedNode[];
 
         if (node instanceof Ast.TextNode) {
-            result = node.value;
+            result = [new GeneratedNode(node.value)];
         } else if (node instanceof Ast.TemplateNode) {
             result = this.processTemplateNode(node, vars);
         } else if (node instanceof Ast.Block) {
@@ -197,8 +246,9 @@ export class TemplateGenerator implements IMethodHandler {
         return result;
     }
 
-    generate(template: Ast.Node) {
-        const result = this.generateNode(template, this.rootVars);
+    generate(template: Ast.Node): string {
+        const nodes = this.generateNode(template, this.rootVars);
+        const result = nodes.map(x => x.text).join("");
         return result;
     }
 }

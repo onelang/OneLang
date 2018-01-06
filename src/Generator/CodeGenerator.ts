@@ -5,7 +5,7 @@ import { LangFileSchema } from "./LangFileSchema";
 import { deindent } from "./Utils";
 import { SchemaCaseConverter, CaseConverter } from "../One/Transforms/CaseConverter";
 import { IncludesCollector } from "../One/Transforms/IncludesCollector";
-import { TemplateMethod, TemplateGenerator } from "./OneTemplate/TemplateGenerator";
+import { TemplateMethod, TemplateGenerator, GeneratedNode } from "./OneTemplate/TemplateGenerator";
 import { VariableContext, VariableSource } from "./ExprLang/ExprLangVM";
 
 namespace CodeGeneratorModel {
@@ -46,7 +46,7 @@ namespace CodeGeneratorModel {
 }
 
 class TempVariable {
-    constructor(public name: string, public code: string) { }
+    constructor(public name: string, public code: GeneratedNode[]) { }
 }
 
 class TempVarHandler {
@@ -64,7 +64,7 @@ class TempVarHandler {
         return name;
     }
 
-    finish(code: string) {
+    finish(code: GeneratedNode[]) {
         const name = this.stack.pop();
         this.variables.push(new TempVariable(name, code));
         return name;
@@ -153,7 +153,7 @@ class CodeGeneratorModel {
 
     escapeQuotes(str: string) { return str.replace(/"/g, '\\"'); }
 
-    gen(obj: one.Statement|one.Expression, ...genArgs: any[]) {
+    gen(obj: one.Statement|one.Expression, ...genArgs: any[]): GeneratedNode[] {
         const objExpr = (<one.Expression> obj);
         const type = (<one.Statement>obj).stmtType || objExpr.exprKind;
         const isStatement = !!(<one.Statement>obj).stmtType;
@@ -278,10 +278,12 @@ class CodeGeneratorModel {
         let genResult = this.generator.call(genFunc, [obj, ...genArgs]);
 
         if (usingResult)
-            return this.tempVarHandler.finish(genResult);
+            return [new GeneratedNode(this.tempVarHandler.finish(genResult))];
 
-        if (isStatement && !this.tempVarHandler.empty)
-            genResult = this.tempVarHandler.reset().map(v => v.code).join("\n") + "\n" + genResult;
+        if (isStatement && !this.tempVarHandler.empty) {
+            const prefix = this.tempVarHandler.reset().map(v => v.code).join("\n") + "\n";
+            genResult = [new GeneratedNode(prefix), ...genResult];
+        }
 
         return genResult;
     }
@@ -341,7 +343,8 @@ export class CodeGenerator {
         if (type.isClass) {
             const classGen = this.model.generator.classGenerators[type.className];
             if (classGen) {
-                return this.call(classGen.typeGenerator, [type.typeArguments.map(x => this.getTypeName(x))]);
+                return this.call(classGen.typeGenerator, [type.typeArguments.map(x => this.getTypeName(x))])
+                    .map(x => x.text).join("");
             } else
                 return this.caseConverter.getName(type.className, "class");
         } else if (type.isEnum) {
@@ -499,7 +502,7 @@ export class CodeGenerator {
     }
 
     generate(callTestMethod: boolean) {
-        this.generatedCode = this.call(this.templates["main"], []);
+        this.generatedCode = this.call(this.templates["main"], []).map(x => x.text).join("");
         if (callTestMethod) {
             const testClassName = this.caseConverter.getName("test_class", "class");
             const testMethodName = this.caseConverter.getName("test_method", "method");
@@ -507,7 +510,7 @@ export class CodeGenerator {
             if (testClass) {
                 const testMethod = testClass.methods.find(x => x.name === testMethodName);
                 this.generatedCode += "\n\n" + this.call(this.templates["testGenerator"], 
-                    [testClassName, testMethodName, testMethod]);
+                    [testClassName, testMethodName, testMethod]).map(x => x.text).join("");
             }
         }
 
