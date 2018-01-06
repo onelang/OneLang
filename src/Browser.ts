@@ -200,9 +200,8 @@ function initLayout() {
         if (!node) return;
         const srcStartPos = document.indexToPosition(node.node.sourceRange.start, 0);
         const srcEndPos = document.indexToPosition(node.node.sourceRange.end, 0);
-        if (srcStartPos.row !== srcEndPos.row) return; // multiline select is confusing...
         const srcRange = <AceAjax.Range>new AceRange(srcStartPos.row, srcStartPos.column, srcEndPos.row, srcEndPos.column);
-        currMarker = session.addMarker(srcRange, "ace_step", "text", false);
+        currMarker = session.addMarker(srcRange, srcStartPos.row !== srcEndPos.row ? "ace_step_multiline" : "ace_step", "text", false);
         console.log(index, node);
     });
 }
