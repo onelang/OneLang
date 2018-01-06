@@ -56,6 +56,8 @@ export class Layout {
                     if (userChange)
                         this.onEditorChange(langName, newContent);
                 });
+                if (!isInput)
+                    langUi.generatedHandler = langUi.changeHandler;
             });
 
             if (isInput) {

@@ -152,6 +152,31 @@ async function runLangUi(langName: string, codeCallback: () => string) {
     }
 }
 
+let AceRange = require("ace/range").Range;
+class MarkerManager {
+    markerRemovalCallbacks: (() => void)[] = [];
+
+    addMarker(editor: AceAjax.Editor, start: number, end: number) {
+        const session = editor.getSession();
+        const document = session.getDocument();
+        const startPos = document.indexToPosition(start, 0);
+        const endPos = document.indexToPosition(end, 0);
+        const range = <AceAjax.Range>new AceRange(startPos.row, startPos.column, endPos.row, endPos.column);
+        const markerId = session.addMarker(range, startPos.row !== endPos.row ? "ace_step_multiline" : "ace_step", "text", false);
+        this.markerRemovalCallbacks.push(() => session.removeMarker(markerId));
+    }
+
+    removeMarkers() {
+        for (const cb of this.markerRemovalCallbacks)
+            cb();
+    }
+
+    getFileOffset(editor: AceAjax.Editor) {
+        return editor.getSession().getDocument().positionToIndex(editor.getCursorPosition(), 0);
+    }
+}
+let markerManager = new MarkerManager();
+
 function initLayout() {
     layout.init();
     layout.onEditorChange = async (sourceLang: string, newContent: string) => {
@@ -189,23 +214,19 @@ function initLayout() {
     window["layout"] = layout;
 
     const inputEditor = layout.langs["typescript"].changeHandler.editor;
-    const AceRange = require("ace/range").Range;
-    let currMarker = null;
 
-    inputEditor.getSelection().on('changeCursor', () => { 
-        const session = inputEditor.getSession();
-        const document = session.getDocument();
-        const index = document.positionToIndex(inputEditor.getCursorPosition(), 0);
+    inputEditor.getSelection().on('changeCursor', () => {
         if (!compileHelper.compiler) return;
+        markerManager.removeMarkers();
+        const index = markerManager.getFileOffset(inputEditor);
         const node = compileHelper.compiler.parser.nodeManager.getNodeAtOffset(index);
-        if (currMarker)
-            session.removeMarker(currMarker);
         if (!node) return;
-        const srcStartPos = document.indexToPosition(node.node.sourceRange.start, 0);
-        const srcEndPos = document.indexToPosition(node.node.sourceRange.end, 0);
-        const srcRange = <AceAjax.Range>new AceRange(srcStartPos.row, srcStartPos.column, srcEndPos.row, srcEndPos.column);
-        currMarker = session.addMarker(srcRange, srcStartPos.row !== srcEndPos.row ? "ace_step_multiline" : "ace_step", "text", false);
         console.log(index, node);
+        markerManager.addMarker(inputEditor, node.nodeData.sourceRange.start, node.nodeData.sourceRange.end);
+        for (const langName of Object.keys(node.nodeData.destRanges)) {
+            const dstRange = node.nodeData.destRanges[langName];
+            markerManager.addMarker(layout.langs[langName].generatedHandler.editor, dstRange.start, dstRange.end);
+        }
     });
 }
 
