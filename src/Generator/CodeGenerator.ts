@@ -151,7 +151,15 @@ class CodeGeneratorModel {
         return code;
     }
 
-    escapeQuotes(str: string) { return str.replace(/"/g, '\\"'); }
+    escapeQuotes(obj: GeneratedNode[]|string) { 
+        if (typeof obj === "string") {
+            return obj.replace(/"/g, '\\"');
+        } else {
+            for (const node of obj)
+                node.text = node.text.replace(/"/g, '\\"');
+            return obj;
+        }
+    }
 
     gen(obj: one.Statement|one.Expression, ...genArgs: any[]): GeneratedNode[] {
         const objExpr = (<one.Expression> obj);
