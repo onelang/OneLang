@@ -102,7 +102,7 @@ class CompileHelper {
         await Promise.all(tasks);
     }
 
-    compile(programCode: string, langName: string) {
+    setProgram(programCode: string) {
         this.compiler = new OneCompiler();
 
         const overlayContent = layout.langs.typescript.overlayHandler.getContent();
@@ -112,7 +112,9 @@ class CompileHelper {
         this.compiler.parseFromTS(programCode, overlayContent, oneStdLibContent, genericTransforms);
         this.astOverview = new OverviewGenerator().generate(this.compiler.schemaCtx);
         this.astJsonOverview = AstHelper.toJson(this.compiler.schemaCtx.schema);
+    }
 
+    compile(langName: string) {
         const lang = this.langConfigs[langName];
         const schemaYaml = layout.langs[langName].generatorHandler.getContent();
         const code = this.compiler.compile(schemaYaml, langName, true);
@@ -155,6 +157,7 @@ function initLayout() {
     layout.onEditorChange = async (sourceLang: string, newContent: string) => {
         console.log("editor change", sourceLang, newContent);
 
+        compileHelper.setProgram(newContent);
         if (sourceLang === "typescript") {
             const sourceLangPromise = new ExposedPromise<string>();
             await Promise.all(Object.keys(layout.langs).map(async langName => {
@@ -162,7 +165,7 @@ function initLayout() {
                 const isSourceLang = langName === sourceLang;
     
                 const result = await runLangUi(langName, () => {
-                    const code = compileHelper.compile(newContent, langName);
+                    const code = compileHelper.compile(langName);
                     (isSourceLang ? langUi.generatedHandler : langUi.changeHandler).setContent(code);
                     if (isSourceLang) {
                         langUi.astHandler.setContent(compileHelper.astOverview);
