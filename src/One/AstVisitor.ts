@@ -249,6 +249,8 @@ export abstract class AstVisitor<TContext> {
     }
 
     protected visitMethodLike(method: one.Method|one.Constructor, context: TContext) {
+        this.visitNamedItem(method, context);
+        
         if (method.body)
             this.visitBlock(method.body, context);
 
@@ -275,6 +277,8 @@ export abstract class AstVisitor<TContext> {
     }
 
     protected visitClass(cls: one.Class, context: TContext) {
+        this.visitNamedItem(cls, context);
+
         if (cls.constructor)
             this.visitConstructor(cls.constructor, context);
 
@@ -289,11 +293,15 @@ export abstract class AstVisitor<TContext> {
     }
  
     protected visitEnum(enum_: one.Enum, context: TContext) { 
+        this.visitNamedItem(enum_, context);
+
         for (var item of enum_.values)
             this.visitEnumMember(item, context);
     }
 
-    protected visitEnumMember(enumMember: one.EnumMember, context: TContext) { }
+    protected visitEnumMember(enumMember: one.EnumMember, context: TContext) {
+        this.visitNamedItem(enumMember, context);        
+    }
 
     protected visitSchema(schema: one.Schema, context: TContext) {
         for (const enum_ of Object.values(schema.enums))

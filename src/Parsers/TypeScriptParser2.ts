@@ -252,7 +252,8 @@ export class TypeScriptParser2 {
         const clsModifiers = this.reader.readModifiers(["declare"]);
         const declarationOnly = clsModifiers.includes("declare");
         if (!this.reader.readToken("class")) return null;
-
+        const clsStart = this.reader.prevTokenOffset;
+        
         const cls = <ast.Class> { methods: {}, fields: {}, properties: {}, constructor: null };
         cls.name = this.reader.expectIdentifier("expected identifier after 'class' keyword");
         this.context.push(`C:${cls.name}`);
@@ -263,6 +264,7 @@ export class TypeScriptParser2 {
         while(!this.reader.readToken("}")) {
             const leadingTrivia = this.reader.readLeadingTrivia();
 
+            const memberStart = this.reader.offset;
             const modifiers = this.reader.readModifiers(["static", "public", "protected", "private"]);
             const isStatic = modifiers.includes("static");
             const visibility = modifiers.includes("private") ? ast.Visibility.Private :
@@ -285,6 +287,7 @@ export class TypeScriptParser2 {
                         const param = <ast.MethodParameter> {};
                         method.parameters.push(param);
 
+                        const paramStart = this.reader.offset;
                         const isPublic = this.reader.readToken("public");
                         if (isPublic && !isConstructor)
                             this.reader.fail("public modifier is only allowed in constructor definition");
@@ -299,6 +302,7 @@ export class TypeScriptParser2 {
                             bodyPrefixStatements.push(this.parseExprStmtFromString(`this.${param.name} = ${param.name}`));
                         }
 
+                        this.nodeManager.addNode(param, paramStart);
                         this.context.pop();
                     } while (this.reader.readToken(","));
     
@@ -316,6 +320,7 @@ export class TypeScriptParser2 {
                     method.body.statements = [...bodyPrefixStatements, ...method.body.statements];
                 }
 
+                this.nodeManager.addNode(method, memberStart);
                 this.context.pop();
             } else if (memberName === "get" || memberName === "set") { // property
                 const propName = this.reader.expectIdentifier();
@@ -336,6 +341,7 @@ export class TypeScriptParser2 {
                     if (!prop.setter)
                         this.reader.fail("property setter body is missing");
                 }
+                this.nodeManager.addNode(prop, memberStart);
                 this.context.pop();
             } else {
                 const field = <ast.Field> { name: memberName, static: isStatic, visibility, leadingTrivia };
@@ -345,16 +351,19 @@ export class TypeScriptParser2 {
                 this.parseVarDeclTypeAndInit(field);
                 this.reader.expectToken(";");
 
+                this.nodeManager.addNode(field, memberStart);
                 this.context.pop();
             }
         }
 
+        this.nodeManager.addNode(cls, clsStart);
         this.context.pop();
         return cls;
     }
 
     parseEnum() {
         if (!this.reader.readToken("enum")) return null;
+        const enumStart = this.reader.prevTokenOffset;
 
         const enumObj = <ast.Enum> { values: [] };
         enumObj.name = this.reader.expectIdentifier("expected identifier after 'enum' keyword");
@@ -364,11 +373,14 @@ export class TypeScriptParser2 {
         if (!this.reader.readToken("}")) {
             do {
                 const enumMemberName = this.reader.expectIdentifier();
-                enumObj.values.push(<ast.EnumMember> { name: enumMemberName });
+                const enumMember = <ast.EnumMember> { name: enumMemberName };
+                this.nodeManager.addNode(enumMember, this.reader.prevTokenOffset);
+                enumObj.values.push(enumMember);
             } while(this.reader.readToken(","));
             this.reader.expectToken("}");
         }
 
+        this.nodeManager.addNode(enumObj, enumStart);
         this.context.pop();
         return enumObj;
     }
