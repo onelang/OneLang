@@ -277,7 +277,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
                 this.log("Tried to call non-static method via static reference");
 
             const newValue = new one.MethodReference(method, thisIsStatic ? null : expr.object);
-            const newExpr = AstHelper.replaceProperties(expr, newValue);
+            const newExpr = AstHelper.replaceProperties(expr, newValue, ["node"]);
             newExpr.valueType = one.Type.Method(objType, method.name);
             return;
         }
@@ -286,7 +286,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         if (fieldOrProp) {
             const newValue = fieldOrProp.static ? one.VariableRef.StaticField(expr.object, fieldOrProp) :
                 one.VariableRef.InstanceField(expr.object, fieldOrProp);
-            const newExpr = AstHelper.replaceProperties(expr, newValue);
+            const newExpr = AstHelper.replaceProperties(expr, newValue, ["node"]);
             newExpr.valueType = fieldOrProp.type;
             return;
         }

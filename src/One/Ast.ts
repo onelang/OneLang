@@ -131,10 +131,11 @@ export namespace OneAst {
         }
 
         static PrimitiveTypeKinds = [TypeKind.Void, TypeKind.Any, TypeKind.Null];
-        
-        static Void = new Type(TypeKind.Void);
-        static Any = new Type(TypeKind.Any);
-        static Null = new Type(TypeKind.Null);
+
+        // TODO / note: new instance is required because of NodeData... maybe rethink this approach?
+        static get Void() { return new Type(TypeKind.Void); }
+        static get Any() { return new Type(TypeKind.Any); }
+        static get Null() { return new Type(TypeKind.Null); }
         
         static Class(className: string, generics: Type[] = []) {
             if (!className)

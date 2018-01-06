@@ -2,11 +2,12 @@ import { OneAst as one } from "./Ast";
 import { LangFileSchema } from "../Generator/LangFileSchema";
 
 export class AstHelper {
-    static replaceProperties<T>(dest, src: T): T {
+    static replaceProperties<T>(dest, src: T, keep: string[] = []): T {
         dest.__proto__ = (<any>src).__proto__;
 
-        for (var i in dest) 
-            delete dest[i];
+        for (var i in dest)
+            if (!keep.includes(i))
+                delete dest[i];
 
         for (var i of Object.keys(src)) 
             dest[i] = src[i];

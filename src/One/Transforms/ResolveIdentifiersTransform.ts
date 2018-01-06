@@ -35,11 +35,11 @@ export class ResolveIdentifiersTransform extends AstVisitor<Context> implements 
         const cls = context.classes.classes[id.text];
         const enum_ = context.schemaCtx.schema.enums[id.text];
         if (variable) {
-            AstHelper.replaceProperties(id, variable);
+            AstHelper.replaceProperties(id, variable, ["node"]);
         } else if (cls) {
-            AstHelper.replaceProperties(id, new one.ClassReference(cls));
+            AstHelper.replaceProperties(id, new one.ClassReference(cls), ["node"]);
         } else if (enum_) {
-            AstHelper.replaceProperties(id, new one.EnumReference(enum_));
+            AstHelper.replaceProperties(id, new one.EnumReference(enum_), ["node"]);
         } else {
             this.log(`Could not find identifier: ${id.text}`);
         }
