@@ -516,10 +516,15 @@ export class CodeGenerator {
     generate(callTestMethod: boolean) {
         const generatedNodes = this.call(this.templates["main"], []);
         this.generatedCode = "";
-        for (const node of generatedNodes) {
-            if (node.node && node.node.node)
-                node.node.node.destRange = { start: this.generatedCode.length, end: this.generatedCode.length + node.text.length };
-            this.generatedCode += node.text;
+        for (const tmplNode of generatedNodes) {
+            if (tmplNode.astNode && tmplNode.astNode.nodeData) {
+                const nodeData = tmplNode.astNode.nodeData;
+                let dstRange = nodeData.destRanges[this.lang.name];
+                if (!dstRange)
+                    dstRange = nodeData.destRanges[this.lang.name] = { start: this.generatedCode.length, end: -1 };
+                dstRange.end = this.generatedCode.length + tmplNode.text.length;
+            }
+            this.generatedCode += tmplNode.text;
         }
 
         if (callTestMethod) {

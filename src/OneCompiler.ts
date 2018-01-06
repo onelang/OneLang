@@ -141,6 +141,7 @@ export class OneCompiler {
 
     getCodeGenerator(langCode: string, langName?: string) {
         const lang = <LangFileSchema.LangFile> YAML.parse(langCode);
+        lang.name = langName;
 
         this.preprocessLangFile(lang);
         new SchemaCaseConverter(lang.casing).process(this.schemaCtx.schema);

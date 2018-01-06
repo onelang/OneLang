@@ -61,6 +61,7 @@ export namespace LangFileSchema {
     }
 
     export interface LangFile {
+        name?: string;
         classes: { [name: string]: Class };
         operators: { [name: string]: Operator };
         extension: string;
