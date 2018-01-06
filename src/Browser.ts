@@ -156,7 +156,7 @@ let AceRange = require("ace/range").Range;
 class MarkerManager {
     markerRemovalCallbacks: (() => void)[] = [];
 
-    addMarker(editor: AceAjax.Editor, start: number, end: number) {
+    addMarker(editor: AceAjax.Editor, start: number, end: number, focus: boolean) {
         const session = editor.getSession();
         const document = session.getDocument();
         const startPos = document.indexToPosition(start, 0);
@@ -164,6 +164,10 @@ class MarkerManager {
         const range = <AceAjax.Range>new AceRange(startPos.row, startPos.column, endPos.row, endPos.column);
         const markerId = session.addMarker(range, startPos.row !== endPos.row ? "ace_step_multiline" : "ace_step", "text", false);
         this.markerRemovalCallbacks.push(() => session.removeMarker(markerId));
+        if (focus) {
+            (<any>editor).renderer.scrollCursorIntoView({ row: endPos.row, column: endPos.column + 3 }, 0.5);
+            (<any>editor).renderer.scrollCursorIntoView({ row: startPos.row, column: startPos.column - 3 }, 0.5);
+        }
     }
 
     removeMarkers() {
@@ -222,10 +226,10 @@ function initLayout() {
         const node = compileHelper.compiler.parser.nodeManager.getNodeAtOffset(index);
         if (!node) return;
         console.log(index, node);
-        markerManager.addMarker(inputEditor, node.nodeData.sourceRange.start, node.nodeData.sourceRange.end);
+        markerManager.addMarker(inputEditor, node.nodeData.sourceRange.start, node.nodeData.sourceRange.end, false);
         for (const langName of Object.keys(node.nodeData.destRanges)) {
             const dstRange = node.nodeData.destRanges[langName];
-            markerManager.addMarker(layout.langs[langName].generatedHandler.editor, dstRange.start, dstRange.end);
+            markerManager.addMarker(layout.langs[langName].generatedHandler.editor, dstRange.start, dstRange.end, true);
         }
     });
 }
