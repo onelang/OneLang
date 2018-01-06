@@ -3,6 +3,7 @@ import { ExprLangParser } from "../ExprLang/ExprLangParser";
 import { ExprLangVM, IMethodHandler, VariableContext, VariableSource } from "../ExprLang/ExprLangVM";
 import { TemplateAst as Ast } from "./TemplateAst";
 import { TemplateParser } from "./TemplateParser";
+import { OneAst as one } from "../../One/Ast";
 
 /**
  * Some important notes:
@@ -47,6 +48,7 @@ export class CallStackItem {
 }
 
 export class GeneratedNode {
+    node: one.INode;
     constructor(public text: string) { }
 }
 
@@ -220,8 +222,10 @@ export class TemplateGenerator implements IMethodHandler {
 
     processTemplateNode(node: Ast.TemplateNode, vars: VariableContext): GeneratedNode[] {
         const result = this.vm.evaluate(node.expr, vars);
-        const tmplResult = typeof(result) === "object" ? <GeneratedNode[]> result : [new GeneratedNode(result)];
-        return tmplResult;
+        if (typeof(result) === "object")
+            return <GeneratedNode[]> result;
+        const resNode = new GeneratedNode(result);
+        return [resNode];
     }
 
     generateNode(node: Ast.Node, vars: VariableContext): GeneratedNode[] {

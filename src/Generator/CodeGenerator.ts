@@ -278,12 +278,16 @@ class CodeGeneratorModel {
         let genResult = this.generator.call(genFunc, [obj, ...genArgs]);
 
         if (usingResult)
-            return [new GeneratedNode(this.tempVarHandler.finish(genResult))];
+            genResult = [new GeneratedNode(this.tempVarHandler.finish(genResult))];
 
-        if (isStatement && !this.tempVarHandler.empty) {
+        if (!usingResult && isStatement && !this.tempVarHandler.empty) {
             const prefix = this.tempVarHandler.reset().map(v => v.code).join("\n") + "\n";
             genResult = [new GeneratedNode(prefix), ...genResult];
         }
+
+        for (const item of genResult)
+            if (!item.node)
+                item.node = obj;
 
         return genResult;
     }
@@ -502,7 +506,14 @@ export class CodeGenerator {
     }
 
     generate(callTestMethod: boolean) {
-        this.generatedCode = this.call(this.templates["main"], []).map(x => x.text).join("");
+        const generatedNodes = this.call(this.templates["main"], []);
+        this.generatedCode = "";
+        for (const node of generatedNodes) {
+            if (node.node && node.node.node)
+                node.node.node.destRange = { start: this.generatedCode.length, end: this.generatedCode.length + node.text.length };
+            this.generatedCode += node.text;
+        }
+
         if (callTestMethod) {
             const testClassName = this.caseConverter.getName("test_class", "class");
             const testMethodName = this.caseConverter.getName("test_method", "method");

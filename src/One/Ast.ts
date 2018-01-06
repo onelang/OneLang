@@ -5,7 +5,8 @@ export namespace OneAst {
     }
 
     export interface NodeData {
-        sourceRange: TextRange;
+        sourceRange?: TextRange;
+        destRange?: TextRange;
     }
 
     export interface INode {
