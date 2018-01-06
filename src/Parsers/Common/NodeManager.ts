@@ -8,7 +8,7 @@ export class NodeManager {
     }
 
     addNode(node: ast.INode, start: number) {
-        node.node = { sourceRange: { start, end: this.reader.offset } };
+        node.node = { sourceRange: { start, end: this.reader.wsOffset } };
         this.nodes.push(node);
     }
 

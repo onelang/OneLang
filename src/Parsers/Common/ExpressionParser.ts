@@ -160,6 +160,7 @@ export class ExpressionParser {
     }
 
     parse(precedence = 0): ast.Expression {
+        this.reader.skipWhitespace();
         const leftStart = this.reader.offset;
         let left = this.parseLeft();
         this.addNode(left, leftStart);

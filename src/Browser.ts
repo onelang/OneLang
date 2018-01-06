@@ -186,10 +186,23 @@ function initLayout() {
     window["layout"] = layout;
 
     const inputEditor = layout.langs["typescript"].changeHandler.editor;
+    const AceRange = require("ace/range").Range;
+    let currMarker = null;
+
     inputEditor.getSelection().on('changeCursor', () => { 
-        const index = inputEditor.getSession().getDocument().positionToIndex(inputEditor.getCursorPosition(), 0);
+        const session = inputEditor.getSession();
+        const document = session.getDocument();
+        const index = document.positionToIndex(inputEditor.getCursorPosition(), 0);
         if (!compileHelper.compiler) return;
         const node = compileHelper.compiler.parser.nodeManager.getNodeAtOffset(index);
+        if (currMarker)
+            session.removeMarker(currMarker);
+        if (!node) return;
+        const srcStartPos = document.indexToPosition(node.node.sourceRange.start, 0);
+        const srcEndPos = document.indexToPosition(node.node.sourceRange.end, 0);
+        if (srcStartPos.row !== srcEndPos.row) return; // multiline select is confusing...
+        const srcRange = <AceAjax.Range>new AceRange(srcStartPos.row, srcStartPos.column, srcEndPos.row, srcEndPos.column);
+        currMarker = session.addMarker(srcRange, "ace_step", "text", false);
         console.log(index, node);
     });
 }
