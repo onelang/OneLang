@@ -1,12 +1,11 @@
 require("./Utils/Extensions.js");
-global["YAML"] = require('yamljs'); 
-const fs = require("fs");
 import { writeFile, readFile, jsonRequest } from "./Utils/NodeUtils";
 import { OneCompiler } from "./OneCompiler";
 import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs";
 import { LangFileSchema } from "./Generator/LangFileSchema";
 import { deindent } from "./Generator/Utils";
-
+const fs = require("fs");
+global["YAML"] = require('yamljs'); 
 declare var YAML;
 
 global["debugOn"] = false;
