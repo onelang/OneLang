@@ -1,6 +1,6 @@
 using System;
 
-public enum TestEnum { Item1, Item2 };
+public enum TestEnum { Item1, Item2 }
 
 public class TestClass
 {

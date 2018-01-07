@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public enum TokenKind { Number, Identifier, Operator_, String_ };
+public enum TokenKind { Number, Identifier, Operator_, String_ }
 
 public class Token
 {

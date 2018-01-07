@@ -1,6 +1,6 @@
 using System;
 
-public enum SomeKind { EnumVal0, EnumVal1, EnumVal2 };
+public enum SomeKind { EnumVal0, EnumVal1, EnumVal2 }
 
 public class TestClass
 {
