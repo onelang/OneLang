@@ -60,6 +60,10 @@ class CsString {
     }
 }
 
+class CsNumber {
+    _one: OneNumber;
+}
+
 class Console {
     static WriteLine(data: any) {
         OneConsole.print(data);
