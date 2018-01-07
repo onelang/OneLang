@@ -12,6 +12,11 @@ export class TypeScriptParser2 implements IParser {
     nodeManager: NodeManager;
 
     constructor(source: string) {
+        // TODO: less hacky way of removing test code?
+        source = source.split("\ntry {")[0];
+        source = source.replace(/one.Reflect.setupClass(.|\n)*?\n  \]\)\);\n/gm, "");
+        source = source.replace(/const (\w+) = require\('\1'\);\n/gm, "");
+
         this.reader = new Reader(source);
         this.reader.errorCallback = error => {
             throw new Error(`[TypeScriptParser] ${error.message} at ${error.cursor.line}:${error.cursor.column} (context: ${this.context.join("/")})\n${this.reader.linePreview}`);

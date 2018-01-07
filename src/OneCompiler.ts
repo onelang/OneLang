@@ -43,6 +43,7 @@ export class OneCompiler {
     overlayCtx: SchemaContext;
     stdlibCtx: SchemaContext;
     genericTransformer: GenericTransformer;
+    langName: string;
     arrayType: string;
     mapType: string;
 
@@ -55,6 +56,7 @@ export class OneCompiler {
      *  - stdlib: declaration (not implementation!) of OneLang methods (eg. map.keys) which are implemented in every language separately
      */
     parse(langName: string, programCode: string, overlayCode: string, stdlibCode: string, genericTransformerYaml: string) {
+        this.langName = langName;
         let arrayName: string;
         if (langName === "typescript") {
             overlayCode = overlayCode.replace(/^[^\n]*<reference.*stdlib.d.ts[^\n]*\n/, "");

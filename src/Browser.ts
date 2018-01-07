@@ -187,6 +187,7 @@ function initLayout() {
     layout.init();
     layout.onEditorChange = async (sourceLang: string, newContent: string) => {
         console.log("editor change", sourceLang, newContent);
+        markerManager.removeMarkers();
 
         if (inputLangs.includes(sourceLang)) {
             compileHelper.setProgram(newContent, sourceLang);
@@ -219,21 +220,23 @@ function initLayout() {
 
     window["layout"] = layout;
 
-    const inputEditor = layout.langs["typescript"].changeHandler.editor;
-
-    inputEditor.getSelection().on('changeCursor', () => {
-        if (!compileHelper.compiler) return;
-        markerManager.removeMarkers();
-        const index = markerManager.getFileOffset(inputEditor);
-        const node = compileHelper.compiler.parser.nodeManager.getNodeAtOffset(index);
-        if (!node) return;
-        console.log(index, node);
-        markerManager.addMarker(inputEditor, node.nodeData.sourceRange.start, node.nodeData.sourceRange.end, false);
-        for (const langName of Object.keys(node.nodeData.destRanges)) {
-            const dstRange = node.nodeData.destRanges[langName];
-            markerManager.addMarker(layout.langs[langName].generatedHandler.editor, dstRange.start, dstRange.end, true);
-        }
-    });
+    for (const inputLang_ of inputLangs) {
+        const inputLang = inputLang_;
+        const inputEditor = layout.langs[inputLang].changeHandler.editor;
+        inputEditor.getSelection().on('changeCursor', () => {
+            if (!compileHelper.compiler || compileHelper.compiler.langName !== inputLang) return;
+            markerManager.removeMarkers();
+            const index = markerManager.getFileOffset(inputEditor);
+            const node = compileHelper.compiler.parser.nodeManager.getNodeAtOffset(index);
+            if (!node) return;
+            console.log(index, node);
+            markerManager.addMarker(inputEditor, node.nodeData.sourceRange.start, node.nodeData.sourceRange.end, false);
+            for (const langName of Object.keys(node.nodeData.destRanges)) {
+                const dstRange = node.nodeData.destRanges[langName];
+                markerManager.addMarker(layout.langs[langName].generatedHandler.editor, dstRange.start, dstRange.end, true);
+            }
+        });
+    }
 }
 
 //runLangTests();

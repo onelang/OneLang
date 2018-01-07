@@ -28,18 +28,17 @@ export class Layout {
     oneStdLibHandler: EditorChangeHandler;
 
     errors: ClosableComponent;
-    first: boolean;
 
     constructor() {
     }
 
     init() {
         this.manager = new LayoutManager();
-        this.first = true;
         this.initLangComponents();
     }
 
     addLang(container: Container, title: string, langName: string, aceLang: string = null, isInput: boolean) {
+        const isTs = langName === "typescript";
         container.addTabs(tabs => {
             const langUi = <LangUi>{};
             tabs.addComponent(title, editorComp => {
@@ -58,11 +57,11 @@ export class Layout {
                     if (userChange)
                         this.onEditorChange(langName, newContent);
                 });
-                if (!isInput)
+                if (!isTs)
                     langUi.generatedHandler = langUi.changeHandler;
             });
 
-            if (isInput) {
+            if (isTs) {
                 tabs.addComponent("Generated", c => {
                     const editor = LayoutHelper.setupEditor(c, aceLang || langName);
                     langUi.generatedHandler = new EditorChangeHandler(editor, 500, (newContent, userChange) => {
@@ -100,7 +99,7 @@ export class Layout {
                 });
             }
 
-            if (this.first) {
+            if (isTs) {
                 // TODO: hack, these should be global tabs... on the other hand, the whole UI should be rethought, so whatever...
                 tabs.addComponent("Transforms", c => {
                     const editor = LayoutHelper.setupEditor(c, "yaml");
@@ -119,7 +118,6 @@ export class Layout {
 
             this.langs[langName] = langUi;            
         });
-        this.first = false;
         return container;
     }
 

@@ -27,12 +27,8 @@ for (const ext of ["ts", "cs"]) {
 
         let schema: ast.Schema;
         if (ext === "ts") {
-            content = content.split("\ntry {")[0]; // TODO: less hacky way of removing test code?
-            content = content.replace(/one.Reflect.setupClass(.|\n)*?\n  \]\)\);\n/gm, "");
-            content = content.replace(/const (\w+) = require\('\1'\);\n/gm, "");
             schema = TypeScriptParser2.parseFile(content);
         } else if (ext === "cs") {
-            content = content.split("\npublic class Program")[0]; // TODO: less hacky way of removing test code?
             schema = CSharpParser.parseFile(content);
         }
 
