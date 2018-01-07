@@ -24,6 +24,13 @@
             "name": "Launch ParserTest",
             "program": "${workspaceRoot}/js/Test/ParserTest.js",
             "sourceMaps": true
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch GeneratedCodeParser",
+            "program": "${workspaceRoot}/js/Test/GeneratedCodeParser.js",
+            "sourceMaps": true
         }
     ]
 }
