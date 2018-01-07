@@ -204,13 +204,15 @@ expressions:
   arrayLiteral:
     includes: [System.Collections.Generic]
     template: "new List<{{expr.typeArgs[0]}}> { {{genParams(expr.items)}} }"
-  mapLiteral: |- 
-    new Dictionary<{{expr.typeArgs[0]}}, {{expr.typeArgs[1]}}>
-    {
-      {{for prop in expr.properties|sep=",\n"}}
-        { "{{prop.name}}", {{gen(prop.initializer)}} }
-      {{/for}}
-    }
+  mapLiteral:
+    includes: [System.Collections.Generic]
+    template: |- 
+      new Dictionary<{{expr.typeArgs[0]}}, {{expr.typeArgs[1]}}>
+      {
+        {{for prop in expr.properties|sep=",\n"}}
+          { "{{prop.name}}", {{gen(prop.initializer)}} }
+        {{/for}}
+      }
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
   staticMethod: "{{expr.methodRef.classRef.outName}}.{{expr.methodRef.outName}}"
