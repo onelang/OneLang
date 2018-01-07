@@ -91,6 +91,7 @@ class CompileHelper {
         const tasks: Promise<void>[] = [];
 
         tasks.push(this.setContent(layout.langs.typescript.overlayHandler, `langs/NativeResolvers/typescript.ts`));
+        tasks.push(this.setContent(layout.langs.csharp.overlayHandler, `langs/NativeResolvers/csharp.ts`));
         tasks.push(this.setContent(layout.oneStdLibHandler, `langs/StdLibs/stdlib.d.ts`));
         tasks.push(this.setContent(layout.genericTransformsHandler, `langs/NativeResolvers/GenericTransforms.yaml`));
 
@@ -105,7 +106,7 @@ class CompileHelper {
     setProgram(programCode: string, langName: string) {
         this.compiler = new OneCompiler();
 
-        const overlayContent = layout.langs.typescript.overlayHandler.getContent();
+        const overlayContent = layout.langs[langName].overlayHandler.getContent();
         const oneStdLibContent = layout.oneStdLibHandler.getContent();
         const genericTransforms = layout.genericTransformsHandler.getContent();
         

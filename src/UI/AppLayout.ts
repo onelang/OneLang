@@ -28,12 +28,14 @@ export class Layout {
     oneStdLibHandler: EditorChangeHandler;
 
     errors: ClosableComponent;
+    first: boolean;
 
     constructor() {
     }
 
     init() {
         this.manager = new LayoutManager();
+        this.first = true;
         this.initLangComponents();
     }
 
@@ -96,7 +98,9 @@ export class Layout {
                     const editor = LayoutHelper.setupEditor(c, "json");
                     langUi.astJsonHandler = new EditorChangeHandler(editor, 500);
                 });
+            }
 
+            if (this.first) {
                 // TODO: hack, these should be global tabs... on the other hand, the whole UI should be rethought, so whatever...
                 tabs.addComponent("Transforms", c => {
                     const editor = LayoutHelper.setupEditor(c, "yaml");
@@ -115,6 +119,7 @@ export class Layout {
 
             this.langs[langName] = langUi;            
         });
+        this.first = false;
         return container;
     }
 
@@ -132,7 +137,7 @@ export class Layout {
                     .addInputLang("TypeScript", "typescript")
                     .addHorizontal(cols => this.setup(cols)
                         .addLang("C++", "cpp", "c_cpp")
-                        .addLang("C#", "csharp")
+                        .addInputLang("C#", "csharp")
                     )
                     .addHorizontal(cols => this.setup(cols)
                         .addLang("Go", "go", "swift")
