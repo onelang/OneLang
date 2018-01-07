@@ -86,6 +86,11 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         this.log(`No identifier should be here!`);
     }
 
+    protected visitTemplateString(expr: one.TemplateString, context: Context) {
+        super.visitTemplateString(expr, context);
+        expr.valueType = one.Type.Class("OneString");
+    }
+    
     protected syncTypes(type1: one.Type, type2: one.Type) {
         if (!type1 || type1.isAny || type1.isGenerics) return type2;
         if (!type2 || type2.isAny || type2.isGenerics) return type1;
