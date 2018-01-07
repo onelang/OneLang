@@ -22,6 +22,8 @@ import { IncludesCollector } from "./One/Transforms/IncludesCollector";
 import { FillThrowsTransform } from "./One/Transforms/FillThrowsTransform";
 import { RemoveEmptyTemplateStringLiterals } from "./One/Transforms/RemoveEmptyTemplateStringLiterals";
 import { FixGenericAndEnumTypes } from "./One/Transforms/FixGenericAndEnumTypes";
+import { IParser } from "./Parsers/Common/IParser";
+import { CSharpParser } from "./Parsers/CSharpParser";
 
 declare var YAML: any;
 
@@ -36,7 +38,7 @@ SchemaTransformer.instance.addTransform(new TriviaCommentTransform());
 SchemaTransformer.instance.addTransform(new InferCharacterTypes());
 
 export class OneCompiler {
-    parser: TypeScriptParser2;
+    parser: IParser;
     schemaCtx: SchemaContext;
     overlayCtx: SchemaContext;
     stdlibCtx: SchemaContext;
@@ -50,9 +52,19 @@ export class OneCompiler {
      *  - overlay: helper classes which map the input language's built-in methods / properties to OneLang methods (eg. Object.keys(map) -> map.keys())
      *  - stdlib: declaration (not implementation!) of OneLang methods (eg. map.keys) which are implemented in every language separately
      */
-    parseFromTS(programCode: string, overlayCode: string, stdlibCode: string, genericTransformerYaml: string) {
-        overlayCode = overlayCode.replace(/^[^\n]*<reference.*stdlib.d.ts[^\n]*\n/, "");
-        this.parser = new TypeScriptParser2(programCode);
+    parse(langName: string, programCode: string, overlayCode: string, stdlibCode: string, genericTransformerYaml: string) {
+        let arrayName: string;
+        if (langName === "typescript") {
+            overlayCode = overlayCode.replace(/^[^\n]*<reference.*stdlib.d.ts[^\n]*\n/, "");
+            this.parser = new TypeScriptParser2(programCode);
+            arrayName = "TsArray";
+        } else if (langName === "csharp") {
+            this.parser = new CSharpParser(programCode);
+            arrayName = "CsArray";
+        } else {
+            throw new Error(`[OneCompiler] Unsupported language: ${langName}`);
+        }
+
         const schema = this.parser.parse();
         const overlaySchema = TypeScriptParser2.parseFile(overlayCode);
         const stdlibSchema = TypeScriptParser2.parseFile(stdlibCode);
@@ -60,7 +72,7 @@ export class OneCompiler {
             YAML.parse(genericTransformerYaml));
 
         // TODO: hack
-        overlaySchema.classes["TsArray"].meta = { iterable: true };
+        overlaySchema.classes[arrayName].meta = { iterable: true };
         stdlibSchema.classes["OneArray"].meta = { iterable: true };
         stdlibSchema.classes["OneError"].methods["raise"].throws = true;
         

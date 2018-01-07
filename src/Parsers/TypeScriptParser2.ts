@@ -3,8 +3,9 @@ import { OneAst as ast } from "../One/Ast";
 import { Reader } from "./Common/Reader";
 import { ExpressionParser } from "./Common/ExpressionParser";
 import { NodeManager } from "./Common/NodeManager";
+import { IParser } from "./Common/IParser";
 
-export class TypeScriptParser2 {
+export class TypeScriptParser2 implements IParser {
     context: string[] = [];
     reader: Reader;
     expressionParser: ExpressionParser;

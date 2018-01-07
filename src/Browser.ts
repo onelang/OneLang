@@ -102,14 +102,14 @@ class CompileHelper {
         await Promise.all(tasks);
     }
 
-    setProgram(programCode: string) {
+    setProgram(programCode: string, langName: string) {
         this.compiler = new OneCompiler();
 
         const overlayContent = layout.langs.typescript.overlayHandler.getContent();
         const oneStdLibContent = layout.oneStdLibHandler.getContent();
         const genericTransforms = layout.genericTransformsHandler.getContent();
         
-        this.compiler.parseFromTS(programCode, overlayContent, oneStdLibContent, genericTransforms);
+        this.compiler.parse(langName, programCode, overlayContent, oneStdLibContent, genericTransforms);
         this.astOverview = new OverviewGenerator().generate(this.compiler.schemaCtx);
         this.astJsonOverview = AstHelper.toJson(this.compiler.schemaCtx.schema);
     }
@@ -182,12 +182,13 @@ class MarkerManager {
 let markerManager = new MarkerManager();
 
 function initLayout() {
+    const inputLangs = ["typescript", "csharp"];
     layout.init();
     layout.onEditorChange = async (sourceLang: string, newContent: string) => {
         console.log("editor change", sourceLang, newContent);
 
-        if (sourceLang === "typescript") {
-            compileHelper.setProgram(newContent);
+        if (inputLangs.includes(sourceLang)) {
+            compileHelper.setProgram(newContent, sourceLang);
             const sourceLangPromise = new ExposedPromise<string>();
             await Promise.all(Object.keys(layout.langs).map(async langName => {
                 const langUi = layout.langs[langName];

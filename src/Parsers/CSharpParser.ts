@@ -3,14 +3,18 @@ import { OneAst as ast } from "../One/Ast";
 import { Reader } from "./Common/Reader";
 import { ExpressionParser } from "./Common/ExpressionParser";
 import { NodeManager } from "./Common/NodeManager";
+import { IParser } from "./Common/IParser";
 
-export class CSharpParser {
+export class CSharpParser implements IParser {
     context: string[] = [];
     reader: Reader;
     expressionParser: ExpressionParser;
     nodeManager: NodeManager;
 
     constructor(source: string) {
+        // TODO: less hacky way of removing test code?
+        source = source.split("\npublic class Program")[0];
+
         this.reader = new Reader(source);
         this.reader.errorCallback = error => {
             throw new Error(`[CSharpParser] ${error.message} at ${error.cursor.line}:${error.cursor.column} (context: ${this.context.join("/")})\n${this.reader.linePreview}`);

@@ -29,7 +29,7 @@ for (const prgName of prgNames) {
     const overlayCode = readFile(`langs/NativeResolvers/typescript.ts`);
     const stdlibCode = readFile(`langs/StdLibs/stdlib.d.ts`);
     const genericTransforms = readFile(`langs/NativeResolvers/GenericTransforms.yaml`);
-    compiler.parseFromTS(programCode, overlayCode, stdlibCode, genericTransforms);
+    compiler.parse("typescript", programCode, overlayCode, stdlibCode, genericTransforms);
     
     //const csharpLang = <LangFileSchema.LangFile> YAML.parse(readFile(`langs/csharp.yaml`));
     //const template = new Template(csharpLang.expressions["templateString"]);
