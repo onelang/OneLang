@@ -190,7 +190,7 @@ expressions:
   variableDeclaration: "{{genVar(expr)}};"
   new: |-
     new {{gen(expr.cls)}}
-    {{if expr.typeArguments|inline}}
+    {{if expr.typeArguments.length > 0|inline}}
       <
       {{for arg in expr.typeArguments|inline sep=", "}}
         {{typeName(arg)}}
