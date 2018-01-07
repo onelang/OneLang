@@ -368,7 +368,7 @@ export class CodeGenerator {
         } else if (type.isEnum) {
             return this.caseConverter.getName(type.enumName, "enum");
         } else if (type.isGenerics) {
-            return type.genericsName;
+            return this.lang.genericsOverride ? this.lang.genericsOverride : type.genericsName;
         } else {
             return this.lang.primitiveTypes ? this.lang.primitiveTypes[type.typeKind] : type.typeKind.toString();
         }
@@ -460,6 +460,7 @@ export class CodeGenerator {
                 name: cls.outName,
                 methods: methods,
                 constructor,
+                typeArguments: cls.typeArguments && cls.typeArguments.length > 0 ? cls.typeArguments : null,
                 // TODO: hack
                 needsConstructor: constructor !== null || fields.some(x => x.visibility === "public" && !x.static && !!x.initializer),
                 reflect: (cls.leadingTrivia||"").includes("@reflect"), // TODO: replace this with real attribute/decorator handling

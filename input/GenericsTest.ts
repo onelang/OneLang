@@ -1,12 +1,14 @@
 class MapX<K, V> {
-    set(key: K, value: V) { }
-    get(key: K): V { return null; }
+    value: V;
+    set(key: K, value: V) { this.value = value; }
+    get(key: K): V { return this.value; }
 }
 
-class Main {
-    test() {
-        const map = new MapX<string, number>();
-        map.set("hello", 3);
-        const numValue = map.get("hello2");
+class TestClass {
+    testMethod() {
+        const mapX = new MapX<string, number>();
+        mapX.set("hello", 3);
+        const numValue = mapX.get("hello2");
+        console.log(`${numValue}`);
     }
 }

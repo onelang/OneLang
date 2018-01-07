@@ -113,6 +113,14 @@ templates:
 
     {{for class in classes|sep=\n\n}}
       public class {{class.name}}
+      {{if class.typeArguments|inline}}
+        <
+        {{for arg in class.typeArguments|inline sep=", "}}
+          {{arg}}
+        {{/for}}
+        >
+      {{/if}}
+
       {
           {{if class.reflect}}
             static {{class.name}}()
@@ -180,7 +188,16 @@ expressions:
   throw: "throw {{gen(expr.expression)}};"
   parenthesized: "({{gen(expr.expression)}})"
   variableDeclaration: "{{genVar(expr)}};"
-  new: "new {{gen(expr.cls)}}({{genParams(expr.arguments)}})"
+  new: |-
+    new {{gen(expr.cls)}}
+    {{if expr.typeArguments|inline}}
+      <
+      {{for arg in expr.typeArguments|inline sep=", "}}
+        {{typeName(arg)}}
+      {{/for}}
+      >
+    {{/if}}
+    ({{genParams(expr.arguments)}})
   classReference: "{{expr.classRef.outName}}"
   enumReference: "{{expr.enumRef.outName}}"
   enumMemberReference: "{{expr.enumRef.outName}}.{{expr.enumMemberRef.outName}}"

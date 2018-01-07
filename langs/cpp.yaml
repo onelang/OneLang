@@ -109,6 +109,13 @@ templates:
     {{/for}}
 
     {{for class in classes|sep=\n\n}}
+      {{if class.typeArguments}}
+        template<
+        {{for arg in class.typeArguments|inline sep=", "}}
+          typename {{arg}}
+        {{/for}}
+        >
+      {{/if}}
       class {{class.name}}{{if class.reflect}} : public ReflectedClass{{/if}} {
         public:
           {{genFields(class.publicFields)}}
@@ -256,7 +263,17 @@ expressions:
   numericLiteral: "{{expr.value}}"
   nullLiteral: "nullptr"
   variableDeclaration: "{{genVar(expr)}};"
-  new: "make_shared<{{gen(expr.cls)}}>({{genParams(expr.arguments)}})"
+  new: |-
+    make_shared<{{gen(expr.cls)}}
+      {{if expr.typeArguments|inline}}
+        <
+        {{for arg in expr.typeArguments|inline sep=", "}}
+          {{typeName(arg)}}
+        {{/for}}
+        >
+      {{/if}}
+    >({{genParams(expr.arguments)}})
+
   classReference: "{{expr.classRef.outName}}"
   enumReference: "{{expr.enumRef.outName}}"
   enumMemberReference: "{{expr.enumRef.outName}}::{{expr.enumMemberRef.outName}}"

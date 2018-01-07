@@ -73,6 +73,7 @@ export namespace LangFileSchema {
             number: string;
             any: string;
         };
+        genericsOverride?: string;
         templates: Templates;
         includes: string[];
         expressions: { [name: string]: string|TemplateObj };

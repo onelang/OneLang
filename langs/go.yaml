@@ -10,6 +10,7 @@ casing: # based on https://golang.org/doc/effective_go.html#mixed-caps
 primitiveTypes:
   void: ""
   any: "interface{}"
+genericsOverride: interface{}
 classes:
   OneString:
     type: string
