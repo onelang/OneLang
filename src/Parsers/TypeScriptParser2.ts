@@ -191,6 +191,9 @@ export class TypeScriptParser2 {
         } else if (this.reader.readToken("return")) {
             const returnStmt = statement = <ast.ReturnStatement> { stmtType: ast.StatementType.Return };
             returnStmt.expression = this.reader.peekToken(";") ? null : this.parseExpression();
+        } else if (this.reader.readToken("throw")) {
+            const throwStmt = statement = <ast.ThrowStatement> { stmtType: ast.StatementType.Throw };
+            throwStmt.expression = this.parseExpression();
         } else if (this.reader.readToken("break")) {
             statement = <ast.Statement> { stmtType: ast.StatementType.Break };
         } else {
@@ -373,10 +376,15 @@ export class TypeScriptParser2 {
         this.reader.expectToken("{");
         if (!this.reader.readToken("}")) {
             do {
+                if (this.reader.peekToken("}")) break; // eg. "enum { A, B, }" (but multiline)
+
                 const enumMemberName = this.reader.expectIdentifier();
                 const enumMember = <ast.EnumMember> { name: enumMemberName };
                 this.nodeManager.addNode(enumMember, this.reader.prevTokenOffset);
                 enumObj.values.push(enumMember);
+
+                // TODO: generated code compatibility
+                this.reader.readToken(`= "${enumMemberName}"`);
             } while(this.reader.readToken(","));
             this.reader.expectToken("}");
         }
