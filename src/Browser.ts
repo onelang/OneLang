@@ -9,7 +9,7 @@ import { AstHelper } from "./One/AstHelper";
 
 declare var YAML: any;
 
-const testPrgName = "ReflectionTest";
+const testPrgName = "GenericsTest";
 
 const qs = {};
 location.search.substr(1).split('&').map(x => x.split('=')).forEach(x => qs[x[0]] = x[1]);
@@ -186,8 +186,8 @@ function initLayout() {
     layout.onEditorChange = async (sourceLang: string, newContent: string) => {
         console.log("editor change", sourceLang, newContent);
 
-        compileHelper.setProgram(newContent);
         if (sourceLang === "typescript") {
+            compileHelper.setProgram(newContent);
             const sourceLangPromise = new ExposedPromise<string>();
             await Promise.all(Object.keys(layout.langs).map(async langName => {
                 const langUi = layout.langs[langName];
