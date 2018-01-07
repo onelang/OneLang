@@ -108,7 +108,7 @@ templates:
       {{for item in enum.values|inline sep=", "}}
         {{item.name}}
       {{/for}}
-       };
+       }
     {{/for}}
 
     {{for class in classes|sep=\n\n}}
