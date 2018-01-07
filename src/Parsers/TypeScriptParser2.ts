@@ -287,6 +287,7 @@ export class TypeScriptParser2 {
                         const param = <ast.MethodParameter> {};
                         method.parameters.push(param);
 
+                        this.reader.skipWhitespace();
                         const paramStart = this.reader.offset;
                         const isPublic = this.reader.readToken("public");
                         if (isPublic && !isConstructor)
