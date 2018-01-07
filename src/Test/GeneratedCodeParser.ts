@@ -1,32 +1,30 @@
 import { TypeScriptParser2 } from "../Parsers/TypeScriptParser2";
 import { CSharpParser } from "../Parsers/CSharpParser";
 import { readFile, writeFile } from "../Utils/NodeUtils";
+import { OneAst as ast } from "../One/Ast";
+import { AstHelper } from "../One/AstHelper";
+const fs = require("fs");
 
-const glob = require("glob");
-let parsers = ["ts", "cs"];
-parsers = ["cs"];
+const prgNames = fs.readdirSync("generated");
+const prgExcludeList = ["stdlib", "overlay", "TemplateTests"];
 
-if (parsers.includes("ts")) {
-    for (const fn of <string[]>glob.sync("generated/**/*.ts")) {
-        //if (!fn.includes("ReflectionTest")) continue;
-        console.log(`Parsing file '${fn}'...`);
+for (const ext of ["ts", "cs"]) {
+    for (const prgName of prgNames) {
+        if (prgExcludeList.includes(prgName)) continue;
+        const fn = `generated/${prgName}/results/${prgName}.${ext}`;
         let content = readFile(fn);
-        content = content.split("\ntry {")[0]; // TODO: less hacky way of removing test code?
-        content = content.replace(/one.Reflect.setupClass(.|\n)*?\n  \]\)\);\n/gm, "");
-        content = content.replace(/const (\w+) = require\('\1'\);\n/gm, "");
-    
-        TypeScriptParser2.parseFile(content);
-        // TODO: check that AST should stay the same
-    }
-}
 
-if (parsers.includes("cs")) {
-    for (const fn of <string[]>glob.sync("generated/**/*.cs")) {
-        //if (!fn.includes("ReflectionTest")) continue;
-        console.log(`Parsing file '${fn}'...`);
-        let content = readFile(fn);
-        content = content.split("\npublic class Program")[0]; // TODO: less hacky way of removing test code?
-        CSharpParser.parseFile(content);
-        // TODO: check that AST should stay the same
+        let schema: ast.Schema;
+        if (ext === "ts") {
+            content = content.split("\ntry {")[0]; // TODO: less hacky way of removing test code?
+            content = content.replace(/one.Reflect.setupClass(.|\n)*?\n  \]\)\);\n/gm, "");
+            content = content.replace(/const (\w+) = require\('\1'\);\n/gm, "");
+            schema = TypeScriptParser2.parseFile(content);
+        } else if (ext === "cs") {
+            content = content.split("\npublic class Program")[0]; // TODO: less hacky way of removing test code?
+            schema = CSharpParser.parseFile(content);
+        }
+
+        writeFile(`generated/${prgName}/regen/0_Original_${ext}.json`, AstHelper.toJson(schema));
     }
 }
