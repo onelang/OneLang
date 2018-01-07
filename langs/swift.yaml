@@ -50,6 +50,7 @@ classes:
       set:
         template: "{{self}}![{{index}}] = {{value}}"
   OneMap:
+    type: "[{{typeArgs[0]}}: {{typeArgs[1]}}]"
     methods:
       keys:
         template: "Array({{self}}!.keys)"
