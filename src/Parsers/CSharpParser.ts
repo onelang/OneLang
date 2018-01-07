@@ -37,7 +37,9 @@ export class CSharpParser {
             type = ast.Type.Class("CsBoolean");
         } else if (typeName === "number") {
             type = ast.Type.Class("CsNumber");
-        } else if (typeName === "any") {
+        } else if (typeName === "void") {
+            type = ast.Type.Void;
+        } else if (typeName === "object") {
             type = ast.Type.Any;
         } else {
             type = ast.Type.Class(typeName);
@@ -90,7 +92,7 @@ export class CSharpParser {
             const isArray = this.reader.readToken("[]");
             const type = isArray ? null : this.parseType();
             if ((isArray || type.className === "List") && this.reader.readToken("{")) {
-                const arrayLiteral = <ast.ArrayLiteral> { items: [] };
+                const arrayLiteral = <ast.ArrayLiteral> { exprKind: ast.ExpressionKind.ArrayLiteral, items: [] };
                 if (!this.reader.readToken("}")) {
                     do {
                         const item = this.parseExpression();
@@ -100,7 +102,7 @@ export class CSharpParser {
                 }
                 return arrayLiteral;
             } else if (type.className === "Dictionary" && type.typeArguments[0].className === "CsString" && this.reader.readToken("{")) {
-                const mapLiteral = <ast.MapLiteral> { properties: {} };
+                const mapLiteral = <ast.MapLiteral> { exprKind: ast.ExpressionKind.MapLiteral, properties: [] };
                 if (!this.reader.readToken("}")) {
                     do {
                         this.reader.expectToken("{");
@@ -110,14 +112,16 @@ export class CSharpParser {
                         this.reader.expectToken(",");
                         const value = this.parseExpression();
                         this.reader.expectToken("}");
-                        mapLiteral.properties[key] = value;
+                        mapLiteral.properties.push(<ast.VariableDeclaration> { stmtType: ast.StatementType.VariableDeclaration,
+                            name: key,
+                            initializer: value
+                        });
                     } while (this.reader.readToken(","));
                     this.reader.expectToken("}");
                 }
                 return mapLiteral;
             } else {
-                const newExpr = <ast.NewExpression> {
-                    exprKind: ast.ExpressionKind.New,
+                const newExpr = <ast.NewExpression> { exprKind: ast.ExpressionKind.New,
                     // TODO: shouldn't we use just one `type` field instead of `cls` and `typeArguments`?
                     cls: <ast.Identifier> { exprKind: ast.ExpressionKind.Identifier, text: type.className },
                     typeArguments: type.typeArguments,
