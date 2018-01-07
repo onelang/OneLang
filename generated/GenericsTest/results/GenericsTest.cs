@@ -1,21 +1,42 @@
-public class MapX
+using System;
+
+public class MapX<K, V>
 {
-    public void Set( key,  value)
+    public V Value;
+
+    public void Set(K key, V value)
     {
+        this.Value = value;
     }
     
-    public  Get( key)
+    public V Get(K key)
     {
-        return null;
+        return this.Value;
     }
 }
 
-public class Main
+public class TestClass
 {
-    public void Test()
+    public void TestMethod()
     {
-        var map = new MapX();
-        map.Set("hello", 3);
-        /* UNUSED: var numValue = */ map.Get("hello2");
+        var mapX = new MapX<string, int>();
+        mapX.Set("hello", 3);
+        var numValue = mapX.Get("hello2");
+        Console.WriteLine($"{numValue}");
+    }
+}
+
+public class Program
+{
+    static public void Main()
+    {
+        try 
+        {
+            new TestClass().TestMethod();
+        }
+        catch (System.Exception e)
+        {
+            System.Console.WriteLine($"Exception: {e.Message}");
+        }
     }
 }

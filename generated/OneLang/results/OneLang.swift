@@ -41,7 +41,7 @@ class Tokenizer {
       return c == " " || c == "\n" || c == "\t" || c == "\r" ? TokenType.whitespace : ("A" <= c && c <= "Z") || ("a" <= c && c <= "z") || ("0" <= c && c <= "9") || c == "_" ? TokenType.identifier : TokenType.operatorX
   }
 
-  func tokenize() -> [Token] {
+  func tokenize() -> [Token]? {
       var result: [Token]? = [Token]()
       
       while self.offset < self.text.count {

@@ -1,16 +1,26 @@
 class MapX {
-  set(key: , value: ) {
+  value: V;
+
+  set(key: K, value: V) {
+    this.value = value;
   }
   
-  get(key: ) {
-    return null;
+  get(key: K) {
+    return this.value;
   }
 }
 
-class Main {
-  test() {
-    const map = new MapX();
-    map.set("hello", 3);
-    const numValue = map.get("hello2");
+class TestClass {
+  testMethod() {
+    const mapX = new MapX();
+    mapX.set("hello", 3);
+    const numValue = mapX.get("hello2");
+    console.log(`${numValue}`);
   }
+}
+
+try {
+  new TestClass().testMethod();
+} catch(e) {
+  console.log(`Exception: ${e.message}`);
 }

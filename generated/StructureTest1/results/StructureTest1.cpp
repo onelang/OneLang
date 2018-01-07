@@ -4,9 +4,10 @@
 #include <vector>
 #include <map>
 
+template<typename T>
 class List {
   public:
-    vec<> items;
+    vec<T> items;
 
   private:
 };
@@ -26,8 +27,8 @@ class Item {
 
 class Container {
   public:
-    sp<List> item_list;
-    sp<List> string_list;
+    sp<List<Item>> item_list;
+    sp<List<string>> string_list;
 
     void method0() {
     }

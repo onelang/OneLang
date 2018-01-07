@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 type List struct {
-    Items []
+    Items []interface{}
 }
 
 func NewList() *List {
@@ -26,8 +26,8 @@ func NewItem(strConstr string) *Item {
 }
 
 type Container struct {
-    ItemList *List
-    StringList *List
+    ItemList *List<Item>
+    StringList *List<string>
 }
 
 func NewContainer() *Container {

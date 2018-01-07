@@ -1,5 +1,5 @@
-class List {
-  var items: []?
+class List<T> {
+  var items: [T]?
 }
 
 class Item {
@@ -13,8 +13,8 @@ class Item {
 }
 
 class Container {
-  var itemList: List?
-  var stringList: List?
+  var itemList: List<Item>?
+  var stringList: List<String>?
 
   func method0() -> Void {
   }

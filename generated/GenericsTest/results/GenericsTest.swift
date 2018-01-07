@@ -1,16 +1,22 @@
-class MapX {
-  func set(key: , value: ) -> Void {
+class MapX<K, V> {
+  var value: V
+
+  func set(key: K, value: V) -> Void {
+      self.value = value
   }
 
-  func get(key: ) ->  {
-      return nil
+  func get(key: K) -> V {
+      return self.value
   }
 }
 
-class Main {
-  func test() -> Void {
-      let map: MapX? = MapX()
-      map!.set(key: "hello", value: 3)
-      let _ = map!.get(key: "hello2")
+class TestClass {
+  func testMethod() -> Void {
+      let mapX: MapX<String, Int>? = MapX()
+      mapX!.set(key: "hello", value: 3)
+      let numValue = mapX!.get(key: "hello2")
+      print("\(numValue)")
   }
 }
+
+TestClass().testMethod()

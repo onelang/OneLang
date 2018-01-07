@@ -1,12 +1,18 @@
 class MapX:
     def set(self, key, value):
-        pass
+        self.value = value
     
     def get(self, key):
-        return None
+        return self.value
 
-class Main:
-    def test(self):
-        map = MapX()
-        map.set("hello", 3)
-        num_value = map.get("hello2")
+class TestClass:
+    def test_method(self):
+        map_x = MapX()
+        map_x.set("hello", 3)
+        num_value = map_x.get("hello2")
+        print "%s" % (num_value, )
+
+try:
+    TestClass().test_method()
+except Exception as err:
+    print "Exception: " + err.message

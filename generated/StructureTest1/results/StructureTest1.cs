@@ -1,6 +1,6 @@
-public class List
+public class List<T>
 {
-    public List<> Items;
+    public List<T> Items;
 }
 
 public class Item
@@ -17,8 +17,8 @@ public class Item
 
 public class Container
 {
-    public List ItemList;
-    public List StringList;
+    public List<Item> ItemList;
+    public List<string> StringList;
 
     public void Method0()
     {

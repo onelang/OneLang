@@ -13,8 +13,8 @@ class Item {
 }
 
 class Container {
-  itemList: List;
-  stringList: List;
+  itemList: List<Item>;
+  stringList: List<string>;
 
   method0() {
   }

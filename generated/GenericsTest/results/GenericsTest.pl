@@ -13,14 +13,15 @@ sub new
 
 sub set {
     my ( $self, $key, $value ) = @_;
+    $self->{value} = $value;
 }
 
 sub get {
     my ( $self, $key ) = @_;
-    return undef;
+    return $self->{value};
 }
 
-package Main;
+package TestClass;
 
 sub new
 {
@@ -30,9 +31,20 @@ sub new
     return $self;
 }
 
-sub test {
+sub test_method {
     my ( $self ) = @_;
-    my $map = new MapX();
-    $map->set("hello", 3);
-    my $num_value = $map->get("hello2");
+    my $map_x = new MapX();
+    $map_x->set("hello", 3);
+    my $num_value = $map_x->get("hello2");
+    print(("@{[$num_value]}") . "\n");
+}
+
+package Program;
+
+eval {
+    my $c = new TestClass();
+    $c->test_method();
+};
+if ($@) {
+    print "Exception: " . $@
 }

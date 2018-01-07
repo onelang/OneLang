@@ -1,19 +1,33 @@
-class MapX {
-    public void set( key,  value) throws Exception
+class MapX<K, V> {
+    public V value;
+
+    public void set(K key, V value) throws Exception
     {
+        this.value = value;
     }
     
-    public  get( key) throws Exception
+    public V get(K key) throws Exception
     {
-        return null;
+        return this.value;
     }
 }
 
-class Main {
-    public void test() throws Exception
+class TestClass {
+    public void testMethod() throws Exception
     {
-        MapX map = new MapX();
-        map.set("hello", 3);
-        Integer numValue = map.get("hello2");
+        MapX<String, Integer> mapX = new MapX();
+        mapX.set("hello", 3);
+        Integer numValue = mapX.get("hello2");
+        System.out.println(numValue);
+    }
+}
+
+class Program {
+    public static void main(String[] args) throws Exception {
+        try {
+            new TestClass().testMethod();
+        } catch (Exception err) {
+            System.out.println("Exception: " + err.getMessage());
+        }
     }
 }

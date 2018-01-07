@@ -1,5 +1,5 @@
-class List {
-    public List<> items;
+class List<T> {
+    public List<T> items;
 }
 
 class Item {
@@ -13,8 +13,8 @@ class Item {
 }
 
 class Container {
-    public List itemList;
-    public List stringList;
+    public List<Item> itemList;
+    public List<String> stringList;
 
     public void method0() throws Exception
     {
