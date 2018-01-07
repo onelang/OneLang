@@ -94,7 +94,7 @@ export class TemplateGenerator implements IMethodHandler {
         return node instanceof Ast.Line && node.items[0] instanceof Ast.TextNode;
     }
 
-    join(items: GeneratedNode[], separator: string) {
+    static join(items: GeneratedNode[], separator: string) {
         const result: GeneratedNode[] = [];
         for (const item of items) {
             if (result.length !== 0)
@@ -104,7 +104,7 @@ export class TemplateGenerator implements IMethodHandler {
         return result;
     }
 
-    joinLines(lines: GeneratedNode[][], separator: string) {
+    static joinLines(lines: GeneratedNode[][], separator: string) {
         const result: GeneratedNode[] = [];
         for (const line of lines) {
             if (result.length !== 0)
@@ -139,7 +139,7 @@ export class TemplateGenerator implements IMethodHandler {
 
             resultLines.push(line);
         }
-        const result = resultLines.length > 0 ? this.joinLines(resultLines, "\n") : null;
+        const result = resultLines.length > 0 ? TemplateGenerator.joinLines(resultLines, "\n") : null;
         return result;
     }
 
@@ -167,7 +167,7 @@ export class TemplateGenerator implements IMethodHandler {
                             result.push(item);
                         } else {
                             result.push(new GeneratedNode(parts[0]), new GeneratedNode("\n"));
-                            result.push(...this.joinLines(parts.slice(1).map(x => [indent, new GeneratedNode(x)]), "\n"));
+                            result.push(...TemplateGenerator.joinLines(parts.slice(1).map(x => [indent, new GeneratedNode(x)]), "\n"));
                         }
                     }
                 } else {
@@ -214,7 +214,7 @@ export class TemplateGenerator implements IMethodHandler {
                     lines.push(line);
             }
             
-            result = lines.length === 0 ? null : this.joinLines(lines, node.separator);
+            result = lines.length === 0 ? null : TemplateGenerator.joinLines(lines, node.separator);
         }
 
         return result;

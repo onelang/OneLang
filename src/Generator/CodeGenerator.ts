@@ -289,8 +289,8 @@ class CodeGeneratorModel {
             genResult = [new GeneratedNode(this.tempVarHandler.finish(genResult))];
 
         if (!usingResult && isStatement && !this.tempVarHandler.empty) {
-            const prefix = this.tempVarHandler.reset().map(v => v.code).join("\n") + "\n";
-            genResult = [new GeneratedNode(prefix), ...genResult];
+            const prefix = TemplateGenerator.joinLines(this.tempVarHandler.reset().map(v => v.code), "\n");
+            genResult = [...prefix, new GeneratedNode("\n"), ...genResult];
         }
 
         for (const item of genResult)
@@ -357,10 +357,18 @@ export class CodeGenerator {
             if (classGen) {
                 return this.call(classGen.typeGenerator, [type.typeArguments.map(x => this.getTypeName(x))])
                     .map(x => x.text).join("");
-            } else
-                return this.caseConverter.getName(type.className, "class");
+            } else {
+                let result = this.caseConverter.getName(type.className, "class");
+                if (type.typeArguments && type.typeArguments.length > 0) {
+                    // TODO: make this templatable
+                    result += `<${type.typeArguments.map(x => this.getTypeName(x)).join(", ")}>`;
+                }
+                return result;
+            }
         } else if (type.isEnum) {
             return this.caseConverter.getName(type.enumName, "enum");
+        } else if (type.isGenerics) {
+            return type.genericsName;
         } else {
             return this.lang.primitiveTypes ? this.lang.primitiveTypes[type.typeKind] : type.typeKind.toString();
         }
