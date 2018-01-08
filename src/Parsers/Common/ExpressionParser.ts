@@ -25,10 +25,12 @@ export class ExpressionParser {
             { name: "sum", operators: ['+','-'], binary: true },
             { name: "product", operators: ['*','/'], binary: true },
             { name: "exponent", operators: ['**'], binary: true },
+            { name: "shift", operators: ['<<'], binary: true },
+            { name: "range", operators: ['...'], binary: true },
             { name: "prefix" },
             { name: "postfix", operators: ['++', '--'] },
             { name: "call", operators: ['('] },
-            { name: "propertyAccess", operators: ['.', '['] },
+            { name: "propertyAccess", operators: ['.', '::', '['] },
         ],
         rightAssoc: ['**'],
         aliases: { "===": "==", "!==": "!=", "not": "!", "and": "&&", "or": "||" },
@@ -195,7 +197,7 @@ export class ExpressionParser {
                 const elementExpr = this.parse();
                 this.reader.expectToken("]");
                 left = <ast.ElementAccessExpression> { exprKind: "ElementAccess", object: left, elementExpr };
-            } else if (op.text === ".") {
+            } else if (op.text === "." || op.text === "::") {
                 const prop = this.reader.expectIdentifier("expected identifier as property name");
                 left = <ast.PropertyAccessExpression> { exprKind: "PropertyAccess", object: left, propertyName: prop };
             } else {
