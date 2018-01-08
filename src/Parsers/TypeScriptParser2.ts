@@ -112,6 +112,12 @@ export class TypeScriptParser2 implements IParser {
             return castExpr;
         }
 
+        const mapLiteral = this.expressionParser.parseMapLiteral();
+        if (mapLiteral != null) return mapLiteral;
+
+        const arrayLiteral = this.expressionParser.parseArrayLiteral();
+        if (arrayLiteral != null) return arrayLiteral;
+
         return null;
     }
 
