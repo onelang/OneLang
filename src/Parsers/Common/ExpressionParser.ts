@@ -69,6 +69,43 @@ export class ExpressionParser {
         this.operators = Object.keys(this.operatorMap).sort((a,b) => b.length - a.length);
     }
 
+    parseMapLiteral(keySeparator = ":") {
+        if (!this.reader.readToken("{")) return null;
+
+        const mapLiteral = <ast.MapLiteral> { exprKind: "MapLiteral", properties: [] };
+        do {
+            if (this.reader.peekToken("}")) break;
+
+            const item = <ast.VariableDeclaration> { };
+            mapLiteral.properties.push(item);
+
+            item.name = this.reader.readString();
+            if (item.name === null)
+                item.name = this.reader.expectIdentifier("expected string or identifier as map key");
+
+            this.reader.expectToken(keySeparator);
+            item.initializer = this.parse();
+        } while(this.reader.readToken(","));
+
+        this.reader.expectToken("}");
+        return mapLiteral;
+    }
+
+    parseArrayLiteral() {
+        if (!this.reader.readToken("[")) return null;
+        
+        const arrayLiteral = <ast.ArrayLiteral> { exprKind: "ArrayLiteral", items: [] };
+        if (!this.reader.readToken("]")) {
+            do {
+                const item = this.parse();
+                arrayLiteral.items.push(item);
+            } while(this.reader.readToken(","));
+
+            this.reader.expectToken("]");
+        }
+        return arrayLiteral;
+    }
+
     parseLeft(): ast.Expression {
         const result = this.unaryPrehook && this.unaryPrehook();
         if (result !== null) return result;
@@ -95,36 +132,6 @@ export class ExpressionParser {
             const expr = this.parse();
             this.reader.expectToken(")");
             return <ast.ParenthesizedExpression> { exprKind: "Parenthesized", expression: expr };
-        }
-
-        if (this.reader.readToken("{")) {
-            const mapLiteral = <ast.MapLiteral> { exprKind: "MapLiteral", properties: [] };
-            if (!this.reader.readToken("}")) {
-                do {
-                    const item = <ast.VariableDeclaration> { };
-                    mapLiteral.properties.push(item);
-
-                    item.name = this.reader.expectIdentifier("expected identifier as map key");
-                    this.reader.expectToken(":");
-                    item.initializer = this.parse();
-                } while(this.reader.readToken(","));
-
-                this.reader.expectToken("}");
-            }
-            return mapLiteral;
-        }
-
-        if (this.reader.readToken("[")) {
-            const arrayLiteral = <ast.ArrayLiteral> { exprKind: "ArrayLiteral", items: [] };
-            if (!this.reader.readToken("]")) {
-                do {
-                    const item = this.parse();
-                    arrayLiteral.items.push(item);
-                } while(this.reader.readToken(","));
-
-                this.reader.expectToken("]");
-            }
-            return arrayLiteral;
         }
 
         this.reader.fail(`unknown (literal / unary) token in expression`);
