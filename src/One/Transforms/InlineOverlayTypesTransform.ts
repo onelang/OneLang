@@ -151,7 +151,9 @@ class ReplaceVariables extends AstVisitor<void> {
     constructor(public schemaCtx: SchemaContext) { super(); }
 
     protected convertType(type: one.Type) {
-        const cls = type && type.className && this.schemaCtx.getClass(type.className);
+        if (!type) return;
+
+        const cls = type.className && this.schemaCtx.getClass(type.className);
         if (cls && cls.meta && cls.meta.overlay)
             type.className = cls.fields["_one"].type.className;
 
