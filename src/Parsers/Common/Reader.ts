@@ -96,7 +96,7 @@ export class Reader {
 
         if (this.input.startsWith(token, this.offset)) {
             // TODO: hackish way to make sure space comes after word tokens
-            if (this.isAlphaNum(token[0]) && this.isAlphaNum(this.input[this.offset + token.length])) return false;
+            if (this.isAlphaNum(token[token.length - 1]) && this.isAlphaNum(this.input[this.offset + token.length])) return false;
             return true;
         } else {
             return false;
