@@ -24,6 +24,7 @@ import { RemoveEmptyTemplateStringLiterals } from "./One/Transforms/RemoveEmptyT
 import { FixGenericAndEnumTypes } from "./One/Transforms/FixGenericAndEnumTypes";
 import { IParser } from "./Parsers/Common/IParser";
 import { CSharpParser } from "./Parsers/CSharpParser";
+import { RubyParser } from "./Parsers/RubyParser";
 
 declare var YAML: any;
 
@@ -67,6 +68,10 @@ export class OneCompiler {
             this.parser = new CSharpParser(programCode);
             this.arrayType = "CsArray";
             this.mapType = "CsMap";
+        } else if (langName === "ruby") {
+            this.parser = new RubyParser(programCode);
+            this.arrayType = "RubyArray";
+            this.mapType = "RubyMap";
         } else {
             throw new Error(`[OneCompiler] Unsupported language: ${langName}`);
         }
