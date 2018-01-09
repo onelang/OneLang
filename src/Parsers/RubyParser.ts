@@ -34,13 +34,8 @@ export class RubyParser implements IParser {
             throw new Error(`[RubyParser] ${error.message} at ${error.cursor.line}:${error.cursor.column} (context: ${this.context.join("/")})\n${this.reader.linePreview}`);
         };
         this.nodeManager = new NodeManager(this.reader);
-        this.expressionParser = this.createExpressionParser(this.reader, this.nodeManager);
-    }
-
-    createExpressionParser(reader: Reader, nodeManager: NodeManager = null) {
-        const expressionParser = new ExpressionParser(reader, nodeManager);
-        expressionParser.unaryPrehook = () => this.parseExpressionToken();
-        return expressionParser;
+        this.expressionParser = new ExpressionParser(this.reader, this.nodeManager);
+        this.expressionParser.unaryPrehook = () => this.parseExpressionToken();
     }
 
     parseExpression() {
@@ -178,7 +173,7 @@ export class RubyParser implements IParser {
     }
 
     parseExprFromString(expression: string) {
-        const expr = this.createExpressionParser(new Reader(expression)).parse();
+        const expr = new ExpressionParser(new Reader(expression)).parse();
         return expr;
     }
 
