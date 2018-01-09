@@ -6,7 +6,16 @@ import { NodeManager } from "./Common/NodeManager";
 import { IParser, ILangData } from "./Common/IParser";
 
 export class CSharpParser implements IParser {
-    langData: ILangData = { literalClassNames: { string: "CsString", boolean: "CsBoolean", numeric: "CsNumber", character: "CsCharacter" } };
+    langData: ILangData = { 
+        literalClassNames: {
+            string: "CsString",
+            boolean: "CsBoolean",
+            numeric: "CsNumber",
+            character: "CsCharacter",
+            map: "CsMap",
+            array: "CsArray",
+        }
+    };
 
     context: string[] = [];
     reader: Reader;

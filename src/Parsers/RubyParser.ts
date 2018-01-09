@@ -6,7 +6,16 @@ import { NodeManager } from "./Common/NodeManager";
 import { IParser, ILangData } from "./Common/IParser";
 
 export class RubyParser implements IParser {
-    langData: ILangData = { literalClassNames: { string: "RubyString", boolean: "RubyBoolean", numeric: "RubyNumber", character: "RubyCharacter" } };
+    langData: ILangData = { 
+        literalClassNames: {
+            string: "RubyString",
+            boolean: "RubyBoolean",
+            numeric: "RubyNumber",
+            character: "RubyCharacter",
+            map: "RubyMap",
+            array: "RubyArray",
+        }
+    };
     
     context: string[] = [];
     reader: Reader;

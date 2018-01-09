@@ -44,8 +44,6 @@ export class OneCompiler {
     stdlibCtx: SchemaContext;
     genericTransformer: GenericTransformer;
     langName: string;
-    arrayType: string;
-    mapType: string;
 
     saveSchemaStateCallback: (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, data: string) => void;
 
@@ -61,16 +59,10 @@ export class OneCompiler {
         if (langName === "typescript") {
             overlayCode = overlayCode.replace(/^[^\n]*<reference.*stdlib.d.ts[^\n]*\n/, "");
             this.parser = new TypeScriptParser2(programCode);
-            this.arrayType = "TsArray";
-            this.mapType = "TsMap";
         } else if (langName === "csharp") {
             this.parser = new CSharpParser(programCode);
-            this.arrayType = "CsArray";
-            this.mapType = "CsMap";
         } else if (langName === "ruby") {
             this.parser = new RubyParser(programCode);
-            this.arrayType = "RubyArray";
-            this.mapType = "RubyMap";
         } else {
             throw new Error(`[OneCompiler] Unsupported language: ${langName}`);
         }
@@ -82,7 +74,7 @@ export class OneCompiler {
             YAML.parse(genericTransformerYaml));
 
         // TODO: hack
-        overlaySchema.classes[this.arrayType].meta = { iterable: true };
+        overlaySchema.classes[this.parser.langData.literalClassNames.map].meta = { iterable: true };
         stdlibSchema.classes["OneArray"].meta = { iterable: true };
         stdlibSchema.classes["OneError"].methods["raise"].throws = true;
         
@@ -126,8 +118,8 @@ export class OneCompiler {
         
         this.schemaCtx = new SchemaContext(schema, "program");
         // TODO: move to somewhere else...
-        this.schemaCtx.arrayType = this.arrayType;
-        this.schemaCtx.mapType = this.mapType;
+        this.schemaCtx.arrayType = this.parser.langData.literalClassNames.array;
+        this.schemaCtx.mapType = this.parser.langData.literalClassNames.map;
 
         new RemoveEmptyTemplateStringLiterals().process(this.schemaCtx.schema);
         new FixGenericAndEnumTypes().process(this.schemaCtx.schema);

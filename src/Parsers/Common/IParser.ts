@@ -8,5 +8,12 @@ export interface IParser {
 }
 
 export interface ILangData {
-    literalClassNames: { [name: string]: string };
+    literalClassNames: {
+        string: string,
+        boolean: string,
+        numeric: string,
+        character: string,
+        map: string,
+        array: string,
+     };
 }

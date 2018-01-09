@@ -6,7 +6,16 @@ import { NodeManager } from "./Common/NodeManager";
 import { IParser, ILangData } from "./Common/IParser";
 
 export class TypeScriptParser2 implements IParser {
-    langData: ILangData = { literalClassNames: { string: "TsString", boolean: "TsBoolean", numeric: "TsNumber", character: "TsCharacter" } };
+    langData: ILangData = { 
+        literalClassNames: {
+            string: "TsString",
+            boolean: "TsBoolean",
+            numeric: "TsNumber",
+            character: "TsCharacter",
+            map: "TsMap",
+            array: "TsArray",
+        }
+    };
 
     context: string[] = [];
     reader: Reader;
