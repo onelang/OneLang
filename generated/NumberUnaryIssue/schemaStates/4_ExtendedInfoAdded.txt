@@ -1,5 +1,0 @@
-NumberUnaryIssue::test(num: OneNumber): void
-  - ExpressionStatement
-    - Unary (postfix): -- [any]
-      - MethodArgument: num [OneNumber]
-

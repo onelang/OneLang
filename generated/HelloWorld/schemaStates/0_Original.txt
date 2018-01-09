@@ -1,7 +1,0 @@
-TestClass::testMethod(): void
-  - ExpressionStatement
-    - Call
-      - PropertyAccess (.log)
-        - Identifier: console
-      - Literal (string): "Hello world!"
-

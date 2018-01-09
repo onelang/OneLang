@@ -1,7 +1,0 @@
-Line #1 [indent=0]:
-  Item #1: "( x"
-  Item #2: 
-    If (false): [inline]
-      Line #1 [indent=0]:
-        Item #1: "x"
-  Item #3: " )"

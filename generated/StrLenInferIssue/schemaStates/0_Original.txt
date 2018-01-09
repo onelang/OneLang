@@ -1,5 +1,0 @@
-StrLenInferIssue::test(str: TsString): TsNumber
-  - Return
-    - PropertyAccess (.length)
-      - Identifier: str
-

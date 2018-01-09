@@ -1,9 +1,0 @@
-TestClass::testMethod(): void
-  - Variable: op [TsString]
-    - Literal (null): "null" [null]
-  - ExpressionStatement
-    - Call [void]
-      - MethodReference (static) [console::log]
-      - InstanceField: length [OneNumber]
-        - LocalVar: op [TsString]
-

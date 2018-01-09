@@ -1,4 +1,0 @@
-TestClass::methodTest(methodParam: OneArray<OneString>): void
-
-TestClass::testMethod(): void
-

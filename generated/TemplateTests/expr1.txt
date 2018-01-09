@@ -1,4 +1,0 @@
-Line #1 [indent=0]:
-  Item #1: "A "
-  Item #2: "(((4 * 5) / 2) + 1)"
-  Item #3: " B"

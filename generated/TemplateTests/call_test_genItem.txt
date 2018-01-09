@@ -1,4 +1,0 @@
-Line #1 [indent=0]:
-  Item #1: "(item.name)"
-  Item #2: ": "
-  Item #3: "(item.type)"

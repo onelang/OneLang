@@ -1,4 +1,0 @@
-Line #1 [indent=0]:
-  Item #1: "LINE2"
-Line #2 [indent=0]:
-  Item #1: "LINE3"

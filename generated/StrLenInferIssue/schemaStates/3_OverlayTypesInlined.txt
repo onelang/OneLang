@@ -1,5 +1,0 @@
-StrLenInferIssue::test(str: OneString): OneNumber
-  - Return
-    - InstanceField: length [OneNumber]
-      - MethodArgument: str [OneString]
-
