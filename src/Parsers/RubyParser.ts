@@ -62,6 +62,29 @@ export class RubyParser implements IParser {
             if (stringContent === null) this.reader.fail("expected string here");
             this.reader.expectToken(")}/");
             return <ast.Literal> { exprKind: "Literal", literalType: "string", value: stringContent };
+        } else if (this.reader.readToken('"')) {
+            this.reader.commentDisabled = true;
+            const tmplStr = <ast.TemplateString> { exprKind: ast.ExpressionKind.TemplateString, parts: [] };
+            while (true) {
+                const litMatch = this.reader.readRegex('(\\\\"|\\\\#|[^"#])*');
+                tmplStr.parts.push(<ast.TemplateStringPart> { literal: true, text: litMatch[0] });
+                if (this.reader.readToken('"'))
+                    break;
+                else {
+                    this.reader.expectToken("#{");
+                    this.reader.commentDisabled = false;
+                    const expr = this.parseExpression();
+                    tmplStr.parts.push(<ast.TemplateStringPart> { literal: false, expr });
+                    this.reader.commentDisabled = true;
+                    this.reader.expectToken("}");
+                }
+            }
+            this.reader.commentDisabled = false;
+
+            if (tmplStr.parts.length === 1)
+                return <ast.Literal> { exprKind: "Literal", literalType: "string", value: tmplStr.parts[0] };
+
+            return tmplStr;
         }
 
         const mapLiteral = this.expressionParser.parseMapLiteral("=>");
