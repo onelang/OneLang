@@ -32,7 +32,6 @@ SchemaTransformer.instance.addTransform(new FillNameTransform());
 SchemaTransformer.instance.addTransform(new FillParentTransform());
 SchemaTransformer.instance.addTransform(new FillMetaPathTransform());
 SchemaTransformer.instance.addTransform(new ResolveIdentifiersTransform());
-SchemaTransformer.instance.addTransform(new InferTypesTransform());
 SchemaTransformer.instance.addTransform(new InlineOverlayTypesTransform());
 SchemaTransformer.instance.addTransform(new ConvertInlineThisRefTransform());
 SchemaTransformer.instance.addTransform(new TriviaCommentTransform());
@@ -105,11 +104,14 @@ export class OneCompiler {
         overlaySchema.sourceType = "overlay";
         stdlibSchema.sourceType = "stdlib";
 
+        const inferTypes = new InferTypesTransform();
+
         this.stdlibCtx = new SchemaContext(stdlibSchema, "stdlib");
         new FixGenericAndEnumTypes().process(this.stdlibCtx.schema);
         this.saveSchemaState(this.stdlibCtx, "0_Original");
 
-        this.stdlibCtx.ensureTransforms("fillMetaPath", "inferTypes");
+        this.stdlibCtx.ensureTransforms("fillName", "fillMetaPath", "fillParent", "resolveIdentifiers");
+        inferTypes.transform(this.stdlibCtx);
         this.saveSchemaState(this.stdlibCtx, "0_Converted");
         
         this.overlayCtx = new SchemaContext(overlaySchema, "overlay");
@@ -117,7 +119,9 @@ export class OneCompiler {
         new FixGenericAndEnumTypes().process(this.overlayCtx.schema);
         this.saveSchemaState(this.overlayCtx, "0_Original");
 
-        this.overlayCtx.ensureTransforms("convertInlineThisRef", "fillMetaPath");
+        this.overlayCtx.ensureTransforms("fillName", "fillMetaPath", "fillParent", "resolveIdentifiers");
+        inferTypes.transform(this.overlayCtx);
+        this.overlayCtx.ensureTransforms("convertInlineThisRef");
         this.saveSchemaState(this.overlayCtx, "1_Converted");
         
         this.schemaCtx = new SchemaContext(schema, "program");
@@ -134,7 +138,8 @@ export class OneCompiler {
         
         this.schemaCtx.addDependencySchema(this.overlayCtx);
         this.schemaCtx.addDependencySchema(this.stdlibCtx);
-        this.schemaCtx.ensureTransforms("inferTypes");
+        this.schemaCtx.ensureTransforms("fillName", "fillMetaPath", "fillParent", "resolveIdentifiers");
+        inferTypes.transform(this.schemaCtx);
         this.saveSchemaState(this.schemaCtx, `2_TypesInferred`);
         
         this.schemaCtx.ensureTransforms("inlineOverlayTypes");
@@ -143,13 +148,12 @@ export class OneCompiler {
         this.schemaCtx.ensureTransforms("triviaComment");
         this.saveSchemaState(this.schemaCtx, `4_ExtendedInfoAdded`);
 
-        // TODO: looks like as a giantic hack...
-        this.schemaCtx.schema.meta.transforms["inferTypes"] = false;
         this.schemaCtx.arrayType = "OneArray";
         this.schemaCtx.mapType = "OneMap";
 
         global["debugOn"] = true;
-        this.schemaCtx.ensureTransforms("inferTypes", "inferCharacterTypes");
+        inferTypes.transform(this.schemaCtx);
+        this.schemaCtx.ensureTransforms("inferCharacterTypes");
         this.saveSchemaState(this.schemaCtx, `5_TypesInferredAgain`);
     }
 

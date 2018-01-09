@@ -188,7 +188,7 @@ class ReplaceVariables extends AstVisitor<void> {
 
 export class InlineOverlayTypesTransform implements ISchemaTransform {
     name = "inlineOverlayTypes";
-    dependencies = ["inferTypes"];
+    dependencies = [];
 
     transform(schemaCtx: SchemaContext) {
         new ReplaceReferences(schemaCtx).process();

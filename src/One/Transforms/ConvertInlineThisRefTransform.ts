@@ -10,7 +10,7 @@ import { AstHelper } from "../AstHelper";
  */
 export class ConvertInlineThisRefTransform extends AstVisitor<void> implements ISchemaTransform {
     name = "convertInlineThisRef";
-    dependencies = ["inferTypes"];
+    dependencies = [];
 
     protected visitVariableRef(expr: one.VariableRef) {
         if (expr.varType === one.VariableRefType.InstanceField && expr.varRef.name === "_one") {

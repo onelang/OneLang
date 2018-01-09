@@ -46,7 +46,8 @@ export class FillMetaPathTransform extends AstVisitor<Context> implements ISchem
         const ifContext = this.subContext(context, stmt, "if");
         this.visitExpression(stmt.condition, ifContext);
         this.visitBlock(stmt.then, this.subContext(ifContext, stmt.then, "then"));
-        this.visitBlock(stmt.else, this.subContext(ifContext, stmt.then, "else"));
+        if (stmt.else)
+            this.visitBlock(stmt.else, this.subContext(ifContext, stmt.then, "else"));
     }
 
     protected visitWhileStatement(stmt: one.WhileStatement, context: Context) {
