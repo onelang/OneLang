@@ -1,0 +1,3 @@
+[submodule "generated"]
+	path = generated
+	url = https://github.com/koczkatamas/onelang_generated
