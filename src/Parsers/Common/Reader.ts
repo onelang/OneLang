@@ -18,6 +18,7 @@ export class Reader {
     supportsBlockComment = true;
     blockCommentStart = "/*";
     blockCommentEnd = "*/";
+    commentDisabled = false;
 
     identifierRegex = "[A-Za-z_][A-Za-z0-9_]*";
     numberRegex = "[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)";
@@ -141,6 +142,8 @@ export class Reader {
     }
 
     skipWhitespaceAndComment() {
+        if (this.commentDisabled) return;
+
         this.moveWsOffset = false;
         while (true) {
             this.skipWhitespace();
