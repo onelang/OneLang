@@ -48,6 +48,11 @@ export class RubyParser implements IParser {
         } else if (this.reader.readToken("@")) {
             const fieldName = this.reader.readIdentifier();
             return this.parseExprFromString(`this.${fieldName}`);
+        } else if (this.reader.readToken("/#{Regexp.escape(")) { // TODO: hack
+            const stringContent = this.reader.readString();
+            if (stringContent === null) this.reader.fail("expected string here");
+            this.reader.expectToken(")}/");
+            return <ast.Literal> { exprKind: "Literal", literalType: "string", value: stringContent };
         }
 
         const mapLiteral = this.expressionParser.parseMapLiteral("=>");
