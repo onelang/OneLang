@@ -10,8 +10,10 @@ const fs = require("fs");
 global["YAML"] = require('yamljs'); 
 declare var YAML;
 
-let prgNames = fs.readdirSync("generated");
-let prgExcludeList = ["stdlib", "overlay", "TemplateTests"];
+let prgNames = (<string[]>fs.readdirSync("generated")).filter(x => !x.startsWith("."));
+let prgExcludeList = ["stdlib", "overlay", "TemplateTests", "LICENSE"];
+
+prgNames = prgNames.filter(x => !prgExcludeList.includes(x));
 
 const stdlibCode = readFile(`langs/StdLibs/stdlib.d.ts`);
 const genericTransforms = readFile(`langs/NativeResolvers/GenericTransforms.yaml`);
@@ -23,8 +25,8 @@ const langs: { [langName: string]: { ext: string, parse: (src: string) => ast.Sc
 };
 
 let langsToTest = Object.keys(langs);
-
 langsToTest = ["ruby"];
+
 //prgExcludeList = [...prgExcludeList, "OneLang2", "StrReplaceTest"]
 
 for (const langName of langsToTest) {
@@ -32,7 +34,6 @@ for (const langName of langsToTest) {
     const overlayCode = readFile(`langs/NativeResolvers/${langName}.ts`);
 
     for (const prgName of prgNames) {
-        if (prgExcludeList.includes(prgName)) continue;
         const fn = `generated/${prgName}/results/${prgName}.${langData.ext}`;
         console.log(`Parsing '${fn}'...`);
         let content = readFile(fn);
