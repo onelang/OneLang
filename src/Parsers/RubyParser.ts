@@ -3,9 +3,11 @@ import { OneAst as ast } from "../One/Ast";
 import { Reader } from "./Common/Reader";
 import { ExpressionParser } from "./Common/ExpressionParser";
 import { NodeManager } from "./Common/NodeManager";
-import { IParser } from "./Common/IParser";
+import { IParser, ILangData } from "./Common/IParser";
 
 export class RubyParser implements IParser {
+    langData: ILangData = { literalClassNames: { string: "RubyString", boolean: "RubyBoolean", numeric: "RubyNumber", character: "RubyCharacter" } };
+    
     context: string[] = [];
     reader: Reader;
     expressionParser: ExpressionParser;
@@ -29,7 +31,6 @@ export class RubyParser implements IParser {
     createExpressionParser(reader: Reader, nodeManager: NodeManager = null) {
         const expressionParser = new ExpressionParser(reader, nodeManager);
         expressionParser.unaryPrehook = () => this.parseExpressionToken();
-        expressionParser.literalClassNames = { string: "RubyString", numeric: "RubyNumber" };
         return expressionParser;
     }
 
@@ -41,9 +42,9 @@ export class RubyParser implements IParser {
         if (this.reader.readToken("nil")) {
             return <ast.Literal> { exprKind: "Literal", literalType: "null", value: "null" };
         } else if (this.reader.readToken("true")) {
-            return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: true, literalClassName: "TsBoolean" };
+            return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: true };
         } else if (this.reader.readToken("false")) {
-            return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: false, literalClassName: "TsBoolean" };
+            return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: false };
         } else if (this.reader.readToken("@")) {
             const fieldName = this.reader.readIdentifier();
             return this.parseExprFromString(`this.${fieldName}`);

@@ -331,7 +331,6 @@ export namespace OneAst {
 
     export interface Literal extends Expression {
         literalType: "numeric"|"string"|"character"|"boolean"|"null";
-        literalClassName: string;
         value: any;
         escapedText: string;
         escapedTextSingle: string;

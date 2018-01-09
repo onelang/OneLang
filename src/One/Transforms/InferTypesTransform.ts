@@ -4,6 +4,7 @@ import { VariableContext } from "../VariableContext";
 import { SchemaContext } from "../SchemaContext";
 import { ISchemaTransform } from "../SchemaTransformer";
 import { AstHelper } from "../AstHelper";
+import { ILangData } from "../../Parsers/Common/IParser";
 
 export enum ReferenceType { Class, Method, MethodVariable, ClassVariable }
 
@@ -78,9 +79,8 @@ export class GenericsMapping {
     }
 }
 
-export class InferTypesTransform extends AstVisitor<Context> implements ISchemaTransform {
-    name: string = "inferTypes";
-    dependencies = ["fillName", "fillParent", "resolveIdentifiers"];
+export class InferTypesTransform extends AstVisitor<Context> {
+    constructor(public langData: ILangData) { super(); }
 
     protected visitIdentifier(id: one.Identifier, context: Context) {
         this.log(`No identifier should be here!`);
@@ -225,7 +225,7 @@ export class InferTypesTransform extends AstVisitor<Context> implements ISchemaT
         if (expr.valueType) return;
 
         if (expr.literalType === "numeric" || expr.literalType === "string" || expr.literalType === "boolean" || expr.literalType === "character")
-            expr.valueType = one.Type.Class(expr.literalClassName);
+            expr.valueType = one.Type.Class(this.langData.literalClassNames[expr.literalType]);
         else if (expr.literalType === "null")
             expr.valueType = one.Type.Null;
         else

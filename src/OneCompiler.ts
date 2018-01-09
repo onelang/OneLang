@@ -104,7 +104,7 @@ export class OneCompiler {
         overlaySchema.sourceType = "overlay";
         stdlibSchema.sourceType = "stdlib";
 
-        const inferTypes = new InferTypesTransform();
+        const inferTypes = new InferTypesTransform(this.parser.langData);
 
         this.stdlibCtx = new SchemaContext(stdlibSchema, "stdlib");
         new FixGenericAndEnumTypes().process(this.stdlibCtx.schema);

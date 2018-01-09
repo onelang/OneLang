@@ -3,9 +3,11 @@ import { OneAst as ast } from "../One/Ast";
 import { Reader } from "./Common/Reader";
 import { ExpressionParser } from "./Common/ExpressionParser";
 import { NodeManager } from "./Common/NodeManager";
-import { IParser } from "./Common/IParser";
+import { IParser, ILangData } from "./Common/IParser";
 
 export class CSharpParser implements IParser {
+    langData: ILangData = { literalClassNames: { string: "CsString", boolean: "CsBoolean", numeric: "CsNumber", character: "CsCharacter" } };
+
     context: string[] = [];
     reader: Reader;
     expressionParser: ExpressionParser;
@@ -26,7 +28,6 @@ export class CSharpParser implements IParser {
     createExpressionParser(reader: Reader, nodeManager: NodeManager = null) {
         const expressionParser = new ExpressionParser(reader, nodeManager);
         expressionParser.unaryPrehook = () => this.parseExpressionToken();
-        expressionParser.literalClassNames = { string: "CsString", numeric: "CsNumber" };
         return expressionParser;
     }
 
@@ -74,9 +75,9 @@ export class CSharpParser implements IParser {
         if (this.reader.readToken("null")) {
             return <ast.Literal> { exprKind: "Literal", literalType: "null", value: "null" };
         } else if (this.reader.readToken("true")) {
-            return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: true, literalClassName: "TsBoolean" };
+            return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: true };
         } else if (this.reader.readToken("false")) {
-            return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: false, literalClassName: "TsBoolean" };
+            return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: false };
         } else if (this.reader.readToken("$\"")) {
             const tmplStr = <ast.TemplateString> { exprKind: ast.ExpressionKind.TemplateString, parts: [] };
             while (true) {
