@@ -8,6 +8,8 @@ export namespace OneAst {
             map: string,
             array: string,
          };
+    
+         allowImplicitVariableDeclaration: boolean;
     }
 
     export interface TextRange {

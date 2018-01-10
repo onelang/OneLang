@@ -31,7 +31,6 @@ declare var YAML: any;
 SchemaTransformer.instance.addTransform(new FillNameTransform());
 SchemaTransformer.instance.addTransform(new FillParentTransform());
 SchemaTransformer.instance.addTransform(new FillMetaPathTransform());
-SchemaTransformer.instance.addTransform(new ResolveIdentifiersTransform());
 SchemaTransformer.instance.addTransform(new InlineOverlayTypesTransform());
 SchemaTransformer.instance.addTransform(new ConvertInlineThisRefTransform());
 SchemaTransformer.instance.addTransform(new TriviaCommentTransform());
@@ -102,7 +101,8 @@ export class OneCompiler {
         new FixGenericAndEnumTypes().process(this.stdlibCtx.schema);
         this.saveSchemaState(this.stdlibCtx, "0_Original");
 
-        this.stdlibCtx.ensureTransforms("fillName", "fillMetaPath", "fillParent", "resolveIdentifiers");
+        this.stdlibCtx.ensureTransforms("fillName", "fillMetaPath", "fillParent");
+        ResolveIdentifiersTransform.transform(this.stdlibCtx);
         inferTypes.transform(this.stdlibCtx);
         this.saveSchemaState(this.stdlibCtx, "0_Converted");
         
@@ -111,7 +111,8 @@ export class OneCompiler {
         new FixGenericAndEnumTypes().process(this.overlayCtx.schema);
         this.saveSchemaState(this.overlayCtx, "0_Original");
 
-        this.overlayCtx.ensureTransforms("fillName", "fillMetaPath", "fillParent", "resolveIdentifiers");
+        this.overlayCtx.ensureTransforms("fillName", "fillMetaPath", "fillParent");
+        ResolveIdentifiersTransform.transform(this.overlayCtx);
         inferTypes.transform(this.overlayCtx);
         this.overlayCtx.ensureTransforms("convertInlineThisRef");
         this.saveSchemaState(this.overlayCtx, "1_Converted");
@@ -130,7 +131,8 @@ export class OneCompiler {
         
         this.schemaCtx.addDependencySchema(this.overlayCtx);
         this.schemaCtx.addDependencySchema(this.stdlibCtx);
-        this.schemaCtx.ensureTransforms("fillName", "fillMetaPath", "fillParent", "resolveIdentifiers");
+        this.schemaCtx.ensureTransforms("fillName", "fillMetaPath", "fillParent");
+        ResolveIdentifiersTransform.transform(this.schemaCtx);
         inferTypes.transform(this.schemaCtx);
         this.saveSchemaState(this.schemaCtx, `2_TypesInferred`);
         

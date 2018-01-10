@@ -26,9 +26,8 @@ export class Context {
     }
 }
 
-export class ResolveIdentifiersTransform extends AstVisitor<Context> implements ISchemaTransform {
-    name: string = "resolveIdentifiers";
-    dependencies = ["fillName"];
+export class ResolveIdentifiersTransform extends AstVisitor<Context> {
+    constructor(public allowImplicitVariableDeclaration = false) { super(); }
 
     protected visitIdentifier(id: one.Identifier, context: Context) {
         const variable = context.variables.get(id.text);
@@ -70,6 +69,29 @@ export class ResolveIdentifiersTransform extends AstVisitor<Context> implements 
         this.visitBlock(stmt.body, newContext); 
     }
 
+    protected tryToConvertImplicitVarDecl(stmt: one.ExpressionStatement, context: Context) {
+        if (stmt.expression.exprKind !== one.ExpressionKind.Binary) return false;        
+        const expr = <one.BinaryExpression> stmt.expression;        
+        if (expr.operator !== "=" || expr.left.exprKind !== one.ExpressionKind.Identifier) return false;
+        const name = (<one.Identifier> expr.left).text;
+        if (context.variables.get(name) !== null) return false;
+
+        const varDecl = <one.VariableDeclaration> { stmtType: one.StatementType.VariableDeclaration,
+            name,
+            initializer: expr.right,
+        };
+        AstHelper.replaceProperties(stmt, varDecl);
+        this.visitVariableDeclaration(varDecl, context);
+        return true;
+    }
+
+    protected visitExpressionStatement(stmt: one.ExpressionStatement, context: Context) {
+        if (this.allowImplicitVariableDeclaration && this.tryToConvertImplicitVarDecl(stmt, context))
+            return;
+
+        this.visitExpression(stmt.expression, context);
+    }
+
     protected visitMethodLike(method: one.Method|one.Constructor, classContext: Context) {
         const methodContext = classContext.inherit();
 
@@ -86,13 +108,14 @@ export class ResolveIdentifiersTransform extends AstVisitor<Context> implements 
         super.visitClass(cls, classContext);
     }
         
-    transform(schemaCtx: SchemaContext) {
+    static transform(schemaCtx: SchemaContext) {
         const globalContext = schemaCtx.tiContext.inherit();        
         globalContext.schemaCtx = schemaCtx;
 
         for (const cls of Object.values(schemaCtx.schema.classes))
             globalContext.classes.addClass(cls);
 
-        this.visitSchema(schemaCtx.schema, globalContext);
+        const trans = new ResolveIdentifiersTransform(schemaCtx.schema.langData.allowImplicitVariableDeclaration);
+        trans.visitSchema(schemaCtx.schema, globalContext);
     }
 }
