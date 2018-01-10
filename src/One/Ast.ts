@@ -181,6 +181,8 @@ export namespace OneAst {
         }
 
         static Load(source: Type) {
+            if (!source || source.$objType !== "Type")
+                throw new Error("Invalid source to load Type from!");
             return Object.assign(new Type(), source);
         }
     }

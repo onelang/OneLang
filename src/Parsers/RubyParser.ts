@@ -50,6 +50,8 @@ export class RubyParser implements IParser {
             return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: true };
         } else if (this.reader.readToken("false")) {
             return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: false };
+        } else if (this.reader.readToken("self")) {
+            return <ast.Identifier> { exprKind: "Identifier", text: "this" };
         } else if (this.reader.readToken("@")) {
             const fieldName = this.reader.readIdentifier();
             return this.parseExprFromString(`this.${fieldName}`);
@@ -78,7 +80,7 @@ export class RubyParser implements IParser {
             this.reader.commentDisabled = false;
 
             if (tmplStr.parts.length === 1)
-                return <ast.Literal> { exprKind: "Literal", literalType: "string", value: tmplStr.parts[0] };
+                return <ast.Literal> { exprKind: "Literal", literalType: "string", value: tmplStr.parts[0].text };
 
             return tmplStr;
         }
@@ -197,7 +199,7 @@ export class RubyParser implements IParser {
             const memberStart = this.reader.offset;
             if (this.reader.readToken("def")) {
                 const isStatic = this.reader.readToken("self.");
-                const method = <ast.Method> { leadingTrivia, static: isStatic, parameters: [] };
+                const method = <ast.Method> { leadingTrivia, static: isStatic, parameters: [], returns: ast.Type.Any };
                 method.name = this.reader.expectIdentifier();
                 cls.methods[method.name] = method;
                 this.context.push(`M:${method.name}`);

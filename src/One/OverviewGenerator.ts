@@ -250,10 +250,10 @@ export class OverviewGenerator extends AstVisitor<void> {
             this.newLine();
 
             for (const method of Object.values(cls.methods)) {
-                const argList = method.parameters.map(arg => `${arg.name}: ${arg.type.repr()}`).join(", ");
+                const argList = method.parameters.map(arg => `${arg.name}: ${arg.type ? arg.type.repr() : "???"}`).join(", ");
                 const addInfo = [method.static ? "static" : null, method.throws ? "throws" : null].filter(x => x);
 
-                this.addLine(`${cls.name}::${method.name}(${argList}): ${method.returns ? method.returns.repr() : "<null>"}`
+                this.addLine(`${cls.name}::${method.name}(${argList}): ${method.returns ? method.returns.repr() : "???"}`
                     +`${addInfo.length > 0 ? ` [${addInfo.join(", ")}]` : ""}`);
 
                 if (method.body)
