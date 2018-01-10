@@ -111,17 +111,19 @@ templates:
           end
         {{/if}}
 
-        def initialize({{if class.constructor}}{{genArgs(class.constructor)}}{{/if}})
-            {{for field in class.fields|sep=\n}}
-              {{if field.static == false && field.initializer}}
-                @{{field.name}} = {{gen(field.initializer)}}
-              {{/if}}
-            {{/for}}
+        {{if class.needsConstructor}}
+          def initialize({{if class.constructor}}{{genArgs(class.constructor)}}{{/if}})
+              {{for field in class.fields|sep=\n}}
+                {{if field.static == false && field.initializer}}
+                  @{{field.name}} = {{gen(field.initializer)}}
+                {{/if}}
+              {{/for}}
 
-            {{if class.constructor}}
-              {{genBody(class.constructor.body)}}
-            {{/if}}
-        end
+              {{if class.constructor}}
+                {{genBody(class.constructor.body)}}
+              {{/if}}
+          end
+        {{/if}}
   
         {{for method in class.methods|sep=\n\n}}
           def {{if method.static}}self.{{/if}}{{method.name}}({{genArgs(method)}})
