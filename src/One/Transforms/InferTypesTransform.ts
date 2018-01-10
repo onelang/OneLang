@@ -4,7 +4,6 @@ import { VariableContext } from "../VariableContext";
 import { SchemaContext } from "../SchemaContext";
 import { ISchemaTransform } from "../SchemaTransformer";
 import { AstHelper } from "../AstHelper";
-import { ILangData } from "../../Parsers/Common/IParser";
 
 export enum ReferenceType { Class, Method, MethodVariable, ClassVariable }
 
@@ -80,7 +79,7 @@ export class GenericsMapping {
 }
 
 export class InferTypesTransform extends AstVisitor<Context> {
-    constructor(public langData: ILangData) { super(); }
+    constructor(public langData: one.ILangData) { super(); }
 
     protected visitIdentifier(id: one.Identifier, context: Context) {
         this.log(`No identifier should be here!`);

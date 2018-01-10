@@ -1,4 +1,15 @@
 export namespace OneAst {
+    export interface ILangData {
+        literalClassNames: {
+            string: string,
+            boolean: string,
+            numeric: string,
+            character: string,
+            map: string,
+            array: string,
+         };
+    }
+
     export interface TextRange {
         start: number;
         end: number;
@@ -15,6 +26,7 @@ export namespace OneAst {
 
     export interface Schema {
         sourceType: "program"|"overlay"|"stdlib";
+        langData: ILangData;
         meta: { transforms?: { [name: string]: boolean } };
         globals: { [name: string]: VariableDeclaration };
         enums: { [name: string]: Enum };

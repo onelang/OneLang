@@ -3,10 +3,10 @@ import { OneAst as ast } from "../One/Ast";
 import { Reader } from "./Common/Reader";
 import { ExpressionParser } from "./Common/ExpressionParser";
 import { NodeManager } from "./Common/NodeManager";
-import { IParser, ILangData } from "./Common/IParser";
+import { IParser } from "./Common/IParser";
 
 export class TypeScriptParser2 implements IParser {
-    langData: ILangData = { 
+    langData: ast.ILangData = { 
         literalClassNames: {
             string: "TsString",
             boolean: "TsBoolean",
@@ -14,7 +14,7 @@ export class TypeScriptParser2 implements IParser {
             character: "TsCharacter",
             map: "TsMap",
             array: "TsArray",
-        }
+        },
     };
 
     context: string[] = [];
@@ -417,7 +417,7 @@ export class TypeScriptParser2 implements IParser {
     }
 
     parseSchema() {
-        const schema = <ast.Schema> { classes: {}, enums: {}, globals: {} };
+        const schema = <ast.Schema> { classes: {}, enums: {}, globals: {}, langData: this.langData };
         while (!this.reader.eof) {
             const leadingTrivia = this.reader.readLeadingTrivia();
             if (this.reader.eof) break;

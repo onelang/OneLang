@@ -3,10 +3,10 @@ import { OneAst as ast } from "../One/Ast";
 import { Reader } from "./Common/Reader";
 import { ExpressionParser } from "./Common/ExpressionParser";
 import { NodeManager } from "./Common/NodeManager";
-import { IParser, ILangData } from "./Common/IParser";
+import { IParser } from "./Common/IParser";
 
 export class RubyParser implements IParser {
-    langData: ILangData = { 
+    langData: ast.ILangData = { 
         literalClassNames: {
             string: "RubyString",
             boolean: "RubyBoolean",
@@ -14,7 +14,7 @@ export class RubyParser implements IParser {
             character: "RubyCharacter",
             map: "RubyMap",
             array: "RubyArray",
-        }
+        },
     };
     
     context: string[] = [];
@@ -281,7 +281,7 @@ export class RubyParser implements IParser {
     }
 
     parseSchema() {
-        const schema = <ast.Schema> { classes: {}, enums: {}, globals: {} };
+        const schema = <ast.Schema> { classes: {}, enums: {}, globals: {}, langData: this.langData };
 
         const usings = [];
         while (this.reader.readToken("require"))
