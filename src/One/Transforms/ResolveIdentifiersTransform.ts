@@ -76,11 +76,11 @@ export class ResolveIdentifiersTransform extends AstVisitor<Context> {
         const name = (<one.Identifier> expr.left).text;
         if (context.variables.get(name) !== null) return false;
 
-        const varDecl = <one.VariableDeclaration> { stmtType: one.StatementType.VariableDeclaration,
+        const varDecl = AstHelper.replaceProperties(stmt, <one.VariableDeclaration> { 
+            stmtType: one.StatementType.VariableDeclaration,
             name,
             initializer: expr.right,
-        };
-        AstHelper.replaceProperties(stmt, varDecl);
+        });
         this.visitVariableDeclaration(varDecl, context);
         return true;
     }
