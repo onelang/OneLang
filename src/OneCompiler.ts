@@ -74,7 +74,7 @@ export class OneCompiler {
             YAML.parse(genericTransformerYaml));
 
         // TODO: hack
-        overlaySchema.classes[this.parser.langData.literalClassNames.map].meta = { iterable: true };
+        overlaySchema.classes[this.parser.langData.literalClassNames.array].meta = { iterable: true };
         stdlibSchema.classes["OneArray"].meta = { iterable: true };
         stdlibSchema.classes["OneError"].methods["raise"].throws = true;
         
