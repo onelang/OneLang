@@ -276,6 +276,13 @@ export abstract class AstVisitor<TContext> {
         this.visitVariable(prop, context);
     }
 
+    protected visitInterface(cls: one.Interface, context: TContext) {
+        this.visitNamedItem(cls, context);
+
+        for (const method of Object.values(cls.methods))
+            this.visitMethod(method, context);
+    }
+ 
     protected visitClass(cls: one.Class, context: TContext) {
         this.visitNamedItem(cls, context);
 
@@ -306,6 +313,9 @@ export abstract class AstVisitor<TContext> {
     protected visitSchema(schema: one.Schema, context: TContext) {
         for (const enum_ of Object.values(schema.enums))
             this.visitEnum(enum_, context);
+
+        for (const intf of Object.values(schema.interfaces))
+            this.visitInterface(intf, context);
 
         for (const cls of Object.values(schema.classes))
             this.visitClass(cls, context);

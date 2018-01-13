@@ -14,6 +14,9 @@ export class FillNameTransform implements ISchemaTransform {
         for (const enumName of Object.keys(schema.enums))
             schema.enums[enumName].name = enumName;
 
+            for (const intfName of Object.keys(schema.interfaces))
+            schema.interfaces[intfName].name = intfName;
+
         for (const className of Object.keys(schema.classes)) {
             const cls = schema.classes[className];
             cls.name = className;

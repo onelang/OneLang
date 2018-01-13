@@ -70,6 +70,10 @@ export class FillMetaPathTransform extends AstVisitor<Context> implements ISchem
         super.visitClass(cls, this.subContext(context, cls));
     }
     
+    protected visitInterface(intf: one.Interface, context: Context) {
+        super.visitInterface(intf, this.subContext(context, intf));
+    }
+    
     transform(schemaCtx: SchemaContext) {
         this.visitSchema(schemaCtx.schema, new Context());
     }

@@ -33,6 +33,7 @@ export namespace OneAst {
         globals: { [name: string]: VariableDeclaration };
         enums: { [name: string]: Enum };
         classes: { [name: string]: Class };
+        interfaces: { [name: string]: Interface };
     }
 
     export interface NamedItem extends INode {
@@ -52,20 +53,28 @@ export namespace OneAst {
         name: string;
     }
 
-    export interface Class extends NamedItem {
+    export interface Interface extends NamedItem {
         schemaRef?: Schema;
         type?: Type;
+        methods: { [name: string]: Method };
+        typeArguments: string[];
+        meta?: {
+            iterable?: boolean;
+        };
+        leadingTrivia: string;
+        baseInterfaces: string[];
+    }
+
+    export interface Class extends Interface {
         fields: { [name: string]: Field };
         properties: { [name: string]: Property };
         constructor: Constructor;
-        methods: { [name: string]: Method };
-        typeArguments: string[];
         meta?: {
             iterable?: boolean;
             overlay?: boolean;
             stdlib?: boolean;
         };
-        leadingTrivia: string;
+        baseClass: string;
     }
 
     export enum Visibility { Public = "public", Protected = "protected", Private = "private" }
@@ -169,6 +178,7 @@ export namespace OneAst {
 
         static Method(classType: Type, methodName: string) {
             const result = new Type(TypeKind.Method);
+            if (!classType) throw new Error(`Missing classType for method: ${methodName}`);
             result.classType = classType;
             result.methodName = methodName;
             return result;

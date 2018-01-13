@@ -36,6 +36,11 @@ export class FillParentTransform extends AstVisitor<any> implements ISchemaTrans
         super.visitProperty(prop, parent);
     }
 
+    protected visitInterface(intf: one.Interface, parent: any) {
+        intf.schemaRef = parent;
+        super.visitInterface(intf, intf);
+    }
+    
     protected visitClass(cls: one.Class, parent: any) {
         cls.schemaRef = parent;
         super.visitClass(cls, cls);

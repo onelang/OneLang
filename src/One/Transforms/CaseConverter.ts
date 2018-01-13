@@ -90,6 +90,11 @@ export class SchemaCaseConverter extends AstVisitor<void> {
         cls.outName = this.getName(cls.name, "class");
     }
 
+    protected visitInterface(intf: one.Interface) {
+        super.visitInterface(intf, null);
+        intf.outName = this.getName(intf.name, "class");
+    }
+
     protected visitEnum(enum_: one.Enum) {
         super.visitEnum(enum_, null);
         enum_.outName = this.getName(enum_.name, "enum");

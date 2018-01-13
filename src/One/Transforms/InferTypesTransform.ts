@@ -48,7 +48,7 @@ export class GenericsMapping {
 
     static log(data: string) { console.log(`[GenericsMapping] ${data}`); }
 
-    static create(cls: one.Class, realClassType: one.Type) {
+    static create(cls: one.Interface, realClassType: one.Type) {
         if (cls.typeArguments.length !== realClassType.typeArguments.length) {
             this.log(`Type argument count mismatch! '${cls.type.repr()}' <=> '${realClassType.repr()}'`);
             return null;
@@ -187,6 +187,17 @@ export class InferTypesTransform extends AstVisitor<Context> {
             expr.valueType = expr.valueType || typeArgs[0];
     }
 
+    protected getClassOrInterface(context: Context, className: string): one.Interface {
+        const intf = context.schemaCtx.schema.interfaces[className];
+        if (intf) return intf;
+
+        const cls = context.classes.classes[className];
+        if (cls) return cls;
+
+        this.log(`Class or interface is not found: ${className}`);
+        return null;
+    }
+
     protected visitCallExpression(expr: one.CallExpression, context: Context) {
         super.visitCallExpression(expr, context);
 
@@ -197,7 +208,7 @@ export class InferTypesTransform extends AstVisitor<Context> {
 
         const className = expr.method.valueType.classType.className;
         const methodName = expr.method.valueType.methodName;
-        const cls = context.classes.getClass(className);
+        const cls = this.getClassOrInterface(context, className);
         const method = cls.methods[methodName];
         if (!method) {
             this.log(`Method not found: ${className}::${methodName}`);
@@ -264,16 +275,12 @@ export class InferTypesTransform extends AstVisitor<Context> {
             return;
         }
 
-        const cls = context.classes.getClass(objType.className);
-        if (!cls) {
-            this.log(`Class not found: ${objType.className}`);
-            return;
-        }
-
         const thisIsStatic = expr.object.exprKind === one.ExpressionKind.ClassReference;
         const thisIsThis = expr.object.exprKind === one.ExpressionKind.ThisReference;
 
-        const method = cls.methods[expr.propertyName];
+        const intf = this.getClassOrInterface(context, objType.className);
+        if (intf === null) return;
+        const method = intf.methods[expr.propertyName];
         if (method) {
             if (method.static && !thisIsStatic)
                 this.log("Tried to call static method via instance reference");
@@ -286,7 +293,8 @@ export class InferTypesTransform extends AstVisitor<Context> {
             return;
         }
 
-        const fieldOrProp = cls.fields[expr.propertyName] || cls.properties[expr.propertyName];
+        const cls = <one.Class> intf;
+        const fieldOrProp = cls.fields && cls.fields[expr.propertyName] || cls.properties && cls.properties[expr.propertyName];
         if (fieldOrProp) {
             const newValue = fieldOrProp.static ? one.VariableRef.StaticField(expr.object, fieldOrProp) :
                 one.VariableRef.InstanceField(expr.object, fieldOrProp);
@@ -354,6 +362,11 @@ export class InferTypesTransform extends AstVisitor<Context> {
         context.currClass = cls;
         cls.type = one.Type.Class(cls.name, cls.typeArguments.map(t => one.Type.Generics(t)));
         super.visitClass(cls, context);
+    }
+
+    protected visitInterface(intf: one.Interface, context: Context) {
+        intf.type = one.Type.Class(intf.name, intf.typeArguments.map(t => one.Type.Generics(t)));
+        super.visitInterface(intf, context);
     }
 
     protected visitEnum(enum_: one.Enum, context: Context) {
