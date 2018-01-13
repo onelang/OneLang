@@ -111,16 +111,17 @@ templates:
        }
     {{/for}}
 
+    {{for interface in interfaces|sep=\n\n}}
+      public interface {{genTypeArgs(interface)}}
+      {
+          {{for method in interface.methods|sep="\n    \n"}}
+            {{method.returnType}} {{method.name}}({{genArgs(method)}});
+          {{/for}}
+      }
+    {{/for}}
+    
     {{for class in classes|sep=\n\n}}
-      public class {{class.name}}
-      {{if class.typeArguments|inline}}
-        <
-        {{for arg in class.typeArguments|inline sep=", "}}
-          {{arg}}
-        {{/for}}
-        >
-      {{/if}}
-
+      public class {{genTypeArgs(class)}}
       {
           {{if class.reflect}}
             static {{class.name}}()
@@ -148,6 +149,23 @@ templates:
           {{/for}}
       }
     {{/for}}
+  genTypeArgs:
+    args: [{name: class}]
+    template: |-
+      {{class.name}}
+      {{if class.typeArguments|inline}}
+        <
+        {{for arg in class.typeArguments|inline sep=", "}}
+          {{arg}}
+        {{/for}}
+        >
+      {{/if}}
+      {{if class.baseClasses.length > 0|inline}}
+        : 
+        {{for item in class.baseClasses|inline sep=", "}}
+          {{item}}
+        {{/for}}
+      {{/if}}
   genBody:
     args:
       - name: body
