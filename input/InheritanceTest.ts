@@ -1,4 +1,8 @@
-interface IPrinter {
+interface IPrinterBase {
+    someBaseFunc(): number;
+}
+
+interface IPrinter extends IPrinterBase {
     print();
 }
 
@@ -9,6 +13,8 @@ class BasePrinter implements IPrinter {
     print() {
         console.log(`BasePrinter: ${this.getValue()}`);
     }
+
+    someBaseFunc(): number { return 42; }
 }
 
 class ChildPrinter extends BasePrinter {
