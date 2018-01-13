@@ -25,6 +25,7 @@ import { FixGenericAndEnumTypes } from "./One/Transforms/FixGenericAndEnumTypes"
 import { IParser } from "./Parsers/Common/IParser";
 import { CSharpParser } from "./Parsers/CSharpParser";
 import { RubyParser } from "./Parsers/RubyParser";
+import { ExtractCommentAttributes } from "./One/Transforms/ExtractCommentAttributes";
 
 declare var YAML: any;
 
@@ -124,6 +125,7 @@ export class OneCompiler {
 
         new RemoveEmptyTemplateStringLiterals().process(this.schemaCtx.schema);
         new FixGenericAndEnumTypes().process(this.schemaCtx.schema);
+        new ExtractCommentAttributes().process(this.schemaCtx.schema);
         this.saveSchemaState(this.schemaCtx, `0_Original`);
         
         this.genericTransformer.process(this.schemaCtx.schema);

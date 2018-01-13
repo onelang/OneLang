@@ -439,7 +439,8 @@ export class CodeGenerator {
             parameters: this.genParameters(method),
             visibility: method.visibility || "public",
             static: method.static || false,
-            throws: method.throws || false
+            throws: method.throws || false,
+            attributes: method.attributes,
         };
     }
 
@@ -452,6 +453,7 @@ export class CodeGenerator {
                 typeArguments: intf.typeArguments && intf.typeArguments.length > 0 ? intf.typeArguments : null,
                 baseInterfaces: intf.baseInterfaces,
                 baseClasses: intf.baseInterfaces,
+                attributes: intf.attributes,
             };
         });
 
@@ -484,9 +486,10 @@ export class CodeGenerator {
                 baseClass: cls.baseClass,
                 baseInterfaces: cls.baseInterfaces,
                 baseClasses: (cls.baseClass ? [cls.baseClass] : []).concat(cls.baseInterfaces),
+                attributes: cls.attributes,
                 // TODO: hack
                 needsConstructor: constructor !== null || fields.some(x => x.visibility === "public" && !x.static && !!x.initializer),
-                reflect: (cls.leadingTrivia||"").includes("@reflect"), // TODO: replace this with real attribute/decorator handling
+                reflect: cls.attributes["reflect"],
                 publicMethods: methods.filter(x => x.visibility === "public"),
                 protectedMethods: methods.filter(x => x.visibility === "protected"),
                 privateMethods: methods.filter(x => x.visibility === "private"),

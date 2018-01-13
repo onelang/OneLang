@@ -62,6 +62,7 @@ export namespace OneAst {
             iterable?: boolean;
         };
         leadingTrivia: string;
+        attributes: { [name: string]: any };        
         baseInterfaces: string[];
     }
 
@@ -224,6 +225,8 @@ export namespace OneAst {
         parameters: MethodParameter[];
         body: Block;
         throws: boolean;
+        leadingTrivia: string;
+        attributes: { [name: string]: any };
     }
 
     export interface Method extends NamedItem {
@@ -238,6 +241,7 @@ export namespace OneAst {
         mutates: boolean;
         visibility?: Visibility;
         leadingTrivia: string;
+        attributes: { [name: string]: any };
     }
 
     export type MethodLike = Method | Constructor;
