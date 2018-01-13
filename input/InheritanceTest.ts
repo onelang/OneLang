@@ -12,6 +12,7 @@ class BasePrinter implements IPrinter {
 }
 
 class ChildPrinter extends BasePrinter {
+    // @override
     getValue(): string { return "Child"; }
 }
 

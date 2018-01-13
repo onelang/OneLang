@@ -142,7 +142,7 @@ templates:
           {{/if}}
 
           {{for method in class.methods|sep="\n    \n"}}
-            {{method.visibility}} {{if method.static}}static {{/if}}{{method.returnType}} {{method.name}}({{genArgs(method)}})
+            {{method.visibility}} {{if method.attributes["virtual"]}}virtual {{/if}}{{if method.attributes["override"]}}override {{/if}}{{if method.static}}static {{/if}}{{method.returnType}} {{method.name}}({{genArgs(method)}})
             {
                 {{genBody(method.body)}}
             }
