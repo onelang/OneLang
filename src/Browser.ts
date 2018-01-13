@@ -9,7 +9,7 @@ import { AstHelper } from "./One/AstHelper";
 
 declare var YAML: any;
 
-const testPrgName = "HelloWorld";
+const testPrgName = "InheritanceTest";
 
 const qs = {};
 location.search.substr(1).split('&').map(x => x.split('=')).forEach(x => qs[x[0]] = x[1]);
@@ -54,7 +54,7 @@ async function runLangTests() {
         runLang(lang);
 }
 
-const layout = new Layout();
+const layout = new Layout(["typescript"/*, "csharp"*/]);
 
 function escapeHtml(unsafe) {
     return unsafe.toString()
@@ -90,8 +90,9 @@ class CompileHelper {
     async init() {
         const tasks: Promise<void>[] = [];
 
-        tasks.push(this.setContent(layout.langs.typescript.overlayHandler, `langs/NativeResolvers/typescript.ts`));
-        tasks.push(this.setContent(layout.langs.csharp.overlayHandler, `langs/NativeResolvers/csharp.ts`));
+        for (const lang of layout.inputLangs)
+            tasks.push(this.setContent(layout.langs[lang].overlayHandler, `langs/NativeResolvers/${lang}.ts`));
+
         tasks.push(this.setContent(layout.oneStdLibHandler, `langs/StdLibs/stdlib.d.ts`));
         tasks.push(this.setContent(layout.genericTransformsHandler, `langs/NativeResolvers/GenericTransforms.yaml`));
 
@@ -183,13 +184,12 @@ class MarkerManager {
 let markerManager = new MarkerManager();
 
 function initLayout() {
-    const inputLangs = ["typescript", "csharp"];
     layout.init();
     layout.onEditorChange = async (sourceLang: string, newContent: string) => {
         console.log("editor change", sourceLang, newContent);
         markerManager.removeMarkers();
 
-        if (inputLangs.includes(sourceLang)) {
+        if (layout.inputLangs.includes(sourceLang)) {
             compileHelper.setProgram(newContent, sourceLang);
             const sourceLangPromise = new ExposedPromise<string>();
             await Promise.all(Object.keys(layout.langs).map(async langName => {
@@ -220,7 +220,7 @@ function initLayout() {
 
     window["layout"] = layout;
 
-    for (const inputLang_ of inputLangs) {
+    for (const inputLang_ of layout.inputLangs) {
         const inputLang = inputLang_;
         const inputEditor = layout.langs[inputLang].changeHandler.editor;
         inputEditor.getSelection().on('changeCursor', () => {
@@ -243,7 +243,7 @@ function initLayout() {
 
 async function setupTestProgram() {
     const testPrg = await downloadTextFile(`input/${testPrgName}.ts`);
-    layout.langs["typescript"].changeHandler.setContent(testPrg, true);
+    layout.langs["typescript"].changeHandler.setContent(testPrg.replace(/\r\n/g, '\n'), true);
 }
 
 async function main() {

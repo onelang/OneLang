@@ -29,7 +29,7 @@ export class Layout {
 
     errors: ClosableComponent;
 
-    constructor() {
+    constructor(public inputLangs: string[]) {
     }
 
     init() {
@@ -37,7 +37,8 @@ export class Layout {
         this.initLangComponents();
     }
 
-    addLang(container: Container, title: string, langName: string, aceLang: string = null, isInput: boolean) {
+    addLang(container: Container, title: string, langName: string, aceLang: string = null) {
+        const isInput = this.inputLangs.includes(langName);
         const isTs = langName === "typescript";
         container.addTabs(tabs => {
             const langUi = <LangUi>{};
@@ -123,8 +124,7 @@ export class Layout {
 
     setup(container: Container): TabContainer {
         const c = <TabContainer> container;
-        c.addLang = (title: string, langName: string, aceLang?: string) => this.addLang(container, title, langName, aceLang, false);
-        c.addInputLang = (title: string, langName: string, aceLang?: string) => this.addLang(container, title, langName, aceLang, true);
+        c.addLang = (title: string, langName: string, aceLang?: string) => this.addLang(container, title, langName, aceLang);
         return c;
     }
 
@@ -132,10 +132,10 @@ export class Layout {
         this.manager.root
             .addHorizontal(mainCols => mainCols
                 .addVertical(rows => this.setup(rows.setConfig({ width: 50 }))
-                    .addInputLang("TypeScript", "typescript")
+                    .addLang("TypeScript", "typescript")
                     .addHorizontal(cols => this.setup(cols)
                         .addLang("C++", "cpp", "c_cpp")
-                        .addInputLang("C#", "csharp")
+                        .addLang("C#", "csharp")
                     )
                     .addHorizontal(cols => this.setup(cols)
                         .addLang("Go", "go", "swift")
