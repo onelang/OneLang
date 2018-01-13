@@ -276,10 +276,10 @@ export abstract class AstVisitor<TContext> {
         this.visitVariable(prop, context);
     }
 
-    protected visitInterface(cls: one.Interface, context: TContext) {
-        this.visitNamedItem(cls, context);
+    protected visitInterface(intf: one.Interface, context: TContext) {
+        this.visitNamedItem(intf, context);
 
-        for (const method of Object.values(cls.methods))
+        for (const method of Object.values(intf.methods))
             this.visitMethod(method, context);
     }
  
