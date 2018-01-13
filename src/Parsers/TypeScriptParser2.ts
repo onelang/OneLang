@@ -274,17 +274,102 @@ export class TypeScriptParser2 implements IParser {
         return <ast.ExpressionStatement> { stmtType: ast.StatementType.ExpressionStatement, expression: expr };
     }
 
+    parseMethodSignature(method: ast.Method, cls: ast.Class, isConstructor: boolean, declarationOnly: boolean) {
+        this.context.push(`M:${method.name}`);
+
+        const bodyPrefixStatements: ast.Statement[] = [];
+        if (!this.reader.readToken(")")) {
+            do {
+                const param = <ast.MethodParameter> {};
+                method.parameters.push(param);
+
+                this.reader.skipWhitespace();
+                const paramStart = this.reader.offset;
+                const isPublic = this.reader.readToken("public");
+                if (isPublic && !isConstructor)
+                    this.reader.fail("public modifier is only allowed in constructor definition");
+
+                param.name = this.reader.expectIdentifier();
+                this.context.push(`arg:${param.name}`);
+                this.parseVarDeclTypeAndInit(param);
+
+                if (isPublic) {
+                    const field = <ast.Field> { name: param.name, type: param.type, initializer: param.initializer };
+                    cls.fields[field.name] = field;
+                    bodyPrefixStatements.push(this.parseExprStmtFromString(`this.${param.name} = ${param.name}`));
+                }
+
+                this.nodeManager.addNode(param, paramStart);
+                this.context.pop();
+            } while (this.reader.readToken(","));
+
+            this.reader.expectToken(")");
+        }
+
+        method.returns = this.reader.readToken(":") ? this.parseType() : ast.Type.Void;
+
+        if (declarationOnly) {
+            this.reader.expectToken(";");
+        } else {
+            method.body = this.parseBlock();
+            if (method.body === null)
+                this.reader.fail("method body is missing");
+            method.body.statements = [...bodyPrefixStatements, ...method.body.statements];
+        }
+
+        this.context.pop();
+    }
+
+    parseInterface() {
+        if (!this.reader.readToken("interface")) return null;
+        const intfStart = this.reader.prevTokenOffset;
+
+        const intf = <ast.Interface> { methods: {}, baseInterfaces: [] };
+        intf.name = this.reader.expectIdentifier("expected identifier after 'interface' keyword");
+        this.context.push(`I:${intf.name}`);
+
+        intf.typeArguments = this.parseTypeArguments();
+
+        while (this.reader.readToken("extends"))
+            intf.baseInterfaces.push(this.reader.expectIdentifier());
+
+        this.reader.expectToken("{");
+        while(!this.reader.readToken("}")) {
+            const leadingTrivia = this.reader.readLeadingTrivia();
+
+            const memberStart = this.reader.offset;
+            const memberName = this.reader.expectIdentifier();
+            const methodTypeArguments = this.parseTypeArguments();
+            this.reader.expectToken("("); // method
+
+            const method = <ast.Method> { name: memberName, leadingTrivia, parameters: [], typeArguments: methodTypeArguments };
+            intf.methods[method.name] = method;
+
+            this.parseMethodSignature(method, null, /* isConstructor = */ false, /* declarationOnly = */ true);
+            this.nodeManager.addNode(method, memberStart);
+        }
+
+        this.nodeManager.addNode(intf, intfStart);
+        this.context.pop();
+        return intf;        
+    }
+
     parseClass() {
         const clsModifiers = this.reader.readModifiers(["declare"]);
         const declarationOnly = clsModifiers.includes("declare");
         if (!this.reader.readToken("class")) return null;
         const clsStart = this.reader.prevTokenOffset;
         
-        const cls = <ast.Class> { methods: {}, fields: {}, properties: {}, constructor: null };
+        const cls = <ast.Class> { methods: {}, fields: {}, properties: {}, constructor: null, baseInterfaces: [] };
         cls.name = this.reader.expectIdentifier("expected identifier after 'class' keyword");
         this.context.push(`C:${cls.name}`);
 
         cls.typeArguments = this.parseTypeArguments();
+
+        if (this.reader.readToken("extends"))
+            cls.baseClass = this.reader.expectIdentifier();
+        while (this.reader.readToken("implements"))
+            cls.baseInterfaces.push(this.reader.expectIdentifier());
 
         this.reader.expectToken("{");
         while(!this.reader.readToken("}")) {
@@ -305,50 +390,9 @@ export class TypeScriptParser2 implements IParser {
                     cls.constructor = method;
                 else
                     cls.methods[method.name] = method;
-                this.context.push(`M:${method.name}`);
 
-                const bodyPrefixStatements: ast.Statement[] = [];
-                if (!this.reader.readToken(")")) {
-                    do {
-                        const param = <ast.MethodParameter> {};
-                        method.parameters.push(param);
-
-                        this.reader.skipWhitespace();
-                        const paramStart = this.reader.offset;
-                        const isPublic = this.reader.readToken("public");
-                        if (isPublic && !isConstructor)
-                            this.reader.fail("public modifier is only allowed in constructor definition");
-
-                        param.name = this.reader.expectIdentifier();
-                        this.context.push(`arg:${param.name}`);
-                        this.parseVarDeclTypeAndInit(param);
-
-                        if (isPublic) {
-                            const field = <ast.Field> { name: param.name, type: param.type, initializer: param.initializer };
-                            cls.fields[field.name] = field;
-                            bodyPrefixStatements.push(this.parseExprStmtFromString(`this.${param.name} = ${param.name}`));
-                        }
-
-                        this.nodeManager.addNode(param, paramStart);
-                        this.context.pop();
-                    } while (this.reader.readToken(","));
-    
-                    this.reader.expectToken(")");
-                }
-
-                method.returns = this.reader.readToken(":") ? this.parseType() : ast.Type.Void;
-
-                if (declarationOnly) {
-                    this.reader.expectToken(";");
-                } else {
-                    method.body = this.parseBlock();
-                    if (method.body === null)
-                        this.reader.fail("method body is missing");
-                    method.body.statements = [...bodyPrefixStatements, ...method.body.statements];
-                }
-
+                this.parseMethodSignature(method, cls, isConstructor, declarationOnly);
                 this.nodeManager.addNode(method, memberStart);
-                this.context.pop();
             } else if (memberName === "get" || memberName === "set") { // property
                 const propName = this.reader.expectIdentifier();
                 const prop = cls.properties[propName] || (cls.properties[propName] = <ast.Property> { name: propName });
@@ -418,7 +462,7 @@ export class TypeScriptParser2 implements IParser {
     }
 
     parseSchema() {
-        const schema = <ast.Schema> { classes: {}, enums: {}, globals: {}, langData: this.langData };
+        const schema = <ast.Schema> { classes: {}, enums: {}, globals: {}, interfaces: {}, langData: this.langData };
         while (!this.reader.eof) {
             const leadingTrivia = this.reader.readLeadingTrivia();
             if (this.reader.eof) break;
@@ -439,7 +483,14 @@ export class TypeScriptParser2 implements IParser {
                 continue;
             }
 
-            this.reader.fail("expected 'class' or 'enum' here");
+            const intf = this.parseInterface();
+            if (intf !== null) {
+                intf.leadingTrivia = leadingTrivia;
+                schema.interfaces[intf.name] = intf;
+                continue;
+            }
+
+            this.reader.fail("expected 'class', 'enum' or 'interface' here");
         }
         return schema;
     }
