@@ -39,6 +39,11 @@ namespace CodeGeneratorModel {
         privateMethods: Method[];
     }
 
+    export interface Interface {
+        name: string;
+        methods: Method[];
+    }
+
     export interface Enum {
         name: string;
         values: { name: string, intValue: number, origName: string }[];
@@ -85,6 +90,7 @@ class CodeGeneratorModel {
 
     includes: string[] = [];
     classes: CodeGeneratorModel.Class[] = [];
+    interfaces: CodeGeneratorModel.Interface[] = [];
     enums: CodeGeneratorModel.Enum[] = [];
 
     constructor(public generator: CodeGenerator) { }
@@ -337,6 +343,7 @@ export class CodeGenerator {
         const codeGenVars = new VariableSource("CodeGeneratorModel");
         codeGenVars.addCallback("includes", () => this.model.includes);
         codeGenVars.addCallback("classes", () => this.model.classes);
+        codeGenVars.addCallback("interfaces", () => this.model.interfaces);
         codeGenVars.addCallback("enums", () => this.model.enums);
         codeGenVars.addCallback("result", () => this.model.result);
         for (const name of ["gen", "isIfBlock", "typeName", "hackPerlToVar", "escapeQuotes", "clsName"])
@@ -423,20 +430,33 @@ export class CodeGenerator {
         });
     }
 
+    convertMethod(method: one.Method) {
+        return <CodeGeneratorModel.Method> {
+            name: method.outName,
+            returnType: this.getTypeName(method.returns),
+            returnTypeInfo: method.returns,
+            body: method.body,
+            parameters: this.genParameters(method),
+            visibility: method.visibility || "public",
+            static: method.static || false,
+            throws: method.throws || false
+        };
+    }
+
     setupClasses() {
+        this.model.interfaces = Object.values(this.schema.interfaces).map(intf => {
+            const methods = Object.values(intf.methods).map(method => this.convertMethod(method));
+            return <CodeGeneratorModel.Interface> {
+                name: intf.outName,
+                methods: methods,
+                typeArguments: intf.typeArguments && intf.typeArguments.length > 0 ? intf.typeArguments : null,
+                baseInterfaces: intf.baseInterfaces,
+                baseClasses: intf.baseInterfaces,
+            };
+        });
+
         this.model.classes = Object.values(this.schema.classes).map(cls => {
-            const methods = Object.values(cls.methods).map(method => {
-                return <CodeGeneratorModel.Method> {
-                    name: method.outName,
-                    returnType: this.getTypeName(method.returns),
-                    returnTypeInfo: method.returns,
-                    body: method.body,
-                    parameters: this.genParameters(method),
-                    visibility: method.visibility || "public",
-                    static: method.static || false,
-                    throws: method.throws || false
-                };
-            });
+            const methods = Object.values(cls.methods).map(method => this.convertMethod(method));
 
             const constructor = cls.constructor ? <CodeGeneratorModel.Constructor> {
                 body: cls.constructor.body,
@@ -461,6 +481,9 @@ export class CodeGenerator {
                 methods: methods,
                 constructor,
                 typeArguments: cls.typeArguments && cls.typeArguments.length > 0 ? cls.typeArguments : null,
+                baseClass: cls.baseClass,
+                baseInterfaces: cls.baseInterfaces,
+                baseClasses: (cls.baseClass ? [cls.baseClass] : []).concat(cls.baseInterfaces),
                 // TODO: hack
                 needsConstructor: constructor !== null || fields.some(x => x.visibility === "public" && !x.static && !!x.initializer),
                 reflect: (cls.leadingTrivia||"").includes("@reflect"), // TODO: replace this with real attribute/decorator handling
