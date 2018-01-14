@@ -3,14 +3,14 @@ interface IPrinterBase {
 }
 
 interface IPrinter extends IPrinterBase {
-    print();
+    printIt();
 }
 
 class BasePrinter implements IPrinter {
     // @virtual
     getValue(): string { return "Base"; }
 
-    print() {
+    printIt() {
         console.log(`BasePrinter: ${this.getValue()}`);
     }
 
@@ -24,14 +24,14 @@ class ChildPrinter extends BasePrinter {
 
 class TestClass {
     getPrinter(name: string): IPrinter {
-        const result = name === "child" ? new ChildPrinter() : new BasePrinter();
+        const result: IPrinter = name === "child" ? new ChildPrinter() : new BasePrinter();
         return result;
     }
 
     testMethod() {
         const basePrinter = this.getPrinter("base");
         const childPrinter = this.getPrinter("child");
-        basePrinter.print();
-        childPrinter.print();
+        basePrinter.printIt();
+        childPrinter.printIt();
     }
 }
