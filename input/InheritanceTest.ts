@@ -33,5 +33,6 @@ class TestClass {
         const childPrinter = this.getPrinter("child");
         basePrinter.printIt();
         childPrinter.printIt();
+        console.log(`${basePrinter.someBaseFunc()} == ${childPrinter.someBaseFunc()}`);
     }
 }
