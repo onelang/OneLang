@@ -187,11 +187,25 @@ export class InferTypesTransform extends AstVisitor<Context> {
             expr.valueType = expr.valueType || typeArgs[0];
     }
 
+    protected getClass(context: Context, className: string, required = false): one.Class {
+        const result = context.classes.classes[className] || null;
+        if (required && !result)
+            this.log(`Class was not found: ${className}`);
+        return result;
+    }
+
+    protected getInterface(context: Context, intfName: string, required = false): one.Interface {
+        const result = context.schemaCtx.schema.interfaces[intfName] || null;
+        if (required && !result)
+            this.log(`Class was not found: ${intfName}`);
+        return result;
+    }
+
     protected getClassOrInterface(context: Context, className: string): one.Interface {
-        const intf = context.schemaCtx.schema.interfaces[className];
+        const intf = this.getInterface(context, className);
         if (intf) return intf;
 
-        const cls = context.classes.classes[className];
+        const cls = this.getClass(context, className);
         if (cls) return cls;
 
         this.log(`Class or interface is not found: ${className}`);
@@ -202,14 +216,14 @@ export class InferTypesTransform extends AstVisitor<Context> {
         super.visitCallExpression(expr, context);
 
         if (!expr.method.valueType.isMethod) {
-            this.log(`Tried to call a non-method type '${expr.method.valueType.repr()}'.`);
+            this.log(`Tried to call a non-method type '${expr.method.valueType.repr()}'`);
             return;
         }
 
         const className = expr.method.valueType.classType.className;
         const methodName = expr.method.valueType.methodName;
         const cls = this.getClassOrInterface(context, className);
-        const method = cls.methods[methodName];
+        const method = this.getMethod(context, className, methodName);
         if (!method) {
             this.log(`Method not found: ${className}::${methodName}`);
             return;
@@ -247,6 +261,61 @@ export class InferTypesTransform extends AstVisitor<Context> {
         expr.valueType = expr.expression.valueType;
     }
 
+    getClassChain(context: Context, className: string) {
+        const result: one.Class[] = [];
+
+        let currClass = className;
+        while (currClass) {
+            const cls = this.getClass(context, className, currClass !== className);
+            result.push(cls);
+            currClass = cls.baseClass;
+        }
+
+        return result;
+    }
+
+    getInterfaces(context: Context, rootIntfName: string) {
+        const seen: { [intfName: string]: boolean } = { [rootIntfName]: true };
+        const todo = [rootIntfName];
+        const result: one.Interface[] = [];
+        
+        while (todo.length > 0) {
+            const intfName = todo.pop();
+            const intf = this.getInterface(context, intfName, intfName !== rootIntfName);
+            if (!intf) continue;
+            result.push(intf);
+
+            for (const baseIntfName of intf.baseInterfaces) {
+                if (seen[baseIntfName]) continue;
+                seen[baseIntfName] = true;
+                todo.push(baseIntfName);
+            }
+        }
+
+        return result;
+    }
+
+    getMethod(context: Context, className: string, methodName: string) {
+        let intfs = this.getInterfaces(context, className);
+        if (intfs.length === 0) // 'className' is a class
+            intfs = this.getClassChain(context, className);
+
+        for (const intf of intfs) {
+            const method = intf.methods[methodName];
+            if (method) return method;
+        }
+        return null;
+    }
+
+    getFieldOrProp(context: Context, className: string, fieldName: string) {
+        const classChain = this.getClassChain(context, className);
+        for (const cls of classChain) {
+            const fieldOrProp = cls.fields[fieldName] || cls.properties[fieldName];
+            if (fieldOrProp) return fieldOrProp;
+        }
+        return null;
+    }
+
     protected visitPropertyAccessExpression(expr: one.PropertyAccessExpression, context: Context) {
         super.visitPropertyAccessExpression(expr, context);
 
@@ -275,26 +344,23 @@ export class InferTypesTransform extends AstVisitor<Context> {
             return;
         }
 
-        const thisIsStatic = expr.object.exprKind === one.ExpressionKind.ClassReference;
-        const thisIsThis = expr.object.exprKind === one.ExpressionKind.ThisReference;
-
-        const intf = this.getClassOrInterface(context, objType.className);
-        if (intf === null) return;
-        const method = intf.methods[expr.propertyName];
+        const method = this.getMethod(context, objType.className, expr.propertyName);
         if (method) {
+            const thisIsStatic = expr.object.exprKind === one.ExpressionKind.ClassReference;
+            const thisIsThis = expr.object.exprKind === one.ExpressionKind.ThisReference;
+    
             if (method.static && !thisIsStatic)
                 this.log("Tried to call static method via instance reference");
             else if (!method.static && thisIsStatic)
                 this.log("Tried to call non-static method via static reference");
-
+    
             const newValue = new one.MethodReference(method, thisIsStatic ? null : expr.object);
             const newExpr = AstHelper.replaceProperties(expr, newValue);
             newExpr.valueType = one.Type.Method(objType, method.name);
             return;
         }
 
-        const cls = <one.Class> intf;
-        const fieldOrProp = cls.fields && cls.fields[expr.propertyName] || cls.properties && cls.properties[expr.propertyName];
+        const fieldOrProp = this.getFieldOrProp(context, objType.className, expr.propertyName);
         if (fieldOrProp) {
             const newValue = fieldOrProp.static ? one.VariableRef.StaticField(expr.object, fieldOrProp) :
                 one.VariableRef.InstanceField(expr.object, fieldOrProp);
