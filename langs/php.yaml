@@ -98,7 +98,7 @@ templates:
     {{/for}}
 
     {{for class in classes|sep=\n\n}}
-      class {{class.name}} {
+      class {{class.name}}{{if class.baseClass}} extends {{class.baseClass}}{{/if}} {
           {{for field in class.fields|sep=\n}}
             {{field.visibility}} {{if field.static}}static {{/if}}${{field.name}}
             {{if field.initializer|inline}}

@@ -95,7 +95,7 @@ templates:
     {{/for}}
 
     {{for class in classes|sep=\n\n}}
-      class {{class.name}}:
+      class {{class.name}}{{if class.baseClass}}({{class.baseClass}}){{/if}}:
           {{if class.needsConstructor}}
             def __init__({{if class.constructor}}{{genArgs(class.constructor)}}{{else}}self{{/if}}):
                 {{for field in class.fields|sep=\n}}

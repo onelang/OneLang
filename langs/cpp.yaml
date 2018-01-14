@@ -108,15 +108,17 @@ templates:
        };
     {{/for}}
 
+    {{for interface in interfaces|sep=\n\n}}
+      {{genClassSignature(interface)}} {
+        public:
+          {{for method in interface.methods|sep="\n    \n"}}
+            virtual {{getType(method.returnTypeInfo)}} {{method.name}}({{genArgs(method)}}) = 0;
+          {{/for}}
+      };
+    {{/for}}
+
     {{for class in classes|sep=\n\n}}
-      {{if class.typeArguments}}
-        template<
-        {{for arg in class.typeArguments|inline sep=", "}}
-          typename {{arg}}
-        {{/for}}
-        >
-      {{/if}}
-      class {{class.name}}{{if class.reflect}} : public ReflectedClass{{/if}} {
+      {{genClassSignature(class)}} {
         public:
           {{genFields(class.publicFields)}}
 
@@ -211,10 +213,31 @@ templates:
       - name: methods
     template: |-
       {{for method in methods|sep=\n\n}}
-        {{if method.static}}static {{/if}}{{getType(method.returnTypeInfo)}} {{method.name}}({{genArgs(method)}}) {
+        {{if method.static}}static {{/if}}{{if method.attributes["virtual"]}}virtual {{/if}}{{getType(method.returnTypeInfo)}} {{method.name}}({{genArgs(method)}}) {
             {{genBody(method.body)}}
         }
       {{/for}}
+
+  genClassSignature:
+    args: [{name: class}]
+    template: |-
+      {{if class.typeArguments|inline}}
+        template<
+        {{for arg in class.typeArguments|inline sep=", "}}
+          typename {{arg}}
+        {{/for}}
+        >
+      {{/if}}
+      class {{class.name}}
+      {{if class.baseClasses.length > 0 or class.reflect|inline}}
+        : 
+        {{for item in class.baseClasses|inline sep=", "}}
+          public {{item}}
+        {{/for}}
+        {{if class.reflect}}
+          {{if class.baseClasses.length > 0}}, {{/if}}public ReflectedClass
+        {{/if}}
+      {{/if}}
 
   genBody:
     args:

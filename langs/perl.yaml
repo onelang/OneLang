@@ -140,6 +140,10 @@ templates:
     {{for class in classes|sep=\n\n}}
       package {{class.name}};
 
+      {{if class.baseClass}}
+        use parent -norequire, '{{class.baseClass}}';
+      {{/if}}
+
       sub new
       {
           my $class = shift;
