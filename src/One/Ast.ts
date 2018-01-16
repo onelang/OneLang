@@ -85,6 +85,7 @@ export namespace OneAst {
         Any = "any",
         Null = "null",
         Class = "class",
+        Interface = "interface",
         Enum = "enum",
         Method = "method",
         Generics = "generics"
@@ -105,6 +106,8 @@ export namespace OneAst {
 
         get isPrimitiveType() { return Type.PrimitiveTypeKinds.includes(this.typeKind); }
         get isClass() { return this.typeKind === TypeKind.Class; }
+        get isInterface() { return this.typeKind === TypeKind.Interface; }
+        get isClassOrInterface() { return this.isClass || this.isInterface; }
         get isComplexClass() { return this.canBeNull && !this.isAny; } // TODO: hack for C++ (any) & Go (interface{})
         get isEnum() { return this.typeKind === TypeKind.Enum; }
         get isMethod() { return this.typeKind === TypeKind.Method; }
@@ -119,7 +122,7 @@ export namespace OneAst {
         get isOneArray() { return this.className === "OneArray"; }
         get isOneMap() { return this.className === "OneMap"; }
 
-        get canBeNull() { return (this.typeKind === TypeKind.Class && !this.isNumber && !this.isCharacter && !this.isString && !this.isBoolean) || this.isAny; }
+        get canBeNull() { return (this.isClassOrInterface && !this.isNumber && !this.isCharacter && !this.isString && !this.isBoolean) || this.isAny; }
 
         equals(other: Type) {
             if (this.typeKind !== other.typeKind)
@@ -140,9 +143,9 @@ export namespace OneAst {
         repr() {
             if (this.isPrimitiveType) {
                 return this.typeKind.toString();
-            } else if (this.isClass) {
-                return this.className + (this.typeArguments.length === 0 ? "" : 
-                    `<${this.typeArguments.map(x => x.repr()).join(", ")}>`);
+            } else if (this.isClassOrInterface) {
+                return (this.isInterface ? "(I)" : "") + this.className + 
+                    (this.typeArguments.length === 0 ? "" : `<${this.typeArguments.map(x => x.repr()).join(", ")}>`);
             } else if (this.isMethod) {
                 return `${this.classType.repr()}::${this.methodName}`;
             } else if (this.isGenerics) {
@@ -166,6 +169,16 @@ export namespace OneAst {
                 throw new Error("expected className in Type.Class");
 
             const result = new Type(TypeKind.Class);
+            result.className = className;
+            result.typeArguments = generics;
+            return result;
+        }
+
+        static Interface(className: string, generics: Type[] = []) {
+            if (!className)
+                throw new Error("expected className in Type.Interface");
+
+            const result = new Type(TypeKind.Interface);
             result.className = className;
             result.typeArguments = generics;
             return result;

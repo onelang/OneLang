@@ -203,7 +203,7 @@ templates:
     args:
       - name: item
     template: |-
-      {{if item.isComplexClass && !item.isOneArray}}
+      {{if item.isComplexClass && !item.isOneArray &&!item.isInterface}}
         *{{typeName(item)}}
       {{elif item.isOneArray}}
         []{{getType(item.typeArguments[0])}}

@@ -6,7 +6,7 @@ export class FixGenericAndEnumTypes extends AstTransformer<void> {
     protected visitType(type: one.Type) {
         super.visitType(type, null);
         
-        if (!type || !type.isClass) return;
+        if (!type || !type.isClassOrInterface) return;
 
         if ((this.currentClass && this.currentClass.typeArguments.includes(type.className)) || 
             (this.currentMethod && this.currentMethod.typeArguments.includes(type.className))) {

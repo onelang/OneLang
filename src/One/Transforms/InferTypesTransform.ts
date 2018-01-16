@@ -70,7 +70,7 @@ export class GenericsMapping {
                 newType = one.Type.Load(resolvedType);
         }
 
-        if (newType.isClass)
+        if (newType.isClassOrInterface)
             for (let i = 0; i < newType.typeArguments.length; i++)
                 newType.typeArguments[i] = this.replace(newType.typeArguments[i]);
 
@@ -97,7 +97,7 @@ export class InferTypesTransform extends AstVisitor<Context> {
         const errorPrefix = `Cannot sync types (${type1.repr()} <=> ${type2.repr()})`;
         if (type1.typeKind !== type2.typeKind) {
             this.log(`${errorPrefix}: kind mismatch!`);
-        } else if (type1.isClass) {
+        } else if (type1.isClassOrInterface) {
             if (type1.className !== type2.className) {
                 this.log(`${errorPrefix}: class name mismatch!`);
             } else if (type1.typeArguments.length !== type2.typeArguments.length) {
@@ -339,7 +339,7 @@ export class InferTypesTransform extends AstVisitor<Context> {
             return;
         }
 
-        if (!objType.isClass) {
+        if (!objType.isClassOrInterface) {
             this.log(`Cannot access property '${expr.propertyName}' on object type '${expr.object.valueType.repr()}'.`);
             return;
         }
@@ -431,7 +431,7 @@ export class InferTypesTransform extends AstVisitor<Context> {
     }
 
     protected visitInterface(intf: one.Interface, context: Context) {
-        intf.type = one.Type.Class(intf.name, intf.typeArguments.map(t => one.Type.Generics(t)));
+        intf.type = one.Type.Interface(intf.name, intf.typeArguments.map(t => one.Type.Generics(t)));
         super.visitInterface(intf, context);
     }
 

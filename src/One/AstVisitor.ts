@@ -17,7 +17,7 @@ export abstract class AstVisitor<TContext> {
         if (!type) return;
 
         this.visitNode(type, context);
-        if (type.isClass)
+        if (type.isClassOrInterface)
             for (const typeArg of type.typeArguments)
                 this.visitType(typeArg, context);
     }

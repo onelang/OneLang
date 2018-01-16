@@ -360,7 +360,7 @@ export class CodeGenerator {
     }
 
     getTypeName(type: one.Type): string {
-        if (type.isClass) {
+        if (type.isClassOrInterface) {
             const classGen = this.model.generator.classGenerators[type.className];
             if (classGen) {
                 return this.call(classGen.typeGenerator, [type.typeArguments.map(x => this.getTypeName(x))])
