@@ -81,6 +81,14 @@ export class GenericsMapping {
 export class InferTypesTransform extends AstVisitor<Context> {
     constructor(public langData: one.ILangData) { super(); }
 
+    protected visitType(type: one.Type, context: Context) {
+        super.visitType(type, context);
+        if (!type) return;
+
+        if (type.isClass && this.getInterface(context, type.className))
+            type.typeKind = one.TypeKind.Interface;
+    }
+
     protected visitIdentifier(id: one.Identifier, context: Context) {
         this.log(`No identifier should be here!`);
     }
