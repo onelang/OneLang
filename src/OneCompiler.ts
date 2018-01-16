@@ -96,7 +96,6 @@ export class OneCompiler {
         overlaySchema.sourceType = "overlay";
         stdlibSchema.sourceType = "stdlib";
 
-        const inferTypes = new InferTypesTransform(this.parser.langData);
 
         this.stdlibCtx = new SchemaContext(stdlibSchema, "stdlib");
         new FixGenericAndEnumTypes().process(this.stdlibCtx.schema);
@@ -104,7 +103,7 @@ export class OneCompiler {
 
         this.stdlibCtx.ensureTransforms("fillName", "fillMetaPath", "fillParent");
         ResolveIdentifiersTransform.transform(this.stdlibCtx);
-        inferTypes.transform(this.stdlibCtx);
+        new InferTypesTransform(this.stdlibCtx).transform();
         this.saveSchemaState(this.stdlibCtx, "0_Converted");
         
         this.overlayCtx = new SchemaContext(overlaySchema, "overlay");
@@ -114,7 +113,7 @@ export class OneCompiler {
 
         this.overlayCtx.ensureTransforms("fillName", "fillMetaPath", "fillParent");
         ResolveIdentifiersTransform.transform(this.overlayCtx);
-        inferTypes.transform(this.overlayCtx);
+        new InferTypesTransform(this.overlayCtx).transform();
         this.overlayCtx.ensureTransforms("convertInlineThisRef");
         this.saveSchemaState(this.overlayCtx, "1_Converted");
         
@@ -135,7 +134,7 @@ export class OneCompiler {
         this.schemaCtx.addDependencySchema(this.stdlibCtx);
         this.schemaCtx.ensureTransforms("fillName", "fillMetaPath", "fillParent");
         ResolveIdentifiersTransform.transform(this.schemaCtx);
-        inferTypes.transform(this.schemaCtx);
+        new InferTypesTransform(this.schemaCtx).transform();
         this.saveSchemaState(this.schemaCtx, `2_TypesInferred`);
         
         this.schemaCtx.ensureTransforms("inlineOverlayTypes");
@@ -148,7 +147,7 @@ export class OneCompiler {
         this.schemaCtx.mapType = "OneMap";
 
         global["debugOn"] = true;
-        inferTypes.transform(this.schemaCtx);
+        new InferTypesTransform(this.schemaCtx).transform();
         this.schemaCtx.ensureTransforms("inferCharacterTypes");
         this.saveSchemaState(this.schemaCtx, `5_TypesInferredAgain`);
     }

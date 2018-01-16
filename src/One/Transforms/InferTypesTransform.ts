@@ -4,6 +4,7 @@ import { VariableContext } from "../VariableContext";
 import { SchemaContext } from "../SchemaContext";
 import { ISchemaTransform } from "../SchemaTransformer";
 import { AstHelper } from "../AstHelper";
+import { AstTransformer } from "../AstTransformer";
 
 export enum ReferenceType { Class, Method, MethodVariable, ClassVariable }
 
@@ -12,35 +13,6 @@ export class Reference {
     className: string;
     methodName: string;
     variableName: string;
-}
-
-export class Context {
-    schemaCtx: SchemaContext;
-    currClass: one.Class;
-    classes: ClassRepository = null;
-
-    constructor(parent: Context = null) {
-        this.classes = parent === null ? new ClassRepository() : parent.classes;
-    }
-
-    inherit() {
-        return new Context(this);
-    }
-}
-
-export class ClassRepository {
-    classes: { [name: string]: one.Class } = {};
-
-    addClass(cls: one.Class) {
-        this.classes[cls.name] = cls;
-    }
-
-    getClass(name: string) {
-        const cls = this.classes[name];
-        if (!cls)
-            console.log(`[ClassRepository] Class not found: ${name}.`);
-        return cls;
-    }
 }
 
 export class GenericsMapping {
@@ -78,23 +50,23 @@ export class GenericsMapping {
     }
 }
 
-export class InferTypesTransform extends AstVisitor<Context> {
-    constructor(public langData: one.ILangData) { super(); }
+export class InferTypesTransform extends AstTransformer<void> {
+    constructor(public schemaCtx: SchemaContext) { super(); }
 
-    protected visitType(type: one.Type, context: Context) {
-        super.visitType(type, context);
+    protected visitType(type: one.Type) {
+        super.visitType(type, null);
         if (!type) return;
 
-        if (type.isClass && this.getInterface(context, type.className))
+        if (type.isClass && this.schemaCtx.getInterface(type.className))
             type.typeKind = one.TypeKind.Interface;
     }
 
-    protected visitIdentifier(id: one.Identifier, context: Context) {
+    protected visitIdentifier(id: one.Identifier) {
         this.log(`No identifier should be here!`);
     }
 
-    protected visitTemplateString(expr: one.TemplateString, context: Context) {
-        super.visitTemplateString(expr, context);
+    protected visitTemplateString(expr: one.TemplateString) {
+        super.visitTemplateString(expr, null);
         expr.valueType = one.Type.Class("OneString");
     }
     
@@ -121,23 +93,23 @@ export class InferTypesTransform extends AstVisitor<Context> {
         return type1;
     }
 
-    protected visitVariableDeclaration(stmt: one.VariableDeclaration, context: Context) {
-        super.visitVariableDeclaration(stmt, context);
+    protected visitVariableDeclaration(stmt: one.VariableDeclaration) {
+        super.visitVariableDeclaration(stmt, null);
         if (stmt.initializer)
             stmt.type = this.syncTypes(stmt.type, stmt.initializer.valueType);
     }
 
-    protected visitCastExpression(expr: one.CastExpression, context: Context) {
+    protected visitCastExpression(expr: one.CastExpression) {
         expr.expression.valueType = expr.newType;
         AstHelper.replaceProperties(expr, expr.expression);
-        this.visitExpression(expr, context);
+        this.visitExpression(expr);
     }
 
-    protected visitForeachStatement(stmt: one.ForeachStatement, context: Context) {
-        this.visitExpression(stmt.items, context);
+    protected visitForeachStatement(stmt: one.ForeachStatement) {
+        this.visitExpression(stmt.items);
         
         const itemsType = stmt.items.valueType;
-        const itemsClass = context.classes.getClass(itemsType.className);
+        const itemsClass = this.schemaCtx.getClass(itemsType.className);
         
         if (!itemsClass || !itemsClass.meta.iterable || itemsType.typeArguments.length === 0) {
             console.log(`Tried to use foreach on a non-array type: ${itemsType.repr()}!`);
@@ -146,11 +118,11 @@ export class InferTypesTransform extends AstVisitor<Context> {
             stmt.itemVariable.type = itemsType.typeArguments[0];
         }
 
-        this.visitBlock(stmt.body, context);
+        this.visitBlock(stmt.body, null);
     }
 
-    protected visitBinaryExpression(expr: one.BinaryExpression, context: Context) {
-        super.visitBinaryExpression(expr, context);
+    protected visitBinaryExpression(expr: one.BinaryExpression) {
+        super.visitBinaryExpression(expr, null);
 
         // TODO: really big hack... 
         if (["<=", ">=", "===", "==", "!==", "!="].includes(expr.operator))
@@ -163,19 +135,8 @@ export class InferTypesTransform extends AstVisitor<Context> {
             expr.valueType = one.Type.Class("OneString");
     }
 
-    protected findBaseClass(context: Context, className1: string, className2: string): one.Type {
-        const chain1 = this.getClassChain(context, className1);
-        const chain2 = this.getClassChain(context, className2);
-        const intfs1 = this.getInterfaces(context, ...chain1.map(x => x.name)).filter(x => x.type.isInterface);
-        const intfs2 = this.getInterfaces(context, ...chain2.map(x => x.name)).filter(x => x.type.isInterface);
-        for (const item1 of intfs1)
-            if (intfs2.some(item2 => item2.name === item1.name))
-                return item1.type;
-        return null;
-    }
-
-    protected visitConditionalExpression(expr: one.ConditionalExpression, context: Context) {
-        super.visitConditionalExpression(expr, context);
+    protected visitConditionalExpression(expr: one.ConditionalExpression) {
+        super.visitConditionalExpression(expr, null);
         
         const trueType = expr.whenTrue.valueType;
         const falseType = expr.whenFalse.valueType;
@@ -187,7 +148,7 @@ export class InferTypesTransform extends AstVisitor<Context> {
             expr.valueType = trueType;
         } else {
             if (trueType.isClassOrInterface && falseType.isClassOrInterface) {
-                expr.valueType = this.findBaseClass(context, trueType.className, falseType.className);
+                expr.valueType = this.schemaCtx.findBaseClass(trueType.className, falseType.className);
                 if (expr.valueType) return;
             }
 
@@ -195,19 +156,19 @@ export class InferTypesTransform extends AstVisitor<Context> {
         }
     }
 
-    protected visitReturnStatement(stmt: one.ReturnStatement, context: Context) {
-        super.visitReturnStatement(stmt, context);
+    protected visitReturnStatement(stmt: one.ReturnStatement) {
+        super.visitReturnStatement(stmt, null);
     }
 
-    protected visitUnaryExpression(expr: one.UnaryExpression, context: Context) {
-        this.visitExpression(expr.operand, context);
+    protected visitUnaryExpression(expr: one.UnaryExpression) {
+        this.visitExpression(expr.operand);
 
         if (expr.operand.valueType.isNumber) 
             expr.valueType = one.Type.Class("OneNumber");
     }
 
-    protected visitElementAccessExpression(expr: one.ElementAccessExpression, context: Context) {
-        super.visitElementAccessExpression(expr, context);
+    protected visitElementAccessExpression(expr: one.ElementAccessExpression) {
+        super.visitElementAccessExpression(expr, null);
         
         // TODO: use the return type of get() method
         const typeArgs = expr.object.valueType.typeArguments;
@@ -215,35 +176,8 @@ export class InferTypesTransform extends AstVisitor<Context> {
             expr.valueType = expr.valueType || typeArgs[0];
     }
 
-    protected getClass(context: Context, className: string, required = false): one.Class {
-        const result = context.classes.classes[className] || null;
-        if (required && !result)
-            this.log(`Class was not found: ${className}`);
-        return result;
-    }
-
-    protected getInterface(context: Context, intfName: string, required = false): one.Interface {
-        const result = context.schemaCtx.schema.interfaces[intfName] || null;
-        if (required && !result)
-            this.log(`Class was not found: ${intfName}`);
-        return result;
-    }
-
-    protected getClassOrInterface(context: Context, className: string, required = true): one.Interface {
-        const intf = this.getInterface(context, className);
-        if (intf) return intf;
-
-        const cls = this.getClass(context, className);
-        if (cls) return cls;
-
-        if (required)
-            this.log(`Class or interface is not found: ${className}`);
-
-        return null;
-    }
-
-    protected visitCallExpression(expr: one.CallExpression, context: Context) {
-        super.visitCallExpression(expr, context);
+    protected visitCallExpression(expr: one.CallExpression) {
+        super.visitCallExpression(expr, null);
 
         if (!expr.method.valueType.isMethod) {
             this.log(`Tried to call a non-method type '${expr.method.valueType.repr()}'`);
@@ -252,8 +186,8 @@ export class InferTypesTransform extends AstVisitor<Context> {
 
         const className = expr.method.valueType.classType.className;
         const methodName = expr.method.valueType.methodName;
-        const cls = this.getClassOrInterface(context, className, true);
-        const method = this.getMethod(context, className, methodName);
+        const cls = this.schemaCtx.getClassOrInterface(className, true);
+        const method = this.schemaCtx.getMethod(className, methodName);
         if (!method) {
             this.log(`Method not found: ${className}::${methodName}`);
             return;
@@ -269,95 +203,34 @@ export class InferTypesTransform extends AstVisitor<Context> {
         }
     }
 
-    protected visitNewExpression(expr: one.NewExpression, context: Context) {
-        super.visitNewExpression(expr, context);
+    protected visitNewExpression(expr: one.NewExpression) {
+        super.visitNewExpression(expr, null);
         expr.valueType = one.Type.Load(expr.cls.valueType);
         expr.valueType.typeArguments = expr.typeArguments;
     }
 
-    protected visitLiteral(expr: one.Literal, context: Context) {
+    protected visitLiteral(expr: one.Literal) {
         if (expr.valueType) return;
 
         if (expr.literalType === "numeric" || expr.literalType === "string" || expr.literalType === "boolean" || expr.literalType === "character")
-            expr.valueType = one.Type.Class(this.langData.literalClassNames[expr.literalType]);
+            expr.valueType = one.Type.Class(this.schema.langData.literalClassNames[expr.literalType]);
         else if (expr.literalType === "null")
             expr.valueType = one.Type.Null;
         else
             this.log(`Could not infer literal type: ${expr.literalType}`);
     }
 
-    protected visitParenthesizedExpression(expr: one.ParenthesizedExpression, context: Context) {
-        super.visitParenthesizedExpression(expr, context);
+    protected visitParenthesizedExpression(expr: one.ParenthesizedExpression) {
+        super.visitParenthesizedExpression(expr, null);
         expr.valueType = expr.expression.valueType;
     }
 
-    getClassChain(context: Context, className: string): one.Class[] {
-        const result: one.Class[] = [];
-
-        let currClass = className;
-        while (currClass) {
-            const cls = this.getClass(context, currClass, currClass !== className);
-            result.push(cls);
-            currClass = cls.baseClass;
-        }
-
-        return result;
-    }
-
-    getInterfaces(context: Context, ...rootIntfNames: string[]): one.Interface[] {
-        const todo = [...rootIntfNames];
-        const seen: { [intfName: string]: boolean } = { };
-        for (const item of rootIntfNames)
-            seen[item] = true;
-        const result: one.Interface[] = [];
-        
-        while (todo.length > 0) {
-            const intfName = todo.shift();
-            const intf = this.getClassOrInterface(context, intfName, intfName !== rootIntfNames[0]);
-            if (!intf) continue;
-            result.push(intf);
-
-            for (const baseIntfName of intf.baseInterfaces) {
-                if (seen[baseIntfName]) continue;
-                seen[baseIntfName] = true;
-                todo.push(baseIntfName);
-            }
-        }
-
-        return result;
-    }
-
-    getFullChain(context: Context, className: string): one.Interface[] {
-        return [...this.getClassChain(context, className), ...this.getInterfaces(context, className)];
-    }
-
-    getMethod(context: Context, className: string, methodName: string) {
-        let intfs = this.getInterfaces(context, className);
-        if (intfs.length === 0) // 'className' is a class
-            intfs = this.getClassChain(context, className);
-
-        for (const intf of intfs) {
-            const method = intf.methods[methodName];
-            if (method) return method;
-        }
-        return null;
-    }
-
-    getFieldOrProp(context: Context, className: string, fieldName: string) {
-        const classChain = this.getClassChain(context, className);
-        for (const cls of classChain) {
-            const fieldOrProp = cls.fields[fieldName] || cls.properties[fieldName];
-            if (fieldOrProp) return fieldOrProp;
-        }
-        return null;
-    }
-
-    protected visitPropertyAccessExpression(expr: one.PropertyAccessExpression, context: Context) {
-        super.visitPropertyAccessExpression(expr, context);
+    protected visitPropertyAccessExpression(expr: one.PropertyAccessExpression) {
+        super.visitPropertyAccessExpression(expr, null);
 
         const objType = expr.object.valueType;
         if (objType.isEnum) {
-            const enum_ = context.schemaCtx.schema.enums[objType.enumName];
+            const enum_ = this.schemaCtx.schema.enums[objType.enumName];
             if (!enum_) {
                 this.log(`Enum not found: ${objType.enumName}`);
                 return;
@@ -380,7 +253,7 @@ export class InferTypesTransform extends AstVisitor<Context> {
             return;
         }
 
-        const method = this.getMethod(context, objType.className, expr.propertyName);
+        const method = this.schemaCtx.getMethod(objType.className, expr.propertyName);
         if (method) {
             const thisIsStatic = expr.object.exprKind === one.ExpressionKind.ClassReference;
             const thisIsThis = expr.object.exprKind === one.ExpressionKind.ThisReference;
@@ -396,7 +269,7 @@ export class InferTypesTransform extends AstVisitor<Context> {
             return;
         }
 
-        const fieldOrProp = this.getFieldOrProp(context, objType.className, expr.propertyName);
+        const fieldOrProp = this.schemaCtx.getFieldOrProp(objType.className, expr.propertyName);
         if (fieldOrProp) {
             const newValue = fieldOrProp.static ? one.VariableRef.StaticField(expr.object, fieldOrProp) :
                 one.VariableRef.InstanceField(expr.object, fieldOrProp);
@@ -408,82 +281,74 @@ export class InferTypesTransform extends AstVisitor<Context> {
         this.log(`Member not found: ${objType.className}::${expr.propertyName}`);
     }
 
-    protected visitArrayLiteral(expr: one.ArrayLiteral, context: Context) {
-        super.visitArrayLiteral(expr, context);
+    protected visitArrayLiteral(expr: one.ArrayLiteral) {
+        super.visitArrayLiteral(expr, null);
 
         let itemType = expr.items.length > 0 ? expr.items[0].valueType : one.Type.Any;
         if (expr.items.some(x => !x.valueType.equals(itemType)))
             itemType = one.Type.Any;
 
-        expr.valueType = expr.valueType || one.Type.Class(context.schemaCtx.arrayType, [itemType]);
+        expr.valueType = expr.valueType || one.Type.Class(this.schemaCtx.arrayType, [itemType]);
     }
 
-    protected visitMapLiteral(expr: one.MapLiteral, context: Context) {
-        super.visitMapLiteral(expr, context);
+    protected visitMapLiteral(expr: one.MapLiteral) {
+        super.visitMapLiteral(expr, null);
 
         let itemType = expr.properties.length > 0 ? expr.properties[0].type : one.Type.Any;
         if (expr.properties.some(x => !x.type.equals(itemType)))
             itemType = one.Type.Any;
 
-        expr.valueType = one.Type.Class(context.schemaCtx.mapType, [one.Type.Class("OneString"), itemType]);
+        expr.valueType = one.Type.Class(this.schemaCtx.mapType, [one.Type.Class("OneString"), itemType]);
     }
 
-    protected visitExpression(expression: one.Expression, context: Context) {
-        super.visitExpression(expression, context);
+    protected visitExpression(expression: one.Expression) {
+        super.visitExpression(expression, null);
         if(!expression.valueType)
             expression.valueType = one.Type.Any;
     }
 
-    protected visitClassReference(expr: one.ClassReference, context: Context) {
+    protected visitClassReference(expr: one.ClassReference) {
         expr.valueType = expr.classRef.type || expr.valueType;
     }
     
-    protected visitEnumReference(expr: one.EnumReference, context: Context) {
+    protected visitEnumReference(expr: one.EnumReference) {
         expr.valueType = expr.enumRef.type || expr.valueType;
     }
     
-    protected visitThisReference(expr: one.ThisReference, context: Context) {
-        expr.valueType = context.currClass.type || expr.valueType;
+    protected visitThisReference(expr: one.ThisReference) {
+        expr.valueType = this.currentClass.type || expr.valueType;
     }
 
-    protected visitVariableRef(expr: one.VariableRef, context: Context) { 
-        super.visitVariableRef(expr, context);
+    protected visitVariableRef(expr: one.VariableRef) { 
+        super.visitVariableRef(expr, null);
         expr.valueType = expr.varRef.type || expr.valueType;
     }
     
-    protected visitMethodReference(expr: one.MethodReference, context: Context) {
+    protected visitMethodReference(expr: one.MethodReference) {
         expr.valueType = expr.methodRef.type || expr.valueType;
     }
 
-    protected visitMethod(method: one.Method, context: Context) { 
+    protected visitMethod(method: one.Method) { 
         method.type = one.Type.Method(method.classRef.type, method.name);
-        super.visitMethod(method, context);
+        super.visitMethod(method, null);
     } 
  
-    protected visitClass(cls: one.Class, context: Context) {
-        context.currClass = cls;
+    protected visitClass(cls: one.Class) {
         cls.type = one.Type.Class(cls.name, cls.typeArguments.map(t => one.Type.Generics(t)));
-        super.visitClass(cls, context);
+        super.visitClass(cls, null);
     }
 
-    protected visitInterface(intf: one.Interface, context: Context) {
+    protected visitInterface(intf: one.Interface) {
         intf.type = one.Type.Interface(intf.name, intf.typeArguments.map(t => one.Type.Generics(t)));
-        super.visitInterface(intf, context);
+        super.visitInterface(intf, null);
     }
 
-    protected visitEnum(enum_: one.Enum, context: Context) {
+    protected visitEnum(enum_: one.Enum) {
         enum_.type = one.Type.Enum(enum_.name);
-        super.visitEnum(enum_, context);
+        super.visitEnum(enum_, null);
     }
 
-    transform(schemaCtx: SchemaContext) {
-        const context = new Context();
-        context.schemaCtx = schemaCtx;
-        context.classes = schemaCtx.tiContext.classes;
-
-        for (const cls of Object.values(schemaCtx.schema.classes))
-            context.classes.addClass(cls);
-
-        super.visitSchema(schemaCtx.schema, context);
+    transform() {
+        this.visitSchema(this.schemaCtx.schema, null);
     }
 }

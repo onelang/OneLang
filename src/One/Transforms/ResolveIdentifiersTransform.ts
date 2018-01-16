@@ -3,18 +3,14 @@ import { AstVisitor } from "../AstVisitor";
 import { SchemaContext } from "../SchemaContext";
 import { ISchemaTransform } from "../SchemaTransformer";
 import { VariableContext } from "../VariableContext";
-import { ClassRepository } from "./InferTypesTransform";
 import { AstHelper } from "../AstHelper";
+import { AstTransformer } from "../AstTransformer";
 
 export class Context {
-    schemaCtx: SchemaContext = null;
     variables: VariableContext<one.Reference> = null;
-    classes: ClassRepository = null;
 
     constructor(parent: Context = null) {
-        this.schemaCtx = parent === null ? null : parent.schemaCtx;
         this.variables = parent === null ? new VariableContext() : parent.variables.inherit();
-        this.classes = parent === null ? new ClassRepository() : parent.classes;
     }
 
     addLocalVar(variable: one.VariableBase) {
@@ -26,13 +22,13 @@ export class Context {
     }
 }
 
-export class ResolveIdentifiersTransform extends AstVisitor<Context> {
-    constructor(public allowImplicitVariableDeclaration = false) { super(); }
+export class ResolveIdentifiersTransform extends AstTransformer<Context> {
+    constructor(public schemaCtx: SchemaContext) { super(); }
 
     protected visitIdentifier(id: one.Identifier, context: Context) {
         const variable = context.variables.get(id.text);
-        const cls = context.classes.classes[id.text];
-        const enum_ = context.schemaCtx.schema.enums[id.text];
+        const cls = this.schemaCtx.getClass(id.text);
+        const enum_ = this.schemaCtx.schema.enums[id.text];
         if (variable) {
             AstHelper.replaceProperties(id, variable);
         } else if (cls) {
@@ -86,7 +82,7 @@ export class ResolveIdentifiersTransform extends AstVisitor<Context> {
     }
 
     protected visitExpressionStatement(stmt: one.ExpressionStatement, context: Context) {
-        if (this.allowImplicitVariableDeclaration && this.tryToConvertImplicitVarDecl(stmt, context))
+        if (this.schemaCtx.schema.langData.allowImplicitVariableDeclaration && this.tryToConvertImplicitVarDecl(stmt, context))
             return;
 
         this.visitExpression(stmt.expression, context);
@@ -110,12 +106,7 @@ export class ResolveIdentifiersTransform extends AstVisitor<Context> {
         
     static transform(schemaCtx: SchemaContext) {
         const globalContext = schemaCtx.tiContext.inherit();        
-        globalContext.schemaCtx = schemaCtx;
-
-        for (const cls of Object.values(schemaCtx.schema.classes))
-            globalContext.classes.addClass(cls);
-
-        const trans = new ResolveIdentifiersTransform(schemaCtx.schema.langData.allowImplicitVariableDeclaration);
+        const trans = new ResolveIdentifiersTransform(schemaCtx);
         trans.visitSchema(schemaCtx.schema, globalContext);
     }
 }
