@@ -111,6 +111,7 @@ export class InferTypesTransform extends AstVisitor<Context> {
             } else if (type1.typeArguments.length !== type2.typeArguments.length) {
                 this.log(`${errorPrefix}: type argument length mismatch!`);
             } else {
+                type1.typeKind = type2.typeKind; // class -> interface if needed
                 for (let i = 0; i < type1.typeArguments.length; i++)
                     type1.typeArguments[i] = type2.typeArguments[i] = 
                         this.syncTypes(type1.typeArguments[i], type2.typeArguments[i]);
@@ -162,16 +163,35 @@ export class InferTypesTransform extends AstVisitor<Context> {
             expr.valueType = one.Type.Class("OneString");
     }
 
+    protected findBaseClass(context: Context, className1: string, className2: string): one.Type {
+        const chain1 = this.getClassChain(context, className1);
+        const chain2 = this.getClassChain(context, className2);
+        const intfs1 = this.getInterfaces(context, ...chain1.map(x => x.name)).filter(x => x.type.isInterface);
+        const intfs2 = this.getInterfaces(context, ...chain2.map(x => x.name)).filter(x => x.type.isInterface);
+        for (const item1 of intfs1)
+            if (intfs2.some(item2 => item2.name === item1.name))
+                return item1.type;
+        return null;
+    }
+
     protected visitConditionalExpression(expr: one.ConditionalExpression, context: Context) {
         super.visitConditionalExpression(expr, context);
-        if (expr.whenTrue.valueType.equals(expr.whenFalse.valueType)) {
-            expr.valueType = expr.whenTrue.valueType;
-        } else if (expr.whenTrue.valueType.isNull && !expr.whenFalse.valueType.isNull) {
-            expr.valueType = expr.whenFalse.valueType;
-        } else if (!expr.whenTrue.valueType.isNull && expr.whenFalse.valueType.isNull) {
-            expr.valueType = expr.whenTrue.valueType;
+        
+        const trueType = expr.whenTrue.valueType;
+        const falseType = expr.whenFalse.valueType;
+        if (trueType.equals(falseType)) {
+            expr.valueType = trueType;
+        } else if (trueType.isNull && !falseType.isNull) {
+            expr.valueType = falseType;
+        } else if (!trueType.isNull && falseType.isNull) {
+            expr.valueType = trueType;
         } else {
-            this.log(`Could not determine type of conditional expression. Type when true: ${expr.whenTrue.valueType.repr()}, when false: ${expr.whenFalse.valueType.repr()}`);
+            if (trueType.isClassOrInterface && falseType.isClassOrInterface) {
+                expr.valueType = this.findBaseClass(context, trueType.className, falseType.className);
+                if (expr.valueType) return;
+            }
+
+            this.log(`Could not determine type of conditional expression. Type when true: ${trueType.repr()}, when false: ${falseType.repr()}`);
         }
     }
 
@@ -209,14 +229,16 @@ export class InferTypesTransform extends AstVisitor<Context> {
         return result;
     }
 
-    protected getClassOrInterface(context: Context, className: string): one.Interface {
+    protected getClassOrInterface(context: Context, className: string, required = true): one.Interface {
         const intf = this.getInterface(context, className);
         if (intf) return intf;
 
         const cls = this.getClass(context, className);
         if (cls) return cls;
 
-        this.log(`Class or interface is not found: ${className}`);
+        if (required)
+            this.log(`Class or interface is not found: ${className}`);
+
         return null;
     }
 
@@ -230,7 +252,7 @@ export class InferTypesTransform extends AstVisitor<Context> {
 
         const className = expr.method.valueType.classType.className;
         const methodName = expr.method.valueType.methodName;
-        const cls = this.getClassOrInterface(context, className);
+        const cls = this.getClassOrInterface(context, className, true);
         const method = this.getMethod(context, className, methodName);
         if (!method) {
             this.log(`Method not found: ${className}::${methodName}`);
@@ -269,12 +291,12 @@ export class InferTypesTransform extends AstVisitor<Context> {
         expr.valueType = expr.expression.valueType;
     }
 
-    getClassChain(context: Context, className: string) {
+    getClassChain(context: Context, className: string): one.Class[] {
         const result: one.Class[] = [];
 
         let currClass = className;
         while (currClass) {
-            const cls = this.getClass(context, className, currClass !== className);
+            const cls = this.getClass(context, currClass, currClass !== className);
             result.push(cls);
             currClass = cls.baseClass;
         }
@@ -282,14 +304,16 @@ export class InferTypesTransform extends AstVisitor<Context> {
         return result;
     }
 
-    getInterfaces(context: Context, rootIntfName: string) {
-        const seen: { [intfName: string]: boolean } = { [rootIntfName]: true };
-        const todo = [rootIntfName];
+    getInterfaces(context: Context, ...rootIntfNames: string[]): one.Interface[] {
+        const todo = [...rootIntfNames];
+        const seen: { [intfName: string]: boolean } = { };
+        for (const item of rootIntfNames)
+            seen[item] = true;
         const result: one.Interface[] = [];
         
         while (todo.length > 0) {
-            const intfName = todo.pop();
-            const intf = this.getInterface(context, intfName, intfName !== rootIntfName);
+            const intfName = todo.shift();
+            const intf = this.getClassOrInterface(context, intfName, intfName !== rootIntfNames[0]);
             if (!intf) continue;
             result.push(intf);
 
@@ -301,6 +325,10 @@ export class InferTypesTransform extends AstVisitor<Context> {
         }
 
         return result;
+    }
+
+    getFullChain(context: Context, className: string): one.Interface[] {
+        return [...this.getClassChain(context, className), ...this.getInterfaces(context, className)];
     }
 
     getMethod(context: Context, className: string, methodName: string) {
