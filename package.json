@@ -12,8 +12,6 @@
     "request": "^2.83.0",
     "requirejs": "^2.3.5",
     "serializer.ts": "0.0.12",
-    "ts-simple-ast": "^0.48.2",
-    "ts-type-info": "^7.0.1",
     "typescript": "^2.5.2",
     "yamljs": "^0.3.0"
   },

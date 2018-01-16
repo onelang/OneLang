@@ -8,8 +8,6 @@ ast\.json
 SamplePrograms/Test
 schema\.json
 vmCode.js
-lib/typescript.js
-lib/TsSimpleAst.js
 tmp/
 generated/**/*.json
 generated/**/*_Init.txt

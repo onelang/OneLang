@@ -1,4 +1,3 @@
-./gen_browser_libs.sh
 ./node_modules/typescript/bin/tsc
 
 cd FastCompile/Java
