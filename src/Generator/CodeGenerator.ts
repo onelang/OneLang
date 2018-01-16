@@ -23,6 +23,7 @@ namespace CodeGeneratorModel {
         returnType: string;
         body: one.Block;
         throws: boolean;
+        attributes: { [name: string]: any };
     }
 
     export interface Constructor {
@@ -490,6 +491,7 @@ export class CodeGenerator {
                 // TODO: hack
                 needsConstructor: constructor !== null || fields.some(x => x.visibility === "public" && !x.static && !!x.initializer),
                 reflect: cls.attributes["reflect"],
+                virtualMethods: methods.filter(x => x.attributes["virtual"]),
                 publicMethods: methods.filter(x => x.visibility === "public"),
                 protectedMethods: methods.filter(x => x.visibility === "protected"),
                 privateMethods: methods.filter(x => x.visibility === "private"),
