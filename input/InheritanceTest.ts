@@ -7,6 +7,8 @@ interface IPrinter extends IPrinterBase {
 }
 
 class BasePrinter implements IPrinter {
+    numValue = 42;
+    
     // @virtual
     getValue(): string { return "Base"; }
 
@@ -14,7 +16,7 @@ class BasePrinter implements IPrinter {
         console.log(`BasePrinter: ${this.getValue()}`);
     }
 
-    someBaseFunc(): number { return 42; }
+    someBaseFunc(): number { return this.numValue; }
 }
 
 class ChildPrinter extends BasePrinter {
@@ -34,5 +36,9 @@ class TestClass {
         basePrinter.printIt();
         childPrinter.printIt();
         console.log(`${basePrinter.someBaseFunc()} == ${childPrinter.someBaseFunc()}`);
+
+        var baseP2 = new BasePrinter();
+        var childP2 = new ChildPrinter();
+        console.log(`${baseP2.numValue} == ${childP2.numValue}`);
     }
 }
