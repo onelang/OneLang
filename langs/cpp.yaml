@@ -230,7 +230,7 @@ templates:
       {{/if}}
       class {{class.name}}
       {{if class.baseClasses.length > 0 or class.reflect|inline}}
-        : 
+         : 
         {{for item in class.baseClasses|inline sep=", "}}
           public {{item}}
         {{/for}}
