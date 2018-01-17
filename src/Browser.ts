@@ -9,13 +9,13 @@ import { AstHelper } from "./One/AstHelper";
 
 declare var YAML: any;
 
-const testPrgName = "InheritanceTest";
-
 const qs = {};
 location.search.substr(1).split('&').map(x => x.split('=')).forEach(x => qs[x[0]] = x[1]);
 const localhost = location.hostname === "127.0.0.1" || location.hostname === "localhost";
 const serverhost: string = "server" in qs ? qs["server"] : (localhost && "127.0.0.1");
 const httpsMode = serverhost && serverhost.startsWith("https://");
+
+const testPrgName = qs["input"] || "InheritanceTest";
 
 async function downloadTextFile(url: string): Promise<string> {
     const response = await (await fetch(url)).text();
