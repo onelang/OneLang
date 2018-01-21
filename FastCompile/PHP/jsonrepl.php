@@ -43,10 +43,11 @@ while (true) {
         $stdlibCode = str_replace(array("<?php", "?>"), "", $request["stdlibCode"]);
         
         ob_start();
-        eval("namespace Request$requestIdx;\n$stdlibCode\n$code");
+        eval("namespace Request$requestIdx;$stdlibCode");
+        eval("namespace Request$requestIdx;$code");
         $result = ob_get_clean();
         print json_encode(array("result" => $result)) . "\n";
-    } catch(Exception $e) {
+    } catch(Error $e) {
         $result = ob_get_clean();
         print json_encode(array("result" => $result, "exceptionText" => "line #{$e->getLine()}: {$e->getMessage()}\n{$e->getTraceAsString()}")) . "\n";
     }
