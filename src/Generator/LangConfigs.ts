@@ -91,10 +91,11 @@ export const langConfigs: LangConfigs = {
         }
     },
     java: {
-        port: 8001,
+        port: 8000,
         stdlibFn: "one.java",
         httpsEndpoint: "java",
         request: {
+            lang: "Java",
             code: deindent(`
                 public class TestClass {
                     public String testMethod() {
@@ -106,10 +107,11 @@ export const langConfigs: LangConfigs = {
         }
     },
     javascript: {
-        port: 8002,
+        port: 8000,
         stdlibFn: "one.js",
         httpsEndpoint: "javascript",
         request: {
+            lang: "JavaScript",
             code: deindent(`
                 class TestClass {
                     testMethod() {
@@ -150,7 +152,7 @@ export const langConfigs: LangConfigs = {
         }
     },
     php: {
-        port: 8003,
+        port: 8000,
         stdlibFn: "one.php",
         httpsEndpoint: "php",
         request: {
@@ -168,7 +170,7 @@ export const langConfigs: LangConfigs = {
         }
     },
     python: {
-        port: 8004,
+        port: 8000,
         stdlibFn: "one.py",
         httpsEndpoint: "python",
         request: {
@@ -182,7 +184,7 @@ export const langConfigs: LangConfigs = {
         }
     },
     ruby: {
-        port: 8005,
+        port: 8000,
         stdlibFn: "one.rb",
         httpsEndpoint: "ruby",
         request: {
@@ -213,7 +215,7 @@ export const langConfigs: LangConfigs = {
         }
     },
     typescript: {
-        port: 8002,
+        port: 8000,
         stdlibFn: "one.ts",
         httpsEndpoint: "javascript",
         request: {
