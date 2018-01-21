@@ -53,6 +53,19 @@ langs = {
         "jsonReplCmd": "ruby jsonrepl.rb",
         "testCode": "puts 'hello world!'"
     },
+    "CSharp": { # uses in-memory compilation
+        "jsonReplCmd": "dotnet run --no-build",
+        "testCode": """
+            using System;
+            public class Program
+            {
+                public static void Main(string[] args)
+                {
+                    Console.WriteLine("Hello World!");
+                }
+            }
+        """
+    },
     "CPP": {
         "ext": "cpp",
         "mainFn": "main.cpp",
@@ -64,12 +77,6 @@ langs = {
         "mainFn": "main.go",
         "stdlibFn": "src/one/one.go",
         "cmd": "GOPATH=$PWD go run main.go"
-    },
-    "CSharp": {
-        "ext": "cs",
-        "mainFn": "Program.cs",
-        "stdlibFn": "StdLib.cs",
-        "cmd": "mcs Program.cs StdLib.cs && mono Program.exe"
     },
     "Perl": {
         "ext": "pl",
