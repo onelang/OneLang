@@ -182,6 +182,11 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def do_POST(self):
         if self.path == '/compile':
             try:
+                origin = self.headers.getheader('origin') or "<null>"
+                if origin != "https://ide.onelang.io" and not origin.startswith("http://127.0.0.1:"):
+                    self.resp(403, { "exceptionText": "Origin is not allowed: " + origin, "errorCode": "origin_not_allowed" })
+                    return
+
                 request = json.loads(self.rfile.read(int(self.headers.getheader('content-length'))))
                 langName = request["lang"]
                 lang = langs[langName]

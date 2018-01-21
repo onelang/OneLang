@@ -47,6 +47,7 @@ public class App
         private class Response {
             public long elapsedMs;
             public String exceptionText;
+            public String errorCode;
             public Object result;
         }
 
@@ -81,10 +82,11 @@ public class App
             Response response = new Response();
             
             try {
-                // protection against DNS rebinding attack
-                String host = t.getRequestHeaders().get("Host").get(0);
-                if (!host.startsWith("127.0.0.1")) {
-                    sendTextResponse(t, 403, "Host not allowed: " + host);
+                String origin = t.getRequestHeaders().getFirst("Origin");
+                if (origin == null || (!origin.startsWith("http://127.0.0.1:") && !origin.equals("https://ide.onelang.io"))) {
+                    response.exceptionText = "Origin is not allowed: " + origin;
+                    response.errorCode = "origin_not_allowed";
+                    sendResponse(t, response);
                     return;
                 }
 

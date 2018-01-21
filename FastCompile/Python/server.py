@@ -37,9 +37,14 @@ class HTTPHandler(BaseHTTPRequestHandler):
         BaseHTTPRequestHandler.end_headers(self)
 
     def do_POST(self):
-        if self.path == '/compile':
-            fn = None
-            try:
+        try:
+            origin = self.headers.getheader('origin') or "<null>"
+            if origin != "https://ide.onelang.io" and not origin.startswith("http://127.0.0.1:"):
+                self.resp(403, { "exceptionText": "Origin is not allowed: " + origin, "errorCode": "origin_not_allowed" })
+                return
+
+            if self.path == '/compile':
+                fn = None
                 request = json.loads(self.rfile.read(int(self.headers.getheader('content-length'))))
 
                 with self.lock:
@@ -57,11 +62,11 @@ class HTTPHandler(BaseHTTPRequestHandler):
                         sys.stdout = original_stdout
 
                 self.resp(200, { "result": result_stdout.getvalue(), "elapsedMs": elapsedMs })
-            except Exception as e:
-                #log(repr(e))
-                self.resp(400, { 'exceptionText': traceback.format_exc() })
-        else:
-            self.resp(404, { "error": "unknown method" })
+            else:
+                self.resp(404, { "error": "unknown method" })
+        except Exception as e:
+            #log(repr(e))
+            self.resp(400, { 'exceptionText': traceback.format_exc() })
 
 log("server is listening on port %d" % PORT)
 

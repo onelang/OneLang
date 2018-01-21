@@ -1,5 +1,13 @@
 <?php
 
+header("Access-Control-Allow-Origin: *");
+
+$origin = isset($_SERVER["HTTP_ORIGIN"]) ? $_SERVER["HTTP_ORIGIN"] : "<null>";
+if ($origin !== "https://ide.onelang.io" && strpos($origin, "http://127.0.0.1:") !== 0) {
+    print json_encode(array("exceptionText" => "Origin is not allowed: " . $origin, "errorCode" => "origin_not_allowed"));
+    exit;
+}
+
 function exception_error_handler($errno, $errstr, $errfile, $errline) {
     throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
 }
@@ -27,7 +35,6 @@ function fatal_handler() {
 
 register_shutdown_function("fatal_handler");
 
-header("Access-Control-Allow-Origin: *");
 try {
     $postdata = json_decode(file_get_contents("php://input"), true);
     

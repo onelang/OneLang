@@ -11,6 +11,12 @@ server.mount_proc '/compile' do |req, res|
     begin
         res["Access-Control-Allow-Origin"] = "*"
 
+        origin = req["Origin"] || "<null>"
+        if origin != "https://ide.onelang.io" && !origin.start_with?("http://127.0.0.1:")
+            res.body = JSON.generate({ :exceptionText => "Origin is not allowed: #{origin}", :errorCode => "origin_not_allowed" })
+            next
+        end
+
         $stdout = result_stdout = StringIO.new
         request = JSON.parse(req.body())
 

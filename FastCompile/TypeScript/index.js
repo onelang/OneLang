@@ -32,8 +32,15 @@ function tsCompile(code) {
 }
 
 const server = http.createServer(async (request, response) => {
-    response.setHeader("Access-Control-Allow-Origin", "*");
     try {
+        response.setHeader("Access-Control-Allow-Origin", "*");
+
+        const origin = request.headers.origin||"<null>";
+        if (origin !== "https://ide.onelang.io" && !origin.startsWith("http://127.0.0.1:")) {
+            response.end(JSON.stringify({ exceptionText: `Origin is not allowed: ${origin}`, errorCode: "origin_not_allowed" }));
+            return;
+        }
+    
         const requestText = (await readRequestBody(request)).toString();
         const requestJson = JSON.parse(requestText);
         
