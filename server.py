@@ -45,10 +45,6 @@ langs = {
         "jsonReplCmd": "python -u jsonrepl.py",
         "testCode": "print 'hello world!'"
     },
-    "PHP": { # uses in-memory compilation
-        "jsonReplCmd": "php jsonrepl.php",
-        "testCode": "print 'hello world!';"
-    },
     "Ruby": { # uses in-memory compilation
         "jsonReplCmd": "ruby jsonrepl.rb",
         "testCode": "puts 'hello world!'"
@@ -65,6 +61,14 @@ langs = {
                 }
             }
         """
+    },
+    "PHP": { # uses in-memory compilation
+        "serverCmd": "php -S 127.0.0.1:{port} server.php",
+        "port": 8003,
+        "testCode": "print 'hello world!';",
+        "mainFn": "main.php",
+        "stdlibFn": "one.php",
+        "cmd": "php main.php"
     },
     "CPP": {
         "ext": "cpp",
@@ -104,7 +108,7 @@ class JsonReplClient:
         return self.request({"cmd": "compile", "code": code, "stdlibCode": stdlib, "className": "TestClass", "methodName": "testMethod" })
 
 def postRequest(url, request):
-    return urllib2.urlopen(urllib2.Request(url, request, headers={"Origin": "127.0.0.1:8000"})).read()
+    return urllib2.urlopen(urllib2.Request(url, request, headers={"Origin": "http://127.0.0.1:8000"})).read()
 
 def mkdir_p(path):
     try:
@@ -125,35 +129,36 @@ testText = "Works!"
 for langName in langs:
     try:
         lang = langs[langName]
-        if not "jsonReplCmd" in lang:
-            lang["jsonRepl"] = None
-            continue
-
-        log("Starting %s compiler..." % langName)
         cwd = "%s/FastCompile/%s" % (os.getcwd(), lang.get("jsonReplDir", langName))
-        lang["jsonRepl"] = JsonReplClient(lang["jsonReplCmd"], cwd)
-
-        if TEST_SERVERS:
-            requestJson = json.dumps(lang["testRequest"], indent=4).replace("{testText}", testText)
-
-            maxTries = 10
-            for i in xrange(maxTries):
-                try:
-                    time.sleep(0.1 * (i + 1))
-                    log("  Checking %s compiler's status (%d / %d)..." % (langName, i + 1, maxTries))
-                    responseJson = postRequest("http://127.0.0.1:%d/compile" % lang["port"], requestJson)
-                    break
-                except:
-                    pass
-
-            response = json.loads(responseJson)
-            log("  %s compiler's test response: %s" % (langName, response))
-            if response["result"] != testText:
-                log("Invalid response. Compiler will be disabled.")
-            else:
-                log("%s compiler is ready!" % langName)
+        if "jsonReplCmd" in lang:
+            log("Starting %s JSON-REPL..." % langName)
+            lang["jsonRepl"] = JsonReplClient(lang["jsonReplCmd"], cwd)
+        elif "serverCmd" in lang:
+            log("Starting %s HTTP server..." % langName)
+            args = lang["serverCmd"].replace("{port}", str(lang["port"])).split(" ") 
+            lang["server"] = subprocess.Popen(args, cwd=cwd, stdin=subprocess.PIPE) 
     except Exception as e:
         print "Failed to start compiler %s: %r" % (langName, e)
+
+if TEST_SERVERS: # TODO
+    requestJson = json.dumps(lang["testRequest"], indent=4).replace("{testText}", testText)
+
+    maxTries = 10
+    for i in xrange(maxTries):
+        try:
+            time.sleep(0.1 * (i + 1))
+            log("  Checking %s compiler's status (%d / %d)..." % (langName, i + 1, maxTries))
+            responseJson = postRequest("http://127.0.0.1:%d/compile" % lang["port"], requestJson)
+            break
+        except:
+            pass
+
+    response = json.loads(responseJson)
+    log("  %s compiler's test response: %s" % (langName, response))
+    if response["result"] != testText:
+        log("Invalid response. Compiler will be disabled.")
+    else:
+        log("%s compiler is ready!" % langName)        
 
 class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
@@ -176,14 +181,21 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
     def compile(self):
-        request = json.loads(self.rfile.read(int(self.headers.getheader('content-length'))))
+        requestJson = self.rfile.read(int(self.headers.getheader('content-length')))
+        request = json.loads(requestJson)
+        request["cmd"] = "compile"
         langName = request["lang"]
         lang = langs[langName]
 
-        if lang["jsonRepl"]:
+        if "jsonRepl" in lang:
             start = time.time()
-            request["cmd"] = "compile"
             response = lang["jsonRepl"].request(request)
+            response["elapsedMs"] = int((time.time() - start) * 1000)
+            self.resp(200, response)
+        elif "server" in lang:
+            start = time.time()
+            responseJson = postRequest("http://127.0.0.1:%d" % lang["port"], requestJson)
+            response = json.loads(responseJson)
             response["elapsedMs"] = int((time.time() - start) * 1000)
             self.resp(200, response)
         else:
