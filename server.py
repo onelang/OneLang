@@ -30,24 +30,39 @@ langs = {
                     System.out.println("hello world!");
                 }
             }
-        '''
+        ''',
+        "mainFn": "Program.java",
+        "stdlibFn": "one.java",
+        "cmd": "javac Program.java one.java && java Program"
     },
     "TypeScript": { # uses in-memory compilation
         "jsonReplCmd": "../../node_modules/node/bin/node jsonrepl.js",
-        "testCode": "console.log('hello world!');"
+        "testCode": "console.log('hello world!');",
+        "cmd": "tsc index.ts node_modules/one/index.ts > /dev/null; node index.js",
+        "mainFn": "index.ts",
+        "stdlibFn": "node_modules/one/index.ts",
     },
     "JavaScript": { # uses in-memory compilation
         "jsonReplCmd": "../../node_modules/node/bin/node jsonrepl.js",
         "jsonReplDir": "TypeScript",
         "testCode": "console.log('hello world!');",
+        "cmd": "node index.js",
+        "mainFn": "index.js",
+        "stdlibFn": "node_modules/one/index.js",
     },
     "Python": { # uses in-memory compilation
         "jsonReplCmd": "python -u jsonrepl.py",
-        "testCode": "print 'hello world!'"
+        "testCode": "print 'hello world!'",
+        "mainFn": "main.py",
+        "stdlibFn": "one.py",
+        "cmd": "python main.py"
     },
     "Ruby": { # uses in-memory compilation
         "jsonReplCmd": "ruby jsonrepl.rb",
-        "testCode": "puts 'hello world!'"
+        "testCode": "puts 'hello world!'",
+        "mainFn": "main.rb",
+        "stdlibFn": "one.rb",
+        "cmd": "ruby -I. main.rb"
     },
     "CSharp": { # uses in-memory compilation
         "jsonReplCmd": "dotnet run --no-build",
@@ -60,7 +75,10 @@ langs = {
                     Console.WriteLine("Hello World!");
                 }
             }
-        """
+        """,
+        "cmd": "csc Program.cs StdLib.cs > /dev/null && ./Program.exe",
+        "mainFn": "Program.cs",
+        "stdlibFn": "StdLib.cs",
     },
     "PHP": { # uses in-memory compilation
         "serverCmd": "php -S 127.0.0.1:{port} server.php",
@@ -125,22 +143,23 @@ def providePath(fileName):
 
 mkdir_p(TMP_DIR)
 
-testText = "Works!"
-for langName in langs:
-    try:
-        lang = langs[langName]
-        cwd = "%s/FastCompile/%s" % (os.getcwd(), lang.get("jsonReplDir", langName))
-        if "jsonReplCmd" in lang:
-            log("Starting %s JSON-REPL..." % langName)
-            lang["jsonRepl"] = JsonReplClient(lang["jsonReplCmd"], cwd)
-        elif "serverCmd" in lang:
-            log("Starting %s HTTP server..." % langName)
-            args = lang["serverCmd"].replace("{port}", str(lang["port"])).split(" ") 
-            lang["server"] = subprocess.Popen(args, cwd=cwd, stdin=subprocess.PIPE) 
-    except Exception as e:
-        print "Failed to start compiler %s: %r" % (langName, e)
+if not "--no-in-memory-compilation" in sys.argv:
+    for langName in langs:
+        try:
+            lang = langs[langName]
+            cwd = "%s/FastCompile/%s" % (os.getcwd(), lang.get("jsonReplDir", langName))
+            if "jsonReplCmd" in lang:
+                log("Starting %s JSON-REPL..." % langName)
+                lang["jsonRepl"] = JsonReplClient(lang["jsonReplCmd"], cwd)
+            elif "serverCmd" in lang:
+                log("Starting %s HTTP server..." % langName)
+                args = lang["serverCmd"].replace("{port}", str(lang["port"])).split(" ") 
+                lang["server"] = subprocess.Popen(args, cwd=cwd, stdin=subprocess.PIPE) 
+        except Exception as e:
+            print "Failed to start compiler %s: %r" % (langName, e)
 
 if TEST_SERVERS: # TODO
+    testText = "Works!"
     requestJson = json.dumps(lang["testRequest"], indent=4).replace("{testText}", testText)
 
     maxTries = 10
@@ -210,11 +229,11 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             stdout, stderr = pipes.communicate()
 
             if pipes.returncode != 0 or len(stderr) > 0:
-                self.resp(400, { 'exceptionText': stderr })
+                self.resp(400, { "result": stdout, "exceptionText": stderr })
             else:
                 elapsedMs = int((time.time() - start) * 1000)
                 shutil.rmtree(outDir)
-                self.resp(200, { 'result': stdout, "elapsedMs": elapsedMs })
+                self.resp(200, { "result": stdout, "elapsedMs": elapsedMs })
 
     def do_POST(self):
         if self.path == '/compile':

@@ -60,6 +60,8 @@ classes:
     methods:
       raise:
         template: throw new Exception({{message}})
+  OneReflect:
+    includes: [one]
 operators:
   OneString + OneString:
     template: "{{gen(left)}} . {{gen(right)}}"
@@ -86,7 +88,7 @@ templates:
     <?php
 
     {{for inc in includes|sep=\n}}
-      require_once("{{inc}}");
+      require_once("{{inc}}.php");
     {{/for}}
 
     {{for enum in enums|sep=\n\n}}

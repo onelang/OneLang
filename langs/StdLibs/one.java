@@ -14,7 +14,7 @@ class OneRegex
         if (!matcher.find(offset))
             return null;
 
-        List<String> result = new ArrayList();
+        ArrayList<String> result = new ArrayList<String>();
         result.add(matcher.group());
         for (int i = 0; i < matcher.groupCount(); i++)
             result.add(matcher.group(i));
@@ -72,11 +72,11 @@ class OneClass
     }
     
     public List<OneField> getFields() {
-        return new ArrayList(fields.values());
+        return new ArrayList<OneField>(fields.values());
     }
 
     public List<OneMethod> getMethods() {
-        return new ArrayList(methods.values());
+        return new ArrayList<OneMethod>(methods.values());
     }
 }
 
