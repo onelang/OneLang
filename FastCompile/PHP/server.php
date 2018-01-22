@@ -2,10 +2,15 @@
 
 header("Access-Control-Allow-Origin: *");
 
+function resp($result) {
+    $result["backendVersion"] = "one:php:server:20180122";
+    print json_encode($result);
+    exit;
+}
+
 $origin = isset($_SERVER["HTTP_ORIGIN"]) ? $_SERVER["HTTP_ORIGIN"] : "<null>";
 if ($origin !== "https://ide.onelang.io" && strpos($origin, "http://127.0.0.1:") !== 0) {
-    print json_encode(array("exceptionText" => "Origin is not allowed: " . $origin, "errorCode" => "origin_not_allowed"));
-    exit;
+    resp(array("exceptionText" => "Origin is not allowed: " . $origin, "errorCode" => "origin_not_allowed"));
 }
 
 function exception_error_handler($errno, $errstr, $errfile, $errline) {
@@ -43,11 +48,11 @@ try {
     eval($code);
     $elapsedMs = (int)((microtime(true) - $startTime) * 1000);
     $result = ob_get_clean();
-    print json_encode(array("result" => $result, "elapsedMs" => $elapsedMs));
+    resp(array("result" => $result, "elapsedMs" => $elapsedMs));
 } catch(Error $e) {
     $result = ob_get_clean();
-    print json_encode(array("result" => $result, "exceptionText" => "line #{$e->getLine()}: {$e->getMessage()}\n{$e->getTraceAsString()}"));
+    resp(array("result" => $result, "exceptionText" => "line #{$e->getLine()}: {$e->getMessage()}\n{$e->getTraceAsString()}"));
 } catch(Exception $e) {
     $result = ob_get_clean();
-    print json_encode(array("result" => $result, "exceptionText" => "line #{$e->getLine()}: {$e->getMessage()}\n{$e->getTraceAsString()}"));
+    resp(array("result" => $result, "exceptionText" => "line #{$e->getLine()}: {$e->getMessage()}\n{$e->getTraceAsString()}"));
 }

@@ -1,5 +1,11 @@
 <?php
 
+function resp($result) {
+    $result["backendVersion"] = "one:php:server:20180122";
+    print json_encode($result);
+    exit;
+}
+
 $stdin = fopen("php://stdin", "r");
 
 function exception_error_handler($errno, $errstr, $errfile, $errline) {
@@ -23,7 +29,7 @@ function fatal_handler() {
         $errstr  = $error["message"];
 
         $result = ob_get_clean();
-        print json_encode(array("result" => $result, "exceptionText" => "line #{$errline}: {$errstr}")) . "\n";
+        resp(array("result" => $result, "exceptionText" => "line #{$errline}: {$errstr}")) . "\n";
     }
 }
 
@@ -46,9 +52,9 @@ while (true) {
         eval("namespace Request$requestIdx;$stdlibCode");
         eval("namespace Request$requestIdx;$code");
         $result = ob_get_clean();
-        print json_encode(array("result" => $result)) . "\n";
+        resp(array("result" => $result)) . "\n";
     } catch(Error $e) {
         $result = ob_get_clean();
-        print json_encode(array("result" => $result, "exceptionText" => "line #{$e->getLine()}: {$e->getMessage()}\n{$e->getTraceAsString()}")) . "\n";
+        resp(array("result" => $result, "exceptionText" => "line #{$e->getLine()}: {$e->getMessage()}\n{$e->getTraceAsString()}")) . "\n";
     }
 }

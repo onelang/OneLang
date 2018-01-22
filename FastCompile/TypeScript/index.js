@@ -32,12 +32,17 @@ function tsCompile(code) {
 }
 
 const server = http.createServer(async (request, response) => {
+    function resp(result) {
+        result["backendVersion"] = "one:tsjs:server:20180122";
+        response.end(JSON.stringify(result));
+    }
+
     try {
         response.setHeader("Access-Control-Allow-Origin", "*");
 
         const origin = request.headers.origin||"<null>";
         if (origin !== "https://ide.onelang.io" && !origin.startsWith("http://127.0.0.1:")) {
-            response.end(JSON.stringify({ exceptionText: `Origin is not allowed: ${origin}`, errorCode: "origin_not_allowed" }));
+            resp({ exceptionText: `Origin is not allowed: ${origin}`, errorCode: "origin_not_allowed" });
             return;
         }
     
@@ -70,9 +75,9 @@ const server = http.createServer(async (request, response) => {
         const elapsedTime = process.hrtime(startTime);
         const elapsedMs = elapsedTime[0] * 1000 + Math.round(elapsedTime[1] / 1e6);
 
-        response.end(JSON.stringify({ result, elapsedMs }));
+        resp({ result, elapsedMs });
     } catch(e) {
-        response.end(JSON.stringify({ exceptionText: `${e}\n\n${e.stack}` }));
+        resp({ exceptionText: `${e}\n\n${e.stack}` });
     }
 });
 

@@ -17,6 +17,7 @@ class Response {
     public String exceptionText;
     public String errorCode;
     public Object result;
+    public String backendVersion;
 }
 
 public class App
@@ -81,6 +82,7 @@ public class App
                 response.exceptionText = sw.toString();
             }
 
+            response.backendVersion = "one:java:jsonrepl:20180122";
             String responseJson = new Gson().toJson(response);
             System.out.println(responseJson);
         }

@@ -5,6 +5,10 @@ import sys
 import imp
 from cStringIO import StringIO
 
+def resp(result):
+    result["backendVersion"] = "one:python:jsonrepl:20180122"
+    print json.dumps(result)
+
 while True:
     try:
         requestLine = raw_input()
@@ -23,8 +27,8 @@ while True:
             finally:
                 sys.stdout = original_stdout
 
-            print json.dumps({ "result": result_stdout.getvalue() })
+            resp({ "result": result_stdout.getvalue() })
         else:
-            print json.dumps({ "errorCode": "unknown_command", "exceptionText": "Unknown command: " + request["cmd"] })
+            resp({ "errorCode": "unknown_command", "exceptionText": "Unknown command: " + request["cmd"] })
     except Exception as e:
-        print json.dumps({ "errorCode": "unexpected_exception", "exceptionText": traceback.format_exc() })
+        resp({ "errorCode": "unexpected_exception", "exceptionText": traceback.format_exc() })

@@ -24,6 +24,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
         pass
 
     def resp(self, statusCode, result):
+        result["backendVersion"] = "one:python:server:20180122"
         responseBody = json.dumps(result)
         self.send_response(statusCode)
         self.send_header("Access-Control-Allow-Origin", "*")

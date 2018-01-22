@@ -33,7 +33,8 @@ langs = {
         ''',
         "mainFn": "Program.java",
         "stdlibFn": "one.java",
-        "cmd": "javac Program.java one.java && java Program"
+        "cmd": "javac Program.java one.java && java Program",
+        "versionCmd": "javac -version; java -version",
     },
     "TypeScript": { # uses in-memory compilation
         "jsonReplCmd": "../../node_modules/node/bin/node jsonrepl.js",
@@ -41,6 +42,7 @@ langs = {
         "cmd": "tsc index.ts node_modules/one/index.ts > /dev/null; node index.js",
         "mainFn": "index.ts",
         "stdlibFn": "node_modules/one/index.ts",
+        "versionCmd": "echo Node: `node -v`; echo TSC: `tsc -v`",
     },
     "JavaScript": { # uses in-memory compilation
         "jsonReplCmd": "../../node_modules/node/bin/node jsonrepl.js",
@@ -49,20 +51,23 @@ langs = {
         "cmd": "node index.js",
         "mainFn": "index.js",
         "stdlibFn": "node_modules/one/index.js",
+        "versionCmd": "echo Node: `node -v`",
     },
     "Python": { # uses in-memory compilation
         "jsonReplCmd": "python -u jsonrepl.py",
         "testCode": "print 'hello world!'",
         "mainFn": "main.py",
         "stdlibFn": "one.py",
-        "cmd": "python main.py"
+        "cmd": "python main.py",
+        "versionCmd": "python --version",
     },
     "Ruby": { # uses in-memory compilation
         "jsonReplCmd": "ruby jsonrepl.rb",
         "testCode": "puts 'hello world!'",
         "mainFn": "main.rb",
         "stdlibFn": "one.rb",
-        "cmd": "ruby -I. main.rb"
+        "cmd": "ruby -I. main.rb",
+        "versionCmd": "ruby -v",
     },
     "CSharp": { # uses in-memory compilation
         "jsonReplCmd": "dotnet run --no-build",
@@ -79,6 +84,7 @@ langs = {
         "cmd": "csc Program.cs StdLib.cs > /dev/null && ./Program.exe",
         "mainFn": "Program.cs",
         "stdlibFn": "StdLib.cs",
+        "versionCmd": "dotnet --info; echo CSC version: `csc -version`",
     },
     "PHP": { # uses in-memory compilation
         "serverCmd": "php -S 127.0.0.1:{port} server.php",
@@ -86,31 +92,36 @@ langs = {
         "testCode": "print 'hello world!';",
         "mainFn": "main.php",
         "stdlibFn": "one.php",
-        "cmd": "php main.php"
+        "cmd": "php main.php",
+        "versionCmd": "php -v",
     },
     "CPP": {
         "ext": "cpp",
         "mainFn": "main.cpp",
         "stdlibFn": "one.hpp",
         "cmd": "g++ -std=c++17 main.cpp -I. -o binary && ./binary",
+        "versionCmd": "g++ -v",
     },
     "Go": {
         "ext": "go",
         "mainFn": "main.go",
         "stdlibFn": "src/one/one.go",
-        "cmd": "GOPATH=$PWD go run main.go"
+        "cmd": "GOPATH=$PWD go run main.go",
+        "versionCmd": "go version",
     },
     "Perl": {
         "ext": "pl",
         "mainFn": "main.pl",
         "stdlibFn": "one.pm",
         "cmd": "perl -I. main.pl",
+        "versionCmd": "perl -v",
     },
     "Swift": {
         "ext": "swift",
         "mainFn": "main.swift",
         "stdlibFn": "one.swift",
-        "cmd": "cat one.swift main.swift | swift -"
+        "cmd": "cat one.swift main.swift | swift -",
+        "versionCmd": "swift --version",
     }
 }
 
@@ -179,11 +190,14 @@ if TEST_SERVERS: # TODO
     else:
         log("%s compiler is ready!" % langName)        
 
+version_cache = None
+
 class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
     def resp(self, statusCode, result):
+        result["controllerVersion"] = "one:v1:20180122"
         responseBody = json.dumps(result)
         self.send_response(statusCode)
         self.send_header("Access-Control-Allow-Origin", "*")
@@ -195,9 +209,6 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header("Cache-Control", "no-cache, no-store")
         SimpleHTTPServer.SimpleHTTPRequestHandler.end_headers(self)
-
-    def do_GET(self):
-        return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
     def compile(self):
         requestJson = self.rfile.read(int(self.headers.getheader('content-length')))
@@ -235,20 +246,48 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 shutil.rmtree(outDir)
                 self.resp(200, { "result": stdout, "elapsedMs": elapsedMs })
 
+    def compiler_versions(self):
+        # TODO: thread-safety
+        global version_cache
+        if not version_cache:
+            version_cache = {}
+            for lang in langs:
+                try:
+                    version_cache[lang] = subprocess.check_output(langs[lang]["versionCmd"], shell=True, stderr=subprocess.STDOUT)
+                except subprocess.CalledProcessError as e:
+                    version_cache[lang] = e.output
+        self.resp(200, version_cache)
+
+    def apiCall(self):
+        method = None
+        if self.command == "GET" and self.path == '/compiler_versions':
+            method = self.compiler_versions
+        elif self.command == "POST" and self.path == '/compile':
+            method = self.compile
+
+        if not method:
+            return False
+
+        origin = self.headers.getheader('origin') or "<null>"
+        if origin != "https://ide.onelang.io" and not origin.startswith("http://127.0.0.1:"):
+            self.resp(403, { "exceptionText": "Origin is not allowed: " + origin, "errorCode": "origin_not_allowed" })
+            return
+
+        try:
+            method()
+        except Exception as e:
+            log(repr(e))
+            self.resp(400, { 'exceptionText': traceback.format_exc() })
+
+        return True
+
+    def do_GET(self):
+        if not self.apiCall():
+            return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+
     def do_POST(self):
-        if self.path == '/compile':
-            try:
-                origin = self.headers.getheader('origin') or "<null>"
-                if origin != "https://ide.onelang.io" and not origin.startswith("http://127.0.0.1:"):
-                    self.resp(403, { "exceptionText": "Origin is not allowed: " + origin, "errorCode": "origin_not_allowed" })
-                    return
-                else:
-                    self.compile()
-            except Exception as e:
-                log(repr(e))
-                self.resp(400, { 'exceptionText': traceback.format_exc() })
-        else:
-            return SimpleHTTPServer.SimpleHTTPRequestHandler.do_POST(self) 
+        if not self.apiCall():
+            self.resp(403, { "exceptionText": "API endpoint was not found: " + self.path, "errorCode": "endpoint_not_found" })
 
 log("Starting HTTP server... Please use 127.0.0.1:%d on Windows (using 'localhost' makes 1sec delay)" % PORT)
 

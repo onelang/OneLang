@@ -34,6 +34,9 @@ namespace OneCSharpCompiler
 
             [JsonProperty("result")]
             public string Result { get; set; }
+
+            [JsonProperty("backendVersion")]
+            public string BackendVersion { get; set; }
         }
 
         static MetadataReference[] references;
@@ -103,6 +106,7 @@ namespace OneCSharpCompiler
                     response = new Response { ErrorCode = "invalid_request", ExceptionText = e.ToString() };
                 }
 
+                response.BackendVersion = "one:csharp:jsonrepl:20180122";
                 var responseJson = JsonConvert.SerializeObject(response);
                 Console.WriteLine(responseJson);
             }

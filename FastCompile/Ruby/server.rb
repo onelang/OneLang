@@ -7,13 +7,18 @@ server = WEBrick::HTTPServer.new :Port => 8005, :AccessLog => [], :BindAddress =
 trap 'INT' do server.shutdown end
 
 server.mount_proc '/compile' do |req, res|
+    def resp(result)
+        result["backendVersion"] = "one:ruby:server:20180122"
+        res.body = JSON.generate(result)
+    end
+
     original_stdout = $stdout
     begin
         res["Access-Control-Allow-Origin"] = "*"
 
         origin = req["Origin"] || "<null>"
         if origin != "https://ide.onelang.io" && !origin.start_with?("http://127.0.0.1:")
-            res.body = JSON.generate({ :exceptionText => "Origin is not allowed: #{origin}", :errorCode => "origin_not_allowed" })
+            resp({ :exceptionText => "Origin is not allowed: #{origin}", :errorCode => "origin_not_allowed" })
             next
         end
 
@@ -25,9 +30,9 @@ server.mount_proc '/compile' do |req, res|
         result = eval request['code'].sub(/require 'one'/, "")
         elapsedMs = ((Time.now - startTime) * 1000).round
         
-        res.body = JSON.generate({ :result => $stdout.string, :elapsedMs => elapsedMs })
+        resp({ :result => $stdout.string, :elapsedMs => elapsedMs })
     rescue Exception
-        res.body = JSON.generate({ :exceptionText => "#{$@.first}: #{$!.message} (#{$!.class})" + $@.drop(1).map{|s| "\n\t#{s}"}.join("") })
+        resp({ :exceptionText => "#{$@.first}: #{$!.message} (#{$!.class})" + $@.drop(1).map{|s| "\n\t#{s}"}.join("") })
     ensure
         $stdout = original_stdout
     end

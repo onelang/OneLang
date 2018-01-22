@@ -15,6 +15,11 @@ function tsCompile(code) {
     return ts.transpileModule(code, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
 }
 
+function resp(result) {
+    result["backendVersion"] = "one:tsjs:jsonrepl:20180122";
+    console.log(JSON.stringify(result));
+}
+
 readline.createInterface({ input: process.stdin, output: process.stdout, terminal: false }).on('line', requestLine => {
     try {
         const requestJson = JSON.parse(requestLine);
@@ -41,8 +46,8 @@ readline.createInterface({ input: process.stdin, output: process.stdout, termina
         });
 
         script.runInContext(context);
-        console.log(JSON.stringify({ result }));
+        resp({ result });
     } catch(e) {
-        console.log(JSON.stringify({ exceptionText: `${e}\n\n${e.stack}` }));
+        resp({ exceptionText: `${e}\n\n${e.stack}` });
     }
 });
