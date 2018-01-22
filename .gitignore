@@ -11,3 +11,4 @@ vmCode.js
 tmp/
 generated/**/*.json
 generated/**/*_Init.txt
+.secret_token

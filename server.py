@@ -9,6 +9,8 @@ import traceback
 import shutil
 import errno
 import sys
+import random
+import os.path
 
 import SimpleHTTPServer
 from SocketServer import ThreadingMixIn
@@ -17,11 +19,7 @@ from BaseHTTPServer import HTTPServer
 PORT = 8000
 TEST_SERVERS = False
 TMP_DIR = "tmp/compilation/"
-
-def log(text):
-    print "[Compile] %s" % text
-
-langs = {
+LANGS = {
     "Java": { # uses in-memory compilation
         "jsonReplCmd": "java -cp target/classes:lib/* fastjavacompile.App",
         "testCode": '''
@@ -125,6 +123,9 @@ langs = {
     }
 }
 
+def log(text):
+    print "[Compile] %s" % text
+
 class JsonReplClient:
     def __init__(self, cmd, cwd):
         self.p = subprocess.Popen(cmd.split(" "), stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=1, universal_newlines=True, cwd=cwd)
@@ -152,12 +153,25 @@ def providePath(fileName):
     mkdir_p(os.path.dirname(fileName))
     return fileName
 
+compilerBackendOnly = "--compilerBackendOnly" in sys.argv
+allowRemote = compilerBackendOnly or "--allowRemote" in sys.argv
+requireToken = allowRemote or "--requireToken" in sys.argv
+
+version_cache = None
 mkdir_p(TMP_DIR)
 
+if requireToken:
+    token = ""
+    if os.path.isfile(".secret_token"):
+        with open(".secret_token", "r") as f: token = f.read()
+    if len(token) < 32:
+        token = "%16x" % random.SystemRandom().getrandbits(128)
+        with open(".secret_token", "w") as f: f.write(token)
+
 if not "--no-in-memory-compilation" in sys.argv:
-    for langName in langs:
+    for langName in LANGS:
         try:
-            lang = langs[langName]
+            lang = LANGS[langName]
             cwd = "%s/FastCompile/%s" % (os.getcwd(), lang.get("jsonReplDir", langName))
             if "jsonReplCmd" in lang:
                 log("Starting %s JSON-REPL..." % langName)
@@ -190,8 +204,6 @@ if TEST_SERVERS: # TODO
     else:
         log("%s compiler is ready!" % langName)        
 
-version_cache = None
-
 class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
@@ -215,7 +227,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         request = json.loads(requestJson)
         request["cmd"] = "compile"
         langName = request["lang"]
-        lang = langs[langName]
+        lang = LANGS[langName]
 
         if "jsonRepl" in lang:
             start = time.time()
@@ -251,27 +263,39 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         global version_cache
         if not version_cache:
             version_cache = {}
-            for lang in langs:
+            for lang in LANGS:
                 try:
-                    version_cache[lang] = subprocess.check_output(langs[lang]["versionCmd"], shell=True, stderr=subprocess.STDOUT)
+                    version_cache[lang] = subprocess.check_output(LANGS[lang]["versionCmd"], shell=True, stderr=subprocess.STDOUT)
                 except subprocess.CalledProcessError as e:
                     version_cache[lang] = e.output
         self.resp(200, version_cache)
 
-    def apiCall(self):
+    def status(self):
+        self.resp(200, { "status": "ok" })
+
+    def handleRequest(self):
+        global requireToken, token, compilerBackendOnly
+
         method = None
         if self.command == "GET" and self.path == '/compiler_versions':
             method = self.compiler_versions
         elif self.command == "POST" and self.path == '/compile':
             method = self.compile
+        elif self.command == "GET" and self.path == '/status':
+            method = self.status
+
+        if not method and not compilerBackendOnly and self.command == "GET":
+            return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
         if not method:
-            return False
+            return self.resp(403, { "exceptionText": "API endpoint was not found: " + self.path, "errorCode": "endpoint_not_found" })            
 
         origin = self.headers.getheader('origin') or "<null>"
         if origin != "https://ide.onelang.io" and not origin.startswith("http://127.0.0.1:"):
-            self.resp(403, { "exceptionText": "Origin is not allowed: " + origin, "errorCode": "origin_not_allowed" })
-            return
+            return self.resp(403, { "exceptionText": "Origin is not allowed: " + origin, "errorCode": "origin_not_allowed" })
+
+        if requireToken and self.headers.getheader('authentication') != "Token %s" % token:
+            return self.resp(403, { "exceptionText": "Authentication token is invalid", "errorCode": "invalid_token" })
 
         try:
             method()
@@ -279,17 +303,16 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             log(repr(e))
             self.resp(400, { 'exceptionText': traceback.format_exc() })
 
-        return True
-
     def do_GET(self):
-        if not self.apiCall():
-            return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+        return self.handleRequest()
 
     def do_POST(self):
-        if not self.apiCall():
-            self.resp(403, { "exceptionText": "API endpoint was not found: " + self.path, "errorCode": "endpoint_not_found" })
+        return self.handleRequest()
 
 log("Starting HTTP server... Please use 127.0.0.1:%d on Windows (using 'localhost' makes 1sec delay)" % PORT)
+if requireToken:
+    log("Please use this token for authentication:")
+    log("  ===>   %s   <===" % token)
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
@@ -298,12 +321,12 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 log("Press Ctrl+C to exit.")
 
 try:
-    ThreadedHTTPServer(("127.0.0.1", PORT), HTTPHandler).serve_forever()
+    ThreadedHTTPServer(("0.0.0.0" if allowRemote else "127.0.0.1", PORT), HTTPHandler).serve_forever()
 except KeyboardInterrupt:
     pass
 
-for langName in langs:
-    lang = langs[langName]
+for langName in LANGS:
+    lang = LANGS[langName]
     if not "subp" in lang: continue
 
     log("Send stop signal to %s compiler" % langName)
