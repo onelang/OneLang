@@ -37,7 +37,7 @@ classes:
       print:
         template: "print({{str}})"
   OneArray:
-    type: "[{{typeArgs[0]}}]"
+    type: "[{{genType(typeArguments[0])}}]"
     fields:
       length:
         template: "{{self}}!.count"
@@ -50,7 +50,7 @@ classes:
       set:
         template: "{{self}}![{{index}}] = {{value}}"
   OneMap:
-    type: "[{{typeArgs[0]}}: {{typeArgs[1]}}]"
+    type: "[{{genType(typeArguments[0])}}: {{genType(typeArguments[1])}}]"
     methods:
       keys:
         template: "Array({{self}}!.keys)"
@@ -64,6 +64,7 @@ classes:
       get:
         template: "{{self}}![{{key}}]!"
       set:
+        mutates: true
         template: "{{self}}![{{key}}] = {{value}}"
   OneFile:
     methods:
