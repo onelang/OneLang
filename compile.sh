@@ -1,14 +1,12 @@
+echo
+echo '    ===> Building OneLang <==='
+echo
+npm i
 ./node_modules/typescript/bin/tsc
+echo 'Done.'
 
-cd FastCompile/Java
-mvn compile
-mkdir lib/
-cp ~/.m2/repository/com/google/code/gson/gson/2.8.1/gson-2.8.1.jar lib/
-cd ../..
-
-cd FastCompile/CSharp
-dotnet build
-cd ../..
-
-mkdir tmp
-mkdir tmp/FastCompile
+pushd CompilerBackend > /dev/null
+./compile.sh
+popd > /dev/null
+echo
+echo 'All built. Now run ./serve.py'

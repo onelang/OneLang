@@ -11,7 +11,7 @@ declare var YAML: any;
 
 const qs = {};
 location.search.substr(1).split('&').map(x => x.split('=')).forEach(x => qs[x[0]] = x[1]);
-const serverhost: string = "server" in qs ? qs["server"] : "http://127.0.0.1:8000";
+const serverhost: string = "server" in qs ? qs["server"] : "http://127.0.0.1:11111";
 
 const testPrgName = qs["input"] || "HelloWorld";
 
