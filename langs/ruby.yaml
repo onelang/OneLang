@@ -33,7 +33,7 @@ classes:
         template: "{{self}}.length"
     methods:
       add:
-        template: "{{self}} << {{item}}"
+        template: "{{self}} << ({{item}})"
       get:
         template: "{{self}}[{{index}}]"
       set:
