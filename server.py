@@ -222,7 +222,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.send_header("Cache-Control", "no-cache, no-store")
         SimpleHTTPServer.SimpleHTTPRequestHandler.end_headers(self)
 
-    def compile(self):
+    def api_compile(self):
         requestJson = self.rfile.read(int(self.headers.getheader('content-length')))
         request = json.loads(requestJson)
         request["cmd"] = "compile"
@@ -258,7 +258,7 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 shutil.rmtree(outDir)
                 self.resp(200, { "result": stdout, "elapsedMs": elapsedMs })
 
-    def compiler_versions(self):
+    def api_compiler_versions(self):
         # TODO: thread-safety
         global version_cache
         if not version_cache:
@@ -270,44 +270,51 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                     version_cache[lang] = e.output
         self.resp(200, version_cache)
 
-    def status(self):
+    def api_status(self):
         self.resp(200, { "status": "ok" })
 
-    def handleRequest(self):
-        global requireToken, token, compilerBackendOnly
-
-        method = None
-        if self.command == "POST" and self.path == '/compiler_versions':
-            method = self.compiler_versions
-        elif self.command == "POST" and self.path == '/compile':
-            method = self.compile
-        elif self.command == "POST" and self.path == '/status':
-            method = self.status
-
-        if not method and not compilerBackendOnly and self.command == "GET":
+    def do_GET(self):
+        global compilerBackendOnly
+        if compilerBackendOnly:
+            return self.resp(403, { "exceptionText": "Static page hosting is disabled", "errorCode": "static_page_hosting_disabled" })            
+        else:
             return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
-        if not method:
-            return self.resp(403, { "exceptionText": "API endpoint was not found: " + self.path, "errorCode": "endpoint_not_found" })            
-
+    def originCheck(self):
         origin = self.headers.getheader('origin') or "<null>"
         if origin != "https://ide.onelang.io" and not origin.startswith("http://127.0.0.1:"):
-            return self.resp(403, { "exceptionText": "Origin is not allowed: " + origin, "errorCode": "origin_not_allowed" })
+            self.resp(403, { "exceptionText": "Origin is not allowed: " + origin, "errorCode": "origin_not_allowed" })
+            return False
+        return True
 
-        if requireToken and self.headers.getheader('authentication') != "Token %s" % token:
-            return self.resp(403, { "exceptionText": "Authentication token is invalid", "errorCode": "invalid_token" })
+    def do_OPTIONS(self):
+        if not self.originCheck(): return
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", self.headers.getheader('origin'))
+        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "authentication")
+        self.end_headers()
+            
 
+    def do_POST(self):
         try:
-            method()
+            if not self.originCheck(): return
+
+            global requireToken, token
+            if requireToken and self.headers.getheader('authentication') != "Token %s" % token:
+                return self.resp(403, { "exceptionText": "Authentication token is invalid", "errorCode": "invalid_token" })
+
+            if self.path == '/compiler_versions':
+                self.api_compiler_versions()
+            elif self.path == '/compile':
+                self.api_compile()
+            elif self.path == '/status':
+                self.api_status()
+            else:
+                self.resp(403, { "exceptionText": "API endpoint was not found: " + self.path, "errorCode": "endpoint_not_found" })            
         except Exception as e:
             log(repr(e))
             self.resp(400, { 'exceptionText': traceback.format_exc() })
-
-    def do_GET(self):
-        return self.handleRequest()
-
-    def do_POST(self):
-        return self.handleRequest()
 
 log("Starting HTTP server... Please use 127.0.0.1:%d on Windows (using 'localhost' makes 1sec delay)" % PORT)
 if requireToken:
