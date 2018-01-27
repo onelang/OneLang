@@ -15,17 +15,25 @@ using sp = shared_ptr<T>;
 template <typename T>
 using vec = sp<vector<T>>;
 
+template<class Key, class T>
+std::shared_ptr<std::map<Key,T>> make_shared_map(std::initializer_list<typename std::map<Key,T>::value_type> il)
+{
+    return std::make_shared<std::map<Key,T>>(il);
+}
+
 class OneMapHelper {
   public:
-    template<typename K, typename V> static vec<K> keys(const sp<map<K,V>>& map) {
-        vec<K> result = vec<K>();
+    template<typename K, typename V>
+    static vec<K> keys(const sp<map<K,V>>& map) {
+        vec<K> result = make_shared<vector<K>>();
         for(auto it = map->begin(); it != map->end(); ++it)
             result->push_back(it->first);
         return result;
     }
 
-    template<typename K, typename V> static vec<V> values(const sp<map<K,V>>& map) {
-        vec<V> result = vec<V>();
+    template<typename K, typename V>
+    static vec<V> values(const sp<map<K,V>>& map) {
+        vec<V> result = make_shared<vector<V>>();
         for(auto it = map->begin(); it != map->end(); ++it)
             result->push_back(it->second);
         return result;
