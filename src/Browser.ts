@@ -188,40 +188,49 @@ class MarkerManager {
 }
 let markerManager = new MarkerManager();
 
+async function editorChange(sourceLang: string, newContent: string) {
+    console.log("editor change", sourceLang, newContent);
+    markerManager.removeMarkers();
+
+    if (layout.inputLangs.includes(sourceLang)) {
+        compileHelper.setProgram(newContent, sourceLang);
+        const sourceLangPromise = new ExposedPromise<string>();
+        await Promise.all(Object.keys(layout.langs).map(async langName => {
+            const langUi = layout.langs[langName];
+            const isSourceLang = langName === sourceLang;
+
+            const result = await runLangUi(langName, () => {
+                const code = compileHelper.compile(langName);
+                (isSourceLang ? langUi.generatedHandler : langUi.changeHandler).setContent(code);
+                if (isSourceLang) {
+                    langUi.astHandler.setContent(compileHelper.astOverview);
+                    langUi.astJsonHandler.setContent(compileHelper.astJsonOverview);
+                }
+                return code;
+            });
+            
+            if (isSourceLang)
+                sourceLangPromise.resolve(result);
+
+            const sourceLangResult = await sourceLangPromise;
+            const isMatch = result === sourceLangResult;
+            langUi.statusBar.find(".label").removeClass("success").addClass(isMatch ? "success" : "error");
+        }));
+    } else {
+        runLangUi(sourceLang, () => newContent);
+    }
+}
+
 function initLayout() {
     layout.init();
-    layout.onEditorChange = async (sourceLang: string, newContent: string) => {
-        console.log("editor change", sourceLang, newContent);
-        markerManager.removeMarkers();
-
-        if (layout.inputLangs.includes(sourceLang)) {
-            compileHelper.setProgram(newContent, sourceLang);
-            const sourceLangPromise = new ExposedPromise<string>();
-            await Promise.all(Object.keys(layout.langs).map(async langName => {
-                const langUi = layout.langs[langName];
-                const isSourceLang = langName === sourceLang;
-    
-                const result = await runLangUi(langName, () => {
-                    const code = compileHelper.compile(langName);
-                    (isSourceLang ? langUi.generatedHandler : langUi.changeHandler).setContent(code);
-                    if (isSourceLang) {
-                        langUi.astHandler.setContent(compileHelper.astOverview);
-                        langUi.astJsonHandler.setContent(compileHelper.astJsonOverview);
-                    }
-                    return code;
-                });
-                
-                if (isSourceLang)
-                    sourceLangPromise.resolve(result);
-    
-                const sourceLangResult = await sourceLangPromise;
-                const isMatch = result === sourceLangResult;
-                langUi.statusBar.find(".label").removeClass("success").addClass(isMatch ? "success" : "error");
-            }));
-        } else {
-            runLangUi(sourceLang, () => newContent);
-        }
-    };
+    for (const langName of Object.keys(layout.langs)) {
+        layout.langs[langName].editor.commands.addCommand({
+            name: "compile",
+            bindKey: { win: "Ctrl-Enter", mac: "Command-Enter" },
+            exec: function (editor) { editorChange(langName, editor.getValue()); }
+        });
+    }
+    layout.onEditorChange = "noAutoRefresh" in qs ? null : editorChange;
 
     window["layout"] = layout;
 
