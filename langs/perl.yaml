@@ -42,9 +42,9 @@ classes:
   OneMap:
     methods:
       keys:
-        template: "keys {{self}}"
+        template: "keys %{{{self}}}"
       values:
-        template: "values {{self}}"
+        template: "values %{{{self}}}"
       remove:
         template: "delete ${{{self}}}{{{key}}}"
       hasKey:
