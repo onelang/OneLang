@@ -168,7 +168,7 @@ if requireToken:
         token = "%16x" % random.SystemRandom().getrandbits(128)
         with open(".secret_token", "w") as f: f.write(token)
 
-if not "--no-in-memory-compilation" in sys.argv:
+if not "--noInMemoryCompilation" in sys.argv:
     for langName in LANGS:
         try:
             lang = LANGS[langName]
@@ -277,11 +277,11 @@ class HTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         global requireToken, token, compilerBackendOnly
 
         method = None
-        if self.command == "GET" and self.path == '/compiler_versions':
+        if self.command == "POST" and self.path == '/compiler_versions':
             method = self.compiler_versions
         elif self.command == "POST" and self.path == '/compile':
             method = self.compile
-        elif self.command == "GET" and self.path == '/status':
+        elif self.command == "POST" and self.path == '/status':
             method = self.status
 
         if not method and not compilerBackendOnly and self.command == "GET":

@@ -2,10 +2,17 @@
 <head>
     <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/golden-layout/1.5.9/css/goldenlayout-base.css" />
     <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/golden-layout/1.5.9/css/goldenlayout-dark-theme.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous"> -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/darkly/bootstrap.min.css">
+    
 
     <script src="js/Utils/Extensions.js"></script>
     <script src="lib/yaml.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
     <style>
         .editorDiv { height:100%; display: flex; min-height: 100%; flex-direction: column; }
         .editorDiv .aceEditor { flex: 1; }
@@ -17,13 +24,19 @@
         span.result { position: relative; top: 1px; }
         .ace-monokai .ace_marker-layer .ace_step_multiline { background: rgba(102, 82, 0, 0.2); position: absolute; z-index: 3; }
         .compilerMissing { color: white; margin-left: 2px; }
+        .btn { padding: 5px 10px; }
+        .modal { color: white; }
+        .control-label { margin-bottom:8px }
+        .form-control { padding: 6px 12px; height:34px }
+        .modal-footer, .modal-body { padding: 15px }
+        .input-group-addon { padding: 8px 8px }
+        form { padding: 0; margin: 0 }
     </style>
     <script>
         window.global = window;
         requirejs.config({
             "baseUrl": "js/",
             "paths": {
-                "jquery": "//code.jquery.com/jquery-3.2.1.min",
                 "goldenlayout": "//cdnjs.cloudflare.com/ajax/libs/golden-layout/1.5.9/goldenlayout.min",
                 "ace/ace": "//cdnjs.cloudflare.com/ajax/libs/ace/1.2.8/ace"
             }
@@ -33,5 +46,27 @@
     </script>
 </head>
 <body>
+
+<div class="modal fade" id="authTokenModal" tabindex="-1" role="dialog" aria-labelledby="authTokenModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="authTokenModalLabel">Compiler backend requires authentication</h4>
+            </div>
+            <form>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="authToken" class="control-label">Authentication token:</label>
+                        <input type="text" class="form-control" id="authToken">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" data-dismiss="modal">Authenticate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
