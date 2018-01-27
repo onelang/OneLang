@@ -1,5 +1,5 @@
-class MapTestClass {
-    mapTest() {
+class TestClass {
+    getResult(): number {
         let mapObj = { x: 5 };
         //let containsX = "x" in mapObj;
         //delete mapObj["x"];
@@ -7,5 +7,9 @@ class MapTestClass {
         return mapObj["x"];
         //const xVal = mapObj["x"];
         //return containsX
+    }
+
+    testMethod() {
+        console.log(`Result = ${this.getResult()}`);
     }
 }
