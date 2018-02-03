@@ -352,7 +352,7 @@ export class CodeGenerator {
         codeGenVars.addCallback("enums", () => this.model.enums);
         codeGenVars.addCallback("mainBlock", () => this.schema.mainBlock);
         codeGenVars.addCallback("result", () => this.model.result);
-        for (const name of ["gen", "isIfBlock", "typeName", "hackPerlToVar", "escapeQuotes", "clsName"])
+        for (const name of ["gen", "isIfBlock", "typeName", "escapeQuotes", "clsName"])
             codeGenVars.setVariable(name, (...args) => this.model[name].apply(this.model, args));
         const varContext = new VariableContext([codeGenVars, this.templateVars]);
         this.templateGenerator = new TemplateGenerator(varContext);
