@@ -13,7 +13,7 @@ const qs = {};
 location.search.substr(1).split('&').map(x => x.split('=')).forEach(x => qs[x[0]] = x[1]);
 const serverhost: string = "server" in qs ? qs["server"] : "http://127.0.0.1:11111";
 
-const testPrgName = qs["input"] || "HelloWorld";
+const testPrgName = qs["input"] || "HelloWorldRaw";
 
 async function downloadTextFile(url: string): Promise<string> {
     const response = await (await fetch(url)).text();
