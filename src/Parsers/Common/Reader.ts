@@ -40,8 +40,8 @@ export class Reader {
 
     get linePreview() {
         const cursor = this.cursor;
-        const line = this.input.substring(cursor.lineStart, cursor.lineEnd);
-        return line + " ".repeat(cursor.column - 1) + "^^^";
+        const line = this.input.substring(cursor.lineStart, cursor.lineEnd - 1);
+        return `${line}\n${" ".repeat(cursor.column - 1)}^^^`;
     }
 
     get preview() {
