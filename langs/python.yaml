@@ -126,7 +126,7 @@ templates:
         {{/if}}
       {{/for}}
 
-      {{if class.reflect}}
+      {{if class.attributes["reflect"]}}
         one.Reflect.setup_class(one.Class({{class.name}}, [
             {{for field in class.fields|sep=\n}}
               one.Field("{{field.name}}", {{if field.static}}True{{else}}False{{/if}}, "{{field.type}}"),

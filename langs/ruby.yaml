@@ -132,7 +132,7 @@ templates:
         {{/for}}
       end
 
-      {{if class.reflect}}
+      {{if class.attributes["reflect"]}}
         One::Reflect::setup_class(One::Class.new({{class.name}}, [
             {{for field in class.fields|sep=\n}}
               One::Field.new("{{field.name}}", {{field.static}}, "{{field.type}}"),

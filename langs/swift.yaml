@@ -128,7 +128,7 @@ templates:
         {{/for}}
       }
 
-      {{if class.reflect}}
+      {{if class.attributes["reflect"]}}
         let _ = OneReflect.addClass(OneClass(name: "{{class.name}}"))
           {{for field in class.fields}}
             {{if field.static}}

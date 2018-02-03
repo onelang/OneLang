@@ -192,7 +192,7 @@ templates:
         }
       {{/for}}
 
-      {{if class.reflect}}
+      {{if class.attributes["reflect"]}}
         OneReflect::setup_class(new OneClass("{{class.name}}", [
             {{for field in class.fields|sep=\n}}
               new OneField("{{field.name}}", {{if field.static}}1{{else}}0{{/if}}, "{{field.type}}"),

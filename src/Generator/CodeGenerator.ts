@@ -39,8 +39,6 @@ namespace CodeGeneratorModel {
         publicMethods: Method[];
         privateMethods: Method[];
         attributes: { [name: string]: any };
-        // TODO: use attributes instead
-        reflect: boolean;
     }
 
     export interface Interface {
@@ -349,7 +347,7 @@ export class CodeGenerator {
         codeGenVars.addCallback("includes", () => this.model.includes);
         codeGenVars.addCallback("classes", () => this.model.classes);
         // TODO: hack, see https://github.com/koczkatamas/onelang/issues/17
-        codeGenVars.addCallback("reflectedClasses", () => this.model.classes.filter(x => x.reflect));
+        codeGenVars.addCallback("reflectedClasses", () => this.model.classes.filter(x => x.attributes["reflect"]));
         codeGenVars.addCallback("interfaces", () => this.model.interfaces);
         codeGenVars.addCallback("enums", () => this.model.enums);
         codeGenVars.addCallback("mainBlock", () => this.schema.mainBlock);
@@ -497,7 +495,6 @@ export class CodeGenerator {
                 attributes: cls.attributes,
                 // TODO: hack, see https://github.com/koczkatamas/onelang/issues/17
                 needsConstructor: constructor !== null || fields.some(x => x.visibility === "public" && !x.static && !!x.initializer),
-                reflect: cls.attributes["reflect"],
                 virtualMethods: methods.filter(x => x.attributes["virtual"]),
                 publicMethods: methods.filter(x => x.visibility === "public"),
                 protectedMethods: methods.filter(x => x.visibility === "protected"),

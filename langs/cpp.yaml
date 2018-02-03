@@ -141,7 +141,7 @@ templates:
         {{/if}}
       {{/for}}
       
-      {{if class.reflect}}
+      {{if class.attributes["reflect"]}}
         static struct Reflection{{class.name}}
         {
           Reflection{{class.name}}() {
@@ -238,12 +238,12 @@ templates:
         >
       {{/if}}
       class {{class.name}}
-      {{if class.baseClasses.length > 0 or class.reflect|inline}}
+      {{if class.baseClasses.length > 0 or class.attributes["reflect"]|inline}}
          : 
         {{for item in class.baseClasses|inline sep=", "}}
           public {{item}}
         {{/for}}
-        {{if class.reflect}}
+        {{if class.attributes["reflect"]}}
           {{if class.baseClasses.length > 0}}, {{/if}}public ReflectedClass
         {{/if}}
       {{/if}}

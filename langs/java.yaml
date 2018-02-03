@@ -117,7 +117,7 @@ templates:
 
     {{for class in classes|sep=\n\n}}
       class {{genTypeArgs(class, "implements")}} {
-          {{if class.reflect}}
+          {{if class.attributes["reflect"]}}
             static {
                 OneReflect.publish({{class.name}}.class);
             }

@@ -123,7 +123,7 @@ templates:
     {{for class in classes|sep=\n\n}}
       public class {{genTypeArgs(class)}}
       {
-          {{if class.reflect}}
+          {{if class.attributes["reflect"]}}
             static {{class.name}}()
             {
                 OneReflect.Publish(typeof({{class.name}}));
