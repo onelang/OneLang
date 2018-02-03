@@ -3,6 +3,7 @@ package one
 import "strings"
 import "regexp"
 import "reflect"
+import "math/big"
 
 func Regex_MatchFromIndex(pattern string, input string, offset int) []string {
 	reader := strings.NewReader(input)
@@ -152,4 +153,8 @@ func (this *Method) Call(obj interface{}, args []interface{}) interface{} {
 		methodRef = reflect.ValueOf(obj).Method(this.InstanceMethod.Index)
 	}
 	return methodRef.Call(inArgs)[0].Interface()
+}
+
+func BI() *big.Int {
+	return big.NewInt(0)
 }

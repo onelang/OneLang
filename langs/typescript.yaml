@@ -75,6 +75,48 @@ classes:
   OneReflect:
     includes: ["one"]
     template: "one.Reflect"
+  OneBigInteger:
+    type: "BigInteger"
+    includes: [BigInteger]
+    methods:
+      fromInt:
+        template: "new BigInteger({{value}})"
+operators:
+  OneBigInteger + OneBigInteger:  "{{gen(left)}}.add({{gen(right)}})"
+  OneBigInteger - OneBigInteger:  "{{gen(left)}}.subtract({{gen(right)}})"
+  OneBigInteger * OneBigInteger:  "{{gen(left)}}.multiply({{gen(right)}})"
+  OneBigInteger / OneBigInteger:  "{{gen(left)}}.divide({{gen(right)}})"
+  OneBigInteger % OneBigInteger:  "{{gen(left)}}.mod({{gen(right)}})"
+  OneBigInteger << OneBigInteger: "{{gen(left)}}.shiftLeft({{gen(right)}})"
+  OneBigInteger >> OneBigInteger: "{{gen(left)}}.shiftRight({{gen(right)}})"
+  OneBigInteger > OneBigInteger:  "{{gen(left)}}.greater({{gen(right)}})"
+  OneBigInteger < OneBigInteger:  "{{gen(left)}}.lesser({{gen(right)}})"
+  OneBigInteger >= OneBigInteger: "{{gen(left)}}.greaterOrEquals({{gen(right)}})"
+  OneBigInteger <= OneBigInteger: "{{gen(left)}}.lesserOrEquals({{gen(right)}})"
+  OneBigInteger == OneBigInteger: "{{gen(left)}}.equals({{gen(right)}})"
+  OneBigInteger != OneBigInteger: "{{gen(left)}}.notEquals({{gen(right)}})"
+  OneBigInteger & OneBigInteger:  "{{gen(left)}}.and({{gen(right)}})"
+  OneBigInteger | OneBigInteger:  "{{gen(left)}}.or({{gen(right)}})"
+  OneBigInteger ^ OneBigInteger:  "{{gen(left)}}.xor({{gen(right)}})"
+
+  OneBigInteger + OneNumber:  "{{gen(left)}}.add({{gen(right)}})"
+  OneBigInteger - OneNumber:  "{{gen(left)}}.subtract({{gen(right)}})"
+  OneBigInteger * OneNumber:  "{{gen(left)}}.multiply({{gen(right)}})"
+  OneBigInteger / OneNumber:  "{{gen(left)}}.divide({{gen(right)}})"
+  OneBigInteger % OneNumber:  "{{gen(left)}}.mod({{gen(right)}})"
+  OneBigInteger << OneNumber: "{{gen(left)}}.shiftLeft({{gen(right)}})"
+  OneBigInteger >> OneNumber: "{{gen(left)}}.shiftRight({{gen(right)}})"
+  OneBigInteger > OneNumber:  "{{gen(left)}}.greater({{gen(right)}})"
+  OneBigInteger < OneNumber:  "{{gen(left)}}.lesser({{gen(right)}})"
+  OneBigInteger >= OneNumber: "{{gen(left)}}.greaterOrEquals({{gen(right)}})"
+  OneBigInteger <= OneNumber: "{{gen(left)}}.lesserOrEquals({{gen(right)}})"
+  OneBigInteger == OneNumber: "{{gen(left)}}.equals({{gen(right)}})"
+  OneBigInteger != OneNumber: "{{gen(left)}}.notEquals({{gen(right)}})"
+  OneBigInteger & OneNumber:  "{{gen(left)}}.and({{gen(right)}})"
+  OneBigInteger | OneNumber:  "{{gen(left)}}.or({{gen(right)}})"
+  OneBigInteger ^ OneNumber:  "{{gen(left)}}.xor({{gen(right)}})"
+includeSources:
+  BigInteger: big-integer
 templates:
   testGenerator: |-
     try {
@@ -238,7 +280,11 @@ expressions:
       {{if part.literal|inline}}
         {{part.text}}
       {{else}}
-        ${{{gen(part.expr)}}}
+        ${{{gen(part.expr)}}
+          {{if part.expr.valueType.className == "OneBigInteger"|inline}}
+            .toString()
+          {{/if}}
+        }
       {{/if}}
     {{/for}}
     `

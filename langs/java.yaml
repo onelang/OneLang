@@ -79,9 +79,48 @@ classes:
     methods:
       raise:
         template: throw new Exception({{message}})
+  OneBigInteger:
+    type: "BigInteger"
+    includes: [java.math.BigInteger]
+    methods:
+      fromInt:
+        template: "BigInteger.valueOf({{value}})"
 operators:
-  OneString == OneString:
-    template: "{{gen(left)}}.equals({{gen(right)}})"
+  OneString == OneString: "{{gen(left)}}.equals({{gen(right)}})"
+
+  OneBigInteger + OneBigInteger:  "{{gen(left)}}.add({{gen(right)}})"
+  OneBigInteger - OneBigInteger:  "{{gen(left)}}.subtract({{gen(right)}})"
+  OneBigInteger * OneBigInteger:  "{{gen(left)}}.multiply({{gen(right)}})"
+  OneBigInteger / OneBigInteger:  "{{gen(left)}}.divide({{gen(right)}})"
+  OneBigInteger % OneBigInteger:  "{{gen(left)}}.mod({{gen(right)}})"
+  OneBigInteger << OneBigInteger: "{{gen(left)}}.shiftLeft(({{gen(right)}}).intValue())"
+  OneBigInteger >> OneBigInteger: "{{gen(left)}}.shiftRight(({{gen(right)}}).intValue())"
+  OneBigInteger > OneBigInteger:  "{{gen(left)}}.compareTo({{gen(right)}}) > 0"
+  OneBigInteger < OneBigInteger:  "{{gen(left)}}.compareTo({{gen(right)}}) < 0"
+  OneBigInteger >= OneBigInteger: "{{gen(left)}}.compareTo({{gen(right)}}) >= 0"
+  OneBigInteger <= OneBigInteger: "{{gen(left)}}.compareTo({{gen(right)}}) <= 0"
+  OneBigInteger == OneBigInteger: "{{gen(left)}}.compareTo({{gen(right)}}) == 0"
+  OneBigInteger != OneBigInteger: "{{gen(left)}}.compareTo({{gen(right)}}) != 0"
+  OneBigInteger & OneBigInteger:  "{{gen(left)}}.and({{gen(right)}})"
+  OneBigInteger | OneBigInteger:  "{{gen(left)}}.or({{gen(right)}})"
+  OneBigInteger ^ OneBigInteger:  "{{gen(left)}}.xor({{gen(right)}})"
+
+  OneBigInteger + OneNumber:  "{{gen(left)}}.add(BigInteger.valueOf({{gen(right)}}))"
+  OneBigInteger - OneNumber:  "{{gen(left)}}.subtract(BigInteger.valueOf({{gen(right)}}))"
+  OneBigInteger * OneNumber:  "{{gen(left)}}.multiply(BigInteger.valueOf({{gen(right)}}))"
+  OneBigInteger / OneNumber:  "{{gen(left)}}.divide(BigInteger.valueOf({{gen(right)}}))"
+  OneBigInteger % OneNumber:  "{{gen(left)}}.mod(BigInteger.valueOf({{gen(right)}}))"
+  OneBigInteger << OneNumber: "{{gen(left)}}.shiftLeft({{gen(right)}})"
+  OneBigInteger >> OneNumber: "{{gen(left)}}.shiftRight({{gen(right)}})"
+  OneBigInteger > OneNumber:  "{{gen(left)}}.compareTo(BigInteger.valueOf({{gen(right)}})) > 0"
+  OneBigInteger < OneNumber:  "{{gen(left)}}.compareTo(BigInteger.valueOf({{gen(right)}})) < 0"
+  OneBigInteger >= OneNumber: "{{gen(left)}}.compareTo(BigInteger.valueOf({{gen(right)}})) >= 0"
+  OneBigInteger <= OneNumber: "{{gen(left)}}.compareTo(BigInteger.valueOf({{gen(right)}})) <= 0"
+  OneBigInteger == OneNumber: "{{gen(left)}}.compareTo(BigInteger.valueOf({{gen(right)}})) == 0"
+  OneBigInteger != OneNumber: "{{gen(left)}}.compareTo(BigInteger.valueOf({{gen(right)}})) != 0"
+  OneBigInteger & OneNumber:  "{{gen(left)}}.and(BigInteger.valueOf({{gen(right)}}))"
+  OneBigInteger | OneNumber:  "{{gen(left)}}.or(BigInteger.valueOf({{gen(right)}}))"
+  OneBigInteger ^ OneNumber:  "{{gen(left)}}.xor(BigInteger.valueOf({{gen(right)}}))"
 templates:
   testGenerator: |-
     class Program {

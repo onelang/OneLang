@@ -68,6 +68,11 @@ classes:
   OneReflect:
     includes: [one]
     template: "OneReflect"
+  OneBigInteger:
+    includes: [bigint]
+    methods:
+      fromInt:
+        template: "{{value}}"
 operators:
   OneString + OneString:
     template: "{{gen(left)}} . {{gen(right)}}"

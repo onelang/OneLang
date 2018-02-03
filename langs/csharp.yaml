@@ -78,6 +78,12 @@ classes:
     methods:
       call:
         template: "{{self}}.Call({{obj}}, ({{args}}).ToArray())"
+  OneBigInteger:
+    type: "BigInteger"
+    includes: [System.Numerics]
+    methods:
+      fromInt:
+        template: "new BigInteger({{value}})"
 operators:
   OneString + OneBoolean:
     template: '{{gen(left)}} + ({{gen(right)}} ? "true" : "false")'

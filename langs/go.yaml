@@ -94,6 +94,12 @@ classes:
   OneReflect:
     includes: [one]
     template: "one.Reflect"
+  OneBigInteger:
+    type: "big.Int"
+    includes: [math/big, one]
+    methods:
+      fromInt:
+        template: "big.NewInt({{value}})"    
 operators:
   OneString + OneNumber:
     includes: [strconv]
@@ -103,6 +109,41 @@ operators:
     template: "{{gen(left)}} + strconv.FormatBool({{gen(right)}})"
   OneString += OneCharacter:
     template: "{{gen(left)}} += string({{gen(right)}})"
+
+  OneBigInteger + OneBigInteger:  "one.BI().Add({{gen(left)}}, {{gen(right)}})"
+  OneBigInteger - OneBigInteger:  "one.BI().Sub({{gen(left)}}, {{gen(right)}})"
+  OneBigInteger * OneBigInteger:  "one.BI().Mul({{gen(left)}}, {{gen(right)}})"
+  OneBigInteger / OneBigInteger:  "one.BI().Div({{gen(left)}}, {{gen(right)}})"
+  OneBigInteger % OneBigInteger:  "one.BI().Mod({{gen(left)}}, {{gen(right)}})"
+  #OneBigInteger << OneBigInteger: "one.BI().Lsh({{gen(left)}}, {{gen(right)}})"
+  #OneBigInteger >> OneBigInteger: "one.BI().Rsh({{gen(left)}}, {{gen(right)}})"
+  OneBigInteger > OneBigInteger:  "({{gen(left)}}).Cmp({{gen(right)}}) > 0"
+  OneBigInteger < OneBigInteger:  "({{gen(left)}}).Cmp({{gen(right)}}) < 0"
+  OneBigInteger >= OneBigInteger: "({{gen(left)}}).Cmp({{gen(right)}}) >= 0"
+  OneBigInteger <= OneBigInteger: "({{gen(left)}}).Cmp({{gen(right)}}) <= 0"
+  OneBigInteger == OneBigInteger: "({{gen(left)}}).Cmp({{gen(right)}}) == 0"
+  OneBigInteger != OneBigInteger: "({{gen(left)}}).Cmp({{gen(right)}}) != 0"
+  OneBigInteger & OneBigInteger:  "one.BI().And({{gen(left)}}, {{gen(right)}})"
+  OneBigInteger | OneBigInteger:  "one.BI().Or({{gen(left)}}, {{gen(right)}})"
+  OneBigInteger ^ OneBigInteger:  "one.BI().Xor({{gen(left)}}, {{gen(right)}})"
+    
+  OneBigInteger + OneNumber:  "one.BI().Add({{gen(left)}}, big.NewInt(int64({{gen(right)}})))"
+  OneBigInteger - OneNumber:  "one.BI().Sub({{gen(left)}}, big.NewInt(int64({{gen(right)}})))"
+  OneBigInteger * OneNumber:  "one.BI().Mul({{gen(left)}}, big.NewInt(int64({{gen(right)}})))"
+  OneBigInteger / OneNumber:  "one.BI().Div({{gen(left)}}, big.NewInt(int64({{gen(right)}})))"
+  OneBigInteger % OneNumber:  "one.BI().Mod({{gen(left)}}, big.NewInt(int64({{gen(right)}})))"
+  OneBigInteger << OneNumber: "one.BI().Lsh({{gen(left)}}, {{gen(right)}})"
+  OneBigInteger >> OneNumber: "one.BI().Rsh({{gen(left)}}, {{gen(right)}})"
+  OneBigInteger > OneNumber:  "({{gen(left)}}).Cmp(big.NewInt(int64({{gen(right)}}))) > 0"
+  OneBigInteger < OneNumber:  "({{gen(left)}}).Cmp(big.NewInt(int64({{gen(right)}}))) < 0"
+  OneBigInteger >= OneNumber: "({{gen(left)}}).Cmp(big.NewInt(int64({{gen(right)}}))) >= 0"
+  OneBigInteger <= OneNumber: "({{gen(left)}}).Cmp(big.NewInt(int64({{gen(right)}}))) <= 0"
+  OneBigInteger == OneNumber: "({{gen(left)}}).Cmp(big.NewInt(int64({{gen(right)}}))) == 0"
+  OneBigInteger != OneNumber: "({{gen(left)}}).Cmp(big.NewInt(int64({{gen(right)}}))) != 0"
+  OneBigInteger & OneNumber:  "one.BI().And({{gen(left)}}, big.NewInt(int64({{gen(right)}})))"
+  OneBigInteger | OneNumber:  "one.BI().Or({{gen(left)}}, big.NewInt(int64({{gen(right)}})))"
+  OneBigInteger ^ OneNumber:  "one.BI().Xor({{gen(left)}}, big.NewInt(int64({{gen(right)}})))"
+    
 templates:
   testGenerator: |-
     func main() {

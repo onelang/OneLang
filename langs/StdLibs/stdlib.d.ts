@@ -83,4 +83,8 @@ declare class OneMethod {
     call(obj: any, args: any[]): any;
 }
 
+declare class OneBigInteger {
+    static fromInt(value: number): OneBigInteger;
+}
+
 //===

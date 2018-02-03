@@ -133,6 +133,8 @@ export class InferTypesTransform extends AstTransformer<void> {
             expr.valueType = one.Type.Class("OneBoolean");
         else if (expr.left.valueType.isString) 
             expr.valueType = one.Type.Class("OneString");
+        else
+            expr.valueType = expr.left.valueType; // TODO: also hack...
     }
 
     protected visitConditionalExpression(expr: one.ConditionalExpression) {

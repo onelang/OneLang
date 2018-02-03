@@ -66,6 +66,10 @@ classes:
   OneReflect:
     includes: ["one"]
     template: "One::Reflect"
+  OneBigInteger:
+    methods:
+      fromInt:
+        template: "{{value}}"
 operators:
   OneString + OneNumber:
     template: "{{gen(left)}} + ({{gen(right)}}).to_s"
