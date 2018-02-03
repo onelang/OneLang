@@ -127,6 +127,11 @@ class CompileHelper {
 
 const compileHelper = new CompileHelper(langConfigs);
 
+function statusBarError(langUi: LangUi, error: string) {
+    langUi.statusBar.attr("title", error);
+    html`<span class="label error">error</span>${error}`(langUi.statusBar);
+}
+
 async function runLangUi(langName: string, codeCallback: () => string) {
     const langUi = layout.langs[langName];
     langUi.statusBar.text("loading...");
@@ -141,8 +146,7 @@ async function runLangUi(langName: string, codeCallback: () => string) {
 
         const respJson = await runLang(langConfig, code);
         if (respJson.exceptionText) {
-            langUi.statusBar.attr("title", respJson.exceptionText);
-            html`<span class="label error">error</span>${respJson.exceptionText}`(langUi.statusBar);
+            statusBarError(langUi, respJson.exceptionText);
         } else {
             let result = respJson.result;
             result = result === null ? "<null>" : result.toString();
@@ -154,7 +158,7 @@ async function runLangUi(langName: string, codeCallback: () => string) {
             return result;
         }
     } catch(e) {
-        html`<span class="label error">error</span>${e}`(langUi.statusBar);
+        statusBarError(langUi, e);
         //langUi.changeHandler.setContent(`${e}`);
     }
 }
@@ -193,7 +197,13 @@ async function editorChange(sourceLang: string, newContent: string) {
     markerManager.removeMarkers();
 
     if (layout.inputLangs.includes(sourceLang)) {
-        compileHelper.setProgram(newContent, sourceLang);
+        try {
+            compileHelper.setProgram(newContent, sourceLang);
+        } catch(e) {
+            statusBarError(layout.langs[sourceLang], e);
+            return;
+        }
+
         const sourceLangPromise = new ExposedPromise<string>();
         await Promise.all(Object.keys(layout.langs).map(async langName => {
             const langUi = layout.langs[langName];
