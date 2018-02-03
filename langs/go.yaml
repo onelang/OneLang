@@ -124,6 +124,7 @@ templates:
       import "{{inc}}"
     {{/for}}
 
+
     {{for enum in enums|sep=\n\n}}
       type {{enum.name}} int
       const (
@@ -191,9 +192,9 @@ templates:
       {{/for}}
     {{/for}}
 
-    func init() {
-      {{for class in classes|sep=\n\n}}
-        {{if class.reflect}}
+    {{if reflectedClasses.length > 0}}
+      func init() {
+        {{for class in reflectedClasses|sep=\n\n}}
           one.Reflect_SetupClass((*{{class.name}})(nil), 
               []*one.Field{
                 {{for field in class.fields}}
@@ -213,9 +214,9 @@ templates:
                   {{/if}}
                 {{/for}}
               });
-        {{/if}}
-      {{/for}}
-    }
+        {{/for}}
+      }
+    {{/if}}
 
     {{if mainBlock.statements.length > 0}}
       func main() {
