@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import subprocess
+import sys
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 from SocketServer import ThreadingMixIn
 from BaseHTTPServer import HTTPServer
@@ -10,7 +11,9 @@ PORT = 8000
 def log(text):
     print "[StaticServe] %s" % text
 
-compilerBackend = subprocess.Popen("python compiler_backend.py --localOnly".split(" "), cwd="CompilerBackend")
+compilerBackend = None
+if not "--withoutCompilerBackend" in sys.argv:
+    compilerBackend = subprocess.Popen("python compiler_backend.py --localOnly".split(" "), cwd="CompilerBackend")
     
 log("Starting onelang.io static page server... Please use 127.0.0.1:%d on Windows (using 'localhost' makes 1sec delay)" % PORT)
 
@@ -35,7 +38,8 @@ try:
 except KeyboardInterrupt:
     pass
 
-log("Stopping CompilerBackend...")
-compilerBackend.communicate()
+if compilerBackend:
+    log("Stopping CompilerBackend...")
+    compilerBackend.communicate()
 
 log("Exiting...")
