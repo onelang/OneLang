@@ -154,7 +154,9 @@ export class OneCompiler {
 
     preprocessLangFile(lang: LangFileSchema.LangFile) {
         for (const opDesc of Object.keys(lang.operators||{})) {
-            const opData = lang.operators[opDesc];
+            let opData = lang.operators[opDesc];
+            if (typeof opData === "string")
+                opData = lang.operators[opDesc] = { template: <string><any>opData };
             const opDescParts = opDesc.split(" ").filter(x => x !== "");
             if (opDescParts.length === 3)
                 [opData.leftType, opData.operator, opData.rightType] = opDescParts;
