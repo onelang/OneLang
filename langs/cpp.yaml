@@ -75,7 +75,6 @@ operators:
     template: "{{gen(left)}} + to_string({{gen(right)}})"
   OneString + OneBoolean:
     template: '{{gen(left)}} + ({{gen(right)}} ? "true" : "false")'
-includes: [memory, fstream, vector, map]
 templates:
   testGenerator: |-
     int main()
