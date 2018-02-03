@@ -149,6 +149,17 @@ templates:
           {{/for}}
       }
     {{/for}}
+
+    {{if mainBlock.statements.length > 0}}
+      public class Program
+      {
+          static public void Main(string[] args)
+          {
+              {{genBody(mainBlock)}}
+          }
+      }    
+    {{/if}}
+    
   genTypeArgs:
     args: [{name: class}]
     template: |-

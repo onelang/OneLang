@@ -139,6 +139,8 @@ templates:
       {{/if}}
     {{/for}}
 
+    {{genBody(mainBlock)}}
+
   genBody:
     args:
       - name: body

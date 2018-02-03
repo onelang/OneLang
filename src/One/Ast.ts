@@ -34,6 +34,7 @@ export namespace OneAst {
         enums: { [name: string]: Enum };
         classes: { [name: string]: Class };
         interfaces: { [name: string]: Interface };
+        mainBlock: Block;
     }
 
     export interface NamedItem extends INode {

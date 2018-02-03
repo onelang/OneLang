@@ -158,6 +158,8 @@ templates:
       {{/if}}
     {{/for}}
 
+    {{genBody(mainBlock)}}
+
   genTypeArgs:
     args: [{name: class}]
     template: |-

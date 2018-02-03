@@ -462,7 +462,7 @@ export class TypeScriptParser2 implements IParser {
     }
 
     parseSchema() {
-        const schema = <ast.Schema> { classes: {}, enums: {}, globals: {}, interfaces: {}, langData: this.langData };
+        const schema = <ast.Schema> { classes: {}, enums: {}, globals: {}, interfaces: {}, langData: this.langData, mainBlock: { statements: [] } };
         while (!this.reader.eof) {
             const leadingTrivia = this.reader.readLeadingTrivia();
             if (this.reader.eof) break;
@@ -490,7 +490,14 @@ export class TypeScriptParser2 implements IParser {
                 continue;
             }
 
-            this.reader.fail("expected 'class', 'enum' or 'interface' here");
+            const stmt = this.parseStatement();
+            if (stmt !== null) {
+                stmt.leadingTrivia = leadingTrivia;
+                schema.mainBlock.statements.push(stmt);
+                continue;
+            }
+
+            this.reader.fail("expected 'class', 'enum' or 'interface' or a statement here");
         }
         return schema;
     }

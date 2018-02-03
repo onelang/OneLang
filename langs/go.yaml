@@ -216,6 +216,13 @@ templates:
         {{/if}}
       {{/for}}
     }
+
+    {{if mainBlock.statements.length > 0}}
+      func main() {
+          {{genBody(mainBlock)}}
+      }
+    {{/if}}
+
   getType:
     args:
       - name: item

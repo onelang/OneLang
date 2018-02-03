@@ -319,5 +319,7 @@ export abstract class AstVisitor<TContext> {
 
         for (const cls of Object.values(schema.classes))
             this.visitClass(cls, context);
+
+        this.visitBlock(schema.mainBlock, context);
     }
 }

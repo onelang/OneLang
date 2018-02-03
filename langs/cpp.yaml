@@ -184,6 +184,15 @@ templates:
         } _reflection{{class.name}};
       {{/if}}
     {{/for}}
+
+    {{if mainBlock.statements.length > 0}}
+      int main()
+      {
+          {{genBody(mainBlock)}}
+          return 0;
+      }
+    {{/if}}
+    
   genFields:
     args:
       - name: fields
@@ -191,6 +200,7 @@ templates:
       {{for field in fields|sep=\n}}
         {{if field.static}}static {{/if}}{{getType(field.typeInfo)}} {{field.name}}{{if !field.static && field.initializer}} = {{gen(field.initializer)}}{{/if}};
       {{/for}}
+
   getType:
     args:
       - name: item
