@@ -264,6 +264,11 @@ export class OverviewGenerator extends AstVisitor<void> {
             }
         }
 
+        if (schemaCtx.schema.mainBlock.statements.length > 0) {
+            this.addLine(`main()`);
+            this.visitBlock(schemaCtx.schema.mainBlock);
+        }
+
         return this.result;
     }
 }
