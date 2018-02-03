@@ -88,7 +88,7 @@ templates:
     <?php
 
     {{for inc in includes|sep=\n}}
-      require_once("{{inc}}.php");
+      require_once("{{inc.source}}.php");
     {{/for}}
 
     {{for enum in enums|sep=\n\n}}

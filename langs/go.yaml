@@ -121,7 +121,7 @@ templates:
 
     import "fmt"
     {{for inc in includes|sep=\n}}
-      import "{{inc}}"
+      import "{{inc.name}}"
     {{/for}}
 
 

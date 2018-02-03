@@ -89,7 +89,7 @@ templates:
     {{/if}}
   main: |-
     {{for inc in includes|sep=\n}}
-      import {{inc}}
+      import {{inc.name}}
     {{/for}}
 
     {{for enum in enums|sep=\n}}

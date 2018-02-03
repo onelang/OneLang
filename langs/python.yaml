@@ -84,7 +84,7 @@ templates:
       from enum import Enum
     {{/if}}
     {{for inc in includes|sep=\n}}
-      import {{inc}}
+      import {{inc.name}}
     {{/for}}
 
     {{for enum in enums|sep=\n\n}}

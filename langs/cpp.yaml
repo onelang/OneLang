@@ -91,7 +91,7 @@ templates:
   main: |-
     #include <one.hpp>
     {{for inc in includes|sep=\n}}
-      #include <{{inc}}>
+      #include <{{inc.source}}>
     {{/for}}
 
     {{for enum in enums|sep=\n}}

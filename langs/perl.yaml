@@ -124,7 +124,7 @@ templates:
     use warnings;
 
     {{for include in includes}}
-      use {{include}};
+      use {{include.name}};
     {{/for}}
 
     {{for enum in enums|sep=\n\n}}

@@ -81,7 +81,7 @@ templates:
 
   main: |-
     {{for inc in includes|sep=\n}}
-      require '{{inc}}'
+      require '{{inc.name}}'
     {{/for}}
 
     {{for enum in enums|sep=\n\n}}

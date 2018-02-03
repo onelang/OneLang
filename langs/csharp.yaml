@@ -100,7 +100,7 @@ templates:
 
   main: |-
     {{for inc in includes|sep=\n}}
-      using {{inc}};
+      using {{inc.name}};
     {{/for}}
 
     {{for enum in enums|sep=\n}}

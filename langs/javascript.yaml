@@ -80,7 +80,7 @@ templates:
 
   main: |-
     {{for inc in includes|sep=\n}}
-      const {{inc}} = require('{{inc}}');
+      const {{inc.name}} = require('{{inc.source}}');
     {{/for}}
 
     {{for enum in enums|sep=\n\n}}
