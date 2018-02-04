@@ -41,8 +41,8 @@ export namespace LangFileSchema {
     }
 
     export interface Method {
-        extraArgs: string[];
-        includes: string[];
+        extraArgs?: string[];
+        includes?: string[];
         template: string;
         mutates?: boolean;
         throws?: boolean;

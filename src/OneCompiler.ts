@@ -157,9 +157,17 @@ export class OneCompiler {
             let opData = lang.operators[opDesc];
             if (typeof opData === "string")
                 opData = lang.operators[opDesc] = { template: <string><any>opData };
+
             const opDescParts = opDesc.split(" ").filter(x => x !== "");
             if (opDescParts.length === 3)
                 [opData.leftType, opData.operator, opData.rightType] = opDescParts;
+        }
+
+        for (const classDesc of Object.values(lang.classes||{})) {
+            for (const methodName of Object.keys(classDesc.methods||{})) {
+                if (typeof classDesc.methods[methodName] === "string")
+                    classDesc.methods[methodName] = { template: <string><any>classDesc.methods[methodName] };
+            }
         }
     }
 
