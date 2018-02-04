@@ -1,6 +1,2 @@
-class TestClass {
-    testMethod(): string {
-        const fileContent = OneFile.readText("../../input/test.txt");
-        return fileContent;
-    }
-}
+const fileContent = OneFile.readText("../../../input/test.txt");
+console.log(fileContent);
