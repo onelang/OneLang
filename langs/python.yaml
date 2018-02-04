@@ -275,12 +275,12 @@ expressions:
       {{/if}}
     {{/for}}
     " % (
-    {{for part in expr.parts|inline}}
+    {{for part in expr.parts|inline sep=", "}}
       {{if part.expr|inline}}
         {{if part.expr.valueType.isBoolean|inline}}
-          "true" if {{gen(part.expr)}} else "false", 
+          "true" if {{gen(part.expr)}} else "false"
         {{else}}
-          {{gen(part.expr)}}, 
+          {{gen(part.expr)}}
         {{/if}}
       {{/if}}
     {{/for}}
