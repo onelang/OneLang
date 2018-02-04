@@ -100,6 +100,9 @@ classes:
     methods:
       getName: "{{self}}"
       getValue: "({{obj}} as! [String: Any?])[{{self}}!]!"
+  One:
+    methods:
+      langName: '"Swift"'
 templates:
   testGenerator: |-
     {{if methodInfo.throws}}

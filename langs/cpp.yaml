@@ -69,6 +69,9 @@ classes:
     methods:
       raise:
         template: throw std::runtime_error({{message}})
+  One:
+    methods:
+      langName: '"C++"'
 operators:
   OneString + OneNumber:
     includes: [string]

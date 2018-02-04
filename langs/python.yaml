@@ -97,6 +97,9 @@ classes:
     methods:
       getName: "{{self}}"
       getValue: "{{obj}}[{{self}}]"
+  One:
+    methods:
+      langName: '"Python"'
 operators:
   OneString + OneNumber:
     template: "{{gen(left)}} + str({{gen(right)}})"

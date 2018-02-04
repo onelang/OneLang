@@ -96,6 +96,9 @@ classes:
     methods:
       getName: "{{self}}"
       getValue: "{{obj}}[{{self}}]"        
+  One:
+    methods:
+      langName: '"Ruby"'
 operators:
   OneString + OneNumber:
     template: "{{gen(left)}} + ({{gen(right)}}).to_s"

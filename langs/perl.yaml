@@ -73,6 +73,9 @@ classes:
     methods:
       fromInt:
         template: "{{value}}"
+  One:
+    methods:
+      langName: '"Perl"'
 operators:
   OneString + OneString:
     template: "{{gen(left)}} . {{gen(right)}}"

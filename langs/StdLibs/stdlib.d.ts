@@ -120,3 +120,7 @@ declare class OneJValue {
 declare class OneJson {
     static parse(str: string): OneJValue;
 }
+
+declare class One {
+    static langName(): OneString;
+}

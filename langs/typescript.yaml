@@ -106,6 +106,9 @@ classes:
     methods:
       getName: "{{self}}"
       getValue: "{{obj}}[{{self}}]"
+  One:
+    methods:
+      langName: '"TypeScript"'
 operators:
   OneBigInteger + OneBigInteger:  "{{gen(left)}}.add({{gen(right)}})"
   OneBigInteger - OneBigInteger:  "{{gen(left)}}.subtract({{gen(right)}})"

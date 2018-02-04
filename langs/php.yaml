@@ -86,6 +86,9 @@ classes:
     methods:
       getName: "{{self}}"
       getValue: "{{obj}}->{{{self}}}"
+  One:
+    methods:
+      langName: '"PHP"'
 operators:
   OneString + OneString:
     template: "{{gen(left)}} . {{gen(right)}}"

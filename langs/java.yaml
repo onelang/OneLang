@@ -117,6 +117,9 @@ classes:
     methods:
       getName: "{{self}}.getKey()"
       getValue: "{{self}}.getValue()"
+  One:
+    methods:
+      langName: '"Java"'
 operators:
   OneString == OneString: "{{gen(left)}}.equals({{gen(right)}})"
   OneString != OneString: "!{{gen(left)}}.equals({{gen(right)}})"

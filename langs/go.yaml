@@ -145,7 +145,9 @@ classes:
     methods:
       getName: "{{self}}"
       getValue: "{{obj}}.(map[string]interface{})[{{self}}]"
-          
+  One:
+    methods:
+      langName: '"Go"'
 operators:
   OneString + OneNumber:
     includes: [strconv]

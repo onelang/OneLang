@@ -112,6 +112,9 @@ classes:
     methods:
       getName: "{{self}}.Name"
       getValue: "{{self}}.Value"
+  One:
+    methods:
+      langName: '"C#"'
 operators:
   OneString + OneBoolean:
     template: '{{gen(left)}} + ({{gen(right)}} ? "true" : "false")'
