@@ -85,8 +85,41 @@ classes:
     methods:
       fromInt:
         template: "BigInteger.valueOf({{value}})"
+  OneJson:
+    methods:
+      parse:
+        includes: [com.google.gson.*]
+        template: "new JsonParser().parse({{str}})"
+  OneJValue:
+    type: JsonElement
+    includes: [com.google.gson.*]
+    methods:
+      isObject: "{{self}}.isJsonObject()"
+      isArray: "{{self}}.isJsonArray()"
+      isString: "({{self}}.isJsonPrimitive() && ((JsonPrimitive){{self}}).isString())"
+      isNumber: "({{self}}.isJsonPrimitive() && ((JsonPrimitive){{self}}).isNumber())"
+      isBool: "({{self}}.isJsonPrimitive() && ((JsonPrimitive){{self}}).isBoolean())"
+      isNull: "{{self}}.isJsonNull()"
+      asString: "{{self}}.getAsString()"
+      asNumber: "{{self}}.getAsInt()"
+      asBool: "{{self}}.getAsBoolean()"
+      asObject: "{{self}}.getAsJsonObject()"
+      getArrayItems: "{{self}}.getAsJsonArray()"
+  OneJObject:
+    type: JsonObject
+    includes: [com.google.gson.*]
+    methods:
+      getProperties: "new ArrayList({{self}}.entrySet())"
+      get: "{{self}}.get({{name}})"
+  OneJProperty:
+    type: Map.Entry<String,JsonElement>
+    includes: [java.util.Map]
+    methods:
+      getName: "{{self}}.getKey()"
+      getValue: "{{self}}.getValue()"
 operators:
   OneString == OneString: "{{gen(left)}}.equals({{gen(right)}})"
+  OneString != OneString: "!{{gen(left)}}.equals({{gen(right)}})"
 
   OneBigInteger + OneBigInteger:  "{{gen(left)}}.add({{gen(right)}})"
   OneBigInteger - OneBigInteger:  "{{gen(left)}}.subtract({{gen(right)}})"

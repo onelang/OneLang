@@ -62,6 +62,30 @@ classes:
         template: throw new Exception({{message}})
   OneReflect:
     includes: [one]
+  OneJson:
+    methods:
+      parse: "json_decode({{str}})"
+  OneJValue:
+    methods:
+      isObject: "is_object({{self}})"
+      isArray: "is_array({{self}})"
+      isString: "is_string({{self}})"
+      isNumber: "is_numeric({{self}})"
+      isBool: "is_bool({{self}})"
+      isNull: "is_null({{self}})"
+      asString: "{{self}}"
+      asNumber: "{{self}}"
+      asBool: "{{self}}"
+      asObject: "{{self}}"
+      getArrayItems: "{{self}}"
+  OneJObject:
+    methods:
+      getProperties: "array_keys((array){{self}})"
+      get: "{{self}}->{{{name}}}"
+  OneJProperty:
+    methods:
+      getName: "{{self}}"
+      getValue: "{{obj}}->{{{self}}}"
 operators:
   OneString + OneString:
     template: "{{gen(left)}} . {{gen(right)}}"

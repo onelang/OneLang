@@ -52,17 +52,13 @@ classes:
   OneMap:
     type: "[{{genType(typeArguments[0])}}: {{genType(typeArguments[1])}}]"
     methods:
-      keys:
-        template: "Array({{self}}!.keys)"
-      values:
-        template: "Array({{self}}!.values)"
+      keys: "Array({{self}}!.keys)"
+      values: "Array({{self}}!.values)"
       remove:
         mutates: true
         template: "{{self}}![{{key}}] = nil"
-      hasKey:
-        template: "{{self}}![{{key}}] != nil"
-      get:
-        template: "{{self}}![{{key}}]!"
+      hasKey: "{{self}}![{{key}}] != nil"
+      get: "{{self}}![{{key}}]!"
       set:
         mutates: true
         template: "{{self}}![{{key}}] = {{value}}"
@@ -76,6 +72,34 @@ classes:
       raise:
         throws: true
         template: throw OneError.RuntimeError({{message}})
+  OneJson:
+    includes: [Foundation]
+    methods:
+      parse: "try? JSONSerialization.jsonObject(with: {{str}}.data(using: .utf8)!)"
+  OneJValue:
+    type: Any
+    methods:
+      isObject: "({{self}} is [String: Any?])"
+      isArray: "({{self}} is [Any])"
+      isString: "({{self}} is String)"
+      isNumber: "({{self}} is Int)"
+      isBool: "({{self}} is Bool)"
+      isNull: "({{self}} == nil)"
+      asString: "({{self}} as! String)"
+      asNumber: "({{self}} as! Int)"
+      asBool: "({{self}} as! Bool)"
+      asObject: "({{self}} as? [String: Any?])"
+      getArrayItems: "{{self}}"
+  OneJObject:
+    type: Any
+    methods:
+      getProperties: "Array({{self}}!.keys)"
+      get: "{{self}}![{{name}}]"
+  OneJProperty:
+    type: String
+    methods:
+      getName: "{{self}}"
+      getValue: "({{obj}} as! [String: Any?])[{{self}}!]!"
 templates:
   testGenerator: |-
     {{if methodInfo.throws}}

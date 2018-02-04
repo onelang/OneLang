@@ -76,6 +76,31 @@ classes:
     methods:
       fromInt:
         template: "new BigInteger({{value}})"
+  OneJson:
+    methods:
+      parse:
+        template: "JSON.parse({{str}})"
+  OneJValue:
+    methods:
+      isObject: "(typeof ({{self}}) === 'object' && !Array.isArray({{self}}))"
+      isArray: "Array.isArray({{self}})"
+      isString: "(typeof ({{self}}) === 'string')"
+      isNumber: "(typeof ({{self}}) === 'number')"
+      isBool: "(typeof ({{self}}) === 'boolean')"
+      isNull: "({{self}} === null)"
+      asString: "{{self}}"
+      asNumber: "{{self}}"
+      asBool: "{{self}}"
+      asObject: "{{self}}"
+      getArrayItems: "{{self}}"
+  OneJObject:
+    methods:
+      getProperties: "Object.keys({{self}})"
+      get: "{{self}}[{{name}}]"
+  OneJProperty:
+    methods:
+      getName: "{{self}}"
+      getValue: "{{obj}}[{{self}}]"
 operators:
   OneBigInteger + OneBigInteger:  "{{gen(left)}}.add({{gen(right)}})"
   OneBigInteger - OneBigInteger:  "{{gen(left)}}.subtract({{gen(right)}})"

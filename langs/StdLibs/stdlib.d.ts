@@ -83,8 +83,40 @@ declare class OneMethod {
     call(obj: any, args: any[]): any;
 }
 
+//===
+
 declare class OneBigInteger {
     static fromInt(value: number): OneBigInteger;
 }
 
-//===
+declare class OneJProperty {
+    getName(): OneString;
+    getValue(obj: OneJValue): OneJValue;
+}
+
+declare class OneJObject {
+    getProperties(): OneJProperty[];
+    count(): OneNumber;
+    names(): OneString[];
+    get(name: string): OneJValue;
+}
+
+declare class OneJValue {
+    isObject(): OneBoolean;
+    isArray(): OneBoolean;
+    isString(): OneBoolean;
+    isNumber(): OneBoolean;
+    isBool(): OneBoolean;
+    isNull(): OneBoolean;
+
+    asString(): OneString;
+    asNumber(): OneNumber;
+    asBool(): OneBoolean;
+    asObject(): OneJObject;
+
+    getArrayItems(): OneJValue[];
+}
+
+declare class OneJson {
+    static parse(str: string): OneJValue;
+}
