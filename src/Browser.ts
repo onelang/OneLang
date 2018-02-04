@@ -55,7 +55,7 @@ async function runLang(langConfig: LangConfig, code?: string) {
     return responseJson;
 }
 
-const layout = new Layout(["typescript"/*, "csharp"*/]);
+const layout = new Layout(qs["layout"]);
 
 function escapeHtml(unsafe) {
     return unsafe.toString()
