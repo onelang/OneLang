@@ -222,9 +222,11 @@ async function editorChange(sourceLang: string, newContent: string) {
             if (isSourceLang)
                 sourceLangPromise.resolve(result);
 
-            const sourceLangResult = await sourceLangPromise;
-            const isMatch = result === sourceLangResult;
-            langUi.statusBar.find(".label").removeClass("success").addClass(isMatch ? "success" : "error");
+            if (result) {
+                const sourceLangResult = await sourceLangPromise;
+                const isMatch = result === sourceLangResult;
+                langUi.statusBar.find(".label").removeClass("success").addClass(isMatch ? "success" : "warning");
+            }
         }));
     } else {
         runLangUi(sourceLang, () => newContent);
