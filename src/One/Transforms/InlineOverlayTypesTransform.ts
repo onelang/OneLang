@@ -12,7 +12,7 @@ export class VariableReplacer extends AstVisitor<void> {
 
     protected visitThisReference(expr: one.ThisReference) {
         if (this.thisReplacement)
-            AstHelper.replaceProperties(expr, this.thisReplacement);
+            AstHelper.replaceProperties(expr, this.thisReplacement, []);
     }
     
     protected visitVariableRef(expr: one.VariableRef) {
@@ -21,7 +21,7 @@ export class VariableReplacer extends AstVisitor<void> {
 
         const changeTo = this.replacements[expr.varRef.metaPath];
         if (changeTo)
-            AstHelper.replaceProperties(expr, changeTo);
+            AstHelper.replaceProperties(expr, changeTo, []);
     }
 
     visitStatements(statements: one.Statement[]) {

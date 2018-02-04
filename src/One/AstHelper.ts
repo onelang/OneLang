@@ -2,8 +2,7 @@ import { OneAst as one } from "./Ast";
 import { LangFileSchema } from "../Generator/LangFileSchema";
 
 export class AstHelper {
-    static replaceProperties<T>(dest, src: T): T {
-        const keep = ["nodeData"];
+    static replaceProperties<T>(dest, src: T, keep = ["nodeData"]): T {
         dest.__proto__ = (<any>src).__proto__;
 
         for (var i in dest)
