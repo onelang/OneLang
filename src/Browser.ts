@@ -98,6 +98,7 @@ class CompileHelper {
         tasks.push(this.setContent(layout.genericTransformsHandler, `langs/NativeResolvers/GenericTransforms.yaml`));
 
         for (const lang of Object.values(this.langConfigs)) {
+            if (!layout.langs[lang.name]) continue;
             tasks.push(this.setContent(layout.langs[lang.name].generatorHandler, `langs/${lang.name}.yaml`));
             tasks.push(this.setContent(layout.langs[lang.name].stdLibHandler, `langs/StdLibs/${lang.stdlibFn}`));
         }
