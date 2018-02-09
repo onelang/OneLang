@@ -31,6 +31,7 @@ export class RubyParser implements IParser {
         this.reader = new Reader(source);
         this.reader.supportsBlockComment = false;
         this.reader.lineComment = "#";
+        this.reader.identifierRegex = "[A-Za-z_][A-Za-z0-9_]*[?!]?";
         this.reader.errorCallback = error => {
             throw new Error(`[RubyParser] ${error.message} at ${error.cursor.line}:${error.cursor.column} (context: ${this.context.join("/")})\n${this.reader.linePreview}`);
         };
@@ -189,9 +190,12 @@ export class RubyParser implements IParser {
         if (!this.reader.readToken("class")) return null;
         const clsStart = this.reader.prevTokenOffset;
         
-        const cls = <ast.Class> { methods: {}, fields: {}, properties: {}, constructor: null, typeArguments: [] };
+        const cls = <ast.Class> { methods: {}, fields: {}, properties: {}, constructor: null, typeArguments: [], baseInterfaces: [] };
         cls.name = this.reader.expectIdentifier("expected identifier after 'class' keyword");
         this.context.push(`C:${cls.name}`);
+
+        if (this.reader.readToken("<"))
+            cls.baseClass = this.reader.expectIdentifier();
 
         while(!this.reader.readToken("end")) {
             const leadingTrivia = this.reader.readLeadingTrivia();
@@ -284,7 +288,7 @@ export class RubyParser implements IParser {
     }
 
     parseSchema() {
-        const schema = <ast.Schema> { classes: {}, enums: {}, globals: {}, langData: this.langData };
+        const schema = <ast.Schema> { classes: {}, enums: {}, globals: {}, interfaces: {}, langData: this.langData, mainBlock: { statements: [] }  };
 
         const usings = [];
         while (this.reader.readToken("require"))
@@ -308,7 +312,15 @@ export class RubyParser implements IParser {
                 continue;
             }
 
-            this.reader.fail("expected 'class' or 'enum' here");
+            const stmt = this.parseStatement();
+            if (stmt !== null) {
+                stmt.leadingTrivia = leadingTrivia;
+                schema.mainBlock.statements.push(stmt);
+                continue;
+            }
+
+            this.reader.fail("expected 'class', 'enum' or 'interface' or a statement here");
+
         }
         return schema;
     }

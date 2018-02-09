@@ -37,6 +37,10 @@ class RubyString {
     }
 }
 
+class RubyBoolean {
+    _one: OneBoolean;
+}
+
 class RubyNumber {
     _one: OneNumber;
 }

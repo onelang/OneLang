@@ -77,10 +77,10 @@ classes:
         template: "JSON.parse({{str}})"
   OneJValue:
     methods:
-      isObject: "({{self}}.is_a? Hash)"
-      isArray: "({{self}}.is_a? Array)"
-      isString: "({{self}}.is_a? String)"
-      isNumber: "({{self}}.is_a? Numeric)"
+      isObject: "{{self}}.is_a?(Hash)"
+      isArray: "{{self}}.is_a?(Array)"
+      isString: "{{self}}.is_a?(String)"
+      isNumber: "{{self}}.is_a?(Numeric)"
       isBool: "({{self}} == true or {{self}} == false)"
       isNull: "({{self}} == nil)"
       asString: "{{self}}"
