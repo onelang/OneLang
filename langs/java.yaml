@@ -319,7 +319,7 @@ expressions:
       {{if part.literal|inline}}
         "{{part.text}}"
       {{else}}
-        {{gen(part.expr)}}
+        ({{gen(part.expr)}})
       {{/if}}
     {{/for}}
   foreach: |-
