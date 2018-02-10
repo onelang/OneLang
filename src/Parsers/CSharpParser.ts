@@ -183,9 +183,6 @@ export class CSharpParser implements IParser {
             varDecl.name = this.reader.expectIdentifier("expected variable name");
             if (this.reader.readToken("="))
                 varDecl.initializer = this.parseExpression();
-        } else if (this.reader.readToken("delete")) {
-            const unsetStmt = statement = <ast.UnsetStatement> { stmtType: ast.StatementType.Unset };
-            unsetStmt.expression = this.parseExpression();
         } else if (this.reader.readToken("if")) {
             requiresClosing = false;
             const ifStmt = statement = <ast.IfStatement> { stmtType: ast.StatementType.If };
