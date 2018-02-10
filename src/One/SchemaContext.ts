@@ -72,6 +72,7 @@ export class SchemaContext {
         let intfs = this.getInterfaces(className);
         if (intfs.length === 0) // 'className' is a class
             intfs = this.getClassChain(className);
+        if (!intfs) return null;
 
         for (const intf of intfs) {
             const method = intf.methods[methodName];
@@ -82,6 +83,8 @@ export class SchemaContext {
 
     getFieldOrProp(className: string, fieldName: string) {
         const classChain = this.getClassChain(className);
+        if (!classChain) return null;
+        
         for (const cls of classChain) {
             const fieldOrProp = cls.fields[fieldName] || cls.properties[fieldName];
             if (fieldOrProp) return fieldOrProp;
@@ -132,7 +135,10 @@ export class SchemaContext {
 
         let currClass = className;
         while (currClass) {
-            const cls = this.getClass(currClass, currClass !== className);
+            const isOriginal = currClass === className;
+            const cls = this.getClass(currClass, isOriginal);
+            if (!cls && isOriginal)
+                return null;
             result.push(cls);
             currClass = cls.baseClass;
         }
