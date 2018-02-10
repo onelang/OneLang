@@ -34,6 +34,10 @@ export class Reader {
         this.cursorSearch = new CursorPositionSearch(input);
     }
 
+    clone() {
+        return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
+    }
+
     get eof() { return this.offset >= this.input.length; }
 
     get cursor() { return this.cursorSearch.getCursorForOffset(this.offset); }
