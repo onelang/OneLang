@@ -56,6 +56,7 @@ declare class OneRegex {
 declare class OneReflect {
     static getClass(obj: any): OneClass;
     static getClassByName(name: any): OneClass;
+    static publish(): OneClass;
 }
 
 declare class OneClass {
