@@ -5,6 +5,7 @@ import { OneAst as ast } from "../One/Ast";
 import { AstHelper } from "../One/AstHelper";
 import { OneCompiler } from "../OneCompiler";
 import { RubyParser } from "../Parsers/RubyParser";
+import { PhpParser } from "../Parsers/PhpParser";
 require("../Utils/Extensions.js");
 const fs = require("fs");
 global["YAML"] = require('yamljs'); 
@@ -22,10 +23,12 @@ const langs: { [langName: string]: { ext: string, parse: (src: string) => ast.Sc
     typescript: { ext: "ts", parse: src => TypeScriptParser2.parseFile(src) },
     csharp: { ext: "cs", parse: src => CSharpParser.parseFile(src) },
     ruby: { ext: "rb", parse: src => RubyParser.parseFile(src) },
+    php: { ext: "php", parse: src => PhpParser.parseFile(src) },
 };
 
 let langsToTest = Object.keys(langs);
-langsToTest = ["ruby"];
+langsToTest = ["php"];
+const skipTests = { "php": ["JsonParseTest"] };
 
 //prgExcludeList = [...prgExcludeList, "OneLang2", "StrReplaceTest"]
 
@@ -34,6 +37,8 @@ for (const langName of langsToTest) {
     const overlayCode = readFile(`langs/NativeResolvers/${langName}.ts`);
 
     for (const prgName of prgNames) {
+        if (skipTests[langName].includes(prgName)) continue;
+
         const fn = `generated/${prgName}/results/${prgName}.${langData.ext}`;
         console.log(`Parsing '${fn}'...`);
         let content = readFile(fn);

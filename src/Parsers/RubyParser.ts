@@ -54,7 +54,7 @@ export class RubyParser implements IParser {
         } else if (this.reader.readToken("self")) {
             return <ast.Identifier> { exprKind: "Identifier", text: "this" };
         } else if (this.reader.readToken("@")) {
-            const fieldName = this.reader.readIdentifier();
+            const fieldName = this.reader.expectIdentifier();
             return this.parseExprFromString(`this.${fieldName}`);
         } else if (this.reader.readToken("/#{Regexp.escape(")) { // TODO: hack
             const stringContent = this.reader.readString();

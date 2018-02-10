@@ -140,7 +140,6 @@ export class CSharpParser implements IParser {
                     // TODO: shouldn't we use just one `type` field instead of `cls` and `typeArguments`?
                     cls: <ast.Identifier> { exprKind: ast.ExpressionKind.Identifier, text: type.className },
                     typeArguments: type.typeArguments,
-                    arguments: [],
                 };
 
                 this.reader.expectToken("(");

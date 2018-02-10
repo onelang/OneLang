@@ -368,6 +368,7 @@ export class TypeScriptParser2 implements IParser {
 
         if (this.reader.readToken("extends"))
             cls.baseClass = this.reader.expectIdentifier();
+
         while (this.reader.readToken("implements"))
             cls.baseInterfaces.push(this.reader.expectIdentifier());
 
