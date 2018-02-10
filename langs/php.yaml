@@ -123,7 +123,7 @@ templates:
           {{for item in enum.values}}
             const {{item.name}} = {{item.intValue}};
           {{/for}}
-      };
+      }
     {{/for}}
 
     {{for class in classes|sep=\n\n}}
@@ -231,8 +231,8 @@ expressions:
   methodArgument: "${{expr.varRef.outName}}"
   instanceField: "{{gen(expr.thisExpr)}}->{{expr.varRef.outName}}"
   staticField: "{{gen(expr.thisExpr)}}::${{expr.varRef.outName}}"
-  falseLiteral: "FALSE"
-  trueLiteral: "TRUE"
+  falseLiteral: "false"
+  trueLiteral: "true"
   elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
   thisReference: "$this"
   conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : ({{gen(expr.whenFalse)}})"
