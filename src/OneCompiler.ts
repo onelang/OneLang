@@ -26,6 +26,7 @@ import { IParser } from "./Parsers/Common/IParser";
 import { CSharpParser } from "./Parsers/CSharpParser";
 import { RubyParser } from "./Parsers/RubyParser";
 import { ExtractCommentAttributes } from "./One/Transforms/ExtractCommentAttributes";
+import { PhpParser } from "./Parsers/PhpParser";
 
 declare var YAML: any;
 
@@ -63,6 +64,8 @@ export class OneCompiler {
             this.parser = new CSharpParser(programCode);
         } else if (langName === "ruby") {
             this.parser = new RubyParser(programCode);
+        } else if (langName === "php") {
+            this.parser = new PhpParser(programCode);
         } else {
             throw new Error(`[OneCompiler] Unsupported language: ${langName}`);
         }
