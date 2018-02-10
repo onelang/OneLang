@@ -57,6 +57,7 @@ export namespace OneAst {
     export interface Interface extends NamedItem {
         schemaRef?: Schema;
         type?: Type;
+        properties: { [name: string]: Property };
         methods: { [name: string]: Method };
         typeArguments: string[];
         meta?: {
@@ -69,7 +70,6 @@ export namespace OneAst {
 
     export interface Class extends Interface {
         fields: { [name: string]: Field };
-        properties: { [name: string]: Property };
         constructor: Constructor;
         meta?: {
             iterable?: boolean;
