@@ -292,23 +292,50 @@ export class CSharpParser implements IParser {
         return <ast.ExpressionStatement> { stmtType: ast.StatementType.ExpressionStatement, expression: expr };
     }
 
+    parseMethodParameters() {
+        const result = <ast.MethodParameter[]> [];
+        if (!this.reader.readToken(")")) {
+            do {
+                const param = <ast.MethodParameter> {};
+                result.push(param);
+
+                this.reader.skipWhitespace();
+                const paramStart = this.reader.offset;
+                param.type = this.parseType();
+                param.name = this.reader.expectIdentifier();
+
+                this.context.push(`arg:${param.name}`);
+                this.nodeManager.addNode(param, paramStart);
+                this.context.pop();
+            } while (this.reader.readToken(","));
+
+            this.reader.expectToken(")");
+        }
+        return result;
+    }
+
     parseClass() {
-        const clsModifiers = this.reader.readModifiers(["public"]);
         if (!this.reader.readToken("class")) return null;
         const clsStart = this.reader.prevTokenOffset;
         
-        const cls = <ast.Class> { methods: {}, fields: {}, properties: {}, constructor: null };
+        const cls = <ast.Class> { methods: {}, fields: {}, properties: {}, constructor: null, baseInterfaces: [] };
         cls.name = this.reader.expectIdentifier("expected identifier after 'class' keyword");
         this.context.push(`C:${cls.name}`);
 
         cls.typeArguments = this.parseTypeArguments();
+
+        if (this.reader.readToken(":")) {
+            do {
+                cls.baseInterfaces.push(this.reader.expectIdentifier());
+            } while (this.reader.readToken(","));
+        }
 
         this.reader.expectToken("{");
         while(!this.reader.readToken("}")) {
             const leadingTrivia = this.reader.readLeadingTrivia();
 
             const memberStart = this.reader.offset;
-            const modifiers = this.reader.readModifiers(["static", "public", "protected", "private"]);
+            const modifiers = this.reader.readModifiers(["static", "public", "protected", "private", "virtual", "override"]);
             const isStatic = modifiers.includes("static");
             const visibility = modifiers.includes("private") ? ast.Visibility.Private :
                 modifiers.includes("protected") ? ast.Visibility.Protected : ast.Visibility.Public;
@@ -322,30 +349,14 @@ export class CSharpParser implements IParser {
             //   so we did not read the field name ("Child") yet
             const fieldName = !isMethod && isConstructor ? this.reader.expectIdentifier() : memberName;
             if (isMethod) { // method
-                const method = <ast.Method> { name: memberName, returns: memberType, static: isStatic, visibility, leadingTrivia, parameters: [], typeArguments: methodTypeArguments };
+                const method = <ast.Method> { name: memberName, returns: memberType, static: isStatic, visibility, leadingTrivia, typeArguments: methodTypeArguments };
                 if (isConstructor)
                     cls.constructor = method;
                 else
                     cls.methods[method.name] = method;
                 this.context.push(`M:${method.name}`);
 
-                if (!this.reader.readToken(")")) {
-                    do {
-                        const param = <ast.MethodParameter> {};
-                        method.parameters.push(param);
-
-                        this.reader.skipWhitespace();
-                        const paramStart = this.reader.offset;
-                        param.type = this.parseType();
-                        param.name = this.reader.expectIdentifier();
-
-                        this.context.push(`arg:${param.name}`);
-                        this.nodeManager.addNode(param, paramStart);
-                        this.context.pop();
-                    } while (this.reader.readToken(","));
-    
-                    this.reader.expectToken(")");
-                }
+                method.parameters = this.parseMethodParameters();
 
                 method.body = this.parseBlock();
                 if (method.body === null)
@@ -372,6 +383,51 @@ export class CSharpParser implements IParser {
         this.nodeManager.addNode(cls, clsStart);
         this.context.pop();
         return cls;
+    }
+
+    parseInterface() {
+        if (!this.reader.readToken("interface")) return null;
+        const intfStart = this.reader.prevTokenOffset;
+        
+        const intf = <ast.Interface> { methods: {}, properties: {}, baseInterfaces: [] };
+        intf.name = this.reader.expectIdentifier("expected identifier after 'interface' keyword");
+        this.context.push(`I:${intf.name}`);
+
+        intf.typeArguments = this.parseTypeArguments();
+
+        if (this.reader.readToken(":")) {
+            do {
+                intf.baseInterfaces.push(this.reader.expectIdentifier());
+            } while (this.reader.readToken(","));
+        }
+
+        this.reader.expectToken("{");
+        while(!this.reader.readToken("}")) {
+            const leadingTrivia = this.reader.readLeadingTrivia();
+
+            const memberStart = this.reader.offset;
+            const memberType = this.parseType();
+            const memberName = this.reader.expectIdentifier();
+            if (this.reader.readToken("(")) {
+                const method = <ast.Method> { name: memberName, returns: memberType, leadingTrivia, typeArguments: [] };
+                intf.methods[method.name] = method;
+                this.context.push(`M:${method.name}`);
+
+                method.parameters = this.parseMethodParameters();
+                this.reader.expectToken(";");
+
+                this.nodeManager.addNode(method, memberStart);
+                this.context.pop();
+            } else if (this.reader.readToken("{")) { // property
+                this.reader.fail("properties are not implemented yet");
+            } else {
+                this.reader.fail("unexpected member in interface");
+            }
+        }
+
+        this.nodeManager.addNode(intf, intfStart);
+        this.context.pop();
+        return intf;
     }
 
     parseEnum() {
@@ -402,7 +458,7 @@ export class CSharpParser implements IParser {
     }
 
     parseSchema() {
-        const schema = <ast.Schema> { classes: {}, enums: {}, globals: {}, langData: this.langData };
+        const schema = <ast.Schema> { classes: {}, enums: {}, globals: {}, interfaces: {}, langData: this.langData, mainBlock: { statements: [] } };
 
         const usings = [];
         while (this.reader.readToken("using")) {
@@ -414,10 +470,19 @@ export class CSharpParser implements IParser {
             const leadingTrivia = this.reader.readLeadingTrivia();
             if (this.reader.eof) break;
 
+            const modifiers = this.reader.readModifiers(["public"]);
+
             const cls = this.parseClass();
             if (cls !== null) {
                 cls.leadingTrivia = leadingTrivia;
                 schema.classes[cls.name] = cls;
+                continue;
+            }
+
+            const intf = this.parseInterface();
+            if (intf !== null) {
+                intf.leadingTrivia = leadingTrivia;
+                schema.interfaces[intf.name] = intf;
                 continue;
             }
 
