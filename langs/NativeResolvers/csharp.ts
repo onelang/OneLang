@@ -58,10 +58,33 @@ class CsString {
     Split(separator: string): OneArray<OneString> {
         return this._one.split(separator);
     }
+
+    Replace(from: string, to: string): OneString { return this._one.replace(from, to); }
 }
 
 class CsNumber {
     _one: OneNumber;
+}
+
+class List<T> {
+    _one: OneArray<T>;
+
+    get Count(): OneNumber { return this._one.length; }
+
+    Add(item: T) { this._one.add(item); }
+    ToArray(): OneArray<T> { return this._one; }
+    get(idx: number): T { return this._one.get(idx); }
+}
+
+class BigInteger {
+    _one: OneBigInteger;
+}
+
+class String {
+    _one: OneString;
+
+    get Length(): OneNumber { return this._one.length; }
+    Replace(from: string, to: string): OneString { return this._one.replace(from, to); }
 }
 
 class Console {
