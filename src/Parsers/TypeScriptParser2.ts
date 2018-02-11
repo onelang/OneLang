@@ -308,7 +308,7 @@ export class TypeScriptParser2 implements IParser {
             this.reader.expectToken(")");
         }
 
-        method.returns = this.reader.readToken(":") ? this.parseType() : ast.Type.Void;
+        method.returns = this.reader.readToken(":") ? this.parseType() : ast.Type.Any;
 
         if (declarationOnly) {
             this.reader.expectToken(";");
