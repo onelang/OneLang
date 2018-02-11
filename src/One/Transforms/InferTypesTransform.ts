@@ -340,8 +340,13 @@ export class InferTypesTransform extends AstTransformer<void> {
         super.visitMethod(method, null);
 
         // TODO: implement this for > 1        
-        if (method.returns.isVoid && this.methodReturnTypes.length == 1)
-            method.returns = this.methodReturnTypes[0];
+        if (method.returns.isAny && method.body) {
+            if (this.methodReturnTypes.length == 1) {
+                method.returns = this.methodReturnTypes[0];
+            } else if (this.methodReturnTypes.length == 0) {
+                method.returns = one.Type.Void;
+            }
+        }
     } 
  
     protected visitClass(cls: one.Class) {
