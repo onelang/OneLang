@@ -43,3 +43,17 @@ transforms:
         object: $object
         propertyName: get
       arguments: [$elementExpr]
+  - description: "$className::new($arguments)"
+    input:
+      exprKind: Call
+      method:
+        exprKind: PropertyAccess
+        object: $classIdentifier
+        propertyName: new
+      arguments: $arguments
+    output:
+      exprKind: New
+      cls: $classIdentifier
+      typeArguments: []
+      arguments: $arguments
+
