@@ -355,7 +355,7 @@ export class PhpParser implements IParser {
         while (this.reader.readToken("require"))
             usings.push(this.parseExpression());
 
-        while (!this.reader.eof) {
+        while (true) {
             const leadingTrivia = this.reader.readLeadingTrivia();
             if (this.reader.eof) break;
 
@@ -366,16 +366,21 @@ export class PhpParser implements IParser {
                 continue;
             }
 
-            const stmt = this.parseStatement();
-            if (stmt !== null) {
-                stmt.leadingTrivia = leadingTrivia;
-                schema.mainBlock.statements.push(stmt);
-                continue;
-            }
-
-            this.reader.fail("expected 'class', 'enum' or 'interface' or a statement here");
-
+            break;
         }
+
+        while (true) {
+            const leadingTrivia = this.reader.readLeadingTrivia();
+            if (this.reader.eof) break;
+
+            const stmt = this.parseStatement();
+            if (stmt === null)
+                this.reader.fail("expected 'class', 'enum' or 'interface' or a statement here");
+
+            stmt.leadingTrivia = leadingTrivia;
+            schema.mainBlock.statements.push(stmt);
+        }
+
         return schema;
     }
 
