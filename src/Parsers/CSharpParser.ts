@@ -25,7 +25,7 @@ export class CSharpParser implements IParser {
 
     constructor(source: string) {
         // TODO: less hacky way of removing test code?
-        source = source.split("\npublic class Program")[0];
+        source = source.replace(/\npublic class Program(\n|.)*new TestClass\(\).TestMethod(\n|.)*/, "");
 
         this.reader = new Reader(source);
         this.reader.errorCallback = error => {
@@ -491,6 +491,14 @@ export class CSharpParser implements IParser {
 
             this.reader.fail("expected 'class' or 'enum' here");
         }
+
+        const prgClass = schema.classes["Program"];
+        if (prgClass && prgClass.methods["Main"]) {
+            schema.mainBlock = prgClass.methods["Main"].body;
+            delete prgClass.methods["Main"];
+            delete schema.classes["Program"];
+        }
+
         return schema;
     }
 
