@@ -8,15 +8,15 @@ declare class OneFile {
 
 declare class OneArray<T> {
     length: number;
-    add(item: T);
+    add(item: T): void;
     get(index: number): T;
-    set(index: number, value: T);
+    set(index: number, value: T): void;
 }
 
 declare class OneMap<K, V> {
     get(key: K): V;
-    set(key: K, value: V);
-    remove(key: K);
+    set(key: K, value: V): void;
+    remove(key: K): void;
 
     hasKey(key: K): boolean;
 
@@ -44,7 +44,7 @@ declare class OneBoolean {
 }
 
 declare class OneError {
-    static raise(message: string);
+    static raise(message: string): void;
 }
 
 declare class OneRegex {
@@ -65,8 +65,8 @@ declare class OneClass {
     getField(name: string): OneField;
     getMethod(name: string): OneMethod;
 
-    getFields(): OneField[];
-    getMethods(): OneMethod[];
+    getFields(): OneArray<OneField>;
+    getMethods(): OneArray<OneMethod>;
 }
 
 declare class OneField {
@@ -74,7 +74,7 @@ declare class OneField {
     isStatic: boolean;
 
     getValue(obj: any): any;
-    setValue(obj: any, value: any);
+    setValue(obj: any, value: any): void;
 }
 
 declare class OneMethod {
