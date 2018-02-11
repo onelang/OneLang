@@ -176,7 +176,9 @@ templates:
       {{/if}}
     {{/for}}
 
-    {{genBody(mainBlock)}}
+    {{for statement in mainBlock.statements|sep=\n}}
+      {{statement.leadingTrivia2}}{{gen(statement)}}
+    {{/for}}
 
   genBody:
     args:
