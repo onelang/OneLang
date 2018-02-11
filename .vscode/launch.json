@@ -31,6 +31,13 @@
             "name": "Launch GeneratedCodeParser",
             "program": "${workspaceRoot}/js/Test/GeneratedCodeParser.js",
             "sourceMaps": true
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch TestSandbox",
+            "program": "${workspaceRoot}/js/Test/TestSandbox.js",
+            "sourceMaps": true
         }
     ]
 }
