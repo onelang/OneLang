@@ -60,11 +60,11 @@ export class Layout {
                     if (userChange && this.onEditorChange)
                         this.onEditorChange(config.langName, newContent);
                 });
-                if (!config.isStd)
+                if (!config.isInput)
                     langUi.generatedHandler = langUi.changeHandler;
             });
 
-            if (config.isStd) {
+            if (config.isInput) {
                 tabs.addComponent("Generated", c => {
                     const editor = LayoutHelper.setupEditor(c, config.aceLang);
                     langUi.generatedHandler = new EditorChangeHandler(editor, 500, (newContent, userChange) => {

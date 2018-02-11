@@ -42,11 +42,9 @@ async function apiCall<TResponse>(endpoint: string, request: object = null): Pro
     return <TResponse> responseObj;
 }
 
-async function runLang(langConfig: LangConfig, code?: string) {
-    if (code) {
-        langConfig.request.code = code;
-        langConfig.request.stdlibCode = layout.langs[langConfig.name].stdLibHandler.getContent();
-    }
+async function runLang(langConfig: LangConfig, code: string) {
+    langConfig.request.code = code;
+    langConfig.request.stdlibCode = layout.langs[langConfig.name].stdLibHandler.getContent();
     
     const responseJson = await apiCall<CompileResult>("compile", langConfig.request);
     console.log(langConfig.name, responseJson);
@@ -212,7 +210,9 @@ async function editorChange(sourceLang: string, newContent: string) {
 
             const result = await runLangUi(langName, () => {
                 const code = compileHelper.compile(langName);
-                (isSourceLang ? langUi.generatedHandler : langUi.changeHandler).setContent(code);
+                if (!isSourceLang)
+                    langUi.changeHandler.setContent(code);
+                langUi.generatedHandler.setContent(code);
                 if (isSourceLang) {
                     langUi.astHandler.setContent(compileHelper.astOverview);
                     langUi.astJsonHandler.setContent(compileHelper.astJsonOverview);

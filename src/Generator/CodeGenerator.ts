@@ -557,7 +557,7 @@ export class CodeGenerator {
     generate(callTestMethod: boolean) {
         const generatedNodes = this.call(this.templates["main"], []);
         this.generatedCode = "";
-        for (const tmplNode of generatedNodes) {
+        for (const tmplNode of generatedNodes||[]) {
             if (tmplNode.astNode && tmplNode.astNode.nodeData) {
                 const nodeData = tmplNode.astNode.nodeData;
                 let dstRange = nodeData.destRanges[this.lang.name];
