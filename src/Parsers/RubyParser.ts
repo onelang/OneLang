@@ -255,6 +255,7 @@ export class RubyParser implements IParser {
                     } while (this.reader.readToken(","));
                 }
             } else {
+                this.reader.fail("Unexpected class member");
                 debugger;
             }
         }
@@ -315,15 +316,11 @@ export class RubyParser implements IParser {
             break;
         }
 
-        while (true) {
-            const leadingTrivia = this.reader.readLeadingTrivia();
-            if (this.reader.eof) break;
-
+        while (!this.reader.eof) {
             const stmt = this.parseStatement();
             if (stmt === null)
                 this.reader.fail("expected 'class', 'enum' or 'interface' or a statement here");
 
-            stmt.leadingTrivia = leadingTrivia;
             schema.mainBlock.statements.push(stmt);
         }
 
