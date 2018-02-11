@@ -199,7 +199,19 @@ export class PhpParser implements IParser {
             // TODO hack: we shouldn't probably support unset statement if we don't support print statement
             const callExprStmt = statement = this.parseExprStmtFromString("OneConsole.print()");
             const callExpr = <ast.CallExpression> callExprStmt.expression;
-            const callArgExpr = this.parseExpression();
+            let callArgExpr = this.parseExpression();
+
+            // TODO hack: print($value . "\n")   =>   print($value)
+            if (callArgExpr.exprKind === "Parenthesized")
+                callArgExpr = (<ast.ParenthesizedExpression> callArgExpr).expression;
+            if (callArgExpr.exprKind === "Binary") {
+                const binaryExpr = <ast.BinaryExpression> callArgExpr;
+                if (binaryExpr.operator === "." && binaryExpr.right.exprKind === "Literal" && (<ast.Literal> binaryExpr.right).value === "\n")
+                    callArgExpr = binaryExpr.left;
+            }
+            if (callArgExpr.exprKind === "Parenthesized")
+                callArgExpr = (<ast.ParenthesizedExpression> callArgExpr).expression;
+
             callExpr.arguments.push(callArgExpr);
         } else {
             const expr = this.parseExpression();
@@ -337,7 +349,7 @@ export class PhpParser implements IParser {
     parseSchema() {
         const schema = <ast.Schema> { classes: {}, enums: {}, globals: {}, interfaces: {}, langData: this.langData, mainBlock: { statements: [] }  };
 
-        this.reader.readToken("<?php");
+        this.reader.readRegex("<\\?php\\s*");
 
         const usings = [];
         while (this.reader.readToken("require"))
