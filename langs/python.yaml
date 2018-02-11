@@ -271,7 +271,7 @@ expressions:
     "
     {{for part in expr.parts|inline}}
       {{if part.literal|inline}}
-        {{part.text}}
+        {{escapeQuotes(part.text)}}
       {{else}}
         %s
       {{/if}}

@@ -248,7 +248,7 @@ expressions:
   templateString: |-
     {{for part in expr.parts|inline sep=" . "}}
       {{if part.literal && part.text != ""|inline}}
-        "{{part.text}}"
+        "{{escapeQuotes(part.text)}}"
       {{else}}
         {{if part.expr.valueType.isBoolean|inline}}
           ({{genWithParen(part.expr)}} ? "true" : "false")

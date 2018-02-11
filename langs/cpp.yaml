@@ -336,7 +336,7 @@ expressions:
     string() + 
     {{for part in expr.parts|sep=" + " inline}}
       {{if part.literal|inline}}
-        "{{part.text}}"
+        "{{escapeQuotes(part.text)}}"
       {{elif part.expr.valueType.isNumber|inline}}
         to_string({{gen(part.expr)}})
       {{elif part.expr.valueType.isEnum|inline}}
