@@ -464,7 +464,7 @@ export class TypeScriptParser2 implements IParser {
 
     parseSchema() {
         const schema = <ast.Schema> { classes: {}, enums: {}, globals: {}, interfaces: {}, langData: this.langData, mainBlock: { statements: [] } };
-        while (!this.reader.eof) {
+        while (true) {
             const leadingTrivia = this.reader.readLeadingTrivia();
             if (this.reader.eof) break;
 
@@ -474,7 +474,7 @@ export class TypeScriptParser2 implements IParser {
             if (cls !== null) {
                 cls.leadingTrivia = leadingTrivia;
                 schema.classes[cls.name] = cls;
-                continue;
+                continue;                
             }
 
             const enumObj = this.parseEnum();
@@ -491,15 +491,23 @@ export class TypeScriptParser2 implements IParser {
                 continue;
             }
 
-            const stmt = this.parseStatement();
-            if (stmt !== null) {
-                stmt.leadingTrivia = leadingTrivia;
-                schema.mainBlock.statements.push(stmt);
-                continue;
-            }
-
-            this.reader.fail("expected 'class', 'enum' or 'interface' or a statement here");
+            break;
         }
+
+        this.reader.skipWhitespace();
+
+        while (true) {
+            const leadingTrivia = this.reader.readLeadingTrivia();
+            if (this.reader.eof) break;
+
+            const stmt = this.parseStatement();
+            if (stmt === null)
+                this.reader.fail("expected 'class', 'enum' or 'interface' or a statement here");
+
+            stmt.leadingTrivia = leadingTrivia;
+            schema.mainBlock.statements.push(stmt);
+        }
+        
         return schema;
     }
 
