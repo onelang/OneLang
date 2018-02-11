@@ -26,7 +26,7 @@ classes:
   OneConsole:
     methods:
       print:
-        template: 'print(({{str}}) . "\n")'
+        template: 'print({{str}} . "\n")'
   OneArray:
     fields:
       length:
@@ -194,6 +194,14 @@ templates:
     args:
       - name: itemVar
     template: "${{itemVar.outName}} = {{gen(itemVar.initializer)}}"
+  genWithParen:
+    args: [{ name: expr }]
+    template: |-
+      {{if expr.exprKind == "Binary" or expr.exprKind == "Conditional"}}
+        ({{gen(expr)}})
+      {{else}}
+        {{gen(expr)}}
+      {{/if}}
 expressions:
   call: |-
     {{gen(expr.method)}}(
@@ -235,22 +243,20 @@ expressions:
   trueLiteral: "true"
   elementAccess: "{{gen(expr.object)}}[{{gen(expr.elementExpr)}}]"
   thisReference: "$this"
-  conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : ({{gen(expr.whenFalse)}})"
+  conditional: "{{gen(expr.condition)}} ? {{genWithParen(expr.whenTrue)}} : {{genWithParen(expr.whenFalse)}}"
   break: break;
   templateString: |-
-    "
-    {{for part in expr.parts|inline}}
-      {{if part.literal|inline}}
-        {{part.text}}
+    {{for part in expr.parts|inline sep=" . "}}
+      {{if part.literal && part.text != ""|inline}}
+        "{{part.text}}"
       {{else}}
         {{if part.expr.valueType.isBoolean|inline}}
-          " . (({{gen(part.expr)}}) ? "true" : "false") . "
+          ({{genWithParen(part.expr)}} ? "true" : "false")
         {{else}}
-          " . ({{gen(part.expr)}}) . "
+          {{genWithParen(part.expr)}}
         {{/if}}
       {{/if}}
     {{/for}}
-    "
   foreach: |-
     foreach ({{gen(expr.items)}} as ${{expr.itemVariable.outName}}) {
         {{genBody(expr.body)}}
