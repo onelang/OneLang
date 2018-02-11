@@ -21,7 +21,7 @@ export class GenericsMapping {
     static log(data: string) { console.log(`[GenericsMapping] ${data}`); }
 
     static create(cls: one.Interface, realClassType: one.Type) {
-        if (cls.typeArguments.length !== realClassType.typeArguments.length) {
+        if (cls.typeArguments.length !== (realClassType.typeArguments||[]).length) {
             this.log(`Type argument count mismatch! '${cls.type.repr()}' <=> '${realClassType.repr()}'`);
             return null;
         }
@@ -51,6 +51,8 @@ export class GenericsMapping {
 }
 
 export class InferTypesTransform extends AstTransformer<void> {
+    methodReturnTypes: one.Type[] = [];
+
     constructor(public schemaCtx: SchemaContext) { super(); }
 
     protected visitType(type: one.Type) {
@@ -160,6 +162,8 @@ export class InferTypesTransform extends AstTransformer<void> {
 
     protected visitReturnStatement(stmt: one.ReturnStatement) {
         super.visitReturnStatement(stmt, null);
+        if (stmt.expression)
+            this.methodReturnTypes.push(stmt.expression.valueType);
     }
 
     protected visitUnaryExpression(expr: one.UnaryExpression) {
@@ -332,7 +336,12 @@ export class InferTypesTransform extends AstTransformer<void> {
 
     protected visitMethod(method: one.Method) { 
         method.type = one.Type.Method(method.classRef.type, method.name);
+        this.methodReturnTypes = [];
         super.visitMethod(method, null);
+
+        // TODO: implement this for > 1        
+        if (method.returns.isVoid && this.methodReturnTypes.length == 1)
+            method.returns = this.methodReturnTypes[0];
     } 
  
     protected visitClass(cls: one.Class) {
