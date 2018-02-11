@@ -1,5 +1,5 @@
 declare class OneConsole {
-    static print(str: any);
+    static print(str: any): void;
 }
 
 declare class OneFile {
@@ -96,9 +96,9 @@ declare class OneJProperty {
 }
 
 declare class OneJObject {
-    getProperties(): OneJProperty[];
+    getProperties(): OneArray<OneJProperty>;
     count(): OneNumber;
-    names(): OneString[];
+    names(): OneArray<OneString>;
     get(name: string): OneJValue;
 }
 
@@ -115,7 +115,7 @@ declare class OneJValue {
     asBool(): OneBoolean;
     asObject(): OneJObject;
 
-    getArrayItems(): OneJValue[];
+    getArrayItems(): OneArray<OneJValue>;
 }
 
 declare class OneJson {
