@@ -65,7 +65,7 @@ export class Reader {
             throw new Error(`${message} at ${error.cursor.line}:${error.cursor.column}\n${this.linePreview}`);
     }
 
-    skipWhitespace() {
+    skipWhitespace(includeInTrivia = false) {
         for (; this.offset < this.input.length; this.offset++) {
             const c = this.input[this.offset];
             
@@ -75,6 +75,9 @@ export class Reader {
             if (!(c === '\n' || c === '\r' || c === '\t' || c === ' '))
                 break;
         }
+
+        if (!includeInTrivia)
+            this.wsOffset = this.offset;
     }
 
     skipUntil(token: string) {
@@ -150,7 +153,7 @@ export class Reader {
 
         this.moveWsOffset = false;
         while (true) {
-            this.skipWhitespace();
+            this.skipWhitespace(true);
             if (this.input.startsWith(this.lineComment, this.offset)) {
                 this.skipLine();
             } else if (this.supportsBlockComment && this.input.startsWith(this.blockCommentStart, this.offset)) {
