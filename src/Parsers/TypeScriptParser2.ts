@@ -56,6 +56,8 @@ export class TypeScriptParser2 implements IParser {
             type = ast.Type.Class("TsNumber");
         } else if (typeName === "any") {
             type = ast.Type.Any;
+        } else if (typeName === "void") {
+            type = ast.Type.Void;
         } else {
             type = ast.Type.Class(typeName);
             if (this.reader.readToken("<")) {
