@@ -48,9 +48,9 @@ export class CSharpParser implements IParser {
         let type: ast.Type;
         if (typeName === "string") {
             type = ast.Type.Class("CsString");
-        } else if (typeName === "boolean") {
+        } else if (typeName === "bool") {
             type = ast.Type.Class("CsBoolean");
-        } else if (typeName === "number") {
+        } else if (typeName === "int") {
             type = ast.Type.Class("CsNumber");
         } else if (typeName === "void") {
             type = ast.Type.Void;
