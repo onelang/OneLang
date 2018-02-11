@@ -3,7 +3,7 @@ interface IPrinterBase {
 }
 
 interface IPrinter extends IPrinterBase {
-    printIt();
+    printIt(): void;
 }
 
 class BasePrinter implements IPrinter {
