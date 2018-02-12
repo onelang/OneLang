@@ -63,4 +63,19 @@ export class AstHelper {
         const method = cls && cls.methods && cls.methods[methodPathParts[1]];
         return method;
     }
+
+    static isBinaryOpModifies(expr: one.BinaryExpression) {
+        return ["=", "+=", "-=", "*=", "/=", "&=", "|=", "^=", "<<=", ">>="].includes(expr.operator);
+    }
+
+    static getModifiedExpr(expr: one.Expression) {
+        if (expr.exprKind === "Unary")
+            return (<one.UnaryExpression> expr).operand;
+        else if (expr.exprKind === "Binary") {
+            const binaryExpr = <one.BinaryExpression> expr;
+            if (AstHelper.isBinaryOpModifies(binaryExpr))
+                return binaryExpr.left;
+        }
+        return null;
+    }
 }

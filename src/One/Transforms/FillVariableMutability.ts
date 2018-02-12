@@ -9,7 +9,7 @@ export class FillVariableMutability extends AstVisitor<boolean> {
     constructor(public lang: LangFileSchema.LangFile) { super(); }
     
     protected visitBinaryExpression(expr: one.BinaryExpression, isMutable: boolean) {
-        this.visitExpression(expr.left, ["=", "+=", "-=", "*=", "/=", "&=", "|=", "^=", "<<=", ">>="].includes(expr.operator));
+        this.visitExpression(expr.left, AstHelper.isBinaryOpModifies(expr));
         this.visitExpression(expr.right, false);
     }
 

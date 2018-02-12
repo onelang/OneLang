@@ -28,6 +28,7 @@ import { RubyParser } from "./Parsers/RubyParser";
 import { ExtractCommentAttributes } from "./One/Transforms/ExtractCommentAttributes";
 import { PhpParser } from "./Parsers/PhpParser";
 import { ForceTemplateStrings } from "./One/Transforms/ForceTemplateStrings";
+import { WhileToForTransform } from "./One/Transforms/WhileToFor";
 
 declare var YAML: any;
 
@@ -155,6 +156,9 @@ export class OneCompiler {
 
         if (!this.schemaCtx.schema.langData.supportsTemplateStrings)
             new ForceTemplateStrings().transform(this.schemaCtx);
+
+        if (!this.schemaCtx.schema.langData.supportsFor)
+            new WhileToForTransform().transform(this.schemaCtx);
 
         this.saveSchemaState(this.schemaCtx, `6_PostProcess`);
     }

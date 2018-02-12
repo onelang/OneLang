@@ -12,6 +12,7 @@ export namespace OneAst {
          langId: string;
          allowImplicitVariableDeclaration: boolean;
          supportsTemplateStrings: boolean;
+         supportsFor: boolean;
     }
 
     export interface TextRange {

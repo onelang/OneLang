@@ -17,7 +17,8 @@ export class RubyParser implements IParser {
             array: "RubyArray",
         },
         allowImplicitVariableDeclaration: true,
-        supportsTemplateStrings: true
+        supportsTemplateStrings: true,
+        supportsFor: false,
     };
     
     context: string[] = [];
