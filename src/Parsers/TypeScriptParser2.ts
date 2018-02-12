@@ -15,7 +15,8 @@ export class TypeScriptParser2 implements IParser {
             map: "TsMap",
             array: "TsArray",
         },
-        allowImplicitVariableDeclaration: false
+        allowImplicitVariableDeclaration: false,
+        supportsTemplateStrings: true
     };
 
     context: string[] = [];

@@ -15,7 +15,8 @@ export class CSharpParser implements IParser {
             map: "CsMap",
             array: "CsArray",
         },
-        allowImplicitVariableDeclaration: false
+        allowImplicitVariableDeclaration: false,
+        supportsTemplateStrings: true
     };
 
     context: string[] = [];

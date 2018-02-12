@@ -15,7 +15,8 @@ export class PhpParser implements IParser {
             map: "PhpMap",
             array: "PhpArray",
         },
-        allowImplicitVariableDeclaration: true
+        allowImplicitVariableDeclaration: true,
+        supportsTemplateStrings: false
     };
     
     context: string[] = [];

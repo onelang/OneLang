@@ -10,6 +10,7 @@ export namespace OneAst {
          };
     
          allowImplicitVariableDeclaration: boolean;
+         supportsTemplateStrings: boolean;
     }
 
     export interface TextRange {

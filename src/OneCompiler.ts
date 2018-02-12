@@ -27,6 +27,7 @@ import { CSharpParser } from "./Parsers/CSharpParser";
 import { RubyParser } from "./Parsers/RubyParser";
 import { ExtractCommentAttributes } from "./One/Transforms/ExtractCommentAttributes";
 import { PhpParser } from "./Parsers/PhpParser";
+import { ForceTemplateStrings } from "./One/Transforms/ForceTemplateStrings";
 
 declare var YAML: any;
 
@@ -99,7 +100,6 @@ export class OneCompiler {
         overlaySchema.sourceType = "overlay";
         stdlibSchema.sourceType = "stdlib";
 
-
         this.stdlibCtx = new SchemaContext(stdlibSchema, "stdlib");
         new FixGenericAndEnumTypes().process(this.stdlibCtx.schema);
         this.saveSchemaState(this.stdlibCtx, "0_Original");
@@ -153,6 +153,11 @@ export class OneCompiler {
         new InferTypesTransform(this.schemaCtx).transform();
         this.schemaCtx.ensureTransforms("inferCharacterTypes");
         this.saveSchemaState(this.schemaCtx, `5_TypesInferredAgain`);
+
+        if (!this.schemaCtx.schema.langData.supportsTemplateStrings)
+            new ForceTemplateStrings().transform(this.schemaCtx);
+
+        this.saveSchemaState(this.schemaCtx, `6_PostProcess`);
     }
 
     preprocessLangFile(lang: LangFileSchema.LangFile) {
