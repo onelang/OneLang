@@ -43,7 +43,8 @@ transforms:
         object: $object
         propertyName: get
       arguments: [$elementExpr]
-  - description: "$className::new($arguments)"
+  - description: "(Ruby) $className::new($arguments)"
+    langs: [ruby]
     input:
       exprKind: Call
       method:
@@ -57,6 +58,7 @@ transforms:
       typeArguments: []
       arguments: $arguments
   - description: "(PHP) $var1 . $var2   =>   $var1 + $var2"
+    langs: [php]
     input:
       exprKind: Binary
       operator: .

@@ -6,7 +6,8 @@ import { NodeManager } from "./Common/NodeManager";
 import { IParser } from "./Common/IParser";
 
 export class RubyParser implements IParser {
-    langData: ast.ILangData = { 
+    langData: ast.ILangData = {
+        langId: "ruby",
         literalClassNames: {
             string: "RubyString",
             boolean: "RubyBoolean",

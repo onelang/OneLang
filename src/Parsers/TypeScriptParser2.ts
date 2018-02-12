@@ -6,7 +6,8 @@ import { NodeManager } from "./Common/NodeManager";
 import { IParser } from "./Common/IParser";
 
 export class TypeScriptParser2 implements IParser {
-    langData: ast.ILangData = { 
+    langData: ast.ILangData = {
+        langId: "typescript",
         literalClassNames: {
             string: "TsString",
             boolean: "TsBoolean",

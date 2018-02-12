@@ -74,8 +74,7 @@ export class OneCompiler {
         const schema = this.parser.parse();
         const overlaySchema = TypeScriptParser2.parseFile(overlayCode);
         const stdlibSchema = TypeScriptParser2.parseFile(stdlibCode);
-        this.genericTransformer = new GenericTransformer(<GenericTransformerFile>
-            YAML.parse(genericTransformerYaml));
+        this.genericTransformer = new GenericTransformer(<GenericTransformerFile> YAML.parse(genericTransformerYaml), schema.langData.langId);
 
         // TODO: hack
         overlaySchema.classes[this.parser.langData.literalClassNames.array].meta = { iterable: true };

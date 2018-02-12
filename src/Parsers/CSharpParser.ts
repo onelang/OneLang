@@ -7,6 +7,7 @@ import { IParser } from "./Common/IParser";
 
 export class CSharpParser implements IParser {
     langData: ast.ILangData = { 
+        langId: "csharp",
         literalClassNames: {
             string: "CsString",
             boolean: "CsBoolean",

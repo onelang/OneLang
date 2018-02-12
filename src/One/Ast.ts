@@ -9,6 +9,7 @@ export namespace OneAst {
             array: string,
          };
     
+         langId: string;
          allowImplicitVariableDeclaration: boolean;
          supportsTemplateStrings: boolean;
     }

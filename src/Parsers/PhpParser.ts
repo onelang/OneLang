@@ -6,7 +6,8 @@ import { NodeManager } from "./Common/NodeManager";
 import { IParser } from "./Common/IParser";
 
 export class PhpParser implements IParser {
-    langData: ast.ILangData = { 
+    langData: ast.ILangData = {
+        langId: "php",
         literalClassNames: {
             string: "PhpString",
             boolean: "PhpBoolean",
