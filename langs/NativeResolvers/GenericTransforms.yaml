@@ -69,3 +69,18 @@ transforms:
       operator: +
       left: $left
       right: $right
+  - description: "(Ruby) i += 1   =>   i++"
+    langs: [ruby]
+    input:
+      exprKind: Binary
+      operator: +=
+      left: $var
+      right:
+        exprKind: Literal
+        literalType: numeric
+        value: "1"
+    output:
+      exprKind: Unary
+      unaryType: postfix
+      operator: ++
+      operand: $var
