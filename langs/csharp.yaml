@@ -239,6 +239,14 @@ templates:
     args:
       - name: itemVar
     template: "{{if itemVar.isUnused}}/* UNUSED: {{/if}}var {{itemVar.outName}} = {{if itemVar.isUnused}}*/ {{/if}}{{gen(itemVar.initializer)}}"
+  genWithParen:
+    args: [{ name: expr }]
+    template: |-
+      {{if expr.exprKind == "Binary" or expr.exprKind == "Conditional"}}
+        ({{gen(expr)}})
+      {{else}}
+        {{gen(expr)}}
+      {{/if}}
 expressions:
   call: "{{gen(expr.method)}}({{genParams(expr.arguments)}})"
   propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
@@ -300,7 +308,7 @@ expressions:
         {{escapeQuotes(part.text)}}
       {{else}}
         {{if part.expr.valueType.isBoolean|inline}}
-          {(({{gen(part.expr)}}) ? "true" : "false")}
+          {({{genWithParen(part.expr)}} ? "true" : "false")}
         {{else}}
           {{{gen(part.expr)}}}
         {{/if}}

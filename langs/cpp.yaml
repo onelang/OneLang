@@ -63,7 +63,7 @@ classes:
     includes: [iostream]
     methods:
       print:
-        template: "cout << ({{str}}) << endl"
+        template: "cout << {{genWithParen(str)}} << endl"
   OneError:
     includes: [stdexcept]
     methods:
@@ -278,6 +278,14 @@ templates:
       - name: itemVar
     template: |-
       {{if itemVar.type.isNumber}}int{{else}}auto{{/if}} {{itemVar.outName}} = {{gen(itemVar.initializer)}}
+  genWithParen:
+    args: [{ name: expr }]
+    template: |-
+      {{if expr.exprKind == "Binary" or expr.exprKind == "Conditional"}}
+        ({{gen(expr)}})
+      {{else}}
+        {{gen(expr)}}
+      {{/if}}      
 expressions:
   call: |-
     {{gen(expr.method)}}(
@@ -333,8 +341,8 @@ expressions:
   cast: "static_cast<{{typeName(expr.newType)}}>({{gen(expr.expression)}})"
   conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : {{gen(expr.whenFalse)}}"
   templateString: |-
-    string() + 
     {{for part in expr.parts|sep=" + " inline}}
+      {{if part_idx == 0|inline}}string({{/if}}
       {{if part.literal|inline}}
         "{{escapeQuotes(part.text)}}"
       {{elif part.expr.valueType.isNumber|inline}}
@@ -342,10 +350,11 @@ expressions:
       {{elif part.expr.valueType.isEnum|inline}}
         {{part.expr.valueType.enumName}}ToStr[(int)({{gen(part.expr)}})]
       {{elif part.expr.valueType.isBoolean|inline}}
-        (({{gen(part.expr)}}) ? "true" : "false")
+        ({{genWithParen(part.expr)}} ? "true" : "false")
       {{else}}
-        {{gen(part.expr)}}
+        {{genWithParen(part.expr)}}
       {{/if}}
+      {{if part_idx == 0|inline}}){{/if}}
     {{/for}}
   foreach: |-
     for (auto it = {{gen(expr.items)}}->begin(); it != {{gen(expr.items)}}->end(); ++it) {

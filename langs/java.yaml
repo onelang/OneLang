@@ -269,6 +269,14 @@ templates:
     args:
       - name: itemVar
     template: "{{typeName(itemVar.type)}} {{itemVar.outName}} = {{gen(itemVar.initializer)}}"
+  genWithParen:
+    args: [{ name: expr }]
+    template: |-
+      {{if expr.exprKind == "Binary" or expr.exprKind == "Conditional"}}
+        ({{gen(expr)}})
+      {{else}}
+        {{gen(expr)}}
+      {{/if}}
 expressions:
   call: |-
     {{gen(expr.method)}}(
@@ -319,7 +327,7 @@ expressions:
       {{if part.literal|inline}}
         "{{escapeQuotes(part.text)}}"
       {{else}}
-        ({{gen(part.expr)}})
+        {{genWithParen(part.expr)}}
       {{/if}}
     {{/for}}
   foreach: |-

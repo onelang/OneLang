@@ -33,7 +33,7 @@ classes:
         template: "{{self}}.length"
     methods:
       add:
-        template: "{{self}} << ({{item}})"
+        template: "{{self}} << {{genWithParen(item)}}"
       get:
         template: "{{self}}[{{index}}]"
       set:
@@ -101,9 +101,9 @@ classes:
       langName: '"Ruby"'
 operators:
   OneString + OneNumber:
-    template: "{{gen(left)}} + ({{gen(right)}}).to_s"
+    template: "{{gen(left)}} + {{genWithParen(right)}}.to_s"
   OneString + OneBoolean:
-    template: "{{gen(left)}} + ({{gen(right)}}).to_s"
+    template: "{{gen(left)}} + {{genWithParen(right)}}.to_s"
 templates:
   testGenerator: |-
     begin
@@ -210,6 +210,14 @@ templates:
     args:
       - name: itemVar
     template: "{{itemVar.outName}} = {{gen(itemVar.initializer)}}"
+  genWithParen:
+    args: [{ name: expr }]
+    template: |-
+      {{if expr.exprKind == "Binary" or expr.exprKind == "Conditional"}}
+        ({{gen(expr)}})
+      {{else}}
+        {{gen(expr)}}
+      {{/if}}
 expressions:
   call: |-
     {{gen(expr.method)}}(
