@@ -56,4 +56,14 @@ transforms:
       cls: $classIdentifier
       typeArguments: []
       arguments: $arguments
-
+  - description: "(PHP) $var1 . $var2   =>   $var1 + $var2"
+    input:
+      exprKind: Binary
+      operator: .
+      left: $left
+      right: $right
+    output:
+      exprKind: Binary
+      operator: +
+      left: $left
+      right: $right
