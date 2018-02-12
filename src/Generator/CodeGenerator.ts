@@ -143,7 +143,7 @@ class CodeGeneratorModel {
 
         const stdMethod = this.generator.stdlib.classes[className].methods[methodName];
         const methodArgs = stdMethod.parameters.map(x => x.outName);
-        const exprCallArgs = callExpr.arguments.map(x => this.gen(x));
+        const exprCallArgs = callExpr.arguments;
 
         if (methodArgs.length !== exprCallArgs.length)
             throw new Error(`Invalid argument count for '${generatorName}': expected: ${methodArgs.length}, actual: ${callExpr.arguments.length}.`);
@@ -356,6 +356,7 @@ export class CodeGenerator {
             codeGenVars.setVariable(name, (...args) => this.model[name].apply(this.model, args));
         const varContext = new VariableContext([codeGenVars, this.templateVars]);
         this.templateGenerator = new TemplateGenerator(varContext);
+        this.templateGenerator.objectHook = obj => this.model.gen(<any> obj);
     }
 
     call(method: TemplateMethod, args: any[]) {
