@@ -10,8 +10,11 @@ const calc = new Calculator();
 console.log(`n = ${calc.calc()}`);
 
 const arr = [1, 2, 3];
-const map = { a: 2, b: 3 };
-console.log(`map['a'] = ${map['a']}, arr[1] = ${arr[1]}`);
+const map = {
+    a: 2,
+    b: 3
+};
+console.log(`map['a'] = ${map["a"]}, arr[1] = ${arr[1]}`);
 
 if (arr[0] == 1) {
     console.log("TRUE-X");

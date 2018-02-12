@@ -148,9 +148,9 @@ includeSources:
 templates:
   testGenerator: |-
     try {
-      new {{class}}().{{method}}();
+        new {{class}}().{{method}}();
     } catch(e) {
-      console.log(`Exception: ${e.message}`);
+        console.log(`Exception: ${e.message}`);
     }
 
   main: |-
@@ -160,39 +160,39 @@ templates:
 
     {{for enum in enums|sep=\n\n}}
       enum {{enum.name}} {
-        {{for item in enum.values}}
-          {{item.name}} = "{{item.origName}}",
-        {{/for}}
+          {{for item in enum.values}}
+            {{item.name}} = "{{item.origName}}",
+          {{/for}}
       }
     {{/for}}
 
     {{for interface in interfaces|sep=\n\n}}
       interface {{genTypeArgs(interface, "extends")}} {
-        {{for method in interface.methods|sep="\n    \n"}}
-          {{method.name}}({{genArgs(method)}});
-        {{/for}}
+          {{for method in interface.methods|sep="\n    \n"}}
+            {{method.name}}({{genArgs(method)}});
+          {{/for}}
       }
     {{/for}}    
 
     {{for class in classes|sep=\n\n}}
       class {{genTypeArgs(class, "implements")}} {
-        {{for field in class.fields|sep=\n}}
-          {{if field.visibility != "public"|inline}}{{field.visibility}} {{/if}}
-          {{if field.static}}static {{/if}}{{field.name}}: {{field.type}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}};
-        {{/for}}
+          {{for field in class.fields|sep=\n}}
+            {{if field.visibility != "public"|inline}}{{field.visibility}} {{/if}}
+            {{if field.static}}static {{/if}}{{field.name}}: {{field.type}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}};
+          {{/for}}
 
-        {{if class.constructor}}
-          constructor({{genArgs(class.constructor)}}) {
-              {{genBody(class.constructor.body)}}
-          }
-        {{/if}}
+          {{if class.constructor}}
+            constructor({{genArgs(class.constructor)}}) {
+                {{genBody(class.constructor.body)}}
+            }
+          {{/if}}
 
-        {{for method in class.methods|sep="\n  \n"}}
-          {{if method.visibility != "public"|inline}}{{method.visibility}} {{/if}}
-          {{if method.static}}static {{/if}}{{method.name}}({{genArgs(method)}}) {
-            {{genBody(method.body)}}
-          }
-        {{/for}}
+          {{for method in class.methods|sep="\n  \n"}}
+            {{if method.visibility != "public"|inline}}{{method.visibility}} {{/if}}
+            {{if method.static}}static {{/if}}{{method.name}}({{genArgs(method)}}) {
+                {{genBody(method.body)}}
+            }
+          {{/for}}
       }
 
       {{if class.attributes["reflect"]}}
@@ -285,9 +285,9 @@ expressions:
   arrayLiteral: "[{{genParams(expr.items)}}]"
   mapLiteral: |-
     {
-      {{for prop in expr.properties|sep=",\n"}}
-        {{prop.name}}: {{gen(prop.initializer)}}
-      {{/for}}
+        {{for prop in expr.properties|sep=",\n"}}
+          {{prop.name}}: {{gen(prop.initializer)}}
+        {{/for}}
     }
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
