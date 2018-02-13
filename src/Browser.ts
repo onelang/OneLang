@@ -198,6 +198,9 @@ async function editorChange(sourceLang: string, newContent: string) {
     if (layout.inputLangs.includes(sourceLang)) {
         try {
             compileHelper.setProgram(newContent, sourceLang);
+            const sourceLangUi = layout.langs[sourceLang];
+            sourceLangUi.astHandler.setContent(compileHelper.astOverview);
+            sourceLangUi.astJsonHandler.setContent(compileHelper.astJsonOverview);
         } catch(e) {
             statusBarError(layout.langs[sourceLang], e);
             return;
@@ -213,10 +216,6 @@ async function editorChange(sourceLang: string, newContent: string) {
                 if (!isSourceLang)
                     langUi.changeHandler.setContent(code);
                 langUi.generatedHandler.setContent(code);
-                if (isSourceLang) {
-                    langUi.astHandler.setContent(compileHelper.astOverview);
-                    langUi.astJsonHandler.setContent(compileHelper.astJsonOverview);
-                }
                 return code;
             });
             
