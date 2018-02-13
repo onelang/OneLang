@@ -1,4 +1,12 @@
 class Calculator {
+    factor(n: number) {
+        if (n <= 1) {
+            return 1;
+        } else {
+            return this.factor(n - 1) * n;
+        }
+    }
+    
     calc() {
         return 4;
     }
@@ -27,3 +35,5 @@ for (let i = 0; i < 10; i++) {
     sum += i + 2;
 }
 console.log(sum);
+
+console.log(`5! = ${calc.factor(5)}`);
