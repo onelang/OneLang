@@ -1,4 +1,3 @@
-import { ISchemaTransform } from "./../SchemaTransformer";
 import { OneAst as one } from "./../Ast";
 import { SchemaContext } from "../SchemaContext";
 import { AstVisitor } from "../AstVisitor";
