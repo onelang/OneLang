@@ -75,7 +75,7 @@ export class PhpParser implements IParser {
             return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: true };
         } else if (this.reader.readToken("false")) {
             return <ast.Literal> { exprKind: "Literal", literalType: "boolean", value: false };
-        } else if (this.reader.readToken("this")) {
+        } else if (this.reader.readToken("$this")) {
             return <ast.Identifier> { exprKind: "Identifier", text: "this" };
         // TODO: template string
         //} else if (this.reader.readToken('"')) {
