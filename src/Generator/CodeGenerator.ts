@@ -95,6 +95,7 @@ class CodeGeneratorModel {
     classes: CodeGeneratorModel.Class[] = [];
     interfaces: CodeGeneratorModel.Interface[] = [];
     enums: CodeGeneratorModel.Enum[] = [];
+    config = { genMeta: false };
 
     constructor(public generator: CodeGenerator) { }
 
@@ -346,6 +347,7 @@ export class CodeGenerator {
         const codeGenVars = new VariableSource("CodeGeneratorModel");
         codeGenVars.addCallback("includes", () => this.model.includes);
         codeGenVars.addCallback("classes", () => this.model.classes);
+        codeGenVars.addCallback("config", () => this.model.config);
         // TODO: hack, see https://github.com/koczkatamas/onelang/issues/17
         codeGenVars.addCallback("reflectedClasses", () => this.model.classes.filter(x => x.attributes["reflect"]));
         codeGenVars.addCallback("interfaces", () => this.model.interfaces);
@@ -366,6 +368,7 @@ export class CodeGenerator {
     }
 
     getTypeName(type: one.Type): string {
+        if (!type) return "???";
         if (type.isClassOrInterface) {
             const classGen = this.model.generator.classGenerators[type.className];
             if (classGen) {

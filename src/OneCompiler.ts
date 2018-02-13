@@ -29,6 +29,7 @@ import { ExtractCommentAttributes } from "./One/Transforms/ExtractCommentAttribu
 import { PhpParser } from "./Parsers/PhpParser";
 import { ForceTemplateStrings } from "./One/Transforms/ForceTemplateStrings";
 import { WhileToForTransform } from "./One/Transforms/WhileToFor";
+import { ProcessTypeHints } from "./One/Transforms/ProcessTypeHints";
 
 declare var YAML: any;
 
@@ -160,6 +161,8 @@ export class OneCompiler {
         if (!this.schemaCtx.schema.langData.supportsFor)
             new WhileToForTransform().transform(this.schemaCtx);
 
+        new ProcessTypeHints().transform(this.schemaCtx);
+
         this.saveSchemaState(this.schemaCtx, `6_PostProcess`);
     }
 
@@ -197,8 +200,9 @@ export class OneCompiler {
         return codeGen;
     }
 
-    compile(langCode: string, langName?: string, callTestMethod = true) {
+    compile(langCode: string, langName?: string, callTestMethod = true, genMeta = false) {
         const codeGen = this.getCodeGenerator(langCode, langName);
+        codeGen.model.config.genMeta = genMeta;
         const generatedCode = codeGen.generate(callTestMethod);
         return generatedCode;
     }

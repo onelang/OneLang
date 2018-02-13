@@ -23,7 +23,7 @@ export class TemplateMethod {
     body: Ast.Block;
 
     constructor(public name: string, public args: string[], public template: string) {
-        this.body = TemplateParser.parse(template);
+        this.body = TemplateParser.parse(template.replace(/\\#/g, "#"));
     }
 
     static fromSignature(signature: string, template: string) {

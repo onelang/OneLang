@@ -159,6 +159,13 @@ templates:
         {{/if}}
   
         {{for method in class.methods|sep=\n\n}}
+          {{if config.genMeta}}
+            \# @signature {{method.name}}(
+            {{for param in method.parameters|inline sep=", "}}
+              {{param.name}}: {{param.typeInfo.oneName}}
+            {{/for}}
+            ): {{method.returnTypeInfo.oneName}}
+          {{/if}}
           def {{if method.static}}self.{{/if}}{{method.name}}({{genArgs(method)}})
               {{genBody(method.body)}}
           end

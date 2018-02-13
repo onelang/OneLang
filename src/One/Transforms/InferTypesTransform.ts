@@ -341,9 +341,10 @@ export class InferTypesTransform extends AstTransformer<void> {
 
         // TODO: implement this for > 1        
         if (method.returns.isAny && method.body) {
-            if (this.methodReturnTypes.length == 1) {
+            const returnTypes = this.methodReturnTypes.filter(x => !x.isAny);
+            if (returnTypes.length == 1) {
                 method.returns = this.methodReturnTypes[0];
-            } else if (this.methodReturnTypes.length == 0) {
+            } else if (returnTypes.length == 0) {
                 method.returns = one.Type.Void;
             }
         }

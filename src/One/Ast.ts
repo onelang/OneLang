@@ -161,6 +161,28 @@ export namespace OneAst {
             }
         }
 
+        get oneName() {
+            if (this.isPrimitiveType) {
+                return this.typeKind.toString();
+            } else if (this.isNumber) {
+                return "number";
+            } else if (this.isString) {
+                return "string";
+            } else if (this.isBoolean) {
+                return "bool";
+            } else if (this.isCharacter) {
+                return "char";
+            } else if (this.isClassOrInterface) {
+                return this.className + (this.typeArguments.length === 0 ? "" : `<${this.typeArguments.map(x => x.repr()).join(", ")}>`);
+            } else if (this.isGenerics) {
+                return this.genericsName;
+            } else if (this.isEnum) {
+                return `${this.enumName}`;
+            } else {
+                return "?";
+            }
+        }
+
         static PrimitiveTypeKinds = [TypeKind.Void, TypeKind.Any, TypeKind.Null];
 
         // TODO / note: new instance is required because of NodeData... maybe rethink this approach?

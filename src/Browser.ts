@@ -119,7 +119,7 @@ class CompileHelper {
     compile(langName: string) {
         const lang = this.langConfigs[langName];
         const schemaYaml = layout.langs[langName].generatorHandler.getContent();
-        const code = this.compiler.compile(schemaYaml, langName, true);
+        const code = this.compiler.compile(schemaYaml, langName, true, layout.inputLangs.includes(langName));
         return code;
     }
 }
@@ -260,7 +260,7 @@ function initLayout() {
             markerManager.addMarker(inputEditor, node.nodeData.sourceRange.start, node.nodeData.sourceRange.end, false);
             for (const langName of Object.keys(node.nodeData.destRanges)) {
                 const dstRange = node.nodeData.destRanges[langName];
-                markerManager.addMarker(layout.langs[langName].generatedHandler.editor, dstRange.start, dstRange.end, true);
+                markerManager.addMarker(layout.langs[langName].changeHandler.editor, dstRange.start, dstRange.end, true);
             }
         });
     }

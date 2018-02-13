@@ -5,7 +5,7 @@ export class ExtractCommentAttributes extends AstTransformer<void> {
     processTrivia(trivia: string) {
         const result = {};
         if (trivia !== "") {
-            const matches = /(?:\n|^)\s*(?:\/\/|#)\s*@([a-z0-9_-]+)(?: ([^\n]+)|$|\n)/g.matches(trivia);
+            const matches = /(?:\n|^)\s*(?:\/\/|#)\s*@([a-z0-9_.-]+)(?: ([^\n]+)|$|\n)/g.matches(trivia);
             for (const match of matches)
                 result[match[1]] = match[2] || true;
         }
