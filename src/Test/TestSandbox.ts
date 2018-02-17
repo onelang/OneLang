@@ -7,22 +7,18 @@ const programCode = `
 <?php
 
 class Calculator {
-    // @signature factor(n: number): number
-    function factor($n) {
+    // @signature calc(n: number): number
+    function calc($n, $i) {
         if ($n <= 1) {
-            return 3;
+            return 1;
         } else {
-            return $this->factor($n - 1) * $n;
+            return $this->calc($n - 1, $i) * $n - $i;
         }
-    }
-    
-    // @signature calc(): number
-    function calc() {
-        return 5;
     }
 }
 
-print("Hello!" . "\n");
+$calc = new Calculator();
+print("result = " . $calc->calc(10, 5) . "\n");
 `.trim();
 
 const compiler = new OneCompiler();
@@ -36,7 +32,8 @@ const genericTransforms = readFile(`langs/NativeResolvers/GenericTransforms.yaml
 const tsYaml = readFile(`langs/typescript.yaml`);
 const phpYaml = readFile(`langs/php.yaml`);
 const csharpYaml = readFile(`langs/csharp.yaml`);
+const rubyYaml = readFile(`langs/ruby.yaml`);
 
 compiler.parse("php", programCode, overlayCode, stdlibCode, genericTransforms);
-const result = compiler.compile(csharpYaml, "csharp", true);
+const result = compiler.compile(rubyYaml, "ruby", true);
 console.log(result);
