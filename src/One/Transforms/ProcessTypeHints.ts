@@ -47,10 +47,13 @@ export class ProcessTypeHints extends AstVisitor<void> {
                 const origMethodName = reader.expectIdentifier();
                 reader.expectToken("(");
 
-                for (const param of method.parameters) {
+                for (let i = 0; i < method.parameters.length; i++) {
+                    const param = method.parameters[i];
                     const origParamName = reader.expectIdentifier();
                     reader.expectToken(":");
                     param.type = this.parseType(reader);
+                    if (i != method.parameters.length - 1)
+                        reader.expectToken(",");
                 }
 
                 reader.expectToken(")");
@@ -58,6 +61,7 @@ export class ProcessTypeHints extends AstVisitor<void> {
                     (<one.Method> method).returns = this.parseType(reader);
                 }
             } catch(e) {
+                console.error(`Failed to read method signature: ${method.attributes["signature"]}`);
                 // TODO: report parsing error or something...
             }
         }

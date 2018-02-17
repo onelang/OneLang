@@ -162,9 +162,9 @@ templates:
           {{if config.genMeta}}
             \# @signature {{method.name}}(
             {{for param in method.parameters|inline sep=", "}}
-              {{param.name}}: {{param.typeInfo.oneName}}
+              {{param.name}}: {{if param.typeInfo}}{{param.typeInfo.oneName}}{{else}}???{{/if}}
             {{/for}}
-            ): {{method.returnTypeInfo.oneName}}
+            ): {{if method.returnTypeInfo}}{{method.returnTypeInfo.oneName}}{{else}}???{{/if}}
           {{/if}}
           def {{if method.static}}self.{{/if}}{{method.name}}({{genArgs(method)}})
               {{genBody(method.body)}}
