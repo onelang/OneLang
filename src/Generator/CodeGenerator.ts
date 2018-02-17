@@ -428,7 +428,7 @@ export class CodeGenerator {
     setupIncludes() {
         const includesCollector = new IncludesCollector(this.lang);
         includesCollector.process(this.schema);
-        this.model.includes = Array.from(includesCollector.includes).map(name => ({ name, source: (this.lang.includeSources||{})[name] || name }));
+        this.model.includes = Array.from(includesCollector.includes).map(name => ({ name, source: (this.lang.includeSources||{})[name] || name })).sortBy(x => x.name);
     }
 
     setupEnums() {

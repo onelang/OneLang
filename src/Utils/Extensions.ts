@@ -32,7 +32,11 @@ Array.prototype.remove = function<T>(item: T) {
 };
 
 Array.prototype.sortBy = function<T>(selector: (item: T) => any): T[] {
-    return this.sort((a,b) => selector(a) - selector(b));
+    return this.sort((a,b) => {
+        const aProp = selector(a);
+        const bProp = selector(b);
+        return aProp < bProp ? -1 : aProp > bProp ? +1 : 0;
+    });
 };
 // #endregion
 
