@@ -84,3 +84,15 @@ transforms:
       unaryType: postfix
       operator: ++
       operand: $var
+  - description: "(PHP) count($arr)  =>  $arr.length"
+    langs: [php]
+    input:
+      exprKind: Call
+      method:
+        exprKind: Identifier
+        text: count
+      arguments: [$obj]
+    output:
+        exprKind: PropertyAccess
+        object: $obj
+        propertyName: length

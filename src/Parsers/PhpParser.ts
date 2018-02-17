@@ -59,7 +59,7 @@ export class PhpParser implements IParser {
             return <ast.CallExpression> { exprKind: ast.ExpressionKind.Call,
                 method: <ast.PropertyAccessExpression> { exprKind: ast.ExpressionKind.PropertyAccess,
                     object: left,
-                    propertyName: "Add",
+                    propertyName: "add",
                 },
                 arguments: [newItem]
             };
