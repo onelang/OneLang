@@ -259,7 +259,8 @@ function initLayout() {
             markerManager.addMarker(inputEditor, node.nodeData.sourceRange.start, node.nodeData.sourceRange.end, false);
             for (const langName of Object.keys(node.nodeData.destRanges)) {
                 const dstRange = node.nodeData.destRanges[langName];
-                markerManager.addMarker(layout.langs[langName].changeHandler.editor, dstRange.start, dstRange.end, true);
+                if (langName !== inputLang)
+                    markerManager.addMarker(layout.langs[langName].changeHandler.editor, dstRange.start, dstRange.end, true);
             }
         });
     }
