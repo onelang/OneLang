@@ -93,6 +93,20 @@ transforms:
         text: count
       arguments: [$obj]
     output:
+      exprKind: PropertyAccess
+      object: $obj
+      propertyName: length
+  - description: "(Ruby) $arr << $item  =>  $arr.add($item)"
+    langs: [ruby]
+    input:
+      exprKind: Binary
+      operator: "<<"
+      left: $arr
+      right: $item
+    output:
+      exprKind: Call
+      method:
         exprKind: PropertyAccess
-        object: $obj
-        propertyName: length
+        object: $arr
+        propertyName: add
+      arguments: [$item]
