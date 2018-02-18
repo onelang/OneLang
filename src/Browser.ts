@@ -11,7 +11,7 @@ declare var YAML: any;
 
 const qs = {};
 location.search.substr(1).split('&').map(x => x.split('=')).forEach(x => qs[x[0]] = x[1]);
-const serverhost: string = "server" in qs ? qs["server"] : "http://127.0.0.1:11111";
+const serverhost: string = "server" in qs ? qs["server"] : location.hostname === "127.0.0.1" ? "http://127.0.0.1:11111" : null;
 
 const testPrgName = qs["input"] || "HelloWorldRaw";
 
@@ -157,7 +157,11 @@ async function runLangUi(langName: string, codeCallback: () => string) {
             return result;
         }
     } catch(e) {
-        statusBarError(langUi, e);
+        if (e.message === "Failed to fetch") {
+            statusBarError(langUi, `Compiler backend (${serverhost}) is unavailable!`);
+        } else {
+            statusBarError(langUi, e);
+        }
         //langUi.changeHandler.setContent(`${e}`);
     }
 }
