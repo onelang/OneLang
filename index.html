@@ -82,7 +82,7 @@
 
 <div id="loading" style="text-align: center; position: absolute; left:0; right:0; margin-top: 100px">
     <div style="font-size: 72px">loading...</div>
-    <div style="font-size: 14px; margin-top: 5px">...this may take a while</div>
+    <div style="font-size: 14px; margin-top: 5px">...this may take a few seconds...</div>
 </div>
 
 <div id="topPanel">
@@ -106,7 +106,9 @@
             $("#demoSelect").on("change", function() { location.href = this.value; });
             Array.from($("#demoSelect option")).find(x => x.value === location.search).selected = true;
         </script>
-        <a href="https://github.com/koczkatamas/onelang/wiki/FAQ" target="_blank" style="margin-left:5px">Please read the FAQ first!</a>
+        <a href="https://github.com/koczkatamas/onelang/wiki/FAQ" target="_blank" style="margin-left:5px">Please read the FAQ!</a>
+        <span style="margin:0 5px">|</span>
+        <a href="https://youtu.be/Rwo6KJ_Pa9Q" target="_blank">Watch the demo video</a>
     </span>
     <div class="right">
         <a id="toggleGitter" class="js-gitter-toggle-chat-button" href="#" style="padding: 4px 6px 4px 9px; border-radius: 3px; color: white; font-size: 13px; position: relative; top: -1px;">
