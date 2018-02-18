@@ -36,8 +36,8 @@ export class Layout {
     constructor(public layoutConfig: string = "**ts,cpp+cs,go+java|perl,php,python|ruby,swift,js") {
     }
 
-    init() {
-        this.manager = new LayoutManager();
+    init(container: any = null) {
+        this.manager = new LayoutManager(container);
         this.initLangComponents();
     }
 

@@ -234,7 +234,7 @@ async function editorChange(sourceLang: string, newContent: string) {
 }
 
 function initLayout() {
-    layout.init();
+    layout.init(document.getElementById("goldenLayout"));
     for (const langName of Object.keys(layout.langs)) {
         layout.langs[langName].editor.commands.addCommand({
             name: "compile",

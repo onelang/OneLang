@@ -134,10 +134,12 @@ export class LayoutManager {
     public goldenLayout: GoldenLayout;
     public root: Container;
 
-    constructor() {
-        this.goldenLayout = new GoldenLayout({ settings: { showCloseIcon: false, showPopoutIcon: false }, content: [] });
+    constructor(container = null) {
+        console.log("container", container);
+        this.goldenLayout = new GoldenLayout({ settings: { showCloseIcon: false, showPopoutIcon: false }, content: [] }, container);
         this.goldenLayout.registerComponent(fakeComponentName, function () { /* */ });
         this.goldenLayout.init();
+        window.addEventListener("resize", () => this.goldenLayout.updateSize());
 
         this.root = new Container(null, this.goldenLayout.root);
     }

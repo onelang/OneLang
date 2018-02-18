@@ -1,15 +1,12 @@
 class Calculator {
-    calc(n: number) {
+    factor(n: number) {
         if (n <= 1) {
             return 1;
         } else {
-            return this.calc(n - 1) * n;
+            return this.factor(n - 1) * n;
         }
     }
 }
-
-const calc = new Calculator();
-console.log(`result = ${calc.calc(10)}`);
 
 console.log("Hello!");
 
@@ -36,4 +33,5 @@ for (let i = 0; i < 10; i++) {
 }
 console.log(sum);
 
+const calc = new Calculator();
 console.log(`5! = ${calc.factor(5)}`);
