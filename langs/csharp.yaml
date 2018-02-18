@@ -194,7 +194,7 @@ templates:
           {
               {{genBody(mainBlock)}}
           }
-      }    
+      }
     {{/if}}
     
   genTypeArgs:
