@@ -70,6 +70,7 @@
         .gitter-chat-embed-action-bar { left: unset; padding-left: 20px }
         #patreon-button { position: relative; top: -2px; margin-left: 8px; }
         #patreon-button:hover { background-color:#000; opacity:0.9; }
+        #welcomeModalLabel { text-align:center }
     </style>
 </head>
 <body>
@@ -172,6 +173,36 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="welcomeModal" tabindex="-1" role="dialog" aria-labelledby="welcomeModalLabel" style="margin-top: 50px;">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="form-group">
+                    <h4 class="modal-title" id="welcomeModalLabel">Hey there!</h4>
+                </div>
+                <div class="form-group">
+                    If this is the first time you are using Onelang WebIDE then I recommend watching our
+                    <a href="https://youtu.be/Rwo6KJ_Pa9Q" target="_blank">Demo video</a>:
+                    <iframe width="568" height="320" src="//www.youtube.com/embed/Rwo6KJ_Pa9Q" frameborder="0" allowfullscreen style="margin-top:10px"></iframe>
+                </div>
+                <div class="form-group">
+                    We would be pleased if you could visit us and share your thoughts about Onelang in our 
+                    <a href="https://gitter.im/onelang-io/Lobby" target="_blank">Gitter chatroom</a>.
+                </div>
+                <div class="form-group">
+                    You can view the source code or create issues <a href="https://github.com/koczkatamas/onelang" target="_blank">on Github</a>.
+                </div>
+                <div style="text-align:center; font-size:12px; margin-bottom:10px">
+                    <a id="welcomeDoNotShowAgain" href="#" data-dismiss="modal">close and do not show again</a>
+                </div>
+                <div style="text-align:center">
+                    <button type="submit" class="btn btn-primary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>    
 
 <div id="goldenLayout" style="height:100%; width:100%">
 
