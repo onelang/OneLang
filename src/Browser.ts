@@ -139,7 +139,7 @@ async function runLangUi(langName: string, codeCallback: () => string) {
 
         const code = codeCallback();
         if (!serverhost) {
-            html`<span class="label error">error</span><a class="compilerMissing" href="https://github.com/koczkatamas/onelang/wiki/Compiler-backend" target="_blank">Compiler backend is not configured</a>`(langUi.statusBar);
+            html`<span class="label note">note</span><a class="compilerMissing" href="https://github.com/koczkatamas/onelang/wiki/Compiler-backend" target="_blank">Compiler backend is not configured</a>`(langUi.statusBar);
             return;
         }
 
