@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/darkly/bootstrap.min.css">
     
     <script>
-        if (location.href.startsWith("http://ide.onelang.io/") && !location.href.contains("server=http://"))
+        if (location.href.startsWith("http://ide.onelang.io/") && !location.href.includes("server=http://"))
             location.href = location.href.replace(/^http:/, "https:");
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bowser/1.9.2/bowser.js" integrity="sha256-DePezqaNKYUCtds+oWUkhArD5RhRCNYHFiXjjAcysME=" crossorigin="anonymous"></script>
