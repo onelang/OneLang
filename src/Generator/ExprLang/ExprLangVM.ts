@@ -23,6 +23,9 @@ export class VariableSource {
         if (!varName)
             ExprLangVM.fail("Variable name is missing!");
 
+        if (typeof varName !== "string")
+            ExprLangVM.fail(`Expected string as variable name!`);
+
         if (varName in this.callbacks)
             ExprLangVM.fail(`Callback was already set for variable '${varName}'`);
 

@@ -9,13 +9,13 @@ export class IncludesCollector extends AstVisitor<void> {
 
     constructor(public lang: LangFileSchema.LangFile) { 
         super();
-        this.includes = new Set<string>(lang.includes || []);
+        this.includes = new Set<string>(lang.includes);
     }
 
     useInclude(className: string, methodName?: string) {
         const cls = this.lang.classes[className];
         if (!cls) return;
-        const includes = (cls.includes || []).concat(cls.methods && methodName ? cls.methods[methodName].includes || [] : []);
+        const includes = cls.includes.concat(cls.methods && methodName ? (cls.methods[methodName] || { includes: [] }).includes : []);
         for (const include of includes)
             this.includes.add(include);
     }
@@ -38,7 +38,7 @@ export class IncludesCollector extends AstVisitor<void> {
         const op = this.lang.operators && this.lang.operators[opName];
         if (!op) return;
 
-        for (const include of op.includes || [])
+        for (const include of op.includes)
             this.includes.add(include);
     }
     

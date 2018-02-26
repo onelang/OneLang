@@ -1,3 +1,5 @@
+import { TemplateMethod } from "./OneTemplate/TemplateGenerator";
+
 export namespace LangFileSchema {
     export interface FunctionArgument {
         name: string;
@@ -24,38 +26,23 @@ export namespace LangFileSchema {
         args: FunctionArgument[];
         includes: string[];
         template: string;
+        generator?: TemplateMethod;
     }
 
-    export interface Templates {
-        testGenerator: string;
-        main: string;
-        [name: string]: string|TemplateObj;
-    }
-
-    export interface Operator {
-        includes?: string[];
-        template: string;
-        leftType?: string;
-        rightType?: string;
-        operator?: string;
-    }
-
-    export interface Method {
+    export interface Method extends TemplateObj {
         extraArgs?: string[];
-        includes?: string[];
-        template: string;
         mutates?: boolean;
         throws?: boolean;
     }
 
-    export interface Field {
-        template: string;
+    export interface Field extends TemplateObj {
     }
 
-    export interface Class {
+    export interface Operator extends TemplateObj {
+    }
+
+    export interface Class extends TemplateObj {
         type: string;
-        template: string;
-        includes: string[];
         fields: { [name: string]: Field };
         methods: { [name: string]: Method };
     }
@@ -67,16 +54,16 @@ export namespace LangFileSchema {
         extension: string;
         casing: CasingOptions;
         primitiveTypes: {
-            void: string;
-            boolean: string;
-            string: string;
-            number: string;
-            any: string;
+            void?: string;
+            boolean?: string;
+            string?: string;
+            number?: string;
+            any?: string;
         };
         genericsOverride?: string;
-        templates: Templates;
+        templates: { [name: string]: TemplateObj; };
         includes: string[];
         includeSources: { [name: string]: string };
-        expressions: { [name: string]: string|TemplateObj };
+        expressions: { [name: string]: TemplateObj };
     }
 }

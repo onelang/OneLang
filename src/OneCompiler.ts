@@ -30,6 +30,7 @@ import { PhpParser } from "./Parsers/PhpParser";
 import { ForceTemplateStrings } from "./One/Transforms/ForceTemplateStrings";
 import { WhileToForTransform } from "./One/Transforms/WhileToFor";
 import { ProcessTypeHints } from "./One/Transforms/ProcessTypeHints";
+import { LangFilePreprocessor } from "./Generator/LangFilePreprocessor";
 
 declare var YAML: any;
 
@@ -166,33 +167,9 @@ export class OneCompiler {
         this.saveSchemaState(this.schemaCtx, `6_PostProcess`);
     }
 
-    static preprocessLangFile(lang: LangFileSchema.LangFile) {
-        for (const opDesc of Object.keys(lang.operators||{})) {
-            let opData = lang.operators[opDesc];
-            if (typeof opData === "string")
-                opData = lang.operators[opDesc] = { template: <string><any>opData };
-
-            const opDescParts = opDesc.split(" ").filter(x => x !== "");
-            if (opDescParts.length === 3)
-                [opData.leftType, opData.operator, opData.rightType] = opDescParts;
-        }
-
-        for (const classDesc of Object.values(lang.classes||{})) {
-            for (const methodName of Object.keys(classDesc.methods||{})) {
-                if (typeof classDesc.methods[methodName] === "string")
-                    classDesc.methods[methodName] = { template: <string><any>classDesc.methods[methodName] };
-            }
-
-            for (const fieldName of Object.keys(classDesc.fields||{})) {
-                if (typeof classDesc.fields[fieldName] === "string")
-                    classDesc.fields[fieldName] = { template: <string><any>classDesc.fields[fieldName] };
-            }
-        }
-    }
-
-    static parseLangSchema(langYaml: string) {
+    static parseLangSchema(langYaml: string, stdlib: one.Schema) {
         const schema = <LangFileSchema.LangFile> YAML.parse(langYaml);
-        OneCompiler.preprocessLangFile(schema);
+        LangFilePreprocessor.preprocess(schema, stdlib);
         return schema;
     }
 
@@ -208,7 +185,7 @@ export class OneCompiler {
     }
 
     compile(langCode: string, callTestMethod = true, genMeta = false) {
-        const lang = OneCompiler.parseLangSchema(langCode);
+        const lang = OneCompiler.parseLangSchema(langCode, this.stdlibCtx.schema);
         const codeGen = this.getCodeGenerator(lang);
         codeGen.model.config.genMeta = genMeta;
         const generatedCode = codeGen.generate(callTestMethod);
