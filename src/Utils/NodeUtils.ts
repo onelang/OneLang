@@ -24,3 +24,9 @@ export function jsonRequest<T>(url: string, body: any): Promise<T> {
         });
     });
 }
+
+const process = require("process");
+export function timeNow() {
+    const time = process.hrtime();
+    return time[0] * 1000 + Math.round(time[1] / 1000 / 1000);
+}

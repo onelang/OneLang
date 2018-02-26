@@ -1,5 +1,5 @@
 require("./Utils/Extensions.js");
-import { writeFile, readFile, jsonRequest } from "./Utils/NodeUtils";
+import { writeFile, readFile, jsonRequest, timeNow } from "./Utils/NodeUtils";
 import { OneCompiler } from "./OneCompiler";
 import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs";
 import { LangFileSchema } from "./Generator/LangFileSchema";
@@ -18,6 +18,12 @@ const compileAll = prgNames[0] === "all";
 if (compileAll)
     prgNames = fs.readdirSync("input").filter(x => x.endsWith(".ts")).map(x => x.replace(".ts", ""));
 
+const langConfigVals = Object.values(langConfigs);
+for (const langConfig of langConfigVals) {
+    const langYaml = readFile(`langs/${langConfig.name}.yaml`);
+    langConfig.schema = OneCompiler.parseLangSchema(langYaml);
+}
+
 for (const prgName of prgNames) {
     const compiler = new OneCompiler();
     compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, data: string) => {
@@ -30,21 +36,20 @@ for (const prgName of prgNames) {
     const genericTransforms = readFile(`langs/NativeResolvers/GenericTransforms.yaml`);
     compiler.parse("typescript", programCode, overlayCode, stdlibCode, genericTransforms);
     
-    //const csharpLang = <LangFileSchema.LangFile> YAML.parse(readFile(`langs/csharp.yaml`));
-    //const template = new Template(csharpLang.expressions["templateString"]);
-    //const compiled = template.templateToJS(template.treeRoot, ["testValue"]);
-    
-    const langs = Object.values(langConfigs);
-    for (const lang of langs) {
+    for (const lang of langConfigVals) {
         if (langFilter && lang.name !== langFilter) continue;
     
         console.log(`converting program '${prgName}' to ${lang.name}...`);
+        const ts = [];
         //try {
-            const langYaml = readFile(`langs/${lang.name}.yaml`);
-            const codeGen = compiler.getCodeGenerator(langYaml, lang.name);
+            ts.push(timeNow());
+            const codeGen = compiler.getCodeGenerator(lang.schema);
+            ts.push(timeNow());
             lang.request.code = codeGen.generate(true);
-        
+            ts.push(timeNow());
             writeFile(`generated/${prgName}/results/${prgName}.${codeGen.lang.extension}`, codeGen.generatedCode);
+            ts.push(timeNow());
+            console.log("time", ts.map((x,i) => i === 0 ? undefined : x - ts[i - 1]).join(", "));
         //} catch(e) {
         //    console.error(e);
         //}
@@ -53,7 +58,7 @@ for (const prgName of prgNames) {
     // run compiled codes
     async function executeCodes() {
         console.log(" === START === ");
-        var promises = langs.map(async lang => {
+        var promises = langConfigVals.map(async lang => {
             if (langFilter && lang.name !== langFilter) return true;
     
             const result = await jsonRequest<CompileResult>(`http://127.0.0.1:8000/compile`, lang.request);
