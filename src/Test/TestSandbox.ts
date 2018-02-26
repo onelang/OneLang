@@ -35,5 +35,5 @@ const csharpYaml = readFile(`langs/csharp.yaml`);
 const rubyYaml = readFile(`langs/ruby.yaml`);
 
 compiler.parse("php", programCode, overlayCode, stdlibCode, genericTransforms);
-const result = compiler.compile(rubyYaml, "ruby", true);
+const result = compiler.compile(rubyYaml, true);
 console.log(result);

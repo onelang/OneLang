@@ -1,3 +1,4 @@
+name: swift
 extension: swift
 casing:
   class: pascal_case

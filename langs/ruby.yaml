@@ -1,3 +1,4 @@
+name: ruby
 extension: rb
 casing: # based on https://github.com/bbatsov/ruby-style-guide
   class: pascal_case

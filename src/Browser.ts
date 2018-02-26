@@ -119,7 +119,7 @@ class CompileHelper {
     compile(langName: string) {
         const lang = this.langConfigs[langName];
         const schemaYaml = layout.langs[langName].generatorHandler.getContent();
-        const code = this.compiler.compile(schemaYaml, langName, true, layout.inputLangs.includes(langName));
+        const code = this.compiler.compile(schemaYaml, true, layout.inputLangs.includes(langName));
         return code;
     }
 }

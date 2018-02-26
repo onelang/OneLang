@@ -1,3 +1,4 @@
+name: python
 extension: py
 casing: # based on https://www.python.org/dev/peps/pep-0008/
   class: pascal_case

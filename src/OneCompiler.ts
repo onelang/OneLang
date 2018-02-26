@@ -166,7 +166,7 @@ export class OneCompiler {
         this.saveSchemaState(this.schemaCtx, `6_PostProcess`);
     }
 
-    preprocessLangFile(lang: LangFileSchema.LangFile) {
+    static preprocessLangFile(lang: LangFileSchema.LangFile) {
         for (const opDesc of Object.keys(lang.operators||{})) {
             let opData = lang.operators[opDesc];
             if (typeof opData === "string")
@@ -190,23 +190,26 @@ export class OneCompiler {
         }
     }
 
-    getCodeGenerator(langCode: string, langName?: string) {
-        const lang = <LangFileSchema.LangFile> YAML.parse(langCode);
-        lang.name = langName;
+    static parseLangSchema(langYaml: string) {
+        const schema = <LangFileSchema.LangFile> YAML.parse(langYaml);
+        OneCompiler.preprocessLangFile(schema);
+        return schema;
+    }
 
-        this.preprocessLangFile(lang);
+    getCodeGenerator(lang: LangFileSchema.LangFile) {
         new SchemaCaseConverter(lang.casing).process(this.schemaCtx.schema);
         new SchemaCaseConverter(lang.casing).process(this.stdlibCtx.schema);
         new FillVariableMutability(lang).process(this.schemaCtx.schema);
         new FillThrowsTransform(lang).process(this.schemaCtx.schema);
-        this.saveSchemaState(this.schemaCtx, `10_${langName ? `${langName}_` : ""}Init`);
+        this.saveSchemaState(this.schemaCtx, `10_${lang.name ? `${lang.name}_` : ""}Init`);
         
         const codeGen = new CodeGenerator(this.schemaCtx.schema, this.stdlibCtx.schema, lang);
         return codeGen;
     }
 
-    compile(langCode: string, langName?: string, callTestMethod = true, genMeta = false) {
-        const codeGen = this.getCodeGenerator(langCode, langName);
+    compile(langCode: string, callTestMethod = true, genMeta = false) {
+        const lang = OneCompiler.parseLangSchema(langCode);
+        const codeGen = this.getCodeGenerator(lang);
         codeGen.model.config.genMeta = genMeta;
         const generatedCode = codeGen.generate(callTestMethod);
         return generatedCode;

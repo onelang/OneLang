@@ -1,3 +1,4 @@
+name: go
 extension: go
 casing: # based on https://golang.org/doc/effective_go.html#mixed-caps
   class: pascal_case

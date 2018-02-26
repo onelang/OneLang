@@ -1,3 +1,4 @@
+name: perl
 extension: pl
 casing: # based on https://swift.org/documentation/api-design-guidelines/
   class: pascal_case

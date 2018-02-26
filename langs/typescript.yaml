@@ -1,3 +1,4 @@
+name: typescript
 extension: ts
 casing:
   class: pascal_case

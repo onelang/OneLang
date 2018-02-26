@@ -1,3 +1,4 @@
+name: cpp
 extension: cpp
 casing:
   class: pascal_case

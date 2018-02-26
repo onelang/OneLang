@@ -1,3 +1,4 @@
+name: java
 extension: java
 casing:
   class: pascal_case

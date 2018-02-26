@@ -1,3 +1,4 @@
+name: javascript
 extension: js
 casing:
   class: pascal_case
