@@ -10,56 +10,37 @@ casing: # based on https://github.com/php-fig/fig-standards/blob/master/accepted
 classes:
   OneString:
     fields:
-      length:
-        template: "strlen({{self}})"
+      length: "strlen({{self}})"
     methods:
-      substring:
-        template: "substr({{self}}, {{start}}, {{end}} - {{start}})"
-      split:
-        template: "explode({{separator}}, {{self}})"
-      get:
-        template: "{{self}}[{{idx}}]"
-      replace:
-        template: "str_replace({{from}}, {{to}}, {{self}})"
-      substrMatch:
-        template: "substr_compare({{self}}, {{str}}, {{offset}}, strlen({{str}})) === 0"
+      substring: "substr({{self}}, {{start}}, {{end}} - {{start}})"
+      split: "explode({{separator}}, {{self}})"
+      get: "{{self}}[{{idx}}]"
+      replace: "str_replace({{from}}, {{to}}, {{self}})"
+      substrMatch: "substr_compare({{self}}, {{str}}, {{offset}}, strlen({{str}})) === 0"
   OneConsole:
     methods:
-      print:
-        template: 'print({{str}} . "\n")'
+      print: 'print({{str}} . "\n")'
   OneArray:
     fields:
-      length:
-        template: "count({{self}})"
+      length: "count({{self}})"
     methods:
-      add:
-        template: "{{self}}[] = {{item}}"
-      get:
-        template: "{{self}}[{{index}}]"
-      set:
-        template: "{{self}}[{{index}}] = {{value}}"
+      add: "{{self}}[] = {{item}}"
+      get: "{{self}}[{{index}}]"
+      set: "{{self}}[{{index}}] = {{value}}"
   OneMap:
     methods:
-      keys:
-        template: "array_keys({{self}})"
-      values:
-        template: "array_values({{self}})"
-      remove:
-        template: "unset({{self}}[{{key}}])"
-      hasKey:
-        template: "array_key_exists({{key}}, {{self}})"
-      get:
-        template: "{{self}}[{{key}}]"
-      set:
-        template: "{{self}}[{{key}}] = {{value}}"
+      keys: "array_keys({{self}})"
+      values: "array_values({{self}})"
+      remove: "unset({{self}}[{{key}}])"
+      hasKey: "array_key_exists({{key}}, {{self}})"
+      get: "{{self}}[{{key}}]"
+      set: "{{self}}[{{key}}] = {{value}}"
   OneFile:
     methods:
-      readText:
-        template: "file_get_contents({{fn}})"
+      readText: "file_get_contents({{fn}})"
   OneError:
     methods:
-      raise:
-        template: throw new Exception({{message}})
+      raise: throw new Exception({{message}})
   OneReflect:
     includes: [one]
   OneJson:
@@ -90,18 +71,12 @@ classes:
     methods:
       langName: '"PHP"'
 operators:
-  OneString + OneString:
-    template: "{{gen(left)}} . {{gen(right)}}"
-  OneString + OneCharacter:
-    template: "{{gen(left)}} . {{gen(right)}}"
-  OneString + OneNumber:
-    template: "{{gen(left)}} . {{gen(right)}}"
-  OneString + OneBoolean:
-    template: '{{gen(left)}} . (({{gen(right)}}) ? "true" : "false")'
-  OneString += OneString:
-    template: "{{gen(left)}} .= {{gen(right)}}"
-  OneString += OneCharacter:
-    template: "{{gen(left)}} .= {{gen(right)}}"
+  OneString + OneString: "{{gen(left)}} . {{gen(right)}}"
+  OneString + OneCharacter: "{{gen(left)}} . {{gen(right)}}"
+  OneString + OneNumber: "{{gen(left)}} . {{gen(right)}}"
+  OneString + OneBoolean: '{{gen(left)}} . (({{gen(right)}}) ? "true" : "false")'
+  OneString += OneString: "{{gen(left)}} .= {{gen(right)}}"
+  OneString += OneCharacter: "{{gen(left)}} .= {{gen(right)}}"
 templates:
   testGenerator: |-
     try {

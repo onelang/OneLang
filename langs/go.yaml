@@ -15,18 +15,14 @@ classes:
   OneString:
     type: string
     fields:
-      length:
-        template: "len({{self}})"
+      length: "len({{self}})"
     methods:
-      substring:
-        template: "{{self}}[{{start}}:{{end}}]"
-      split:
+      substring: "{{self}}[{{start}}:{{end}}]"
+      split: 
         #includes: [strings]
         template: "strings.Split({{self}}, {{separator}})"
-      get:
-        template: "{{self}}[{{idx}}]"
-      substrMatch:
-        template: "{{self}}[{{offset}}:{{offset}} + len({{str}})] == {{str}}"
+      get: "{{self}}[{{idx}}]"
+      substrMatch: "{{self}}[{{offset}}:{{offset}} + len({{str}})] == {{str}}"
       replace:
         includes: [strings]
         template: "strings.Replace({{self}}, {{from}}, {{to}}, -1)"
@@ -42,15 +38,11 @@ classes:
   OneArray:
     type: "[]{{typeArgs[0]}}"
     fields:
-      length:
-        template: "len({{self}})"
+      length: "len({{self}})"
     methods:
-      add:
-        template: "{{self}} = append({{self}}, {{item}})"
-      get:
-        template: "{{self}}[{{index}}]"
-      set:
-        template: "{{self}}[{{index}}] = {{value}}"
+      add: "{{self}} = append({{self}}, {{item}})"
+      get: "{{self}}[{{index}}]"
+      set: "{{self}}[{{index}}] = {{value}}"
   OneMap:
     methods:
       keys:
@@ -67,15 +59,12 @@ classes:
           for  _, value := range {{self}} {
             {{result}} = append({{result}}, value)
           }
-      remove:
-        template: "delete({{self}}, {{key}})"
+      remove: "delete({{self}}, {{key}})"
       hasKey:
         extraArgs: [result]
         template: "_, {{result}} := {{self}}[{{key}}]"
-      get:
-        template: "{{self}}[{{key}}]"
-      set:
-        template: "{{self}}[{{key}}] = {{value}}"
+      get: "{{self}}[{{key}}]"
+      set: "{{self}}[{{key}}] = {{value}}"
   OneFile:
     includes: [io/ioutil]
     methods:
@@ -86,8 +75,7 @@ classes:
           {{result}} := string({{result}}Bytes)
   OneError:
     methods:
-      raise:
-        template: panic({{message}})
+      raise: panic({{message}})
   OneRegex:
     includes: [one]
     template: "one.Regex"
@@ -98,8 +86,7 @@ classes:
     type: "big.Int"
     includes: [math/big, one]
     methods:
-      fromInt:
-        template: "big.NewInt({{value}})"    
+      fromInt: "big.NewInt({{value}})"    
   OneJson:
     includes: [encoding/json]
     methods:

@@ -182,6 +182,11 @@ export class OneCompiler {
                 if (typeof classDesc.methods[methodName] === "string")
                     classDesc.methods[methodName] = { template: <string><any>classDesc.methods[methodName] };
             }
+
+            for (const fieldName of Object.keys(classDesc.fields||{})) {
+                if (typeof classDesc.fields[fieldName] === "string")
+                    classDesc.fields[fieldName] = { template: <string><any>classDesc.fields[fieldName] };
+            }
         }
     }
 

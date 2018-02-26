@@ -10,49 +10,33 @@ casing: # based on https://swift.org/documentation/api-design-guidelines/
 classes:
   OneString:
     fields:
-      length:
-        template: "length({{self}})"
+      length: "length({{self}})"
     methods:
-      substring:
-        template: "(substr {{self}}, {{start}}, ({{end}} - {{start}}))"
-      split:
-        template: "split({{separator}}, {{self}})"
-      get:
-        template: "(substr {{self}}, {{idx}}, 1)"
+      substring: "(substr {{self}}, {{start}}, ({{end}} - {{start}}))"
+      split: "split({{separator}}, {{self}})"
+      get: "(substr {{self}}, {{idx}}, 1)"
       replace:
         includes: ["one"]
         template: "One::str_replace({{self}}, {{from}}, {{to}})"
-      substrMatch:
-        template: "(substr {{self}}, {{offset}}, length({{str}})) eq ({{str}})"
+      substrMatch: "(substr {{self}}, {{offset}}, length({{str}})) eq ({{str}})"
   OneConsole:
     methods:
-      print:
-        template: 'print(({{str}}) . "\n")'
+      print: 'print(({{str}}) . "\n")'
   OneArray:
     fields:
-      length:
-        template: "scalar(@{{{self}}})"
+      length: "scalar(@{{{self}}})"
     methods:
-      add:
-        template: "push @{{{self}}}, {{item}}"
-      get:
-        template: "${{{self}}}[{{index}}]"
-      set:
-        template: "${{{self}}}[{{index}}] = {{value}}"
+      add: "push @{{{self}}}, {{item}}"
+      get: "${{{self}}}[{{index}}]"
+      set: "${{{self}}}[{{index}}] = {{value}}"
   OneMap:
     methods:
-      keys:
-        template: "keys %{{{self}}}"
-      values:
-        template: "values %{{{self}}}"
-      remove:
-        template: "delete ${{{self}}}{{{key}}}"
-      hasKey:
-        template: "exists ${{{self}}}{{{key}}}"
-      get:
-        template: "${{{self}}}{{{key}}}"
-      set:
-        template: "${{{self}}}{{{key}}} = {{value}}"
+      keys: "keys %{{{self}}}"
+      values: "values %{{{self}}}"
+      remove: "delete ${{{self}}}{{{key}}}"
+      hasKey: "exists ${{{self}}}{{{key}}}"
+      get: "${{{self}}}{{{key}}}"
+      set: "${{{self}}}{{{key}}} = {{value}}"
   OneFile:
     methods:
       readText:
@@ -63,8 +47,7 @@ classes:
           close($fh);
   OneError:
     methods:
-      raise:
-        template: die {{message}}."\n"
+      raise: die {{message}}."\n"
   OneReflect:
     includes: [one]
     template: "OneReflect"
@@ -77,44 +60,25 @@ classes:
     methods:
       langName: '"Perl"'
 operators:
-  OneString + OneString:
-    template: "{{gen(left)}} . {{gen(right)}}"
-  OneString <= OneCharacter:
-    template: "{{gen(left)}} le {{gen(right)}}"
-  OneCharacter <= OneString:
-    template: "{{gen(left)}} le {{gen(right)}}"
-  OneCharacter <= OneCharacter:
-    template: "{{gen(left)}} le {{gen(right)}}"
-  OneString >= OneCharacter:
-    template: "{{gen(left)}} gt {{gen(right)}}"
-  OneCharacter >= OneString:
-    template: "{{gen(left)}} gt {{gen(right)}}"
-  OneCharacter >= OneCharacter:
-    template: "{{gen(left)}} gt {{gen(right)}}"
-  OneString == OneString:
-    template: "{{gen(left)}} eq {{gen(right)}}"
-  OneString == OneCharacter:
-    template: "{{gen(left)}} eq {{gen(right)}}"
-  OneCharacter == OneString:
-    template: "{{gen(left)}} eq {{gen(right)}}"
-  OneCharacter == OneCharacter:
-    template: "{{gen(left)}} eq {{gen(right)}}"
-  OneString != OneString:
-    template: "{{gen(left)}} ne {{gen(right)}}"
-  any == null:
-    template: "!defined {{gen(left)}}"
-  any != null:
-    template: "defined {{gen(left)}}"
-  OneString + OneNumber:
-    template: "{{gen(left)}} . {{gen(right)}}"
-  OneString + OneBoolean:
-    template: '{{gen(left)}} . (({{gen(right)}}) ? "true" : "false")'
-  OneString + OneCharacter:
-    template: "{{gen(left)}} . {{gen(right)}}"
-  OneString += OneString:
-    template: "{{gen(left)}} .= {{gen(right)}}"
-  OneString += OneCharacter:
-    template: "{{gen(left)}} .= {{gen(right)}}"
+  OneString + OneString: "{{gen(left)}} . {{gen(right)}}"
+  OneString <= OneCharacter: "{{gen(left)}} le {{gen(right)}}"
+  OneCharacter <= OneString: "{{gen(left)}} le {{gen(right)}}"
+  OneCharacter <= OneCharacter: "{{gen(left)}} le {{gen(right)}}"
+  OneString >= OneCharacter: "{{gen(left)}} gt {{gen(right)}}"
+  OneCharacter >= OneString: "{{gen(left)}} gt {{gen(right)}}"
+  OneCharacter >= OneCharacter: "{{gen(left)}} gt {{gen(right)}}"
+  OneString == OneString: "{{gen(left)}} eq {{gen(right)}}"
+  OneString == OneCharacter: "{{gen(left)}} eq {{gen(right)}}"
+  OneCharacter == OneString: "{{gen(left)}} eq {{gen(right)}}"
+  OneCharacter == OneCharacter: "{{gen(left)}} eq {{gen(right)}}"
+  OneString != OneString: "{{gen(left)}} ne {{gen(right)}}"
+  any == null: "!defined {{gen(left)}}"
+  any != null: "defined {{gen(left)}}"
+  OneString + OneNumber: "{{gen(left)}} . {{gen(right)}}"
+  OneString + OneBoolean: '{{gen(left)}} . (({{gen(right)}}) ? "true" : "false")'
+  OneString + OneCharacter: "{{gen(left)}} . {{gen(right)}}"
+  OneString += OneString: "{{gen(left)}} .= {{gen(right)}}"
+  OneString += OneCharacter: "{{gen(left)}} .= {{gen(right)}}"
 templates:
   testGenerator: |-
     package Program;

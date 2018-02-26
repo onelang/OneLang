@@ -14,19 +14,13 @@ classes:
   OneString:
     type: string
     fields:
-      length:
-        template: "{{self}}.size()"
+      length: "{{self}}.size()"
     methods:
-      substring:
-        template: "{{self}}.substr({{start}}, {{end}} - {{start}})"
-      split:
-        template: "OneStringHelper::split({{self}}, {{separator}})"
-      get:
-        template: "{{self}}[{{idx}}]"
-      replace:
-        template: "OneStringHelper::replace({{self}}, {{from}}, {{to}})"
-      substrMatch:
-        template: "{{self}}.compare({{offset}}, {{str}}.size(), {{str}}) == 0"
+      substring: "{{self}}.substr({{start}}, {{end}} - {{start}})"
+      split: "OneStringHelper::split({{self}}, {{separator}})"
+      get: "{{self}}[{{idx}}]"
+      replace: "OneStringHelper::replace({{self}}, {{from}}, {{to}})"
+      substrMatch: "{{self}}.compare({{offset}}, {{str}}.size(), {{str}}) == 0"
   OneNumber:
     type: int
   OneBoolean:
@@ -35,40 +29,28 @@ classes:
     includes: [vector]
     type: "vec<{{typeArgs[0]}}>"
     fields:
-      length: 
-        template: "{{self}}->size()"
+      length:  "{{self}}->size()"
     methods:
-      add: 
-        template: "{{self}}->push_back({{item}})"
-      get: 
-        template: "{{self}}->at({{index}})"
-      set: 
-        template: "(*{{self}})[{{index}}] = {{value}}"
+      add:  "{{self}}->push_back({{item}})"
+      get:  "{{self}}->at({{index}})"
+      set:  "(*{{self}})[{{index}}] = {{value}}"
   OneMap:
     includes: [map]
     methods:
-      keys: 
-        template: "OneMapHelper::keys({{self}})"
-      values: 
-        template: "OneMapHelper::values({{self}})"
-      remove: 
-        template: "{{self}}->erase({{key}})"
-      hasKey: 
-        template: "{{self}}->find({{key}}) != {{self}}.end()"
-      get: 
-        template: "{{self}}->operator[]({{key}})"
-      set: 
-        template: "{{self}}->operator[]({{key}}) = {{value}}"
+      keys:  "OneMapHelper::keys({{self}})"
+      values:  "OneMapHelper::values({{self}})"
+      remove:  "{{self}}->erase({{key}})"
+      hasKey:  "{{self}}->find({{key}}) != {{self}}.end()"
+      get:  "{{self}}->operator[]({{key}})"
+      set:  "{{self}}->operator[]({{key}}) = {{value}}"
   OneConsole:
     includes: [iostream]
     methods:
-      print:
-        template: "cout << {{genWithParen(str)}} << endl"
+      print: "cout << {{genWithParen(str)}} << endl"
   OneError:
     includes: [stdexcept]
     methods:
-      raise:
-        template: throw std::runtime_error({{message}})
+      raise: throw std::runtime_error({{message}})
   One:
     methods:
       langName: '"C++"'

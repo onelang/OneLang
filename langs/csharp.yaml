@@ -14,19 +14,13 @@ classes:
   OneString:
     type: string
     fields:
-      length:
-        template: "{{self}}.Length"
+      length: "{{self}}.Length"
     methods:
-      substring:
-        template: "{{self}}.Substring({{start}}, {{end}} - {{start}})"
-      split:
-        template: "{{self}}.Split(new[]{ {{separator}} }, StringSplitOptions.None)"
-      get:
-        template: "{{self}}[{{idx}}]"
-      replace:
-        template: "{{self}}.Replace({{from}}, {{to}})"
-      substrMatch:
-        template: "String.Compare({{self}}, {{offset}}, {{str}}, 0, ({{str}}).Length) == 0"
+      substring: "{{self}}.Substring({{start}}, {{end}} - {{start}})"
+      split: "{{self}}.Split(new[]{ {{separator}} }, StringSplitOptions.None)"
+      get: "{{self}}[{{idx}}]"
+      replace: "{{self}}.Replace({{from}}, {{to}})"
+      substrMatch: "String.Compare({{self}}, {{offset}}, {{str}}, 0, ({{str}}).Length) == 0"
   OneNumber:
     type: int
   OneBoolean:
@@ -40,55 +34,40 @@ classes:
     type: "List<{{typeArgs[0]}}>"
     includes: [System.Collections.Generic]
     fields:
-      length:
-        template: "{{self}}.Count"
+      length: "{{self}}.Count"
     methods:
-      add: 
-        template: "{{self}}.Add({{item}})"
-      get: 
-        template: "{{self}}[{{index}}]"
-      set: 
-        template: "{{self}}[{{index}}] = {{value}}"
+      add:  "{{self}}.Add({{item}})"
+      get:  "{{self}}[{{index}}]"
+      set:  "{{self}}[{{index}}] = {{value}}"
   OneMap:
     includes: [System.Linq]
     methods:
-      keys: 
-        template: "{{self}}.Keys.ToArray()"
-      values: 
-        template: "{{self}}.Values.ToArray()"
-      remove: 
-        template: "{{self}}.Remove({{key}})"
-      hasKey: 
-        template: "{{self}}.ContainsKey({{key}})"
-      get: 
-        template: "{{self}}[{{key}}]"
-      set: 
-        template: "{{self}}[{{key}}] = {{value}}"
+      keys:  "{{self}}.Keys.ToArray()"
+      values:  "{{self}}.Values.ToArray()"
+      remove:  "{{self}}.Remove({{key}})"
+      hasKey:  "{{self}}.ContainsKey({{key}})"
+      get:  "{{self}}[{{key}}]"
+      set:  "{{self}}[{{key}}] = {{value}}"
   OneFile:
     includes: [System.IO]
     methods:
-      readText:
-        template: "File.ReadAllText({{fn}})"
+      readText: "File.ReadAllText({{fn}})"
   OneError:
     includes: [System]
     methods:
-      raise:
-        template: throw new Exception({{message}})
+      raise: throw new Exception({{message}})
   OneMethod:
     methods:
-      call:
-        template: "{{self}}.Call({{obj}}, ({{args}}).ToArray())"
+      call: "{{self}}.Call({{obj}}, ({{args}}).ToArray())"
   OneBigInteger:
     type: "BigInteger"
     includes: [System.Numerics]
     methods:
-      fromInt:
-        template: "new BigInteger({{value}})"
+      fromInt: "new BigInteger({{value}})"
   OneJson:
     includes: [Newtonsoft.Json.Linq]
     methods:
-      parse:
-        template: "JToken.Parse({{str}})"
+      parse: "JToken.Parse({{str}})"
   OneJValue:
     methods:
       isObject: "({{self}}.Type == JTokenType.Object)"

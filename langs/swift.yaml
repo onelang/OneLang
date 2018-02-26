@@ -14,41 +14,32 @@ classes:
   OneString:
     type: String
     fields:
-      length:
-        template: "{{self}}.count"
+      length: "{{self}}.count"
     methods:
-      substring:
-        template: "String({{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{start}}) ..< {{self}}.index({{self}}.startIndex, offsetBy: {{end}})])"
-      split:
-        template: "{{self}}.split(separator: {{separator}}, omittingEmptySubsequences: false)"
-      get:
-        template: "String({{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{idx}})])"
+      substring: "String({{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{start}}) ..< {{self}}.index({{self}}.startIndex, offsetBy: {{end}})])"
+      split: "{{self}}.split(separator: {{separator}}, omittingEmptySubsequences: false)"
+      get: "String({{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{idx}})])"
       replace:
         includes: ["Foundation"]
         template: "{{self}}.replacingOccurrences(of: {{from}}, with: {{to}})"
-      substrMatch:
-        template: "String({{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{offset}}) ..< {{self}}.endIndex]).hasPrefix({{str}})"
+      substrMatch: "String({{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{offset}}) ..< {{self}}.endIndex]).hasPrefix({{str}})"
   OneNumber:
     type: Int
   OneBoolean:
     type: Bool
   OneConsole:
     methods:
-      print:
-        template: "print({{str}})"
+      print: "print({{str}})"
   OneArray:
     type: "[{{genType(typeArguments[0])}}]"
     fields:
-      length:
-        template: "{{self}}!.count"
+      length: "{{self}}!.count"
     methods:
       add:
         mutates: true
         template: "{{self}}!.append({{item}})"
-      get:
-        template: "{{self}}![{{index}}]"
-      set:
-        template: "{{self}}![{{index}}] = {{value}}"
+      get: "{{self}}![{{index}}]"
+      set: "{{self}}![{{index}}] = {{value}}"
   OneMap:
     type: "[{{genType(typeArguments[0])}}: {{genType(typeArguments[1])}}]"
     methods:

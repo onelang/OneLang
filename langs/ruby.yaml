@@ -10,56 +10,37 @@ casing: # based on https://github.com/bbatsov/ruby-style-guide
 classes:
   OneString:
     fields:
-      length:
-        template: "{{self}}.length"
+      length: "{{self}}.length"
     methods:
-      substring:
-        template: "{{self}}[{{start}}...{{end}}]"
-      split:
-        template: "{{self}}.split({{separator}})"
-      get:
-        template: "{{self}}[{{idx}}]"
-      replace:
-        template: "{{self}}.gsub(/#{Regexp.escape({{from}})}/, {{to}})"
-      substrMatch:
-        template: "{{self}}[{{offset}}...{{offset}} + {{str}}.length] == {{str}}"
+      substring: "{{self}}[{{start}}...{{end}}]"
+      split: "{{self}}.split({{separator}})"
+      get: "{{self}}[{{idx}}]"
+      replace: "{{self}}.gsub(/#{Regexp.escape({{from}})}/, {{to}})"
+      substrMatch: "{{self}}[{{offset}}...{{offset}} + {{str}}.length] == {{str}}"
   OneConsole:
     methods:
-      print:
-        template: "puts {{str}}"
+      print: "puts {{str}}"
   OneArray:
     fields:
-      length:
-        template: "{{self}}.length"
+      length: "{{self}}.length"
     methods:
-      add:
-        template: "{{self}} << {{genWithParen(item)}}"
-      get:
-        template: "{{self}}[{{index}}]"
-      set:
-        template: "{{self}}[{{index}}] = {{value}}"
+      add: "{{self}} << {{genWithParen(item)}}"
+      get: "{{self}}[{{index}}]"
+      set: "{{self}}[{{index}}] = {{value}}"
   OneMap:
     methods:
-      keys:
-        template: "{{self}}.keys"
-      values:
-        template: "{{self}}.values"
-      remove:
-        template: "{{self}}.delete({{key}})"
-      hasKey:
-        template: "{{self}}.has_key?({{key}})"
-      get:
-        template: "{{self}}[{{key}}]"
-      set:
-        template: "{{self}}[{{key}}] = {{value}}"
+      keys: "{{self}}.keys"
+      values: "{{self}}.values"
+      remove: "{{self}}.delete({{key}})"
+      hasKey: "{{self}}.has_key?({{key}})"
+      get: "{{self}}[{{key}}]"
+      set: "{{self}}[{{key}}] = {{value}}"
   OneFile:
     methods:
-      readText:
-        template: "IO.read({{fn}})"
+      readText: "IO.read({{fn}})"
   OneError:
     methods:
-      raise:
-        template: raise {{message}}
+      raise: raise {{message}}
   OneRegex:
     includes: ["one"]
     template: "One::Regex"
@@ -68,8 +49,7 @@ classes:
     template: "One::Reflect"
   OneBigInteger:
     methods:
-      fromInt:
-        template: "{{value}}"
+      fromInt: "{{value}}"
   OneJson:
     methods:
       parse:
@@ -100,10 +80,8 @@ classes:
     methods:
       langName: '"Ruby"'
 operators:
-  OneString + OneNumber:
-    template: "{{gen(left)}} + {{genWithParen(right)}}.to_s"
-  OneString + OneBoolean:
-    template: "{{gen(left)}} + {{genWithParen(right)}}.to_s"
+  OneString + OneNumber: "{{gen(left)}} + {{genWithParen(right)}}.to_s"
+  OneString + OneBoolean: "{{gen(left)}} + {{genWithParen(right)}}.to_s"
 templates:
   testGenerator: |-
     begin

@@ -19,38 +19,29 @@ classes:
       length:
         template: "{{self}}.length()"
     methods:
-      substring:
-        template: "{{self}}.substring({{start}}, {{end}})"
+      substring: "{{self}}.substring({{start}}, {{end}})"
       split:
         includes: [java.util.Arrays]
         template: "Arrays.asList({{self}}.split({{separator}}))"
-      get:
-        template: "{{self}}.charAt({{idx}})"
-      replace:
-        template: "{{self}}.replace({{from}}, {{to}})"
-      substrMatch:
-        template: "{{self}}.startsWith({{str}}, {{offset}})"
+      get: "{{self}}.charAt({{idx}})"
+      replace: "{{self}}.replace({{from}}, {{to}})"
+      substrMatch: "{{self}}.startsWith({{str}}, {{offset}})"
   OneNumber:
     type: Integer
   OneBoolean:
     type: boolean
   OneConsole:
     methods:
-      print:
-        template: "System.out.println({{str}})"
+      print: "System.out.println({{str}})"
   OneArray:
     includes: [java.util.List, java.util.Arrays, java.util.ArrayList] # TODO: java.util.Arrays only if array literal used
     type: "List<{{typeArgs[0]}}>"
     fields:
-      length:
-        template: "{{self}}.size()"
+      length: "{{self}}.size()"
     methods:
-      add:
-        template: "{{self}}.add({{item}})"
-      get:
-        template: "{{self}}.get({{index}})"
-      set:
-        template: "{{self}}.set({{index}}], {{value}})"
+      add: "{{self}}.add({{item}})"
+      get: "{{self}}.get({{index}})"
+      set: "{{self}}.set({{index}}], {{value}})"
   OneMap:
     includes: [java.util.HashMap]
     type: "HashMap<{{typeArgs[0]}}, {{typeArgs[1]}}>"
@@ -61,14 +52,10 @@ classes:
       values:
         includes: [java.util.ArrayList]
         template: "new ArrayList({{self}}.values())"
-      remove:
-        template: "{{self}}.remove({{key}})"
-      hasKey:
-        template: "{{self}}.containsKey({{key}})"
-      get:
-        template: "{{self}}.get({{key}})"
-      set:
-        template: "{{self}}.put({{key}}, {{value}})"
+      remove: "{{self}}.remove({{key}})"
+      hasKey: "{{self}}.containsKey({{key}})"
+      get: "{{self}}.get({{key}})"
+      set: "{{self}}.put({{key}}, {{value}})"
   OneFile:
     methods:
       readText:
@@ -77,14 +64,12 @@ classes:
         template: "new String(Files.readAllBytes(Paths.get({{fn}})));"
   OneError:
     methods:
-      raise:
-        template: throw new Exception({{message}})
+      raise: throw new Exception({{message}})
   OneBigInteger:
     type: "BigInteger"
     includes: [java.math.BigInteger]
     methods:
-      fromInt:
-        template: "BigInteger.valueOf({{value}})"
+      fromInt: "BigInteger.valueOf({{value}})"
   OneJson:
     methods:
       parse:
