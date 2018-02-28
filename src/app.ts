@@ -23,23 +23,24 @@ const overlayCode = readFile(`langs/NativeResolvers/typescript.ts`);
 const stdlibCode = readFile(`langs/StdLibs/stdlib.d.ts`);
 const genericTransforms = readFile(`langs/NativeResolvers/GenericTransforms.yaml`);
 
+const compiler = new OneCompiler();
+compiler.setup(overlayCode, stdlibCode, genericTransforms);
+
 const langConfigVals = Object.values(langConfigs);
 for (const langConfig of langConfigVals) {
     const langYaml = readFile(`langs/${langConfig.name}.yaml`);
-    const stdlib = TypeScriptParser2.parseFile(stdlibCode);
-    langConfig.schema = OneCompiler.parseLangSchema(langYaml, stdlib);
+    langConfig.schema = OneCompiler.parseLangSchema(langYaml, compiler.stdlibCtx.schema);
 }
 
 for (const prgName of prgNames) {
     console.log(`converting program '${prgName}'...`);
-    const compiler = new OneCompiler();
     compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, data: string) => {
         writeFile(`generated/${schemaType === "program" ? prgName : schemaType}/schemaStates/${name}.${type === "overviewText" ? "txt" : "json"}`, data); 
     };
-    
+
     const programCode = readFile(`input/${prgName}.ts`).replace(/\r\n/g, '\n');
     let t0 = timeNow();
-    compiler.parse("typescript", programCode, overlayCode, stdlibCode, genericTransforms);
+    compiler.parse("typescript", programCode);
     const parseTime = timeNow() - t0;
     
     const compileTimes = [];

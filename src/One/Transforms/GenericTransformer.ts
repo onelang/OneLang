@@ -75,9 +75,8 @@ class ValueSetter {
 
 class GenericTransform {
     input: TransformObjectInfo;
-    output: any;
 
-    constructor(input: any, output: any) {
+    constructor(input: any, public output: any, public langs?: string[]) {
         this.input = new TransformObjectInfo(input);
         this.output = output;
     }
@@ -110,16 +109,15 @@ class GenericTransform {
 
 export class GenericTransformer extends AstVisitor<void> {
     transforms: GenericTransform[];
+    langTransforms: GenericTransform[];
 
-    constructor(file: GenericTransformerFile, lang?: string) {
+    constructor(file: GenericTransformerFile) {
         super();
-        this.transforms = file.transforms
-            .filter(x => !lang || !x.langs || x.langs.includes(lang))
-            .map(x => new GenericTransform(x.input, x.output));
+        this.transforms = file.transforms.map(x => new GenericTransform(x.input, x.output, x.langs));
     }
 
     protected visitStatement(statement: one.Statement) {
-        for (const transform of this.transforms)
+        for (const transform of this.langTransforms)
             if (transform.execute(statement))
                 break;
 
@@ -127,7 +125,7 @@ export class GenericTransformer extends AstVisitor<void> {
     }
 
     protected visitExpression(expression: one.Expression) {
-        for (const transform of this.transforms)
+        for (const transform of this.langTransforms)
             if (transform.execute(expression))
                 break;
 
@@ -135,6 +133,7 @@ export class GenericTransformer extends AstVisitor<void> {
     }
 
     process(schema: one.Schema) {
+        this.langTransforms = this.transforms.filter(x => !x.langs || x.langs.includes(schema.langData.langId));
         this.visitSchema(schema, null);
     }
 }

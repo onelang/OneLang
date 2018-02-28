@@ -52,53 +52,13 @@ export class OneCompiler {
 
     saveSchemaStateCallback: (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, data: string) => void;
 
-    /**
-     * Schema types:
-     *  - program: the input program to be compiled into another language
-     *  - overlay: helper classes which map the input language's built-in methods / properties to OneLang methods (eg. Object.keys(map) -> map.keys())
-     *  - stdlib: declaration (not implementation!) of OneLang methods (eg. map.keys) which are implemented in every language separately
-     */
-    parse(langName: string, programCode: string, overlayCode: string, stdlibCode: string, genericTransformerYaml: string) {
-        this.langName = langName;
-        let arrayName: string;
-        if (langName === "typescript") {
-            overlayCode = overlayCode.replace(/^[^\n]*<reference.*stdlib.d.ts[^\n]*\n/, "");
-            this.parser = new TypeScriptParser2(programCode);
-        } else if (langName === "csharp") {
-            this.parser = new CSharpParser(programCode);
-        } else if (langName === "ruby") {
-            this.parser = new RubyParser(programCode);
-        } else if (langName === "php") {
-            this.parser = new PhpParser(programCode);
-        } else {
-            throw new Error(`[OneCompiler] Unsupported language: ${langName}`);
-        }
+    setup(overlayCode: string, stdlibCode: string, genericTransformerYaml: string) {
+        overlayCode = overlayCode.replace(/^[^\n]*<reference.*stdlib.d.ts[^\n]*\n/, "");
 
-        const schema = this.parser.parse();
         const overlaySchema = TypeScriptParser2.parseFile(overlayCode);
         const stdlibSchema = TypeScriptParser2.parseFile(stdlibCode);
-        this.genericTransformer = new GenericTransformer(<GenericTransformerFile> YAML.parse(genericTransformerYaml), schema.langData.langId);
+        this.genericTransformer = new GenericTransformer(<GenericTransformerFile> YAML.parse(genericTransformerYaml));
 
-        // TODO: hack
-        overlaySchema.classes[this.parser.langData.literalClassNames.array].meta = { iterable: true };
-        stdlibSchema.classes["OneArray"].meta = { iterable: true };
-        stdlibSchema.classes["OneError"].methods["raise"].throws = true;
-        
-        this.prepareSchemas(schema, overlaySchema, stdlibSchema);
-    }
-
-    protected saveSchemaState(schemaCtx: SchemaContext, name: string) {
-        if (!this.saveSchemaStateCallback) return;
-
-        const schemaOverview = new OverviewGenerator().generate(schemaCtx);
-        this.saveSchemaStateCallback("overviewText", schemaCtx.schema.sourceType, name, schemaOverview);
-
-        const schemaJson = AstHelper.toJson(schemaCtx.schema);
-        this.saveSchemaStateCallback("schemaJson", schemaCtx.schema.sourceType, name, schemaJson);
-    }
-
-    protected prepareSchemas(schema: one.Schema, overlaySchema: one.Schema, stdlibSchema: one.Schema) {
-        schema.sourceType = "program";
         overlaySchema.sourceType = "overlay";
         stdlibSchema.sourceType = "stdlib";
 
@@ -121,7 +81,38 @@ export class OneCompiler {
         new InferTypesTransform(this.overlayCtx).transform();
         this.overlayCtx.ensureTransforms("convertInlineThisRef");
         this.saveSchemaState(this.overlayCtx, "1_Converted");
+    }
+
+    /**
+     * Schema types:
+     *  - program: the input program to be compiled into another language
+     *  - overlay: helper classes which map the input language's built-in methods / properties to OneLang methods (eg. Object.keys(map) -> map.keys())
+     *  - stdlib: declaration (not implementation!) of OneLang methods (eg. map.keys) which are implemented in every language separately
+     */
+    parse(langName: string, programCode: string) {
+        this.langName = langName;
+        let arrayName: string;
+        if (langName === "typescript") {
+            this.parser = new TypeScriptParser2(programCode);
+        } else if (langName === "csharp") {
+            this.parser = new CSharpParser(programCode);
+        } else if (langName === "ruby") {
+            this.parser = new RubyParser(programCode);
+        } else if (langName === "php") {
+            this.parser = new PhpParser(programCode);
+        } else {
+            throw new Error(`[OneCompiler] Unsupported language: ${langName}`);
+        }
+
+        const schema = this.parser.parse();
+
+        // TODO: hack
+        this.overlayCtx.schema.classes[this.parser.langData.literalClassNames.array].meta = { iterable: true };
+        this.stdlibCtx.schema.classes["OneArray"].meta = { iterable: true };
+        this.stdlibCtx.schema.classes["OneError"].methods["raise"].throws = true;
         
+        schema.sourceType = "program";
+
         this.schemaCtx = new SchemaContext(schema, "program");
         // TODO: move to somewhere else...
         this.schemaCtx.arrayType = this.parser.langData.literalClassNames.array;
@@ -165,6 +156,16 @@ export class OneCompiler {
         new ProcessTypeHints().transform(this.schemaCtx);
 
         this.saveSchemaState(this.schemaCtx, `6_PostProcess`);
+    }
+
+    protected saveSchemaState(schemaCtx: SchemaContext, name: string) {
+        if (!this.saveSchemaStateCallback) return;
+
+        const schemaOverview = new OverviewGenerator().generate(schemaCtx);
+        this.saveSchemaStateCallback("overviewText", schemaCtx.schema.sourceType, name, schemaOverview);
+
+        const schemaJson = AstHelper.toJson(schemaCtx.schema);
+        this.saveSchemaStateCallback("schemaJson", schemaCtx.schema.sourceType, name, schemaJson);
     }
 
     static parseLangSchema(langYaml: string, stdlib: one.Schema) {

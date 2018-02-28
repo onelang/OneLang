@@ -51,6 +51,7 @@ for (const langName of langsToTest) {
             if (schemaType !== "program") return;
             writeFile(`generated/${prgName}/regen/schemaStates_${langName}/${name}.${type === "overviewText" ? "txt" : "json"}`, data);
         };
-        compiler.parse(langName, content, overlayCode, stdlibCode, genericTransforms);
+        compiler.setup(overlayCode, stdlibCode, genericTransforms);
+        compiler.parse(langName, content);
     }
 }

@@ -111,7 +111,8 @@ class CompileHelper {
         const oneStdLibContent = layout.oneStdLibHandler.getContent();
         const genericTransforms = layout.genericTransformsHandler.getContent();
         
-        this.compiler.parse(langName, programCode, overlayContent, oneStdLibContent, genericTransforms);
+        this.compiler.setup(overlayContent, oneStdLibContent, genericTransforms);
+        this.compiler.parse(langName, programCode);
         this.astOverview = new OverviewGenerator().generate(this.compiler.schemaCtx);
         this.astJsonOverview = AstHelper.toJson(this.compiler.schemaCtx.schema);
     }

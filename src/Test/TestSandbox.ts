@@ -34,6 +34,7 @@ const phpYaml = readFile(`langs/php.yaml`);
 const csharpYaml = readFile(`langs/csharp.yaml`);
 const rubyYaml = readFile(`langs/ruby.yaml`);
 
-compiler.parse("php", programCode, overlayCode, stdlibCode, genericTransforms);
+compiler.setup(overlayCode, stdlibCode, genericTransforms);
+compiler.parse("php", programCode);
 const result = compiler.compile(rubyYaml, true);
 console.log(result);
