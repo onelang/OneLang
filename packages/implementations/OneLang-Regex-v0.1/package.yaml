@@ -1,0 +1,16 @@
+file-version: 1
+vendor: OneLang
+name: Regex
+version: 0.1
+includes:
+  - langs/cpp.yaml
+  - langs/csharp.yaml
+  - langs/go.yaml
+  - langs/java.yaml
+  - langs/javascript.yaml
+  - langs/perl.yaml
+  - langs/php.yaml
+  - langs/python.yaml
+  - langs/ruby.yaml
+  - langs/swift.yaml
+  - langs/typescript.yaml

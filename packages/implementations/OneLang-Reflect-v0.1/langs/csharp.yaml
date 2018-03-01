@@ -1,0 +1,18 @@
+implements:
+  - interface: { name: One.Reflect, minver: 0.1, maxver: 0.1 }
+    language: csharp
+    implementation:
+      classes:
+        OneMethod:
+          methods:
+            call: "{{self}}.Call({{obj}}, ({{args}}).ToArray())"
+      templates:
+        beforeFields:
+          args: [class]
+          template: |-
+            {{if class.attributes["reflect"]}}
+              static {{class.name}}()
+              {
+                  OneReflect.Publish(typeof({{class.name}}));
+              }
+            {{/if}}

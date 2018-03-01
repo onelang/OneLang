@@ -11,56 +11,6 @@ casing:
 primitiveTypes:
   void: void
   any: any
-classes:
-  OneString:
-    type: string
-    fields:
-      length: "{{self}}.size()"
-    methods:
-      substring: "{{self}}.substr({{start}}, {{end}} - {{start}})"
-      split: "OneStringHelper::split({{self}}, {{separator}})"
-      get: "{{self}}[{{idx}}]"
-      replace: "OneStringHelper::replace({{self}}, {{from}}, {{to}})"
-      substrMatch: "{{self}}.compare({{offset}}, {{str}}.size(), {{str}}) == 0"
-  OneNumber:
-    type: int
-  OneBoolean:
-    type: bool
-  OneArray:
-    includes: [vector]
-    type: "vec<{{typeArgs[0]}}>"
-    fields:
-      length:  "{{self}}->size()"
-    methods:
-      add:  "{{self}}->push_back({{item}})"
-      get:  "{{self}}->at({{index}})"
-      set:  "(*{{self}})[{{index}}] = {{value}}"
-  OneMap:
-    includes: [map]
-    methods:
-      keys:  "OneMapHelper::keys({{self}})"
-      values:  "OneMapHelper::values({{self}})"
-      remove:  "{{self}}->erase({{key}})"
-      hasKey:  "{{self}}->find({{key}}) != {{self}}.end()"
-      get:  "{{self}}->operator[]({{key}})"
-      set:  "{{self}}->operator[]({{key}}) = {{value}}"
-  OneConsole:
-    includes: [iostream]
-    methods:
-      print: "cout << {{genWithParen(str)}} << endl"
-  OneError:
-    includes: [stdexcept]
-    methods:
-      raise: throw std::runtime_error({{message}})
-  One:
-    methods:
-      langName: '"C++"'
-operators:
-  OneString + OneNumber:
-    includes: [string]
-    template: "{{gen(left)}} + to_string({{gen(right)}})"
-  OneString + OneBoolean:
-    template: '{{gen(left)}} + ({{gen(right)}} ? "true" : "false")'
 templates:
   testGenerator: |-
     int main()
@@ -127,47 +77,7 @@ templates:
         {{/if}}
       {{/for}}
       
-      {{if class.attributes["reflect"]}}
-        static struct Reflection{{class.name}}
-        {
-          Reflection{{class.name}}() {
-            OneReflect::addClass("{{class.name}}", typeid({{class.name}}))
-              {{for field in class.fields}}
-                {{if field.static}}
-                  .addField(make_shared<OneField>("{{field.name}}", /*isStatic*/ true, "{{field.type}}", 
-                      [](sp<ReflectedClass> obj){ return (any){{class.name}}::{{field.name}}; },
-                      [](sp<ReflectedClass> obj, any value){ {{class.name}}::{{field.name}} = any_cast<{{field.type}}>(value); }))
-                {{else}}
-                  .addField(make_shared<OneField>("{{field.name}}", /*isStatic*/ false, "{{field.type}}", 
-                      [](sp<ReflectedClass> obj){ return (any)static_pointer_cast<{{class.name}}>(obj)->{{field.name}}; },
-                      [](sp<ReflectedClass> obj, any value){ static_pointer_cast<{{class.name}}>(obj)->{{field.name}} = any_cast<{{field.type}}>(value); }))
-                {{/if}}
-              {{/for}}
-              {{for method in class.methods}}
-                .addMethod(make_shared<OneMethod>("{{method.name}}", /*isStatic*/ {{if method.static}}true{{else}}false{{/if}}, "{{method.returnType}}", vector<OneMethodArgument> {
-                    {{for param in method.parameters}}
-                      OneMethodArgument("{{param.name}}", "{{param.type}}"),
-                    {{/for}}
-                  }, 
-                  [](sp<ReflectedClass> obj, vec<any> args){ 
-                    {{if !method.returnTypeInfo.isVoid}}return (any){{/if}}
-                    {{if method.static|inline}}
-                      {{class.name}}::{{method.name}}
-                    {{else|inline}}
-                      static_pointer_cast<{{class.name}}>(obj)->{{method.name}}
-                    {{/if}}
-                    (
-                      {{for param in method.parameters|inline sep=,}}
-                        any_cast<{{param.type}}>(args->at({{param_idx}}))
-                      {{/for}}
-                    ); 
-                    {{if method.returnTypeInfo.isVoid|inline}}return (any)nullptr; {{/if}}
-                  }))
-              {{/for}}
-              ;
-          }
-        } _reflection{{class.name}};
-      {{/if}}
+      {{afterClass(class)}}
     {{/for}}
 
     {{if mainBlock.statements.length > 0}}
@@ -268,7 +178,8 @@ templates:
         ({{gen(expr)}})
       {{else}}
         {{gen(expr)}}
-      {{/if}}      
+      {{/if}}
+  afterClass: { args: [class], template: "" }
 expressions:
   call: |-
     {{gen(expr.method)}}(
@@ -303,13 +214,6 @@ expressions:
   classReference: "{{expr.classRef.outName}}"
   enumReference: "{{expr.enumRef.outName}}"
   enumMemberReference: "{{expr.enumRef.outName}}::{{expr.enumMemberRef.outName}}"
-  arrayLiteral: "make_shared<vector<{{getType(expr.valueType.typeArguments[0])}}>>(initializer_list<{{getType(expr.valueType.typeArguments[0])}}>{ {{genParams(expr.items)}} })"
-  mapLiteral: |- 
-    make_shared_map<{{getType(expr.valueType.typeArguments[0])}}, {{getType(expr.valueType.typeArguments[1])}}>({
-      {{for prop in expr.properties|sep=",\n"}}
-        { "{{prop.name}}", {{gen(prop.initializer)}} }
-      {{/for}}
-    })
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}->{{expr.methodRef.outName}}"
   staticMethod: "{{expr.methodRef.classRef.outName}}::{{expr.methodRef.outName}}"

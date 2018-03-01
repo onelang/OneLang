@@ -1,0 +1,8 @@
+file-version: 1
+vendor: One
+name: File
+version: 0.1
+definition-file: One.File.d.ts
+dependencies:
+  - name: One.Core
+    minver: 0.1

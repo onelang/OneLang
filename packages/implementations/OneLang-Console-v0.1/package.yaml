@@ -1,0 +1,97 @@
+file-version: 1
+vendor: OneLang
+name: Console
+version: 0.1
+implements:
+  - interface: { name: One.Console, minver: 0.1, maxver: 0.1 }
+    language: cpp
+    implementation:
+      classes:
+        OneConsole:
+          includes: [iostream]
+          methods:
+            print: "cout << {{genWithParen(str)}} << endl"
+  
+  - interface: { name: One.Console, minver: 0.1, maxver: 0.1 }
+    language: csharp
+    implementation:
+      classes:
+        OneConsole:
+          methods:
+            print:
+              includes: [System]
+              template: "Console.WriteLine({{str}})"
+
+  - interface: { name: One.Console, minver: 0.1, maxver: 0.1 }
+    language: go
+    implementation:
+      classes:
+        OneConsole:
+          methods:
+            print:
+              #includes: [fmt]
+              template: "fmt.Println({{str}})"
+
+  - interface: { name: One.Console, minver: 0.1, maxver: 0.1 }
+    language: java
+    implementation:
+      classes:
+        OneConsole:
+          methods:
+            print: "System.out.println({{str}})"
+
+  - interface: { name: One.Console, minver: 0.1, maxver: 0.1 }
+    language: javascript
+    implementation:
+      classes:
+        OneConsole:
+          methods:
+            print: "console.log({{str}})"
+
+  - interface: { name: One.Console, minver: 0.1, maxver: 0.1 }
+    language: perl
+    implementation:
+      classes:
+        OneConsole:
+          methods:
+            print: 'print(({{str}}) . "\n")'
+
+  - interface: { name: One.Console, minver: 0.1, maxver: 0.1 }
+    language: php
+    implementation:
+      classes:
+        OneConsole:
+          methods:
+            print: 'print({{str}} . "\n")'
+
+  - interface: { name: One.Console, minver: 0.1, maxver: 0.1 }
+    language: python
+    implementation:
+      classes:
+        OneConsole:
+          methods:
+            print: "print {{str}}"
+
+  - interface: { name: One.Console, minver: 0.1, maxver: 0.1 }
+    language: ruby
+    implementation:
+      classes:
+        OneConsole:
+          methods:
+            print: "puts {{str}}"
+
+  - interface: { name: One.Console, minver: 0.1, maxver: 0.1 }
+    language: swift
+    implementation:
+      classes:
+        OneConsole:
+          methods:
+            print: "print({{str}})"
+
+  - interface: { name: One.Console, minver: 0.1, maxver: 0.1 }
+    language: typescript
+    implementation:
+      classes:
+        OneConsole:
+          methods:
+            print: "console.log({{str}})"

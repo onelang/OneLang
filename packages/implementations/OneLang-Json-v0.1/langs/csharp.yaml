@@ -1,0 +1,32 @@
+implements:
+  - interface: { name: One.Json, minver: 0.1, maxver: 0.1 }
+    language: csharp
+    implementation:
+      classes:
+        OneJson:
+          includes: [Newtonsoft.Json.Linq]
+          methods:
+            parse: "JToken.Parse({{str}})"
+        OneJValue:
+          methods:
+            isObject: "({{self}}.Type == JTokenType.Object)"
+            isArray: "({{self}}.Type == JTokenType.Array)"
+            isString: "({{self}}.Type == JTokenType.String)"
+            isNumber: "({{self}}.Type == JTokenType.Integer)"
+            isBool: "({{self}}.Type == JTokenType.Boolean)"
+            isNull: "({{self}}.Type == JTokenType.Null)"
+            asString: "(string)((JValue){{self}}).Value"
+            asNumber: "(long)((JValue){{self}}).Value"
+            asBool: "(bool)((JValue){{self}}).Value"
+            asObject: "{{self}}"
+            getArrayItems: "{{self}}"
+        OneJObject:
+          methods:
+            getProperties:
+              includes: [System.Linq]
+              template: "{{self}}.Cast<JProperty>().ToList()"
+            get: "{{self}}[{{name}}]"
+        OneJProperty:
+          methods:
+            getName: "{{self}}.Name"
+            getValue: "{{self}}.Value"

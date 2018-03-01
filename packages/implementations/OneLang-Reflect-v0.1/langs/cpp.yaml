@@ -1,0 +1,49 @@
+implements:
+  - interface: { name: One.Reflect, minver: 0.1, maxver: 0.1 }
+    language: cpp
+    implementation:
+      templates:
+        afterClass:
+          args: [class]
+          template: |-
+            {{if class.attributes["reflect"]}}
+              static struct Reflection{{class.name}}
+              {
+                Reflection{{class.name}}() {
+                  OneReflect::addClass("{{class.name}}", typeid({{class.name}}))
+                    {{for field in class.fields}}
+                      {{if field.static}}
+                        .addField(make_shared<OneField>("{{field.name}}", /*isStatic*/ true, "{{field.type}}", 
+                            [](sp<ReflectedClass> obj){ return (any){{class.name}}::{{field.name}}; },
+                            [](sp<ReflectedClass> obj, any value){ {{class.name}}::{{field.name}} = any_cast<{{field.type}}>(value); }))
+                      {{else}}
+                        .addField(make_shared<OneField>("{{field.name}}", /*isStatic*/ false, "{{field.type}}", 
+                            [](sp<ReflectedClass> obj){ return (any)static_pointer_cast<{{class.name}}>(obj)->{{field.name}}; },
+                            [](sp<ReflectedClass> obj, any value){ static_pointer_cast<{{class.name}}>(obj)->{{field.name}} = any_cast<{{field.type}}>(value); }))
+                      {{/if}}
+                    {{/for}}
+                    {{for method in class.methods}}
+                      .addMethod(make_shared<OneMethod>("{{method.name}}", /*isStatic*/ {{if method.static}}true{{else}}false{{/if}}, "{{method.returnType}}", vector<OneMethodArgument> {
+                          {{for param in method.parameters}}
+                            OneMethodArgument("{{param.name}}", "{{param.type}}"),
+                          {{/for}}
+                        }, 
+                        [](sp<ReflectedClass> obj, vec<any> args){ 
+                          {{if !method.returnTypeInfo.isVoid}}return (any){{/if}}
+                          {{if method.static|inline}}
+                            {{class.name}}::{{method.name}}
+                          {{else|inline}}
+                            static_pointer_cast<{{class.name}}>(obj)->{{method.name}}
+                          {{/if}}
+                          (
+                            {{for param in method.parameters|inline sep=,}}
+                              any_cast<{{param.type}}>(args->at({{param_idx}}))
+                            {{/for}}
+                          ); 
+                          {{if method.returnTypeInfo.isVoid|inline}}return (any)nullptr; {{/if}}
+                        }))
+                    {{/for}}
+                    ;
+                }
+              } _reflection{{class.name}};
+            {{/if}}

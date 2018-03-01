@@ -1,0 +1,36 @@
+implements:
+  - interface: { name: One.Reflect, minver: 0.1, maxver: 0.1 }
+    language: swift
+    implementation:
+      template:
+        endClass:
+          args: [class]
+          template: |-
+            {{if class.attributes["reflect"]}}
+              let _ = OneReflect.addClass(OneClass(name: "{{class.name}}"))
+                {{for field in class.fields}}
+                  {{if field.static}}
+                    .addField(OneField("{{field.name}}", true, "{{field.type}}", { _ in {{class.name}}.{{field.name}} }, { {{class.name}}.{{field.name}} = $1 as! {{field.type}} }))
+                  {{else}}
+                    .addField(OneField("{{field.name}}", false, "{{field.type}}", { ($0 as! {{class.name}}).{{field.name}} }, { ($0 as! {{class.name}}).{{field.name}} = $1 as! {{field.type}} }))
+                  {{/if}}
+                {{/for}}
+                {{for method in class.methods}}
+                  .addMethod(OneMethod("{{method.name}}", {{if method.static}}true{{else}}false{{/if}}, "{{method.returnType}}", [
+                      {{for param in method.parameters}}
+                        OneMethodArgument("{{param.name}}", "{{param.type}}"),
+                      {{/for}}
+                    ],
+                    { obj, args in 
+                      {{if method.static|inline}}
+                        {{class.name}}
+                      {{else|inline}}
+                        (obj as! {{class.name}})
+                      {{/if}}
+                    .{{method.name}}(
+                      {{for param in method.parameters|inline sep=,}}
+                        {{param.name}}: args[{{param_idx}}] as! {{param.type}}
+                      {{/for}}
+                    ) }))
+                {{/for}}
+            {{/if}}

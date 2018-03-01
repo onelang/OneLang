@@ -8,78 +8,6 @@ casing: # based on https://swift.org/documentation/api-design-guidelines/
   variable: snake_case
   enum: pascal_case
   enumMember: upper_case
-classes:
-  OneString:
-    fields:
-      length: "length({{self}})"
-    methods:
-      substring: "(substr {{self}}, {{start}}, ({{end}} - {{start}}))"
-      split: "split({{separator}}, {{self}})"
-      get: "(substr {{self}}, {{idx}}, 1)"
-      replace:
-        includes: ["one"]
-        template: "One::str_replace({{self}}, {{from}}, {{to}})"
-      substrMatch: "(substr {{self}}, {{offset}}, length({{str}})) eq ({{str}})"
-  OneConsole:
-    methods:
-      print: 'print(({{str}}) . "\n")'
-  OneArray:
-    fields:
-      length: "scalar(@{{{self}}})"
-    methods:
-      add: "push @{{{self}}}, {{item}}"
-      get: "${{{self}}}[{{index}}]"
-      set: "${{{self}}}[{{index}}] = {{value}}"
-  OneMap:
-    methods:
-      keys: "keys %{{{self}}}"
-      values: "values %{{{self}}}"
-      remove: "delete ${{{self}}}{{{key}}}"
-      hasKey: "exists ${{{self}}}{{{key}}}"
-      get: "${{{self}}}{{{key}}}"
-      set: "${{{self}}}{{{key}}} = {{value}}"
-  OneFile:
-    methods:
-      readText:
-        extraArgs: [result]
-        template: |-
-          open my $fh, '<', {{fn}} or die "Can't open file $!";
-          read $fh, my ${{result}}, -s $fh;
-          close($fh);
-  OneError:
-    methods:
-      raise: die {{message}}."\n"
-  OneReflect:
-    includes: [one]
-    template: "OneReflect"
-  OneBigInteger:
-    includes: [bigint]
-    methods:
-      fromInt:
-        template: "{{value}}"
-  One:
-    methods:
-      langName: '"Perl"'
-operators:
-  OneString + OneString: "{{gen(left)}} . {{gen(right)}}"
-  OneString <= OneCharacter: "{{gen(left)}} le {{gen(right)}}"
-  OneCharacter <= OneString: "{{gen(left)}} le {{gen(right)}}"
-  OneCharacter <= OneCharacter: "{{gen(left)}} le {{gen(right)}}"
-  OneString >= OneCharacter: "{{gen(left)}} gt {{gen(right)}}"
-  OneCharacter >= OneString: "{{gen(left)}} gt {{gen(right)}}"
-  OneCharacter >= OneCharacter: "{{gen(left)}} gt {{gen(right)}}"
-  OneString == OneString: "{{gen(left)}} eq {{gen(right)}}"
-  OneString == OneCharacter: "{{gen(left)}} eq {{gen(right)}}"
-  OneCharacter == OneString: "{{gen(left)}} eq {{gen(right)}}"
-  OneCharacter == OneCharacter: "{{gen(left)}} eq {{gen(right)}}"
-  OneString != OneString: "{{gen(left)}} ne {{gen(right)}}"
-  any == null: "!defined {{gen(left)}}"
-  any != null: "defined {{gen(left)}}"
-  OneString + OneNumber: "{{gen(left)}} . {{gen(right)}}"
-  OneString + OneBoolean: '{{gen(left)}} . (({{gen(right)}}) ? "true" : "false")'
-  OneString + OneCharacter: "{{gen(left)}} . {{gen(right)}}"
-  OneString += OneString: "{{gen(left)}} .= {{gen(right)}}"
-  OneString += OneCharacter: "{{gen(left)}} .= {{gen(right)}}"
 templates:
   testGenerator: |-
     package Program;
@@ -165,21 +93,7 @@ templates:
         }
       {{/for}}
 
-      {{if class.attributes["reflect"]}}
-        OneReflect::setup_class(new OneClass("{{class.name}}", [
-            {{for field in class.fields|sep=\n}}
-              new OneField("{{field.name}}", {{if field.static}}1{{else}}0{{/if}}, "{{field.type}}"),
-            {{/for}}
-          ], [
-            {{for method in class.methods|sep=\n}}
-              new OneMethod("{{method.name}}", {{if method.static}}1{{else}}0{{/if}}, "{{method.returnType}}", [
-                {{for param in method.parameters|sep=\n}}
-                  new OneMethodArgument("{{param.name}}", "{{param.type}}"),
-                {{/for}}
-              ]),
-            {{/for}}
-          ]));
-      {{/if}}
+      {{endClass(class)}}
     {{/for}}
 
     {{genBody(mainBlock)}}
@@ -248,13 +162,6 @@ expressions:
   classReference: "{{expr.classRef.outName}}"
   enumReference: "{{expr.enumRef.outName}}"
   enumMemberReference: "{{expr.enumRef.outName}}->{{expr.enumMemberRef.outName}}"
-  arrayLiteral: "[{{genParams(expr.items)}}]"
-  mapLiteral: |- 
-    {
-      {{for prop in expr.properties|sep="\n"}}
-        {{prop.name}} => {{gen(prop.initializer)}},
-      {{/for}}
-    }
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}->{{expr.methodRef.outName}}"
   staticMethod: "{{expr.methodRef.classRef.outName}}::{{expr.methodRef.outName}}"

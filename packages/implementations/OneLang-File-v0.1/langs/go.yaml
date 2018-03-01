@@ -1,0 +1,13 @@
+implements:
+  - interface: { name: One.File, minver: 0.1, maxver: 0.1 }
+    language: go
+    implementation:
+      classes:
+        OneFile:
+          includes: [io/ioutil]
+          methods:
+            readText:
+              extraArgs: [result]
+              template: |-
+                {{result}}Bytes, _ := ioutil.ReadFile({{fn}})
+                {{result}} := string({{result}}Bytes)

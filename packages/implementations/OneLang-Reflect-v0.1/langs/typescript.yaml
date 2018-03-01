@@ -1,0 +1,27 @@
+implements:
+  - interface: { name: One.Reflect, minver: 0.1, maxver: 0.1 }
+    language: typescript
+    implementation:
+      classes:
+        OneReflect:
+          includes: ["one"]
+          template: "one.Reflect"
+      templates:
+        endClass:
+          args: [class]
+          template: |-
+            {{if class.attributes["reflect"]}}
+              one.Reflect.setupClass(new one.Class({{class.name}}, [
+                  {{for field in class.fields|sep=\n}}
+                    new one.Field("{{field.name}}", {{field.static}}, "{{field.type}}"),
+                  {{/for}}
+                ], [
+                  {{for method in class.methods|sep=\n}}
+                    new one.Method("{{method.name}}", {{method.static}}, "{{method.returnType}}", [
+                      {{for param in method.parameters|sep=\n}}
+                        new one.MethodArgument("{{param.name}}", "{{param.type}}"),
+                      {{/for}}
+                    ]),
+                  {{/for}}
+                ]));
+            {{/if}}

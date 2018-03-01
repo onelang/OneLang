@@ -11,90 +11,6 @@ casing:
 primitiveTypes:
   void: Void
   any: Any
-classes:
-  OneString:
-    type: String
-    fields:
-      length: "{{self}}.count"
-    methods:
-      substring: "String({{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{start}}) ..< {{self}}.index({{self}}.startIndex, offsetBy: {{end}})])"
-      split: "{{self}}.split(separator: {{separator}}, omittingEmptySubsequences: false)"
-      get: "String({{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{idx}})])"
-      replace:
-        includes: ["Foundation"]
-        template: "{{self}}.replacingOccurrences(of: {{from}}, with: {{to}})"
-      substrMatch: "String({{self}}[{{self}}.index({{self}}.startIndex, offsetBy: {{offset}}) ..< {{self}}.endIndex]).hasPrefix({{str}})"
-  OneNumber:
-    type: Int
-  OneBoolean:
-    type: Bool
-  OneConsole:
-    methods:
-      print: "print({{str}})"
-  OneArray:
-    type: "[{{genType(typeArguments[0])}}]"
-    fields:
-      length: "{{self}}!.count"
-    methods:
-      add:
-        mutates: true
-        template: "{{self}}!.append({{item}})"
-      get: "{{self}}![{{index}}]"
-      set: "{{self}}![{{index}}] = {{value}}"
-  OneMap:
-    type: "[{{genType(typeArguments[0])}}: {{genType(typeArguments[1])}}]"
-    methods:
-      keys: "Array({{self}}!.keys)"
-      values: "Array({{self}}!.values)"
-      remove:
-        mutates: true
-        template: "{{self}}![{{key}}] = nil"
-      hasKey: "{{self}}![{{key}}] != nil"
-      get: "{{self}}![{{key}}]!"
-      set:
-        mutates: true
-        template: "{{self}}![{{key}}] = {{value}}"
-  OneFile:
-    methods:
-      readText:
-        includes: [Foundation]
-        template: "try! String(contentsOfFile: {{fn}}, encoding: String.Encoding.utf8)"
-  OneError:
-    methods:
-      raise:
-        throws: true
-        template: throw OneError.RuntimeError({{message}})
-  OneJson:
-    includes: [Foundation]
-    methods:
-      parse: "try? JSONSerialization.jsonObject(with: {{str}}.data(using: .utf8)!)"
-  OneJValue:
-    type: Any
-    methods:
-      isObject: "({{self}} is [String: Any?])"
-      isArray: "({{self}} is [Any])"
-      isString: "({{self}} is String)"
-      isNumber: "({{self}} is Int)"
-      isBool: "({{self}} is Bool)"
-      isNull: "({{self}} == nil)"
-      asString: "({{self}} as! String)"
-      asNumber: "({{self}} as! Int)"
-      asBool: "({{self}} as! Bool)"
-      asObject: "({{self}} as? [String: Any?])"
-      getArrayItems: "{{self}}"
-  OneJObject:
-    type: Any
-    methods:
-      getProperties: "Array({{self}}!.keys)"
-      get: "{{self}}![{{name}}]"
-  OneJProperty:
-    type: String
-    methods:
-      getName: "{{self}}"
-      getValue: "({{obj}} as! [String: Any?])[{{self}}!]!"
-  One:
-    methods:
-      langName: '"Swift"'
 templates:
   testGenerator: |-
     {{if methodInfo.throws}}
@@ -147,34 +63,7 @@ templates:
         {{/for}}
       }
 
-      {{if class.attributes["reflect"]}}
-        let _ = OneReflect.addClass(OneClass(name: "{{class.name}}"))
-          {{for field in class.fields}}
-            {{if field.static}}
-              .addField(OneField("{{field.name}}", true, "{{field.type}}", { _ in {{class.name}}.{{field.name}} }, { {{class.name}}.{{field.name}} = $1 as! {{field.type}} }))
-            {{else}}
-              .addField(OneField("{{field.name}}", false, "{{field.type}}", { ($0 as! {{class.name}}).{{field.name}} }, { ($0 as! {{class.name}}).{{field.name}} = $1 as! {{field.type}} }))
-            {{/if}}
-          {{/for}}
-          {{for method in class.methods}}
-            .addMethod(OneMethod("{{method.name}}", {{if method.static}}true{{else}}false{{/if}}, "{{method.returnType}}", [
-                {{for param in method.parameters}}
-                  OneMethodArgument("{{param.name}}", "{{param.type}}"),
-                {{/for}}
-              ],
-              { obj, args in 
-                {{if method.static|inline}}
-                  {{class.name}}
-                {{else|inline}}
-                  (obj as! {{class.name}})
-                {{/if}}
-              .{{method.name}}(
-                {{for param in method.parameters|inline sep=,}}
-                  {{param.name}}: args[{{param_idx}}] as! {{param.type}}
-                {{/for}}
-              ) }))
-          {{/for}}
-      {{/if}}
+      {{endClass(class)}}
     {{/for}}
 
     {{genBody(mainBlock)}}
@@ -259,18 +148,6 @@ expressions:
   classReference: "{{expr.classRef.outName}}"
   enumReference: "{{expr.enumRef.outName}}"
   enumMemberReference: "{{expr.enumRef.outName}}.{{expr.enumMemberRef.outName}}"
-  arrayLiteral: |-
-    {{if expr.items.length > 0}}
-      [{{genParams(expr.items)}}]
-    {{else}}
-      [{{expr.typeArgs[0]}}]()
-    {{/if}}
-  mapLiteral: |- 
-    [
-      {{for prop in expr.properties|sep=",\n"}}
-        "{{prop.name}}": {{gen(prop.initializer)}}
-      {{/for}}
-    ]
   expressionStatement: "{{if !expr.expression.valueType.isVoid and expr.expression.exprKind == 'Call'}}_ = {{/if}}{{gen(expr.expression)}}"
   instanceMethod: |-
     {{unwrap(expr.thisExpr)}}.{{expr.methodRef.outName}}

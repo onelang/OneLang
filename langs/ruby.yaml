@@ -8,81 +8,6 @@ casing: # based on https://github.com/bbatsov/ruby-style-guide
   variable: snake_case
   enum: pascal_case
   enumMember: upper_case
-classes:
-  OneString:
-    fields:
-      length: "{{self}}.length"
-    methods:
-      substring: "{{self}}[{{start}}...{{end}}]"
-      split: "{{self}}.split({{separator}})"
-      get: "{{self}}[{{idx}}]"
-      replace: "{{self}}.gsub(/#{Regexp.escape({{from}})}/, {{to}})"
-      substrMatch: "{{self}}[{{offset}}...{{offset}} + {{str}}.length] == {{str}}"
-  OneConsole:
-    methods:
-      print: "puts {{str}}"
-  OneArray:
-    fields:
-      length: "{{self}}.length"
-    methods:
-      add: "{{self}} << {{genWithParen(item)}}"
-      get: "{{self}}[{{index}}]"
-      set: "{{self}}[{{index}}] = {{value}}"
-  OneMap:
-    methods:
-      keys: "{{self}}.keys"
-      values: "{{self}}.values"
-      remove: "{{self}}.delete({{key}})"
-      hasKey: "{{self}}.has_key?({{key}})"
-      get: "{{self}}[{{key}}]"
-      set: "{{self}}[{{key}}] = {{value}}"
-  OneFile:
-    methods:
-      readText: "IO.read({{fn}})"
-  OneError:
-    methods:
-      raise: raise {{message}}
-  OneRegex:
-    includes: ["one"]
-    template: "One::Regex"
-  OneReflect:
-    includes: ["one"]
-    template: "One::Reflect"
-  OneBigInteger:
-    methods:
-      fromInt: "{{value}}"
-  OneJson:
-    methods:
-      parse:
-        includes: [json]
-        template: "JSON.parse({{str}})"
-  OneJValue:
-    methods:
-      isObject: "{{self}}.is_a?(Hash)"
-      isArray: "{{self}}.is_a?(Array)"
-      isString: "{{self}}.is_a?(String)"
-      isNumber: "{{self}}.is_a?(Numeric)"
-      isBool: "({{self}} == true or {{self}} == false)"
-      isNull: "({{self}} == nil)"
-      asString: "{{self}}"
-      asNumber: "{{self}}"
-      asBool: "{{self}}"
-      asObject: "{{self}}"
-      getArrayItems: "{{self}}"
-  OneJObject:
-    methods:
-      getProperties: "{{self}}.keys"
-      get: "{{self}}[{{name}}]"
-  OneJProperty:
-    methods:
-      getName: "{{self}}"
-      getValue: "{{obj}}[{{self}}]"        
-  One:
-    methods:
-      langName: '"Ruby"'
-operators:
-  OneString + OneNumber: "{{gen(left)}} + {{genWithParen(right)}}.to_s"
-  OneString + OneBoolean: "{{gen(left)}} + {{genWithParen(right)}}.to_s"
 templates:
   testGenerator: |-
     begin
@@ -151,21 +76,7 @@ templates:
         {{/for}}
       end
 
-      {{if class.attributes["reflect"]}}
-        One::Reflect::setup_class(One::Class.new({{class.name}}, [
-            {{for field in class.fields|sep=\n}}
-              One::Field.new("{{field.name}}", {{field.static}}, "{{field.type}}"),
-            {{/for}}
-          ], [
-            {{for method in class.methods|sep=\n}}
-              One::Method.new("{{method.name}}", {{method.static}}, "{{method.returnType}}", [
-                {{for param in method.parameters|sep=\n}}
-                  One::MethodArgument.new("{{param.name}}", "{{param.type}}"),
-                {{/for}}
-              ]),
-            {{/for}}
-          ]));
-      {{/if}}
+      {{endClass(class)}}
     {{/for}}
 
     {{genBody(mainBlock)}}
@@ -230,13 +141,6 @@ expressions:
   classReference: "{{clsName(expr.classRef)}}"
   enumReference: "{{expr.enumRef.outName}}"
   enumMemberReference: "{{expr.enumRef.outName}}::{{expr.enumMemberRef.outName}}"
-  arrayLiteral: "[{{genParams(expr.items)}}]"
-  mapLiteral: |- 
-    {
-      {{for prop in expr.properties|sep="\n"}}
-        "{{prop.name}}" => {{gen(prop.initializer)}},
-      {{/for}}
-    }
   expressionStatement: "{{gen(expr.expression)}}"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
   staticMethod: "{{clsName(expr.methodRef.classRef)}}.{{expr.methodRef.outName}}"

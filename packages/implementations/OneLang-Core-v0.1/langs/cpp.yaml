@@ -1,0 +1,58 @@
+implements:
+  - interface: { name: One.Core, minver: 0.1, maxver: 0.1 }
+    language: cpp
+    implementation:
+      classes:
+        OneString:
+          type: string
+          fields:
+            length: "{{self}}.size()"
+          methods:
+            substring: "{{self}}.substr({{start}}, {{end}} - {{start}})"
+            split: "OneStringHelper::split({{self}}, {{separator}})"
+            get: "{{self}}[{{idx}}]"
+            replace: "OneStringHelper::replace({{self}}, {{from}}, {{to}})"
+            substrMatch: "{{self}}.compare({{offset}}, {{str}}.size(), {{str}}) == 0"
+        OneNumber:
+          type: int
+        OneBoolean:
+          type: bool
+        OneArray:
+          includes: [vector]
+          type: "vec<{{typeArgs[0]}}>"
+          fields:
+            length:  "{{self}}->size()"
+          methods:
+            add:  "{{self}}->push_back({{item}})"
+            get:  "{{self}}->at({{index}})"
+            set:  "(*{{self}})[{{index}}] = {{value}}"
+        OneMap:
+          includes: [map]
+          methods:
+            keys:  "OneMapHelper::keys({{self}})"
+            values:  "OneMapHelper::values({{self}})"
+            remove:  "{{self}}->erase({{key}})"
+            hasKey:  "{{self}}->find({{key}}) != {{self}}.end()"
+            get:  "{{self}}->operator[]({{key}})"
+            set:  "{{self}}->operator[]({{key}}) = {{value}}"
+        OneError:
+          includes: [stdexcept]
+          methods:
+            raise: throw std::runtime_error({{message}})
+        One:
+          methods:
+            langName: '"C++"'
+      operators:
+        OneString + OneNumber:
+          includes: [string]
+          template: "{{left}} + to_string({{right}})"
+        OneString + OneBoolean:
+          template: '{{left}} + ({{right}} ? "true" : "false")'
+      expressions:
+        arrayLiteral: "make_shared<vector<{{getType(expr.valueType.typeArguments[0])}}>>(initializer_list<{{getType(expr.valueType.typeArguments[0])}}>{ {{genParams(expr.items)}} })"
+        mapLiteral: |- 
+          make_shared_map<{{getType(expr.valueType.typeArguments[0])}}, {{getType(expr.valueType.typeArguments[1])}}>({
+            {{for prop in expr.properties|sep=",\n"}}
+              { "{{prop.name}}", {{gen(prop.initializer)}} }
+            {{/for}}
+          })

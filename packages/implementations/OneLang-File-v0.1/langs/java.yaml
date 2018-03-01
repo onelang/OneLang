@@ -1,0 +1,11 @@
+implements:
+  - interface: { name: One.File, minver: 0.1, maxver: 0.1 }
+    language: java
+    implementation:
+      classes:
+        OneFile:
+          methods:
+            readText:
+              includes: [java.nio.file.Paths, java.nio.file.Files] # java.io.IOException
+              exceptions: [IOException]
+              template: "new String(Files.readAllBytes(Paths.get({{fn}})));"

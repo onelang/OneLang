@@ -11,120 +11,6 @@ casing:
 primitiveTypes:
   void: void
   any: object
-classes:
-  OneString:
-    type: string
-    fields:
-      length: "{{self}}.length"
-    methods:
-      substring: "{{self}}.substring({{start}}, {{end}})"
-      split: "{{self}}.split({{separator}})"
-      get: "{{self}}[{{idx}}]"
-      replace: "{{self}}.split({{from}}).join({{to}})"
-      substrMatch: "{{self}}.startsWith({{str}}, {{offset}})"
-  OneNumber:
-    type: number
-  OneBoolean:
-    type: bool
-  OneConsole:
-    methods:
-      print: "console.log({{str}})"
-  OneArray:
-    fields:
-      length: "{{self}}.length"
-    methods:
-      add: "{{self}}.push({{item}})"
-      get: "{{self}}[{{index}}]"
-      set: "{{self}}[{{index}}] = {{value}}"
-  OneMap:
-    methods:
-      keys: "Object.keys({{self}})"
-      values: "Object.values({{self}})"
-      remove: "delete {{self}}[{{key}}]"
-      hasKey: "{{key}} in {{self}}"
-      get: "{{self}}[{{key}}]"
-      set: "{{self}}[{{key}}] = {{value}}"
-  OneFile:
-    includes: [fs]
-    methods:
-      readText: "fs.readFileSync({{fn}}, 'utf-8')"
-  OneError:
-    methods:
-      raise: throw new Error({{message}})
-  OneRegex:
-    includes: ["one"]
-    template: "one.Regex"
-  OneReflect:
-    includes: ["one"]
-    template: "one.Reflect"
-  OneBigInteger:
-    type: "BigInteger"
-    includes: [BigInteger]
-    methods:
-      fromInt: "new BigInteger({{value}})"
-  OneJson:
-    methods:
-      parse: "JSON.parse({{str}})"
-  OneJValue:
-    methods:
-      isObject: "(typeof ({{self}}) === 'object' && !Array.isArray({{self}}))"
-      isArray: "Array.isArray({{self}})"
-      isString: "(typeof ({{self}}) === 'string')"
-      isNumber: "(typeof ({{self}}) === 'number')"
-      isBool: "(typeof ({{self}}) === 'boolean')"
-      isNull: "({{self}} === null)"
-      asString: "{{self}}"
-      asNumber: "{{self}}"
-      asBool: "{{self}}"
-      asObject: "{{self}}"
-      getArrayItems: "{{self}}"
-  OneJObject:
-    methods:
-      getProperties: "Object.keys({{self}})"
-      get: "{{self}}[{{name}}]"
-  OneJProperty:
-    methods:
-      getName: "{{self}}"
-      getValue: "{{obj}}[{{self}}]"
-  One:
-    methods:
-      langName: '"TypeScript"'
-operators:
-  OneBigInteger + OneBigInteger:  "{{gen(left)}}.add({{gen(right)}})"
-  OneBigInteger - OneBigInteger:  "{{gen(left)}}.subtract({{gen(right)}})"
-  OneBigInteger * OneBigInteger:  "{{gen(left)}}.multiply({{gen(right)}})"
-  OneBigInteger / OneBigInteger:  "{{gen(left)}}.divide({{gen(right)}})"
-  OneBigInteger % OneBigInteger:  "{{gen(left)}}.mod({{gen(right)}})"
-  OneBigInteger << OneBigInteger: "{{gen(left)}}.shiftLeft({{gen(right)}})"
-  OneBigInteger >> OneBigInteger: "{{gen(left)}}.shiftRight({{gen(right)}})"
-  OneBigInteger > OneBigInteger:  "{{gen(left)}}.greater({{gen(right)}})"
-  OneBigInteger < OneBigInteger:  "{{gen(left)}}.lesser({{gen(right)}})"
-  OneBigInteger >= OneBigInteger: "{{gen(left)}}.greaterOrEquals({{gen(right)}})"
-  OneBigInteger <= OneBigInteger: "{{gen(left)}}.lesserOrEquals({{gen(right)}})"
-  OneBigInteger == OneBigInteger: "{{gen(left)}}.equals({{gen(right)}})"
-  OneBigInteger != OneBigInteger: "{{gen(left)}}.notEquals({{gen(right)}})"
-  OneBigInteger & OneBigInteger:  "{{gen(left)}}.and({{gen(right)}})"
-  OneBigInteger | OneBigInteger:  "{{gen(left)}}.or({{gen(right)}})"
-  OneBigInteger ^ OneBigInteger:  "{{gen(left)}}.xor({{gen(right)}})"
-
-  OneBigInteger + OneNumber:  "{{gen(left)}}.add({{gen(right)}})"
-  OneBigInteger - OneNumber:  "{{gen(left)}}.subtract({{gen(right)}})"
-  OneBigInteger * OneNumber:  "{{gen(left)}}.multiply({{gen(right)}})"
-  OneBigInteger / OneNumber:  "{{gen(left)}}.divide({{gen(right)}})"
-  OneBigInteger % OneNumber:  "{{gen(left)}}.mod({{gen(right)}})"
-  OneBigInteger << OneNumber: "{{gen(left)}}.shiftLeft({{gen(right)}})"
-  OneBigInteger >> OneNumber: "{{gen(left)}}.shiftRight({{gen(right)}})"
-  OneBigInteger > OneNumber:  "{{gen(left)}}.greater({{gen(right)}})"
-  OneBigInteger < OneNumber:  "{{gen(left)}}.lesser({{gen(right)}})"
-  OneBigInteger >= OneNumber: "{{gen(left)}}.greaterOrEquals({{gen(right)}})"
-  OneBigInteger <= OneNumber: "{{gen(left)}}.lesserOrEquals({{gen(right)}})"
-  OneBigInteger == OneNumber: "{{gen(left)}}.equals({{gen(right)}})"
-  OneBigInteger != OneNumber: "{{gen(left)}}.notEquals({{gen(right)}})"
-  OneBigInteger & OneNumber:  "{{gen(left)}}.and({{gen(right)}})"
-  OneBigInteger | OneNumber:  "{{gen(left)}}.or({{gen(right)}})"
-  OneBigInteger ^ OneNumber:  "{{gen(left)}}.xor({{gen(right)}})"
-includeSources:
-  BigInteger: big-integer
 templates:
   testGenerator: |-
     try {
@@ -175,21 +61,7 @@ templates:
           {{/for}}
       }
 
-      {{if class.attributes["reflect"]}}
-        one.Reflect.setupClass(new one.Class({{class.name}}, [
-            {{for field in class.fields|sep=\n}}
-              new one.Field("{{field.name}}", {{field.static}}, "{{field.type}}"),
-            {{/for}}
-          ], [
-            {{for method in class.methods|sep=\n}}
-              new one.Method("{{method.name}}", {{method.static}}, "{{method.returnType}}", [
-                {{for param in method.parameters|sep=\n}}
-                  new one.MethodArgument("{{param.name}}", "{{param.type}}"),
-                {{/for}}
-              ]),
-            {{/for}}
-          ]));
-      {{/if}}
+      {{endClass(class)}}
     {{/for}}
 
     {{genBody(mainBlock)}}
@@ -262,13 +134,6 @@ expressions:
   classReference: "{{clsName(expr.classRef)}}"
   enumReference: "{{expr.enumRef.outName}}"
   enumMemberReference: "{{expr.enumRef.outName}}.{{expr.enumMemberRef.outName}}"
-  arrayLiteral: "[{{genParams(expr.items)}}]"
-  mapLiteral: |-
-    {
-        {{for prop in expr.properties|sep=",\n"}}
-          {{prop.name}}: {{gen(prop.initializer)}}
-        {{/for}}
-    }
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
   staticMethod: "{{clsName(expr.methodRef.classRef)}}.{{expr.methodRef.outName}}"

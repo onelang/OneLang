@@ -1,0 +1,10 @@
+implements:
+  - interface: { name: One.File, minver: 0.1, maxver: 0.1 }
+    language: swift
+    implementation:
+      classes:
+        OneFile:
+          methods:
+            readText:
+              includes: [Foundation]
+              template: "try! String(contentsOfFile: {{fn}}, encoding: String.Encoding.utf8)"

@@ -1,0 +1,65 @@
+implements:
+  - interface: { name: One.Core, minver: 0.1, maxver: 0.1 }
+    language: java
+    implementation:
+      classes:
+        OneCharacter:
+          type: char
+        OneString:
+          type: String
+          fields:
+            length:
+              template: "{{self}}.length()"
+          methods:
+            substring: "{{self}}.substring({{start}}, {{end}})"
+            split:
+              includes: [java.util.Arrays]
+              template: "Arrays.asList({{self}}.split({{separator}}))"
+            get: "{{self}}.charAt({{idx}})"
+            replace: "{{self}}.replace({{from}}, {{to}})"
+            substrMatch: "{{self}}.startsWith({{str}}, {{offset}})"
+        OneNumber:
+          type: Integer
+        OneBoolean:
+          type: boolean
+        OneArray:
+          includes: [java.util.List, java.util.Arrays, java.util.ArrayList] # TODO: java.util.Arrays only if array literal used
+          type: "List<{{typeArgs[0]}}>"
+          fields:
+            length: "{{self}}.size()"
+          methods:
+            add: "{{self}}.add({{item}})"
+            get: "{{self}}.get({{index}})"
+            set: "{{self}}.set({{index}}], {{value}})"
+        OneMap:
+          includes: [java.util.HashMap]
+          type: "HashMap<{{typeArgs[0]}}, {{typeArgs[1]}}>"
+          methods:
+            keys:
+              includes: [java.util.ArrayList]
+              template: "new ArrayList({{self}}.keySet())"
+            values:
+              includes: [java.util.ArrayList]
+              template: "new ArrayList({{self}}.values())"
+            remove: "{{self}}.remove({{key}})"
+            hasKey: "{{self}}.containsKey({{key}})"
+            get: "{{self}}.get({{key}})"
+            set: "{{self}}.put({{key}}, {{value}})"
+        OneError:
+          methods:
+            raise: throw new Exception({{message}})
+        One:
+          methods:
+            langName: '"Java"'
+      operators:
+        OneString == OneString: "{{left}}.equals({{right}})"
+        OneString != OneString: "!{{left}}.equals({{right}})"
+      expressions:
+        arrayLiteral:
+          includes: [java.util.ArrayList, java.util.Arrays]
+          template: "new ArrayList<{{expr.typeArgs[0]}}>(Arrays.asList({{genParams(expr.items)}}))"
+        mapLiteralDeclaration: |- 
+          HashMap<{{typeName(expr.initializer.valueType.typeArguments[0])}}, {{typeName(expr.initializer.valueType.typeArguments[1])}}> {{expr.name}} = new HashMap<{{typeName(expr.initializer.valueType.typeArguments[0])}}, {{typeName(expr.initializer.valueType.typeArguments[1])}}>();
+          {{for prop in expr.initializer.properties|sep="\n"}}
+            {{expr.name}}.put("{{prop.name}}", {{gen(prop.initializer)}});
+          {{/for}}

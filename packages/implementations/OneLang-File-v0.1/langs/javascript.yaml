@@ -1,0 +1,9 @@
+implements:
+  - interface: { name: One.File, minver: 0.1, maxver: 0.1 }
+    language: javascript
+    implementation:
+      classes:
+        OneFile:
+          includes: [fs]
+          methods:
+            readText: "fs.readFileSync({{fn}}, 'utf-8')"

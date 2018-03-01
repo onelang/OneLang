@@ -11,93 +11,6 @@ casing: # based on https://msdn.microsoft.com/en-us/library/x2dbyw72(v=vs.71).as
 primitiveTypes:
   void: void
   any: object
-classes:
-  OneString:
-    type: string
-    fields:
-      length: "{{self}}.Length"
-    methods:
-      substring: "{{self}}.Substring({{start}}, {{end}} - {{start}})"
-      split: "{{self}}.Split(new[]{ {{separator}} }, StringSplitOptions.None)"
-      get: "{{self}}[{{idx}}]"
-      replace: "{{self}}.Replace({{from}}, {{to}})"
-      substrMatch: "String.Compare({{self}}, {{offset}}, {{str}}, 0, ({{str}}).Length) == 0"
-  OneNumber:
-    type: int
-  OneBoolean:
-    type: bool
-  OneConsole:
-    methods:
-      print:
-        includes: [System]
-        template: "Console.WriteLine({{str}})"
-  OneArray:
-    type: "List<{{typeArgs[0]}}>"
-    includes: [System.Collections.Generic]
-    fields:
-      length: "{{self}}.Count"
-    methods:
-      add:  "{{self}}.Add({{item}})"
-      get:  "{{self}}[{{index}}]"
-      set:  "{{self}}[{{index}}] = {{value}}"
-  OneMap:
-    includes: [System.Linq]
-    methods:
-      keys:  "{{self}}.Keys.ToArray()"
-      values:  "{{self}}.Values.ToArray()"
-      remove:  "{{self}}.Remove({{key}})"
-      hasKey:  "{{self}}.ContainsKey({{key}})"
-      get:  "{{self}}[{{key}}]"
-      set:  "{{self}}[{{key}}] = {{value}}"
-  OneFile:
-    includes: [System.IO]
-    methods:
-      readText: "File.ReadAllText({{fn}})"
-  OneError:
-    includes: [System]
-    methods:
-      raise: throw new Exception({{message}})
-  OneMethod:
-    methods:
-      call: "{{self}}.Call({{obj}}, ({{args}}).ToArray())"
-  OneBigInteger:
-    type: "BigInteger"
-    includes: [System.Numerics]
-    methods:
-      fromInt: "new BigInteger({{value}})"
-  OneJson:
-    includes: [Newtonsoft.Json.Linq]
-    methods:
-      parse: "JToken.Parse({{str}})"
-  OneJValue:
-    methods:
-      isObject: "({{self}}.Type == JTokenType.Object)"
-      isArray: "({{self}}.Type == JTokenType.Array)"
-      isString: "({{self}}.Type == JTokenType.String)"
-      isNumber: "({{self}}.Type == JTokenType.Integer)"
-      isBool: "({{self}}.Type == JTokenType.Boolean)"
-      isNull: "({{self}}.Type == JTokenType.Null)"
-      asString: "(string)((JValue){{self}}).Value"
-      asNumber: "(long)((JValue){{self}}).Value"
-      asBool: "(bool)((JValue){{self}}).Value"
-      asObject: "{{self}}"
-      getArrayItems: "{{self}}"
-  OneJObject:
-    methods:
-      getProperties:
-        includes: [System.Linq]
-        template: "{{self}}.Cast<JProperty>().ToList()"
-      get: "{{self}}[{{name}}]"
-  OneJProperty:
-    methods:
-      getName: "{{self}}.Name"
-      getValue: "{{self}}.Value"
-  One:
-    methods:
-      langName: '"C#"'
-operators:
-  OneString + OneBoolean:
-    template: '{{gen(left)}} + ({{gen(right)}} ? "true" : "false")'
 templates:
   testGenerator: |-
     public class Program
@@ -140,12 +53,7 @@ templates:
     {{for class in classes|sep=\n\n}}
       public class {{genTypeArgs(class)}}
       {
-          {{if class.attributes["reflect"]}}
-            static {{class.name}}()
-            {
-                OneReflect.Publish(typeof({{class.name}}));
-            }
-          {{/if}}
+          {{beforeFields(class)}}
 
           {{for field in class.fields|sep=\n}}
             {{field.visibility}} {{if field.static}}static {{/if}}{{field.type}} {{field.name}}{{if field.initializer}} = {{gen(field.initializer)}}{{/if}};
@@ -227,6 +135,7 @@ templates:
       {{else}}
         {{gen(expr)}}
       {{/if}}
+  beforeFields: { args: [class], template: "" }
 expressions:
   call: "{{gen(expr.method)}}({{genParams(expr.arguments)}})"
   propertyAccess: "{{gen(expr.object)}}.{{gen(expr.propertyName)}}"
@@ -255,18 +164,6 @@ expressions:
   classReference: "{{expr.classRef.outName}}"
   enumReference: "{{expr.enumRef.outName}}"
   enumMemberReference: "{{expr.enumRef.outName}}.{{expr.enumMemberRef.outName}}"
-  arrayLiteral:
-    includes: [System.Collections.Generic]
-    template: "new List<{{expr.typeArgs[0]}}> { {{genParams(expr.items)}} }"
-  mapLiteral:
-    includes: [System.Collections.Generic]
-    template: |- 
-      new Dictionary<{{expr.typeArgs[0]}}, {{expr.typeArgs[1]}}>
-      {
-          {{for prop in expr.properties|sep=",\n"}}
-            { "{{prop.name}}", {{gen(prop.initializer)}} }
-          {{/for}}
-      }
   expressionStatement: "{{gen(expr.expression)}};"
   instanceMethod: "{{gen(expr.thisExpr)}}.{{expr.methodRef.outName}}"
   staticMethod: "{{expr.methodRef.classRef.outName}}.{{expr.methodRef.outName}}"

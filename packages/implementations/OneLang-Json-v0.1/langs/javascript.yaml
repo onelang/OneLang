@@ -1,0 +1,29 @@
+implements:
+  - interface: { name: One.Json, minver: 0.1, maxver: 0.1 }
+    language: javascript
+    implementation:
+      classes:
+        OneJson:
+          methods:
+            parse: "JSON.parse({{str}})"
+        OneJValue:
+          methods:
+            isObject: "(typeof ({{self}}) === 'object' && !Array.isArray({{self}}))"
+            isArray: "Array.isArray({{self}})"
+            isString: "(typeof ({{self}}) === 'string')"
+            isNumber: "(typeof ({{self}}) === 'number')"
+            isBool: "(typeof ({{self}}) === 'boolean')"
+            isNull: "({{self}} === null)"
+            asString: "{{self}}"
+            asNumber: "{{self}}"
+            asBool: "{{self}}"
+            asObject: "{{self}}"
+            getArrayItems: "{{self}}"
+        OneJObject:
+          methods:
+            getProperties: "Object.keys({{self}})"
+            get: "{{self}}[{{name}}]"
+        OneJProperty:
+          methods:
+            getName: "{{self}}"
+            getValue: "{{obj}}[{{self}}]"

@@ -1,0 +1,14 @@
+file-version: 1
+vendor: OneLang
+name: Json
+version: 0.1
+includes:
+  - langs/csharp.yaml
+  - langs/go.yaml
+  - langs/java.yaml
+  - langs/javascript.yaml
+  - langs/php.yaml
+  - langs/python.yaml
+  - langs/ruby.yaml
+  - langs/swift.yaml
+  - langs/typescript.yaml

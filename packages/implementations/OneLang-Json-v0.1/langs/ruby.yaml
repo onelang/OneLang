@@ -1,0 +1,31 @@
+implements:
+  - interface: { name: One.Json, minver: 0.1, maxver: 0.1 }
+    language: ruby
+    implementation:
+      classes:
+        OneJson:
+          methods:
+            parse:
+              includes: [json]
+              template: "JSON.parse({{str}})"
+        OneJValue:
+          methods:
+            isObject: "{{self}}.is_a?(Hash)"
+            isArray: "{{self}}.is_a?(Array)"
+            isString: "{{self}}.is_a?(String)"
+            isNumber: "{{self}}.is_a?(Numeric)"
+            isBool: "({{self}} == true or {{self}} == false)"
+            isNull: "({{self}} == nil)"
+            asString: "{{self}}"
+            asNumber: "{{self}}"
+            asBool: "{{self}}"
+            asObject: "{{self}}"
+            getArrayItems: "{{self}}"
+        OneJObject:
+          methods:
+            getProperties: "{{self}}.keys"
+            get: "{{self}}[{{name}}]"
+        OneJProperty:
+          methods:
+            getName: "{{self}}"
+            getValue: "{{obj}}[{{self}}]"

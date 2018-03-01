@@ -1,0 +1,5 @@
+file-version: 1
+vendor: One
+name: Core
+version: 0.1
+definition-file: One.Core.d.ts

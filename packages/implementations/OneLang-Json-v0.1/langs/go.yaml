@@ -1,0 +1,50 @@
+implements:
+  - interface: { name: One.Json, minver: 0.1, maxver: 0.1 }
+    language: go
+    implementation:
+      classes:
+        OneJson:
+          includes: [encoding/json]
+          methods:
+            parse:
+              extraArgs: [result]
+              template: |-
+                var {{result}} interface{}
+                json.Unmarshal([]byte({{str}}), &{{result}})
+        OneJValue:
+          methods:
+            isObject:
+              includes: [reflect]
+              template: "(reflect.ValueOf({{self}}).Kind() == reflect.Map)"
+            isArray:
+              includes: [reflect]
+              template: "(reflect.ValueOf({{self}}).Kind() == reflect.Array)"
+            isString:
+              includes: [reflect]
+              template: "(reflect.ValueOf({{self}}).Kind() == reflect.String)"
+            isNumber:
+              includes: [reflect]
+              template: "(reflect.ValueOf({{self}}).Kind() == reflect.Float64)"
+            isBool:
+              includes: [reflect]
+              template: "(reflect.ValueOf({{self}}).Kind() == reflect.Boolean)"
+            isNull: "({{self}} == nil)"
+            asString: "{{self}}"
+            asNumber: "int({{self}}.(float64))"
+            asBool: "{{self}}"
+            asObject: "{{self}}.(map[string]interface{})"
+            getArrayItems: "{{self}}"
+        OneJObject:
+          methods:
+            getProperties:
+              extraArgs: [result]
+              template: |-
+                {{result}} := make([]string, 0, len({{self}}))
+                for key, _ := range {{self}} {
+                  {{result}} = append({{result}}, key)
+                }
+            get: "{{self}}[{{name}}]"
+        OneJProperty:
+          methods:
+            getName: "{{self}}"
+            getValue: "{{obj}}.(map[string]interface{})[{{self}}]"

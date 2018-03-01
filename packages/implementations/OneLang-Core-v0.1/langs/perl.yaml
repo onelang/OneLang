@@ -1,0 +1,65 @@
+implements:
+  - interface: { name: One.Core, minver: 0.1, maxver: 0.1 }
+    language: perl
+    implementation:
+      classes:
+        OneString:
+          fields:
+            length: "length({{self}})"
+          methods:
+            substring: "(substr {{self}}, {{start}}, ({{end}} - {{start}}))"
+            split: "split({{separator}}, {{self}})"
+            get: "(substr {{self}}, {{idx}}, 1)"
+            replace:
+              includes: ["one"]
+              template: "One::str_replace({{self}}, {{from}}, {{to}})"
+            substrMatch: "(substr {{self}}, {{offset}}, length({{str}})) eq ({{str}})"
+        OneArray:
+          fields:
+            length: "scalar(@{{{self}}})"
+          methods:
+            add: "push @{{{self}}}, {{item}}"
+            get: "${{{self}}}[{{index}}]"
+            set: "${{{self}}}[{{index}}] = {{value}}"
+        OneMap:
+          methods:
+            keys: "keys %{{{self}}}"
+            values: "values %{{{self}}}"
+            remove: "delete ${{{self}}}{{{key}}}"
+            hasKey: "exists ${{{self}}}{{{key}}}"
+            get: "${{{self}}}{{{key}}}"
+            set: "${{{self}}}{{{key}}} = {{value}}"
+        OneError:
+          methods:
+            raise: die {{message}}."\n"
+        One:
+          methods:
+            langName: '"Perl"'
+      operators:
+        OneString + OneString: "{{left}} . {{right}}"
+        OneString <= OneCharacter: "{{left}} le {{right}}"
+        OneCharacter <= OneString: "{{left}} le {{right}}"
+        OneCharacter <= OneCharacter: "{{left}} le {{right}}"
+        OneString >= OneCharacter: "{{left}} gt {{right}}"
+        OneCharacter >= OneString: "{{left}} gt {{right}}"
+        OneCharacter >= OneCharacter: "{{left}} gt {{right}}"
+        OneString == OneString: "{{left}} eq {{right}}"
+        OneString == OneCharacter: "{{left}} eq {{right}}"
+        OneCharacter == OneString: "{{left}} eq {{right}}"
+        OneCharacter == OneCharacter: "{{left}} eq {{right}}"
+        OneString != OneString: "{{left}} ne {{right}}"
+        any == null: "!defined {{left}}"
+        any != null: "defined {{left}}"
+        OneString + OneNumber: "{{left}} . {{right}}"
+        OneString + OneBoolean: '{{left}} . (({{right}}) ? "true" : "false")'
+        OneString + OneCharacter: "{{left}} . {{right}}"
+        OneString += OneString: "{{left}} .= {{right}}"
+        OneString += OneCharacter: "{{left}} .= {{right}}"
+      expressions:
+        arrayLiteral: "[{{genParams(expr.items)}}]"
+        mapLiteral: |- 
+          {
+            {{for prop in expr.properties|sep="\n"}}
+              {{prop.name}} => {{gen(prop.initializer)}},
+            {{/for}}
+          }

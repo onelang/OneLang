@@ -1,0 +1,105 @@
+file-version: 1
+vendor: OneLang
+name: BigInteger-Native
+description: "Implements One.BigInteger in JS using BigInteger.js (npm: big-integer)"
+version: 0.1
+implements:
+  - interface: { name: One.BigInteger, minver: 0.1, maxver: 0.1 }
+    language: javascript
+    implementation:
+      classes:
+        OneBigInteger:
+          type: "BigInteger"
+          includes: [BigInteger]
+          methods:
+            fromInt: "new BigInteger({{value}})"
+      operators:
+        OneBigInteger + OneBigInteger:  "{{left}}.add({{right}})"
+        OneBigInteger - OneBigInteger:  "{{left}}.subtract({{right}})"
+        OneBigInteger * OneBigInteger:  "{{left}}.multiply({{right}})"
+        OneBigInteger / OneBigInteger:  "{{left}}.divide({{right}})"
+        OneBigInteger % OneBigInteger:  "{{left}}.mod({{right}})"
+        OneBigInteger << OneBigInteger: "{{left}}.shiftLeft({{right}})"
+        OneBigInteger >> OneBigInteger: "{{left}}.shiftRight({{right}})"
+        OneBigInteger > OneBigInteger:  "{{left}}.greater({{right}})"
+        OneBigInteger < OneBigInteger:  "{{left}}.lesser({{right}})"
+        OneBigInteger >= OneBigInteger: "{{left}}.greaterOrEquals({{right}})"
+        OneBigInteger <= OneBigInteger: "{{left}}.lesserOrEquals({{right}})"
+        OneBigInteger == OneBigInteger: "{{left}}.equals({{right}})"
+        OneBigInteger != OneBigInteger: "{{left}}.notEquals({{right}})"
+        OneBigInteger & OneBigInteger:  "{{left}}.and({{right}})"
+        OneBigInteger | OneBigInteger:  "{{left}}.or({{right}})"
+        OneBigInteger ^ OneBigInteger:  "{{left}}.xor({{right}})"
+
+        OneBigInteger + OneNumber:  "{{left}}.add({{right}})"
+        OneBigInteger - OneNumber:  "{{left}}.subtract({{right}})"
+        OneBigInteger * OneNumber:  "{{left}}.multiply({{right}})"
+        OneBigInteger / OneNumber:  "{{left}}.divide({{right}})"
+        OneBigInteger % OneNumber:  "{{left}}.mod({{right}})"
+        OneBigInteger << OneNumber: "{{left}}.shiftLeft({{right}})"
+        OneBigInteger >> OneNumber: "{{left}}.shiftRight({{right}})"
+        OneBigInteger > OneNumber:  "{{left}}.greater({{right}})"
+        OneBigInteger < OneNumber:  "{{left}}.lesser({{right}})"
+        OneBigInteger >= OneNumber: "{{left}}.greaterOrEquals({{right}})"
+        OneBigInteger <= OneNumber: "{{left}}.lesserOrEquals({{right}})"
+        OneBigInteger == OneNumber: "{{left}}.equals({{right}})"
+        OneBigInteger != OneNumber: "{{left}}.notEquals({{right}})"
+        OneBigInteger & OneNumber:  "{{left}}.and({{right}})"
+        OneBigInteger | OneNumber:  "{{left}}.or({{right}})"
+        OneBigInteger ^ OneNumber:  "{{left}}.xor({{right}})"
+      includeSources:
+        BigInteger: big-integer
+      nativeDependencies:
+        - manager: npm
+          package: big-integer
+          version: *
+
+  - interface: { name: One.BigInteger, minver: 0.1, maxver: 0.1 }
+    language: typescript
+    implementation:
+      classes:
+        OneBigInteger:
+          type: "BigInteger"
+          includes: [BigInteger]
+          methods:
+            fromInt: "new BigInteger({{value}})"
+      operators:
+        OneBigInteger + OneBigInteger:  "{{left}}.add({{right}})"
+        OneBigInteger - OneBigInteger:  "{{left}}.subtract({{right}})"
+        OneBigInteger * OneBigInteger:  "{{left}}.multiply({{right}})"
+        OneBigInteger / OneBigInteger:  "{{left}}.divide({{right}})"
+        OneBigInteger % OneBigInteger:  "{{left}}.mod({{right}})"
+        OneBigInteger << OneBigInteger: "{{left}}.shiftLeft({{right}})"
+        OneBigInteger >> OneBigInteger: "{{left}}.shiftRight({{right}})"
+        OneBigInteger > OneBigInteger:  "{{left}}.greater({{right}})"
+        OneBigInteger < OneBigInteger:  "{{left}}.lesser({{right}})"
+        OneBigInteger >= OneBigInteger: "{{left}}.greaterOrEquals({{right}})"
+        OneBigInteger <= OneBigInteger: "{{left}}.lesserOrEquals({{right}})"
+        OneBigInteger == OneBigInteger: "{{left}}.equals({{right}})"
+        OneBigInteger != OneBigInteger: "{{left}}.notEquals({{right}})"
+        OneBigInteger & OneBigInteger:  "{{left}}.and({{right}})"
+        OneBigInteger | OneBigInteger:  "{{left}}.or({{right}})"
+        OneBigInteger ^ OneBigInteger:  "{{left}}.xor({{right}})"
+
+        OneBigInteger + OneNumber:  "{{left}}.add({{right}})"
+        OneBigInteger - OneNumber:  "{{left}}.subtract({{right}})"
+        OneBigInteger * OneNumber:  "{{left}}.multiply({{right}})"
+        OneBigInteger / OneNumber:  "{{left}}.divide({{right}})"
+        OneBigInteger % OneNumber:  "{{left}}.mod({{right}})"
+        OneBigInteger << OneNumber: "{{left}}.shiftLeft({{right}})"
+        OneBigInteger >> OneNumber: "{{left}}.shiftRight({{right}})"
+        OneBigInteger > OneNumber:  "{{left}}.greater({{right}})"
+        OneBigInteger < OneNumber:  "{{left}}.lesser({{right}})"
+        OneBigInteger >= OneNumber: "{{left}}.greaterOrEquals({{right}})"
+        OneBigInteger <= OneNumber: "{{left}}.lesserOrEquals({{right}})"
+        OneBigInteger == OneNumber: "{{left}}.equals({{right}})"
+        OneBigInteger != OneNumber: "{{left}}.notEquals({{right}})"
+        OneBigInteger & OneNumber:  "{{left}}.and({{right}})"
+        OneBigInteger | OneNumber:  "{{left}}.or({{right}})"
+        OneBigInteger ^ OneNumber:  "{{left}}.xor({{right}})"
+      includeSources:
+        BigInteger: big-integer
+      nativeDependencies:
+        - manager: npm
+          package: big-integer
+          version: *

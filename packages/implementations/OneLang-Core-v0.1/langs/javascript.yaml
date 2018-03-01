@@ -1,0 +1,43 @@
+implements:
+  - interface: { name: One.Core, minver: 0.1, maxver: 0.1 }
+    language: javascript
+    implementation:
+      classes:
+        OneString:
+          fields:
+            length: "{{self}}.length"
+          methods:
+            substring: "{{self}}.substring({{start}}, {{end}})"  
+            split: "{{self}}.split({{separator}})"
+            get: "{{self}}[{{idx}}]"
+            replace: "{{self}}.split({{from}}).join({{to}})"
+            substrMatch: "{{self}}.startsWith({{str}}, {{offset}})"
+        OneArray:
+          fields:
+            length: "{{self}}.length"
+          methods:
+            add: "{{self}}.push({{item}})"
+            get: "{{self}}[{{index}}]"
+            set: "{{self}}[{{index}}] = {{value}}"
+        OneMap:
+          methods:
+            keys: "Object.keys({{self}})"
+            values: "Object.values({{self}})"
+            remove: "delete {{self}}[{{key}}]"
+            hasKey: "{{key}} in {{self}}"
+            get: "{{self}}[{{key}}]"
+            set: "{{self}}[{{key}}] = {{value}}"
+        OneError:
+          methods:
+            raise: throw new Error({{message}})
+        One:
+          methods:
+            langName: '"JavaScript"'
+      expressions:
+        arrayLiteral: "[{{genParams(expr.items)}}]"
+        mapLiteral: |- 
+          {
+            {{for prop in expr.properties|sep=",\n"}}
+              {{prop.name}}: {{gen(prop.initializer)}}
+            {{/for}}
+          }
