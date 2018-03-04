@@ -7,3 +7,14 @@ export function arrayEq(a, b) {
 
     return true;
 }
+
+export function extend(dest, src) {
+    for (const key of Object.keys(src)) {
+        if (Array.isArray(dest[key]))
+            dest[key].push(...src[key]);
+        else if (typeof dest[key] === "object")
+            extend(dest[key], src[key]);
+        else
+            dest[key] = src[key];
+    }
+}

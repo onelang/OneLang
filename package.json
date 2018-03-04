@@ -5,6 +5,7 @@
   "main": "js/app.js",
   "dependencies": {
     "ace-builds": "^1.2.9",
+    "glob": "^7.1.2",
     "golden-layout": "^1.5.9",
     "jquery": "^3.2.1",
     "mkdirp": "^0.5.1",
@@ -23,9 +24,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": {
-    "name" : "Koczka Tamás",
-    "email" : "koczkatamas@gmail.com",
-    "url" : "https://kt.gy/"
+    "name": "Koczka Tamás",
+    "email": "koczkatamas@gmail.com",
+    "url": "https://kt.gy/"
   },
   "license": "MIT"
 }

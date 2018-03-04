@@ -31,6 +31,7 @@ import { ForceTemplateStrings } from "./One/Transforms/ForceTemplateStrings";
 import { WhileToForTransform } from "./One/Transforms/WhileToFor";
 import { ProcessTypeHints } from "./One/Transforms/ProcessTypeHints";
 import { LangFilePreprocessor } from "./Generator/LangFilePreprocessor";
+import { PackageManager } from "./StdLib/PackageManager";
 
 declare var YAML: any;
 
@@ -168,8 +169,9 @@ export class OneCompiler {
         this.saveSchemaStateCallback("schemaJson", schemaCtx.schema.sourceType, name, schemaJson);
     }
 
-    static parseLangSchema(langYaml: string, stdlib: one.Schema) {
+    static parseLangSchema(langYaml: string, pacMan: PackageManager, stdlib: one.Schema) {
         const schema = <LangFileSchema.LangFile> YAML.parse(langYaml);
+        pacMan.loadImplsIntoLangFile(schema);
         LangFilePreprocessor.preprocess(schema, stdlib);
         return schema;
     }

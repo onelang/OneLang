@@ -52,7 +52,7 @@ implements:
       nativeDependencies:
         - manager: npm
           package: big-integer
-          version: *
+          version: "*"
 
   - interface: { name: One.BigInteger, minver: 0.1, maxver: 0.1 }
     language: typescript
@@ -102,4 +102,4 @@ implements:
       nativeDependencies:
         - manager: npm
           package: big-integer
-          version: *
+          version: "*"

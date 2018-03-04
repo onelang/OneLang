@@ -1,6 +1,7 @@
 implements:
   - interface: { name: One.Core, minver: 0.1, maxver: 0.1 }
     language: go
+    native-includes: [one.go]
     implementation:
       classes:
         OneString:
