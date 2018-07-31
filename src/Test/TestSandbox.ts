@@ -36,5 +36,6 @@ const rubyYaml = readFile(`langs/ruby.yaml`);
 
 compiler.setup(overlayCode, stdlibCode, genericTransforms);
 compiler.parse("php", programCode);
-const result = compiler.compile(rubyYaml, true);
+// TODO: pacMan is null
+const result = compiler.compile(rubyYaml, null, true);
 console.log(result);

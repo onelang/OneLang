@@ -19,7 +19,7 @@ templates:
             {{class}} c;
             c.{{method}}();
         } catch(std::exception& err) {
-            cout << "Exception: " << err.what() << '\n';
+            std::cout << "Exception: " << err.what() << '\n';
         }
         return 0;
     }
@@ -189,7 +189,7 @@ expressions:
     )
   propertyAccess: "{{gen(expr.object)}}->{{gen(expr.propertyName)}}"
   identifier: "{{expr.text}}"
-  stringLiteral: 'string("{{expr.escapedText}}")'
+  stringLiteral: 'std::string("{{expr.escapedText}}")'
   characterLiteral: "'{{expr.escapedTextSingle}}'"
   return: "return{{if expr.expression}} {{gen(expr.expression)}}{{/if}};"
   binary: "{{gen(expr.left)}} {{expr.operator}} {{gen(expr.right)}}"

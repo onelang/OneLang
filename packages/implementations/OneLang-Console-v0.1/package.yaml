@@ -10,7 +10,7 @@ implements:
         OneConsole:
           includes: [iostream]
           methods:
-            print: "cout << {{genWithParen(str)}} << endl"
+            print: "std::cout << {{genWithParen(str)}} << std::endl"
   
   - interface: { name: One.Console, minver: 0.1, maxver: 0.1 }
     language: csharp

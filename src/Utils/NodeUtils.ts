@@ -16,7 +16,7 @@ export function writeFile(fn: string, data: any) {
 export function jsonRequest<T>(url: string, body: any): Promise<T> {
     return new Promise<T>((resolve, reject) => {
         const request = require('request');
-        request({ url, method: "POST", json: true, body }, function(error, response, body: T) {
+        request({ url, method: "POST", json: true, headers: { 'Origin': 'http://127.0.0.1:80' }, body }, function(error, response, body: T) {
             if (error)
                 reject(error);
             else

@@ -19,7 +19,7 @@ function main() {
     const stdlibCode = pacMan.getInterfaceDefinitions();
     
     let prgNames = ["HelloWorldRaw"];
-    const runPrg = false;
+    const runPrg = true;
     const langFilter = "";
     const compileAll = prgNames[0] === "all";
     
@@ -59,6 +59,7 @@ function main() {
                 t0 = timeNow();
                 const codeGen = compiler.getCodeGenerator(lang.schema);
                 lang.request.code = codeGen.generate(true);
+                lang.request.stdlibCode = "";
                 compileTimes.push(timeNow() - t0);
                 writeFile(`generated/${prgName}/results/${prgName}.${codeGen.lang.extension}`, codeGen.generatedCode);
             //} catch(e) {
@@ -74,7 +75,8 @@ function main() {
             var promises = langConfigVals.map(async lang => {
                 if (langFilter && lang.name !== langFilter) return true;
         
-                const result = await jsonRequest<CompileResult>(`http://127.0.0.1:8000/compile`, lang.request);
+                //console.log(lang.request);
+                const result = await jsonRequest<CompileResult>(`http://127.0.0.1:11111/compile`, lang.request);
                 console.log(`${lang.name}: ${JSON.stringify(result.result||result.exceptionText||"?")}`);
                 return true;
             });

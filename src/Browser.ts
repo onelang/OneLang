@@ -120,7 +120,8 @@ class CompileHelper {
     compile(langName: string) {
         const lang = this.langConfigs[langName];
         const schemaYaml = layout.langs[langName].generatorHandler.getContent();
-        const code = this.compiler.compile(schemaYaml, true, layout.inputLangs.includes(langName));
+        // TODO: pacMan is null
+        const code = this.compiler.compile(schemaYaml, null, true, layout.inputLangs.includes(langName));
         return code;
     }
 }

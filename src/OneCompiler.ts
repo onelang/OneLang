@@ -187,8 +187,8 @@ export class OneCompiler {
         return codeGen;
     }
 
-    compile(langCode: string, callTestMethod = true, genMeta = false) {
-        const lang = OneCompiler.parseLangSchema(langCode, this.stdlibCtx.schema);
+    compile(langCode: string, pacMan: PackageManager, callTestMethod = true, genMeta = false) {
+        const lang = OneCompiler.parseLangSchema(langCode, pacMan, this.stdlibCtx.schema);
         const codeGen = this.getCodeGenerator(lang);
         codeGen.model.config.genMeta = genMeta;
         const generatedCode = codeGen.generate(callTestMethod);
