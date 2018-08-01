@@ -6,7 +6,7 @@ implements:
         OneReflect:
           includes: ["one"]
           template: "One::Reflect"
-      template:
+      templates:
         endClass:
           args: [class]
           template: |-

@@ -2,7 +2,7 @@ implements:
   - interface: { name: One.Reflect, minver: 0.1, maxver: 0.1 }
     language: swift
     implementation:
-      template:
+      templates:
         endClass:
           args: [class]
           template: |-
