@@ -13,17 +13,17 @@ implements:
                   OneReflect::addClass("{{class.name}}", typeid({{class.name}}))
                     {{for field in class.fields}}
                       {{if field.static}}
-                        .addField(make_shared<OneField>("{{field.name}}", /*isStatic*/ true, "{{field.type}}", 
+                        .addField(std::make_shared<OneField>("{{field.name}}", /*isStatic*/ true, "{{field.type}}", 
                             [](sp<ReflectedClass> obj){ return (any){{class.name}}::{{field.name}}; },
                             [](sp<ReflectedClass> obj, any value){ {{class.name}}::{{field.name}} = any_cast<{{field.type}}>(value); }))
                       {{else}}
-                        .addField(make_shared<OneField>("{{field.name}}", /*isStatic*/ false, "{{field.type}}", 
+                        .addField(std::make_shared<OneField>("{{field.name}}", /*isStatic*/ false, "{{field.type}}", 
                             [](sp<ReflectedClass> obj){ return (any)static_pointer_cast<{{class.name}}>(obj)->{{field.name}}; },
                             [](sp<ReflectedClass> obj, any value){ static_pointer_cast<{{class.name}}>(obj)->{{field.name}} = any_cast<{{field.type}}>(value); }))
                       {{/if}}
                     {{/for}}
                     {{for method in class.methods}}
-                      .addMethod(make_shared<OneMethod>("{{method.name}}", /*isStatic*/ {{if method.static}}true{{else}}false{{/if}}, "{{method.returnType}}", vector<OneMethodArgument> {
+                      .addMethod(std::make_shared<OneMethod>("{{method.name}}", /*isStatic*/ {{if method.static}}true{{else}}false{{/if}}, "{{method.returnType}}", std::vector<OneMethodArgument> {
                           {{for param in method.parameters}}
                             OneMethodArgument("{{param.name}}", "{{param.type}}"),
                           {{/for}}

@@ -201,7 +201,7 @@ expressions:
   nullLiteral: "nullptr"
   variableDeclaration: "{{genVar(expr)}};"
   new: |-
-    make_shared<{{gen(expr.cls)}}
+    std::make_shared<{{gen(expr.cls)}}
       {{if expr.typeArguments.length > 0|inline}}
         <
         {{for arg in expr.typeArguments|inline sep=", "}}
@@ -229,11 +229,11 @@ expressions:
   conditional: "{{gen(expr.condition)}} ? {{gen(expr.whenTrue)}} : {{gen(expr.whenFalse)}}"
   templateString: |-
     {{for part in expr.parts|sep=" + " inline}}
-      {{if part_idx == 0|inline}}string({{/if}}
+      {{if part_idx == 0|inline}}std::string({{/if}}
       {{if part.literal|inline}}
         "{{escapeQuotes(part.text)}}"
       {{elif part.expr.valueType.isNumber|inline}}
-        to_string({{gen(part.expr)}})
+        std::to_string({{gen(part.expr)}})
       {{elif part.expr.valueType.isEnum|inline}}
         {{part.expr.valueType.enumName}}ToStr[(int)({{gen(part.expr)}})]
       {{elif part.expr.valueType.isBoolean|inline}}
