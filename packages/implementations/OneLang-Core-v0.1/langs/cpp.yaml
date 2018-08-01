@@ -4,7 +4,7 @@ implements:
     implementation:
       classes:
         OneString:
-          type: string
+          type: "std::string"
           fields:
             length: "{{self}}.size()"
           methods:
@@ -49,10 +49,10 @@ implements:
         OneString + OneBoolean:
           template: '{{left}} + ({{right}} ? "true" : "false")'
       expressions:
-        arrayLiteral: "make_shared<vector<{{getType(expr.valueType.typeArguments[0])}}>>(initializer_list<{{getType(expr.valueType.typeArguments[0])}}>{ {{genParams(expr.items)}} })"
         mapLiteral: |- 
           make_shared_map<{{getType(expr.valueType.typeArguments[0])}}, {{getType(expr.valueType.typeArguments[1])}}>({
             {{for prop in expr.properties|sep=",\n"}}
               { "{{prop.name}}", {{gen(prop.initializer)}} }
             {{/for}}
           })
+        arrayLiteral: "std::make_shared<std::vector<{{getType(expr.valueType.typeArguments[0])}}>>(std::initializer_list<{{getType(expr.valueType.typeArguments[0])}}>{ {{genParams(expr.items)}} })"
