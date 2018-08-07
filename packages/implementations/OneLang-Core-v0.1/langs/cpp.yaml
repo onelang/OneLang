@@ -1,6 +1,8 @@
 implements:
   - interface: { name: One.Core, minver: 0.1, maxver: 0.1 }
     language: cpp
+    native-files:
+      - one.hpp
     implementation:
       classes:
         OneString:
@@ -49,10 +51,12 @@ implements:
         OneString + OneBoolean:
           template: '{{left}} + ({{right}} ? "true" : "false")'
       expressions:
-        mapLiteral: |- 
-          make_shared_map<{{getType(expr.valueType.typeArguments[0])}}, {{getType(expr.valueType.typeArguments[1])}}>({
-            {{for prop in expr.properties|sep=",\n"}}
-              { "{{prop.name}}", {{gen(prop.initializer)}} }
-            {{/for}}
-          })
         arrayLiteral: "std::make_shared<std::vector<{{getType(expr.valueType.typeArguments[0])}}>>(std::initializer_list<{{getType(expr.valueType.typeArguments[0])}}>{ {{genParams(expr.items)}} })"
+        mapLiteral:
+          includes: ['{{libDir}}/one.hpp']
+          template: |-
+            make_shared_map<{{getType(expr.valueType.typeArguments[0])}}, {{getType(expr.valueType.typeArguments[1])}}>({
+              {{for prop in expr.properties|sep=",\n"}}
+                { "{{prop.name}}", {{gen(prop.initializer)}} }
+              {{/for}}
+            })

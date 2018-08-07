@@ -11,3 +11,4 @@ implements:
                   OneReflect.publish({{class.name}}.class);
               }
             {{/if}}
+    native-include-dir: java

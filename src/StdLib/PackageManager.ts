@@ -28,6 +28,12 @@ export interface PackageSource {
     getAllCached(): Promise<PackageBundle>;
 }
 
+export interface PackageNativeImpl {
+    packageName: string;
+    fileName: string;
+    code: string;
+}
+
 export interface InterfaceYaml {
     "file-version": number;
     vendor: string;
@@ -50,6 +56,7 @@ export class ImplPkgImplementation {
     interface: { name: string; minver: number; maxver: number };
     language: string;
     "native-includes": string[];
+    "native-includes-dir": string;
     implementation: LangFileSchema.LangFile;
 }
 
@@ -137,12 +144,27 @@ export class PackageManager {
         return this.intefacesPkgs.map(x => x.definition).join("\n");
     }
 
-    getLangNativeImpls(langName: string) {
-        let result = "";
+    getLangNativeImpls(langName: string): PackageNativeImpl[] {
+        let result = [];
         for (const pkg of this.implementationPkgs) {
             for (const impl of pkg.implementations.filter(x => x.language === langName)) {
-                for (const nativeIncl of impl["native-includes"])
-                    result += pkg.content.files[nativeIncl] + "\n";
+                const fileNames = [];
+                for (const fileName of impl["native-includes"] || [])
+                    fileNames.push(fileName);
+
+                let incDir = impl["native-include-dir"];
+                if (incDir) {
+                    if (!incDir.endsWith("/")) incDir += "/";
+                    fileNames.push(...Object.keys(pkg.content.files)
+                        .filter(x => x.startsWith(`native/${incDir}`)).map(x => x.substr("native/".length)));
+                }
+
+                for (const fileName of fileNames) {
+                    const code = pkg.content.files[`native/${fileName}`];
+                    if (!code) throw new Error(`File '${fileName}' was not found for package '${pkg.implementationYaml.name}'`);
+                    result.push({ packageName: pkg.implementationYaml.name, fileName, code });
+                }
+
             }
         }
         return result;

@@ -18,9 +18,9 @@ pacMan.loadAllCached().then(() => main());
 function main() {
     const stdlibCode = pacMan.getInterfaceDefinitions();
     
-    let prgNames = ["HelloWorldRaw"];
+    let prgNames = ["ReflectionTest"];
     const runPrg = true;
-    const langFilter = "";
+    const langFilter = "php";
     const compileAll = prgNames[0] === "all";
     
     if (compileAll)
@@ -59,7 +59,7 @@ function main() {
                 t0 = timeNow();
                 const codeGen = compiler.getCodeGenerator(lang.schema);
                 lang.request.code = codeGen.generate(true);
-                lang.request.stdlibCode = "";
+                lang.request.packageSources = pacMan.getLangNativeImpls(lang.name);
                 compileTimes.push(timeNow() - t0);
                 writeFile(`generated/${prgName}/results/${prgName}.${codeGen.lang.extension}`, codeGen.generatedCode);
             //} catch(e) {
@@ -75,13 +75,13 @@ function main() {
             var promises = langConfigVals.map(async lang => {
                 if (langFilter && lang.name !== langFilter) return true;
         
-                //console.log(lang.request);
+                console.log(`========= CODE =========\n${lang.request.code}\n========= RESULT =========`);
                 const result = await jsonRequest<CompileResult>(`http://127.0.0.1:11111/compile`, lang.request);
-                console.log(`${lang.name}: ${JSON.stringify(result.result||result.exceptionText||"?")}`);
+                console.log(`${lang.name}:\n\n    ${(result.result||result.exceptionText||"?").replace(/\n/g, "\n    ")}`);
                 return true;
             });
             const results = await Promise.all(promises);
-            console.log(" === DONE === ", results.every(x => x));
+            console.log(" === DONE === ");
         }
         
         if (runPrg && !compileAll)
