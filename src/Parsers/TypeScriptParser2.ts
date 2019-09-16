@@ -195,7 +195,7 @@ export class TypeScriptParser2 implements IParser {
             this.reader.expectToken("(");
             const varDeclMod = this.reader.readAnyOf(["const", "let", "var"]);
             const itemVarName = this.reader.expectIdentifier();
-            if (this.reader.readToken("of")) {
+            if (this.reader.readToken("of") || this.reader.readToken("in")) {
                 const foreachStmt = statement = <ast.ForeachStatement> { 
                     stmtType: ast.StatementType.Foreach,
                     itemVariable: <ast.VariableBase> { name: itemVarName }

@@ -341,7 +341,7 @@ expressions:
     {{/for}}
   foreach: |-
     for (auto it = {{gen(expr.items)}}->begin(); it != {{gen(expr.items)}}->end(); ++it) {
-        auto {{expr.itemVariable.outName}} = *it;
+        auto {{expr.itemVariable.outName}} = it->first;
         {{genBody(expr.body)}}
     }
   for: |-
