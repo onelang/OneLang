@@ -4,6 +4,10 @@ import { SchemaContext } from "../SchemaContext";
 import { AstVisitor } from "../AstVisitor";
 import { AstHelper } from "../AstHelper";
 
+/**
+ * Converts expression `"literal1" + variable + "lit2" + ...`
+ *   to template string `"literal1${variable}lit2..."`.
+ */
 export class ForceTemplateStrings extends AstVisitor<void> {
     protected infixCollect(expr: one.BinaryExpression, result: one.Expression[]) {
         if (expr.operator === "+") {

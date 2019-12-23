@@ -5,6 +5,13 @@ import { OverviewGenerator } from "../OverviewGenerator";
 import { AstHelper } from "../AstHelper";
 import { LangFileSchema } from "../../Generator/LangFileSchema";
 
+/**
+ * Fills out `isMutable` and `isUnused` properties of variables.
+ * 
+ * It sets `isMutable` to `false` and `isUnused` to `true` by default, and if a variable
+ *   has a reference then it sets `isUnused` to `false` and if the reference is used
+ *   for modification, then it sets `isMutable` to `true`
+ */
 export class FillVariableMutability extends AstVisitor<boolean> {
     constructor(public lang: LangFileSchema.LangFile) { super(); }
     
