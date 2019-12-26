@@ -1,7 +1,7 @@
 [submodule "generated"]
 	path = generated
-	url = https://github.com/koczkatamas/onelang_generated
+	url = https://github.com/onelang/TestArtifacts
 [submodule "CompilerBackend"]
 	path = CompilerBackend
-	url = https://github.com/koczkatamas/CompilerBackend
+	url = https://github.com/onelang/CompilerBackend
 	branch = master
