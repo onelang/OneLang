@@ -9,7 +9,7 @@
   "devDependencies": {
     "@types/node": "^8.0.28",
     "mkdirp": "^0.5.1",
-    "request": "^2.83.0",
+    "request": "^2.88.0",
     "typescript": "^2.9.2"
   },
   "scripts": {
