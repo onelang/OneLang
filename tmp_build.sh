@@ -1,1 +1,0 @@
-python -c "print '\n'*15" && cd tmp/compilation/20171227_210000_Swift && swiftc main.swift one.swift && ./main

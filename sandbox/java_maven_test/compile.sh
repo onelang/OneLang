@@ -1,1 +1,0 @@
-mvn package && java -cp target/testapp-1.0-SNAPSHOT.jar Program
