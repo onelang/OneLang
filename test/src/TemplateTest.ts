@@ -1,15 +1,15 @@
-import { writeFile, readFile, jsonRequest } from "../Utils/NodeUtils";
+import { writeFile, readFile, jsonRequest } from "../../src/Utils/NodeUtils";
 import { ObjectComparer } from "./ObjectComparer";
 import { execFileSync } from "child_process";
-import { ExprLangAst as ExprAst } from "../Generator/ExprLang/ExprLangAst";
-import { TemplateAst as TmplAst } from "../Generator/OneTemplate/TemplateAst";
-import { TemplateAstPrinter } from "../Generator/OneTemplate/TemplateAstPrinter";
-import { Token, ExprLangLexer, ExprLangLexerException } from "../Generator/ExprLang/ExprLangLexer";
-import { operators, ExprLangParser } from "../Generator/ExprLang/ExprLangParser";
-import { ExprLangAstPrinter } from "../Generator/ExprLang/ExprLangAstPrinter";
-import { ExprLangVM, JSMethodHandler, VariableContext, VariableSource } from "../Generator/ExprLang/ExprLangVM";
-import { TemplateParser } from "../Generator/OneTemplate/TemplateParser";
-import { TemplateGenerator, TemplateMethod } from "../Generator/OneTemplate/TemplateGenerator";
+import { ExprLangAst as ExprAst } from "../../src/Generator/ExprLang/ExprLangAst";
+import { TemplateAst as TmplAst } from "../../src/Generator/OneTemplate/TemplateAst";
+import { TemplateAstPrinter } from "../../src/Generator/OneTemplate/TemplateAstPrinter";
+import { Token, ExprLangLexer, ExprLangLexerException } from "../../src/Generator/ExprLang/ExprLangLexer";
+import { operators, ExprLangParser } from "../../src/Generator/ExprLang/ExprLangParser";
+import { ExprLangAstPrinter } from "../../src/Generator/ExprLang/ExprLangAstPrinter";
+import { ExprLangVM, JSMethodHandler, VariableContext, VariableSource } from "../../src/Generator/ExprLang/ExprLangVM";
+import { TemplateParser } from "../../src/Generator/OneTemplate/TemplateParser";
+import { TemplateGenerator, TemplateMethod } from "../../src/Generator/OneTemplate/TemplateGenerator";
 const YAML = require('yamljs');
 
 interface TestFile {
