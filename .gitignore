@@ -1,14 +1,9 @@
 
 \.DS_Store
 node_modules
-/typings
 js/
 *.js.map
 ast\.json
-SamplePrograms/Test
 schema\.json
-vmCode.js
 tmp/
-generated/**/*.json
-generated/**/*_Init.txt
 .secret_token
