@@ -4,7 +4,9 @@
         "module": "umd",
         "moduleResolution": "node",
         "sourceMap": true,
-        "outDir": "js"
+        "outDir": "lib",
+        "experimentalDecorators": true,
+        "declaration": true
     },
     "include": ["src/**/*", "lib/**/*"],
     "exclude": ["input/**/*", "langs/StdLibs/stdlib.d.ts"]
