@@ -1,9 +1,21 @@
 {
   "name": "onelang",
-  "version": "0.2.0",
+  "version": "0.0.1",
   "description": "OneLang",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "license": "MIT",
+  "author": { "name": "Koczka Tamás", "email": "koczkatamas@gmail.com", "url": "https://kt.gy/" },
+  "repository": { "type": "git", "url": "git+https://github.com/onelang/OneLang.git" },
+  "keywords": ["onelang", "transpiler", "source-to-source", "programming-language"],
+  "bugs": { "url": "https://github.com/onelang/OneLang/issues" },
+  "homepage": "https://onelang.io",
+  "files": ["langs", "lib", "packages"],
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
     "yamljs": "^0.3.0"
   },
@@ -12,16 +24,5 @@
     "mkdirp": "^0.5.1",
     "request": "^2.88.0",
     "typescript": "^2.9.2"
-  },
-  "scripts": {
-    "prepublish": "npm run build",
-    "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": {
-    "name": "Koczka Tamás",
-    "email": "koczkatamas@gmail.com",
-    "url": "https://kt.gy/"
-  },
-  "license": "MIT"
+  }
 }

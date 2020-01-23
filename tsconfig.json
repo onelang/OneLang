@@ -8,6 +8,5 @@
         "experimentalDecorators": true,
         "declaration": true
     },
-    "include": ["src/**/*", "lib/**/*"],
-    "exclude": ["input/**/*", "langs/StdLibs/stdlib.d.ts"]
+    "include": ["src/**/*"],
 }
