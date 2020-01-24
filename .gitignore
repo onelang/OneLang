@@ -1,8 +1,9 @@
 
 \.DS_Store
 node_modules/
-lib/
-*.js.map
+lib/**/*.d.ts
+lib/**/*.js
+lib/**/*.js.map
 ast\.json
 schema\.json
 tmp/
