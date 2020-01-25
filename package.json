@@ -1,7 +1,7 @@
 {
   "name": "onelang",
-  "version": "0.0.2",
-  "description": "OneLang",
+  "version": "0.0.3",
+  "description": "OneLang transpiler framework core",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "license": "MIT",
