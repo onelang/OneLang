@@ -1,6 +1,7 @@
 import { LangFileSchema } from "../Generator/LangFileSchema";
 import { AstHelper } from "../One/AstHelper";
 import { extend } from "../Utils/Helpers";
+import * as path from 'path';
 
 const fs = require("fs");
 const glob = require("glob");
@@ -91,9 +92,10 @@ export class PackagesFolderSource implements PackageSource {
 
     async getAllCached(): Promise<PackageBundle> {
         const packages: { [id: string]: PackageContent } = {};
-        const allFiles = glob.sync("packages/**/*", { nodir: true });
+        const baseDir = `${__dirname}/../../packages/`;
+        const allFiles = glob.sync(`${baseDir}**/*`, { nodir: true });
         for (const fn of allFiles) {
-            const [_, type, pkgDir, ...pathParts] = fn.split("/"); // [0]=packages, [1]=implementations/interfaces, [2]=package-name, [3:]=path
+            const [type, pkgDir, ...pathParts] = path.relative(baseDir, fn).split("/"); // [0]=packages, [1]=implementations/interfaces, [2]=package-name, [3:]=path
             let pkg = packages[`${type}/${pkgDir}`];
             if (!pkg) {
                 const pkgDirParts: string[] = pkgDir.split("-");
