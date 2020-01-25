@@ -4,6 +4,7 @@ import { ISchemaTransform } from "../SchemaTransformer";
 import { SchemaContext } from "../SchemaContext";
 import { AstHelper } from "../AstHelper";
 import { LangFileSchema } from "../../Generator/LangFileSchema";
+import { ucFirst } from "../../Utils/StringHelpers";
 
 export class CaseConverter {
     static splitName(name: string, error?: (msg: string) => void) {
@@ -46,9 +47,9 @@ export class CaseConverter {
         const parts = CaseConverter.splitName(name);
 
         if (newCasing === "camel")
-            return parts[0] + parts.splice(1).map(x => x.ucFirst()).join("");
+            return parts[0] + parts.splice(1).map(x => ucFirst(x)).join("");
         else if (newCasing === "pascal")
-            return parts.map(x => x.ucFirst()).join("");
+            return parts.map(x => ucFirst(x)).join("");
         else if (newCasing === "upper")
             return parts.map(x => x.toUpperCase()).join("_");
         else if (newCasing === "snake")

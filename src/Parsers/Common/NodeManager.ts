@@ -1,5 +1,6 @@
 import { OneAst as ast } from "../../One/Ast";
 import { Reader } from "./Reader";
+import { sortBy } from "../../Utils/ArrayHelpers";
 
 export class NodeManager {
     nodes: ast.INode[] = [];
@@ -13,8 +14,8 @@ export class NodeManager {
     }
 
     getNodeAtOffset(offset: number) {
-        const nodes = this.nodes.filter(x => x.nodeData && x.nodeData.sourceRange.start <= offset && offset < x.nodeData.sourceRange.end)
-            .sortBy(x => x.nodeData.sourceRange.end - x.nodeData.sourceRange.start);
+        const nodes = sortBy(this.nodes.filter(x => x.nodeData && x.nodeData.sourceRange.start <= offset && offset < x.nodeData.sourceRange.end),
+            x => x.nodeData.sourceRange.end - x.nodeData.sourceRange.start);
         return nodes.length === 0 ? null : nodes[0];
     }
 }

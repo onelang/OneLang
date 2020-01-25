@@ -8,6 +8,8 @@ import { IncludesCollector } from "../One/Transforms/IncludesCollector";
 import { TemplateMethod, TemplateGenerator, GeneratedNode } from "./OneTemplate/TemplateGenerator";
 import { VariableContext, VariableSource } from "./ExprLang/ExprLangVM";
 import { timeNow } from "../Utils/NodeUtils";
+import { lcFirst } from "../Utils/StringHelpers";
+import { sortBy } from "../Utils/ArrayHelpers";
 
 namespace CodeGeneratorModel {
     export interface MethodParameter {
@@ -65,7 +67,7 @@ class TempVarHandler {
     nextIndex = 0;
 
     get empty() { return this.variables.length === 0; }
-    get current() { return this.stack.last(); }
+    get current() { return this.stack[this.stack.length - 1]; }
 
     create() {
         const name = `${this.prefix}${this.nextIndex++}`;
@@ -228,7 +230,7 @@ class CodeGeneratorModel {
             }
         }
 
-        let genName = type.toString().lcFirst();
+        let genName = lcFirst(type.toString());
         if (type === one.ExpressionKind.Literal) {
             const literalExpr = <one.Literal> obj;
             if (literalExpr.literalType === "boolean") {
@@ -243,7 +245,7 @@ class CodeGeneratorModel {
             }
         } else if (type === one.ExpressionKind.VariableReference) {
             const varRef = <one.VariableRef> obj;
-            genName = varRef.varType.lcFirst();
+            genName = lcFirst(varRef.varType);
         } else if (type === one.ExpressionKind.MethodReference) {
             const methodRef = <one.MethodReference> obj;
             genName = methodRef.thisExpr ? "instanceMethod" : "staticMethod";
@@ -364,7 +366,7 @@ export class CodeGenerator {
     }
 
     call(method: TemplateMethod, args: any[]) {
-        const callStackItem = this.templateGenerator.callStack.last();
+        const callStackItem = this.templateGenerator.callStack[this.templateGenerator.callStack.length - 1];
         const varContext = callStackItem ? callStackItem.vars : this.templateGenerator.rootVars;
         return this.templateGenerator.call(method, args, this.model, varContext);
     }
@@ -430,7 +432,8 @@ export class CodeGenerator {
     setupIncludes() {
         const includesCollector = new IncludesCollector(this.lang);
         includesCollector.process(this.schema);
-        this.model.includes = Array.from(includesCollector.includes).map(name => ({ name, source: this.lang.includeSources[name] || name })).sortBy(x => x.name);
+        const includes = Array.from(includesCollector.includes).map(name => ({ name, source: this.lang.includeSources[name] || name }));
+        this.model.includes = sortBy(includes, x => x.name);
     }
 
     setupEnums() {

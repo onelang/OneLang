@@ -24,7 +24,7 @@ export class WhileToForTransform extends AstVisitor<void> {
             if (condition.exprKind !== "Binary" || condition.left.exprKind !== "VariableReference" || 
                 (<one.VariableRef> condition.left).varRef.name !== initVarDecl.name) continue;
 
-            const lastStmt = <one.ExpressionStatement> whileStmt.body.statements.last();
+            const lastStmt = <one.ExpressionStatement> whileStmt.body.statements[whileStmt.body.statements.length - 1];
             if (!lastStmt || lastStmt.stmtType !== "ExpressionStatement") continue;
 
             const modifiedExpr = AstHelper.getModifiedExpr(lastStmt.expression);

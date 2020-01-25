@@ -32,7 +32,7 @@ export class FillMetaPathTransform extends AstVisitor<Context> implements ISchem
         const newContext = oldContext.subContext(unique ? item.name : name, unique);
         
         if (!unique)
-            item.name = newContext.path.last();
+            item.name = newContext.path[newContext.path.length - 1];
         item.metaPath = newContext.path.join("/");
 
         return newContext;

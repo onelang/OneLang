@@ -2,60 +2,19 @@
 // tslint:disable-next-line
 interface Array<T> {
     last(): T;
-    remove(item: T): void;
-    sortBy(selector: (item: T) => any): T[];
-    toDict(keySelector: ((item: T) => string)): { [key: string]: T; };
-    toDict<T2>(keySelector: ((item: T) => string), valueSelector: ((item: T) => T2)): { [key: string]: T2; };
-}
-
-class ArrayHelper {
-    static flatten<TItem>(arr: TItem[][]): TItem[] { return <TItem[]> [].concat.apply([], arr); }
 }
 
 if (!Array.prototype.last) {
     Array.prototype.last = function () { return this[this.length - 1]; };
 }
-
-Array.prototype.toDict = function <T, T2>(keySelector: ((item: T) => string), valueSelector?: ((item: T) => T2)) {
-    var result = {};
-    for (var item of this)
-        result[keySelector(item)] = valueSelector ? valueSelector(item) : item;
-    return result;
-};
-
-Array.prototype.remove = function<T>(item: T) {
-    for (var i = this.length; i--;) {
-        if (this[i] === item) {
-            this.splice(i, 1);
-        }
-    }
-};
-
-Array.prototype.sortBy = function<T>(selector: (item: T) => any): T[] {
-    return this.sort((a,b) => {
-        const aProp = selector(a);
-        const bProp = selector(b);
-        return aProp < bProp ? -1 : aProp > bProp ? +1 : 0;
-    });
-};
 // #endregion
 
 // #region String
 // tslint:disable-next-line
 interface String {
-    ucFirst(): string;
-    lcFirst(): string;
     repeat(count: number): string;
     endsWith(searchString: string, position: number): boolean;
 }
-
-String.prototype.ucFirst = function() {
-    return this.charAt(0).toUpperCase() + this.slice(1);
-};
-
-String.prototype.lcFirst = function() {
-    return this.charAt(0).toLowerCase() + this.slice(1);
-};
 
 if (!String.prototype.endsWith) {
     String.prototype.endsWith = function (searchString: string, position: number) {

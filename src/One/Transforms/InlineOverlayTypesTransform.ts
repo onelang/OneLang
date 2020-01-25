@@ -5,6 +5,7 @@ import { SchemaContext } from "../SchemaContext";
 import { OverviewGenerator } from "../OverviewGenerator";
 import { AstHelper } from "../AstHelper";
 import { arrayEq } from "../../Utils/Helpers";
+import { ucFirst } from "../../Utils/StringHelpers";
 
 export class VariableReplacer extends AstVisitor<void> {
     thisReplacement: one.Expression;
@@ -86,7 +87,7 @@ class ReplaceReferences extends AstVisitor<void> {
 
     protected visitBinaryExpression(expr: one.BinaryExpression) {
         for (const operand of [expr.left, expr.right]) {
-            const className = `${(operand.valueType.className || operand.valueType.typeKind).ucFirst()}Operators`;
+            const className = `${ucFirst(operand.valueType.className || operand.valueType.typeKind)}Operators`;
             const cls = this.schemaCtx.getClass(className);
             if (!cls) continue;
 

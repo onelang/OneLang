@@ -3,6 +3,7 @@ import { AstVisitor } from "../AstVisitor";
 import { ISchemaTransform } from "../SchemaTransformer";
 import { AstHelper } from "../AstHelper";
 import { LangFileSchema } from "../../Generator/LangFileSchema";
+import { lcFirst } from "../../Utils/StringHelpers";
 
 export class IncludesCollector extends AstVisitor<void> {
     includes: Set<string>;
@@ -22,7 +23,7 @@ export class IncludesCollector extends AstVisitor<void> {
 
     protected visitExpression(expression: one.Expression) {
         super.visitExpression(expression, null);
-        const templateObj = this.lang.expressions[expression.exprKind.lcFirst()];
+        const templateObj = this.lang.expressions[lcFirst(expression.exprKind)];
         if (typeof templateObj === "object" && templateObj.includes)
             for (const include of templateObj.includes)
                 this.includes.add(include);
