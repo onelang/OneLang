@@ -14,7 +14,7 @@ Test cases: `test/src/TemplateTest.yaml` // `expressionTests` and `expressionAst
 
 Code
 
-```typescript
+```javascript
 import { ExprLangParser, ExprLangAst } from "onelang";
 
 const expr: ExprLangAst.Expression = ExprLangParser.parse("1+2*3");
@@ -36,13 +36,13 @@ Result
 
 Code
 
-```typescript
+```javascript
 console.log(ExprLangAstPrinter.print(expr));
 ```
 
 Result
 
-```
+```javascript
 (1 + (2 * 3))
 ```
 

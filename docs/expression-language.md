@@ -10,7 +10,7 @@ The OneLang expression language can parse expressions like `!arr[5].method(1 + 3
 
 It has the following parts:
 
-* [Tokenizer (lexer)](expr-lexer.md)
+* [Tokenizer (lexer)](exprlang-lexer.md)
 * [AST (Abstract Syntax Tree)](exprlang-ast.md)
 * [Parser](exprlang-parser.md)
 

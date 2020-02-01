@@ -14,7 +14,7 @@ Test cases: `test/src/TemplateTest.yaml` // `tokenizerTests` node
 
 Code
 
-```typescript
+```javascript
 import { ExprLangLexer } from "onelang";
 
 const lexer = new ExprLangLexer("1+2*3", ['+', '*']);
@@ -23,7 +23,7 @@ console.log(lexer.tokens);
 
 Result
 
-```ruby
+```javascript
 [ Token { kind: 'number', value: '1' },
   Token { kind: 'operator', value: '+' },
   Token { kind: 'number', value: '2' },
