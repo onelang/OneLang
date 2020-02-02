@@ -1,15 +1,16 @@
-import { writeFile, readFile, jsonRequest } from "../../src/Utils/NodeUtils";
+import 'module-alias/register';
+import { writeFile, readFile, jsonRequest } from "@one/Utils/NodeUtils";
 import { ObjectComparer } from "./ObjectComparer";
 import { execFileSync } from "child_process";
-import { ExprLangAst as ExprAst } from "../../src/Generator/ExprLang/ExprLangAst";
-import { TemplateAst as TmplAst } from "../../src/Generator/OneTemplate/TemplateAst";
-import { TemplateAstPrinter } from "../../src/Generator/OneTemplate/TemplateAstPrinter";
-import { Token, ExprLangLexer, ExprLangLexerException } from "../../src/Generator/ExprLang/ExprLangLexer";
-import { operators, ExprLangParser } from "../../src/Generator/ExprLang/ExprLangParser";
-import { ExprLangAstPrinter } from "../../src/Generator/ExprLang/ExprLangAstPrinter";
-import { ExprLangVM, JSModelHandler, VariableContext, VariableSource } from "../../src/Generator/ExprLang/ExprLangVM";
-import { TemplateParser } from "../../src/Generator/OneTemplate/TemplateParser";
-import { TemplateGenerator, TemplateMethod } from "../../src/Generator/OneTemplate/TemplateGenerator";
+import { ExprLangAst as ExprAst } from "@one/Generator/ExprLang/ExprLangAst";
+import { TemplateAst as TmplAst } from "@one/Generator/OneTemplate/TemplateAst";
+import { TemplateAstPrinter } from "@one/Generator/OneTemplate/TemplateAstPrinter";
+import { Token, ExprLangLexer, ExprLangLexerException } from "@one/Generator/ExprLang/ExprLangLexer";
+import { operators, ExprLangParser } from "@one/Generator/ExprLang/ExprLangParser";
+import { ExprLangAstPrinter } from "@one/Generator/ExprLang/ExprLangAstPrinter";
+import { ExprLangVM, JSModelHandler, VariableContext, VariableSource } from "@one/Generator/ExprLang/ExprLangVM";
+import { TemplateParser } from "@one/Generator/OneTemplate/TemplateParser";
+import { TemplateGenerator, TemplateMethod } from "@one/Generator/OneTemplate/TemplateGenerator";
 const YAML = require('yamljs');
 
 interface TestFile {
@@ -26,14 +27,14 @@ interface TestFile {
     tokenizerTests: { [expression: string]: { op?: string, i?: string, n?: string, s?: string }[]; };
 }
 
-const testFile = <TestFile>YAML.parse(readFile("src/Test/TemplateTest.yaml"));
+const testFile = <TestFile>YAML.parse(readFile(`test/src/TemplateTest.yaml`));
 
 function printTemplateAst(name: string, tmplAst: TmplAst.Block) {
     const tmplAstJson = JSON.stringify(tmplAst, null, 4);
-    writeFile(`generated/TemplateTests/${name}.json`, tmplAstJson);
+    writeFile(`test/artifacts/TemplateTests/${name}.json`, tmplAstJson);
 
     const tmplSummary = new TemplateAstPrinter().print(tmplAst);
-    writeFile(`generated/TemplateTests/${name}.txt`, tmplSummary);
+    writeFile(`test/artifacts/TemplateTests/${name}.txt`, tmplSummary);
 }
 
 class TestRunner {

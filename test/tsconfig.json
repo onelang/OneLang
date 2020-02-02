@@ -1,14 +1,18 @@
 {
     "compilerOptions": {
+        "baseUrl": "../",
+        "paths": {
+            "@one/*": ["src/*"]
+        },
         "target": "es2017",
         "module": "umd",
         "moduleResolution": "node",
         "sourceMap": true,
         "outDir": "lib",
-        "experimentalDecorators": true,
-        "declaration": true,
-        "composite": true,
-        "rootDir": "src/"
+        "experimentalDecorators": true
     },
     "include": ["src/**/*"],
+    "references": [
+        { "path": "../" }
+    ] 
 }

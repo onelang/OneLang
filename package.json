@@ -11,10 +11,12 @@
   "bugs": { "url": "https://github.com/onelang/OneLang/issues" },
   "homepage": "https://onelang.io",
   "files": ["langs", "lib", "packages"],
+  "directories": {},
   "scripts": {
     "prepare": "npm run build",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "pretest": "tsc -b . test",
+    "test": "node test/lib/TemplateTest.js"
   },
   "dependencies": {
     "yamljs": "^0.3.0"
@@ -24,5 +26,8 @@
     "mkdirp": "^0.5.1",
     "request": "^2.88.0",
     "typescript": "^2.9.2"
+  },
+  "_moduleAliases": {
+    "@one": "lib"
   }
 }

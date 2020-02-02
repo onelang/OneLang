@@ -1,6 +1,7 @@
 
 \.DS_Store
 node_modules/
+test/lib/
 lib/**/*.d.ts
 lib/**/*.js
 lib/**/*.js.map

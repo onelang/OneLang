@@ -1,5 +1,5 @@
-import { OneCompiler } from "../../src/OneCompiler";
-import { readFile, writeFile } from "../../src/Utils/NodeUtils";
+import { OneCompiler } from "@one/OneCompiler";
+import { readFile, writeFile } from "@one/Utils/NodeUtils";
 require("../Utils/Extensions.js");
 global["YAML"] = require('yamljs'); 
 

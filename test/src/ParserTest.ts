@@ -1,9 +1,9 @@
 require("../Utils/Extensions.js");
 const fs = require("fs");
-import { writeFile, readFile } from "../../src/Utils/NodeUtils";
-import { TypeScriptParser2 } from "../../src/Parsers/TypeScriptParser2";
-import { ExpressionParser } from "../../src/Parsers/Common/ExpressionParser";
-import { Reader } from "../../src/Parsers/Common/Reader";
+import { writeFile, readFile } from "@one/Utils/NodeUtils";
+import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser2";
+import { ExpressionParser } from "@one/Parsers/Common/ExpressionParser";
+import { Reader } from "@one/Parsers/Common/Reader";
 
 //const expr = new ExpressionParser(new Reader("3 * 2 === 6")).parse();
 //console.log(JSON.stringify(expr, null, 4));
