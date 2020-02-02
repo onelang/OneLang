@@ -1,4 +1,4 @@
-# ExprLang: expression language
+# ExprLang (expression language)
 
 ## Implementation
 

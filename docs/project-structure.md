@@ -6,7 +6,7 @@
 * npm: https://www.npmjs.com/package/onelang
   * install: `npm i onelang`
 
-Read more at the [OneLang project structure documentation](onelang-project-structure.md)
+**>>> Read more at the [OneLang project structure documentation](onelang-project-structure.md) <<<**
 
 ## OneCLI
 
