@@ -1,10 +1,15 @@
 import { PackageManager, PackagesFolderSource } from "./StdLib/PackageManager";
 import { readFile } from "./Utils/NodeUtils";
 import { OneCompiler } from "./OneCompiler";
+import { ExprLangLexer } from "./Generator/ExprLang/ExprLangLexer";
+import { ExprLangParser } from "./Generator/ExprLang/ExprLangParser";
+import { ExprLangAst } from "./Generator/ExprLang/ExprLangAst";
+import { ExprLangAstPrinter } from "./Generator/ExprLang/ExprLangAstPrinter";
+import { ExprLangVM, VariableContext, VariableSource } from "./Generator/ExprLang/ExprLangVM";
 
 const rootDir = `${__dirname}/..`;
 
-class OneLang {
+class OneLangGlobal {
     getCapabilities() { 
         return { 
             sourceLanguages: ['typescript', 'php', 'ruby', 'csharp' ],
@@ -33,4 +38,5 @@ class OneLang {
     }
 }
 
-export = new OneLang();
+export const OneLang = new OneLangGlobal();
+export { ExprLangLexer, ExprLangParser, ExprLangAst, ExprLangAstPrinter, ExprLangVM, VariableContext, VariableSource };
