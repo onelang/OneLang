@@ -5,16 +5,34 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "license": "MIT",
-  "author": { "name": "Koczka Tamás", "email": "koczkatamas@gmail.com", "url": "https://kt.gy/" },
-  "repository": { "type": "git", "url": "git+https://github.com/onelang/OneLang.git" },
-  "keywords": ["onelang", "transpiler", "source-to-source", "programming-language"],
-  "bugs": { "url": "https://github.com/onelang/OneLang/issues" },
+  "author": {
+    "name": "Koczka Tamás",
+    "email": "koczkatamas@gmail.com",
+    "url": "https://kt.gy/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/onelang/OneLang.git"
+  },
+  "keywords": [
+    "onelang",
+    "transpiler",
+    "source-to-source",
+    "programming-language"
+  ],
+  "bugs": {
+    "url": "https://github.com/onelang/OneLang/issues"
+  },
   "homepage": "https://onelang.io",
-  "files": ["langs", "lib", "packages"],
+  "files": [
+    "langs",
+    "lib",
+    "packages"
+  ],
   "directories": {},
   "scripts": {
     "prepare": "npm run build",
-    "build": "tsc",
+    "build": "tsc -b",
     "pretest": "tsc -b . test",
     "test": "node test/lib/TemplateTest.js"
   },
@@ -24,8 +42,9 @@
   "devDependencies": {
     "@types/node": "^8.0.28",
     "mkdirp": "^0.5.1",
+    "module-alias": "^2.2.2",
     "request": "^2.88.0",
-    "typescript": "^2.9.2"
+    "typescript": "^3.1.1"
   },
   "_moduleAliases": {
     "@one": "lib"
