@@ -1,15 +1,37 @@
 import { ExprLangAst as Ast } from "./ExprLangAst";
 
-export interface IMethodHandler {
-    call(method: any, args: any[], thisObj: object, model: object);
+class ExprLangError extends Error { }
+
+export interface IModelHandler {
+    methodCall(method: any, args: any[], thisObj: object, model: object);
+    memberAccess(obj: object, memberName: string|number, isProperty: boolean);
 }
 
-export class JSMethodHandler implements IMethodHandler {
-    call(method: any, args: any[], thisObj: object, model: object) {
+export class JSModelHandler implements IModelHandler {
+    static methodCall(method: any, args: any[], thisObj: object, model: object) {
         if (typeof method !== "function")
-            ExprLangVM.fail(`Tried to call a non-method value: '${method}' (${typeof method})`);
+            throw new ExprLangError(`Tried to call a non-method value: '${method}' (${typeof method})`);
         const result = method.apply(thisObj, args);
         return result;
+    }
+
+    static memberAccess(obj: object, memberName: string|number, isProperty: boolean) {
+        if (typeof obj !== "object")
+            throw new ExprLangError(`Expected object for accessing member: (${typeof obj})`);
+
+        if (!(memberName in obj))
+            //throw new ExprLangError(`Member '${memberName}' not found in object '${obj.constructor.name}' (${typeof obj})`);
+            return null;
+
+        return obj[memberName];
+    }
+
+    methodCall(method: any, args: any[], thisObj: object, model: object) {
+        return JSModelHandler.methodCall(method, args, thisObj, model);
+    }
+
+    memberAccess(obj: object, memberName: string|number, isProperty: boolean) {
+        return JSModelHandler.memberAccess(obj, memberName, isProperty);
     }
 }
 
@@ -21,16 +43,16 @@ export class VariableSource {
 
     checkUnique(varName: string, allowOverwrite = false) {
         if (!varName)
-            ExprLangVM.fail("Variable name is missing!");
+            throw new ExprLangError("Variable name is missing!");
 
         if (typeof varName !== "string")
-            ExprLangVM.fail(`Expected string as variable name!`);
+            throw new ExprLangError(`Expected string as variable name!`);
 
         if (varName in this.callbacks)
-            ExprLangVM.fail(`Callback was already set for variable '${varName}'`);
+            throw new ExprLangError(`Callback was already set for variable '${varName}'`);
 
         if (!allowOverwrite && varName in this.vars)
-            ExprLangVM.fail(`Variable '${varName}' was already set`);
+            throw new ExprLangError(`Variable '${varName}' was already set`);
     }
 
     addCallback(varName: string, callback: () => any) {
@@ -89,7 +111,7 @@ export class VariableContext {
                 return result;
         }
 
-        ExprLangVM.fail(`Variable '${varName}' was not found in contexts: ` 
+        throw new ExprLangError(`Variable '${varName}' was not found in contexts: ` 
             + this.sources.map(x => `'${x.name}'`).join(", "));
     }
 
@@ -100,22 +122,13 @@ export class VariableContext {
 }
 
 export class ExprLangVM {
-    methodHandler: IMethodHandler;
+    modelHandler: IModelHandler;
 
-    static accessMember(obj: object, memberName: string|number) {
-        if (typeof obj !== "object")
-            this.fail(`Expected object for accessing member: (${typeof obj})`);
-        if (!(memberName in obj))
-            return null;
-            //ExprLangVM.fail(`Member '${memberName}' not found in object '${obj.constructor.name}' (${typeof obj})`);
-        return obj[memberName];
+    constructor(modelHandler?: IModelHandler) {
+        this.modelHandler = modelHandler || new JSModelHandler();
     }
 
-    static fail(msg: string) {
-        throw new Error(`[ExprLangVM] ${msg}`);
-    }
-
-    evaluate(expr: Ast.Expression, vars: VariableContext) {
+    evaluate(expr: Ast.Expression, vars?: VariableContext) {
         if (expr.kind === "literal") {
             const litExpr = <Ast.LiteralExpression> expr;
             return litExpr.value;
@@ -128,6 +141,9 @@ export class ExprLangVM {
             } else if (identifier.text === "null") {
                 return null;
             } else {
+                if (!vars)
+                    throw new ExprLangError(`Variable context was not set!`);
+
                 const result = vars.getVariable(identifier.text);
                 return result;
             }
@@ -141,7 +157,7 @@ export class ExprLangVM {
             } else if (unaryExpr.op === "-") {
                 return -exprValue;
             } else
-                ExprLangVM.fail(`Unexpected unary operator: '${unaryExpr.op}'`);
+                throw new ExprLangError(`Unexpected unary operator: '${unaryExpr.op}'`);
         } else if (expr.kind === "binary") {
             const binaryExpr = <Ast.BinaryExpression> expr;
             const leftValue = this.evaluate(binaryExpr.left, vars);
@@ -175,7 +191,7 @@ export class ExprLangVM {
             } else if (binaryExpr.op === "||") {
                 return leftValue || rightValue;
             } else
-                ExprLangVM.fail(`Unexpected binary operator: '${binaryExpr.op}'`);
+                throw new ExprLangError(`Unexpected binary operator: '${binaryExpr.op}'`);
         } else if (expr.kind === "parenthesized") {
             const parenExpr = <Ast.ParenthesizedExpression> expr;
             const exprValue = this.evaluate(parenExpr, vars);
@@ -198,24 +214,21 @@ export class ExprLangVM {
             }
 
             const args = callExpr.arguments.map(arg => this.evaluate(arg, vars));
-            
-            if (!this.methodHandler)
-                ExprLangVM.fail(`Method handler was not set!`);
-            const result = this.methodHandler.call(method, args, thisObj, vars);
+            const result = this.modelHandler.methodCall(method, args, thisObj, vars);
             return result;
         } else if (expr.kind === "propertyAccess") {
             const propAccExpr = <Ast.PropertyAccessExpression> expr;
             const object = this.evaluate(propAccExpr.object, vars);
-            const result = ExprLangVM.accessMember(object, propAccExpr.propertyName);
+            const result = this.modelHandler.memberAccess(object, propAccExpr.propertyName, true);
             return result;
         } else if (expr.kind === "elementAccess") {
             const elemAccExpr = <Ast.ElementAccessExpression> expr;
             const object = this.evaluate(elemAccExpr.object, vars);
             const memberName = this.evaluate(elemAccExpr.elementExpr, vars);
-            const result = ExprLangVM.accessMember(object, memberName);
+            const result = this.modelHandler.memberAccess(object, memberName, false);
             return result;
         } else {
-            ExprLangVM.fail(`Unknown expression kind: '${expr.kind}'`);
+            throw new ExprLangError(`Unknown expression kind: '${expr.kind}'`);
         }
     }
 }

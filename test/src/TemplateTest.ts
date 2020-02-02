@@ -7,7 +7,7 @@ import { TemplateAstPrinter } from "../../src/Generator/OneTemplate/TemplateAstP
 import { Token, ExprLangLexer, ExprLangLexerException } from "../../src/Generator/ExprLang/ExprLangLexer";
 import { operators, ExprLangParser } from "../../src/Generator/ExprLang/ExprLangParser";
 import { ExprLangAstPrinter } from "../../src/Generator/ExprLang/ExprLangAstPrinter";
-import { ExprLangVM, JSMethodHandler, VariableContext, VariableSource } from "../../src/Generator/ExprLang/ExprLangVM";
+import { ExprLangVM, JSModelHandler, VariableContext, VariableSource } from "../../src/Generator/ExprLang/ExprLangVM";
 import { TemplateParser } from "../../src/Generator/OneTemplate/TemplateParser";
 import { TemplateGenerator, TemplateMethod } from "../../src/Generator/OneTemplate/TemplateGenerator";
 const YAML = require('yamljs');
@@ -120,7 +120,6 @@ class TestRunner {
             }
         };
         const vm = new ExprLangVM();
-        vm.methodHandler = new JSMethodHandler();
 
         this.runTests(testFile.vmTests, (exprStr, test) => {
             const expr = ExprLangParser.parse(exprStr);

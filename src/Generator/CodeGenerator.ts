@@ -1,13 +1,9 @@
 import { OneAst as one } from "../One/Ast";
-import { ExprLangParser } from "./ExprLang/ExprLangParser";
-import { OverviewGenerator } from "../One/OverviewGenerator";
 import { LangFileSchema } from "./LangFileSchema";
-import { deindent } from "./Utils";
 import { SchemaCaseConverter, CaseConverter } from "../One/Transforms/CaseConverter";
 import { IncludesCollector } from "../One/Transforms/IncludesCollector";
 import { TemplateMethod, TemplateGenerator, GeneratedNode } from "./OneTemplate/TemplateGenerator";
 import { VariableContext, VariableSource } from "./ExprLang/ExprLangVM";
-import { timeNow } from "../Utils/NodeUtils";
 import { lcFirst } from "../Utils/StringHelpers";
 import { sortBy } from "../Utils/ArrayHelpers";
 
@@ -368,7 +364,7 @@ export class CodeGenerator {
     call(method: TemplateMethod, args: any[]) {
         const callStackItem = this.templateGenerator.callStack[this.templateGenerator.callStack.length - 1];
         const varContext = callStackItem ? callStackItem.vars : this.templateGenerator.rootVars;
-        return this.templateGenerator.call(method, args, this.model, varContext);
+        return this.templateGenerator.methodCall(method, args, this.model, varContext);
     }
 
     getTypeName(type: one.Type): string {

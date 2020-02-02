@@ -1,6 +1,6 @@
 import { ExprLangAst as ExprAst } from "../ExprLang/ExprLangAst";
 import { ExprLangParser } from "../ExprLang/ExprLangParser";
-import { ExprLangVM, IMethodHandler, VariableContext, VariableSource } from "../ExprLang/ExprLangVM";
+import { ExprLangVM, IModelHandler, VariableContext, VariableSource, JSModelHandler } from "../ExprLang/ExprLangVM";
 import { TemplateAst as Ast } from "./TemplateAst";
 import { TemplateParser } from "./TemplateParser";
 import { OneAst as one } from "../../One/Ast";
@@ -27,7 +27,7 @@ export class TemplateMethod {
     }
 
     static fromSignature(signature: string, template: string) {
-        const signatureAst = ExprLangParser.parse(signature);        
+        const signatureAst = ExprLangParser.parse(signature);
         if (signatureAst.kind === "call") {
             const callExpr = <ExprAst.CallExpression> signatureAst;
             const name = (<ExprAst.IdentifierExpression> callExpr.method).text;
@@ -52,15 +52,14 @@ export class GeneratedNode {
     constructor(public text: string) { }
 }
 
-export class TemplateGenerator implements IMethodHandler {
-    vm = new ExprLangVM();
+export class TemplateGenerator implements IModelHandler {
+    vm = new ExprLangVM(this);
     rootVars: VariableContext;
     methods = new VariableSource("TemplateGenerator methods");
     callStack: CallStackItem[] = [];
     objectHook: (obj: object) => GeneratedNode[] = null;
 
     constructor(variables: VariableContext) {
-        this.vm.methodHandler = this;
         this.rootVars = variables.inherit(this.methods);
     }
 
@@ -68,7 +67,7 @@ export class TemplateGenerator implements IMethodHandler {
         this.methods.addCallback(method.name, () => method);
     }
 
-    call(method: any, args: any[], thisObj: any, vars: VariableContext): GeneratedNode[] {
+    methodCall(method: any, args: any[], thisObj: any, vars: VariableContext): GeneratedNode[] {
         let result: GeneratedNode[];
         this.callStack.push(new CallStackItem(<string> method.name, vars));
         
@@ -89,6 +88,10 @@ export class TemplateGenerator implements IMethodHandler {
 
         this.callStack.pop();
         return result;
+    }
+
+    memberAccess(obj: object, memberName: string | number, isProperty: boolean) {
+        return JSModelHandler.memberAccess(obj, memberName, isProperty);
     }
 
     isSimpleTextNode(node: Ast.BlockItem) {
