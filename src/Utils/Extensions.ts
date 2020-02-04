@@ -84,22 +84,6 @@ Promise.delay = function(timeoutMs: number) {
 };
 // #endregion
 
-// #region RegExp
-// tslint:disable-next-line
-interface RegExp {
-    matches(value: string): RegExpExecArray[];
-}
-
-RegExp.prototype.matches = function (value: string) {
-    var matches: RegExpExecArray[] = [];
-    var match: RegExpExecArray;
-    while (match = this.exec(value))
-        matches.push(match);
-    return matches;
-};
-
-// #endregion
-
 // tslint:disable-next-line
 interface Date {
     format(format: string): string;
