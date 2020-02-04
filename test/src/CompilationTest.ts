@@ -1,16 +1,9 @@
-require("./Utils/Extensions.js");
-import { writeFile, readFile, jsonRequest, timeNow } from "./Utils/NodeUtils";
-import { OneCompiler } from "./OneCompiler";
-import { langConfigs, LangConfig, CompileResult } from "./Generator/LangConfigs";
-import { LangFileSchema } from "./Generator/LangFileSchema";
-import { deindent } from "./Generator/Utils";
-import { TypeScriptParser2 } from "./Parsers/TypeScriptParser2";
-import { PackagesFolderSource, PackageManager } from "./StdLib/PackageManager";
-const fs = require("fs");
-global["YAML"] = require('yamljs'); 
-declare var YAML;
-
-global["debugOn"] = false;
+import 'module-alias/register';
+import * as fs from 'fs';
+import { writeFile, readFile, jsonRequest, timeNow } from "@one/Utils/NodeUtils";
+import { OneCompiler } from "@one/OneCompiler";
+import { langConfigs, CompileResult } from "@one/Generator/LangConfigs";
+import { PackagesFolderSource, PackageManager } from "@one/StdLib/PackageManager";
 
 const pacMan = new PackageManager(new PackagesFolderSource());
 pacMan.loadAllCached().then(() => main());
@@ -18,13 +11,13 @@ pacMan.loadAllCached().then(() => main());
 function main() {
     const stdlibCode = pacMan.getInterfaceDefinitions();
     
-    let prgNames = ["ReflectionTest"];
-    const runPrg = true;
-    const langFilter = "php";
+    let prgNames = ["all"];
+    const runPrg = false;
+    const langFilter = false;
     const compileAll = prgNames[0] === "all";
     
     if (compileAll)
-        prgNames = fs.readdirSync("input").filter(x => x.endsWith(".ts")).map(x => x.replace(".ts", ""));
+        prgNames = fs.readdirSync("test/input").filter(x => x.endsWith(".ts")).map(x => x.replace(".ts", ""));
     
     const overlayCode = readFile(`langs/NativeResolvers/typescript.ts`);
     const genericTransforms = readFile(`langs/NativeResolvers/GenericTransforms.yaml`);
@@ -41,10 +34,10 @@ function main() {
     for (const prgName of prgNames) {
         console.log(`converting program '${prgName}'...`);
         compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, data: string) => {
-            writeFile(`generated/${schemaType === "program" ? prgName : schemaType}/schemaStates/${name}.${type === "overviewText" ? "txt" : "json"}`, data); 
+            writeFile(`test/artifacts/${schemaType === "program" ? prgName : schemaType}/schemaStates/${name}.${type === "overviewText" ? "txt" : "json"}`, data); 
         };
     
-        const programCode = readFile(`input/${prgName}.ts`).replace(/\r\n/g, '\n');
+        const programCode = readFile(`test/input/${prgName}.ts`).replace(/\r\n/g, '\n');
         let t0 = timeNow();
         compiler.parse("typescript", programCode);
         const parseTime = timeNow() - t0;
@@ -61,7 +54,7 @@ function main() {
                 lang.request.code = codeGen.generate(true);
                 lang.request.packageSources = pacMan.getLangNativeImpls(lang.name);
                 compileTimes.push(timeNow() - t0);
-                writeFile(`generated/${prgName}/results/${prgName}.${codeGen.lang.extension}`, codeGen.generatedCode);
+                writeFile(`test/artifacts/${prgName}/results/${prgName}.${codeGen.lang.extension}`, codeGen.generatedCode);
             //} catch(e) {
             //    console.error(e);
             //}

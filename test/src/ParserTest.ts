@@ -1,23 +1,26 @@
-require("../Utils/Extensions.js");
-const fs = require("fs");
+import 'module-alias/register';
+import * as fs from 'fs';
+import * as path from 'path';
 import { writeFile, readFile } from "@one/Utils/NodeUtils";
 import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser2";
 import { ExpressionParser } from "@one/Parsers/Common/ExpressionParser";
 import { Reader } from "@one/Parsers/Common/Reader";
 
-//const expr = new ExpressionParser(new Reader("3 * 2 === 6")).parse();
-//console.log(JSON.stringify(expr, null, 4));
-
-let prgNames = fs.readdirSync("input").filter(x => x.endsWith(".ts")).map(x => x.replace(".ts", ""));
-//prgNames = ["OneLang"];
-for (const prgName of prgNames) {
-    console.log(`parsing ${prgName}...`);
-    const sourceCode = readFile(`input/${prgName}.ts`);
-    TypeScriptParser2.parseFile(sourceCode);
+function glob(dir: string, result: string[] = []) {
+    for (const entry of fs.readdirSync(dir).map(x => path.join(dir, x))) {
+        const isDir = fs.statSync(entry).isDirectory();
+        if (isDir)
+            glob(entry, result);
+        else
+            result.push(entry);
+    }
+    return result;
 }
 
-console.log(`parsing StdLib...`);
-TypeScriptParser2.parseFile(readFile(`langs/StdLibs/stdlib.d.ts`));
+function flatten(arr) { return [].concat(...arr); }
 
-console.log(`parsing NativeResolver...`);
-TypeScriptParser2.parseFile(readFile(`langs/NativeResolvers/typescript.ts`));
+const files = flatten(["packages", "test/input", "langs"].map(x => glob(x))).filter(x => x.endsWith(".ts") && !x.includes("/native/"));
+for (const file of files) {
+    console.log(`parsing ${file}...`);
+    TypeScriptParser2.parseFile(readFile(file));
+}

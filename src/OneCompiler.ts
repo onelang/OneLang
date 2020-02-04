@@ -143,7 +143,6 @@ export class OneCompiler {
         this.schemaCtx.arrayType = "OneArray";
         this.schemaCtx.mapType = "OneMap";
 
-        global["debugOn"] = true;
         new InferTypesTransform(this.schemaCtx).transform();
         this.schemaCtx.ensureTransforms("inferCharacterTypes");
         this.saveSchemaState(this.schemaCtx, `5_TypesInferredAgain`);

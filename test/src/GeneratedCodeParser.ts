@@ -1,3 +1,4 @@
+import 'module-alias/register';
 import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser2";
 import { CSharpParser } from "@one/Parsers/CSharpParser";
 import { readFile, writeFile } from "@one/Utils/NodeUtils";
@@ -6,17 +7,20 @@ import { AstHelper } from "@one/One/AstHelper";
 import { OneCompiler } from "@one/OneCompiler";
 import { RubyParser } from "@one/Parsers/RubyParser";
 import { PhpParser } from "@one/Parsers/PhpParser";
-require("../Utils/Extensions.js");
-const fs = require("fs");
-global["YAML"] = require('yamljs'); 
-declare var YAML;
+import * as fs from 'fs';
+import { PackageManager, PackagesFolderSource } from '@one/StdLib/PackageManager';
 
-let prgNames = (<string[]>fs.readdirSync("generated")).filter(x => !x.startsWith("."));
-let prgExcludeList = ["stdlib", "overlay", "TemplateTests", "LICENSE"];
+(async () => {
+
+const prgExcludeList = ["stdlib", "overlay", "TemplateTests", "LICENSE"];
+let prgNames = (<string[]>fs.readdirSync("test/artifacts")).filter(x => !x.startsWith("."));
 
 prgNames = prgNames.filter(x => !prgExcludeList.includes(x));
 
-const stdlibCode = readFile(`langs/StdLibs/stdlib.d.ts`);
+const pacMan = new PackageManager(new PackagesFolderSource());
+await pacMan.loadAllCached();
+const stdlibCode = pacMan.getInterfaceDefinitions();
+
 const genericTransforms = readFile(`langs/NativeResolvers/GenericTransforms.yaml`);
 
 const langs: { [langName: string]: { ext: string, parse: (src: string) => ast.Schema } } = {    
@@ -28,7 +32,7 @@ const langs: { [langName: string]: { ext: string, parse: (src: string) => ast.Sc
 
 let langsToTest = Object.keys(langs);
 langsToTest = ["php"];
-const skipTests = { "php": ["JsonParseTest"] };
+const skipTests = { "php": ["JsonParseTest", "ReflectionTest"] };
 
 //prgExcludeList = [...prgExcludeList, "OneLang2", "StrReplaceTest"]
 
@@ -38,20 +42,23 @@ for (const langName of langsToTest) {
 
     for (const prgName of prgNames) {
         if (skipTests[langName].includes(prgName)) continue;
+        const outDir = `test/artifacts/${prgName}`;
 
-        const fn = `generated/${prgName}/results/${prgName}.${langData.ext}`;
+        const fn = `${outDir}/results/${prgName}.${langData.ext}`;
         console.log(`Parsing '${fn}'...`);
         let content = readFile(fn);
         
         const schema = langData.parse(content);
-        writeFile(`generated/${prgName}/regen/0_Original_${langData.ext}.json`, AstHelper.toJson(schema));
+        writeFile(`${outDir}/regen/0_Original_${langData.ext}.json`, AstHelper.toJson(schema));
 
         const compiler = new OneCompiler();
         compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, data: string) => {
             if (schemaType !== "program") return;
-            writeFile(`generated/${prgName}/regen/schemaStates_${langName}/${name}.${type === "overviewText" ? "txt" : "json"}`, data);
+            writeFile(`${outDir}/regen/schemaStates_${langName}/${name}.${type === "overviewText" ? "txt" : "json"}`, data);
         };
         compiler.setup(overlayCode, stdlibCode, genericTransforms);
         compiler.parse(langName, content);
     }
 }
+
+})();

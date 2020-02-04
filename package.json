@@ -34,7 +34,7 @@
     "prepare": "npm run build",
     "build": "tsc -b",
     "pretest": "tsc -b . test",
-    "test": "node test/lib/TemplateTest.js"
+    "test": "node test/lib/main.js"
   },
   "dependencies": {
     "yamljs": "^0.3.0"
