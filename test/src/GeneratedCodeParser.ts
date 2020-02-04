@@ -31,7 +31,7 @@ const langs: { [langName: string]: { ext: string, parse: (src: string) => ast.Sc
 };
 
 let langsToTest = Object.keys(langs);
-langsToTest = ["php"];
+langsToTest = ["csharp"];
 const skipTests = { "php": ["JsonParseTest", "ReflectionTest"] };
 
 //prgExcludeList = [...prgExcludeList, "OneLang2", "StrReplaceTest"]
@@ -41,7 +41,7 @@ for (const langName of langsToTest) {
     const overlayCode = readFile(`langs/NativeResolvers/${langName}.ts`);
 
     for (const prgName of prgNames) {
-        if (skipTests[langName].includes(prgName)) continue;
+        if ((skipTests[langName] || []).includes(prgName)) continue;
         const outDir = `test/artifacts/${prgName}`;
 
         const fn = `${outDir}/results/${prgName}.${langData.ext}`;
