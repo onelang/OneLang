@@ -6,6 +6,9 @@ import { ExprLangParser } from "./Generator/ExprLang/ExprLangParser";
 import { ExprLangAst } from "./Generator/ExprLang/ExprLangAst";
 import { ExprLangAstPrinter } from "./Generator/ExprLang/ExprLangAstPrinter";
 import { ExprLangVM, VariableContext, VariableSource } from "./Generator/ExprLang/ExprLangVM";
+import { AstHelper } from "./One/AstHelper";
+import { OverviewGenerator } from "./One/OverviewGenerator";
+import * as LangConfigs from "./Generator/LangConfigs";
 
 const rootDir = `${__dirname}/..`;
 
@@ -39,4 +42,5 @@ class OneLangGlobal {
 }
 
 export const OneLang = new OneLangGlobal();
-export { ExprLangLexer, ExprLangParser, ExprLangAst, ExprLangAstPrinter, ExprLangVM, VariableContext, VariableSource };
+export { ExprLangLexer, ExprLangParser, ExprLangAst, ExprLangAstPrinter, ExprLangVM, VariableContext, VariableSource, OneCompiler, AstHelper, OverviewGenerator };
+export { LangConfigs };

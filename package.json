@@ -2,8 +2,8 @@
   "name": "onelang",
   "version": "0.0.4",
   "description": "OneLang transpiler framework core",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "license": "MIT",
   "author": {
     "name": "Koczka Tamás",
@@ -44,7 +44,7 @@
     "mkdirp": "^0.5.1",
     "module-alias": "^2.2.2",
     "request": "^2.88.0",
-    "typescript": "^3.1.1"
+    "typescript": "^3.7.5"
   },
   "_moduleAliases": {
     "@one": "lib"
