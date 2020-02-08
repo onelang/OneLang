@@ -1,20 +1,25 @@
 import { PackageSource, PackageId, PackageBundle, PackageContent } from "./PackageManager";
-import * as fs from "fs";
-import * as glob from "glob";
-import * as path from "path";
 
 export class PackagesFolderSource implements PackageSource {
+    constructor(public packagesDir = "packages") { }
+
     getPackageBundle(ids: PackageId[], cachedOnly: boolean): Promise<PackageBundle> {
         throw new Error("Method not implemented.");
     }
+
     async getAllCached(): Promise<PackageBundle> {
+        const fs = await import("fs");
+        const glob = await import("glob");
+        const path = await import("path");
+
         const packages: {
             [id: string]: PackageContent;
         } = {};
-        const baseDir = `${__dirname}/../../packages/`;
-        const allFiles = glob.sync(`${baseDir}**/*`, { nodir: true });
+        
+        const allFiles = glob.sync(`${this.packagesDir}/**/*`, { nodir: true });
         for (const fn of allFiles) {
-            const [type, pkgDir, ...pathParts] = path.relative(baseDir, fn).split("/"); // [0]=packages, [1]=implementations/interfaces, [2]=package-name, [3:]=path
+            const [type, pkgDir, ...pathParts] = path.relative(this.packagesDir, fn).split("/"); // [0]=implementations/interfaces, [1]=package-name, [2:]=path
+            if (type !== "implementations" && type !== "interfaces") continue; // skip e.g. bundle.json
             let pkg = packages[`${type}/${pkgDir}`];
             if (!pkg) {
                 const pkgDirParts: string[] = pkgDir.split("-");
