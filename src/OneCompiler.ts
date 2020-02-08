@@ -32,8 +32,7 @@ import { WhileToForTransform } from "./One/Transforms/WhileToFor";
 import { ProcessTypeHints } from "./One/Transforms/ProcessTypeHints";
 import { LangFilePreprocessor } from "./Generator/LangFilePreprocessor";
 import { PackageManager } from "./StdLib/PackageManager";
-
-declare var YAML: any;
+import * as YAML from "yamljs";
 
 SchemaTransformer.instance.addTransform(new FillNameTransform());
 SchemaTransformer.instance.addTransform(new FillParentTransform());
