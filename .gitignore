@@ -9,3 +9,4 @@ ast\.json
 schema\.json
 tmp/
 .secret_token
+*.tsbuildinfo
