@@ -1,4 +1,3 @@
-import * as one from "../StdLib/one";
 import { OneAst as ast } from "../One/Ast";
 import { Reader } from "./Common/Reader";
 import { ExpressionParser } from "./Common/ExpressionParser";

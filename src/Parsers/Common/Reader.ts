@@ -1,4 +1,3 @@
-import * as one from "../../StdLib/one";
 import { deindent } from "../../Generator/Utils";
 
 export class Cursor {
@@ -139,8 +138,15 @@ export class Reader {
         return result;
     }
 
+    static matchFromIndex(pattern: string, input: string, offset: number) {
+        const regex = new RegExp(pattern, "gy");
+        regex.lastIndex = offset;
+        const matches = regex.exec(input);
+        return matches === null ? null : Array.from(matches);
+    }    
+
     readRegex(pattern: string) {
-        const matches = one.Regex.matchFromIndex(pattern, this.input, this.offset);
+        const matches = Reader.matchFromIndex(pattern, this.input, this.offset);
         if (matches !== null) {
             this.prevTokenOffset = this.offset;
             this.wsOffset = this.offset = this.offset + matches[0].length;
