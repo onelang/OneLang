@@ -11,7 +11,7 @@ import { ExprLangAstPrinter } from "@one/Generator/ExprLang/ExprLangAstPrinter";
 import { ExprLangVM, JSModelHandler, VariableContext, VariableSource } from "@one/Generator/ExprLang/ExprLangVM";
 import { TemplateParser } from "@one/Generator/OneTemplate/TemplateParser";
 import { TemplateGenerator, TemplateMethod } from "@one/Generator/OneTemplate/TemplateGenerator";
-const YAML = require('yamljs');
+import * as YAML from "js-yaml";
 
 interface TestFile {
     templateTests: { [name: string]: { 
@@ -27,7 +27,7 @@ interface TestFile {
     tokenizerTests: { [expression: string]: { op?: string, i?: string, n?: string, s?: string }[]; };
 }
 
-const testFile = <TestFile>YAML.parse(readFile(`test/src/TemplateTest.yaml`));
+const testFile = <TestFile>YAML.safeLoad(readFile(`test/src/TemplateTest.yaml`));
 
 function printTemplateAst(name: string, tmplAst: TmplAst.Block) {
     const tmplAstJson = JSON.stringify(tmplAst, null, 4);

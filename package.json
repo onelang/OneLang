@@ -37,7 +37,7 @@
     "test": "node test/lib/main.js"
   },
   "dependencies": {
-    "yamljs": "^0.3.0"
+    "js-yaml": "^3.13.1"
   },
   "devDependencies": {
     "@types/node": "^8.10.59",

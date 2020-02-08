@@ -1,6 +1,6 @@
 import { LangFileSchema } from "../Generator/LangFileSchema";
 import { extend } from "../Utils/Helpers";
-import * as YAML from "yamljs";
+import * as YAML from "js-yaml";
 
 export class PackageId {
     type: "Interface"|"Implementation";
@@ -42,7 +42,7 @@ export class InterfacePackage {
     definition: string;
 
     constructor(public content: PackageContent) {
-        this.interfaceYaml = YAML.parse(content.files["interface.yaml"]);
+        this.interfaceYaml = YAML.safeLoad(content.files["interface.yaml"]);
         this.definition = content.files[this.interfaceYaml["definition-file"]];
     }
 }
@@ -70,10 +70,10 @@ export class ImplementationPackage {
     implementations: ImplPkgImplementation[] = [];
 
     constructor(public content: PackageContent) {
-        this.implementationYaml = YAML.parse(content.files["package.yaml"]);
+        this.implementationYaml = YAML.safeLoad(content.files["package.yaml"]);
         this.implementations = [...this.implementationYaml.implements||[]];
         for (const include of this.implementationYaml.includes||[]) {
-            const included = <ImplPackageYaml> YAML.parse(content.files[include]);
+            const included = <ImplPackageYaml> YAML.safeLoad(content.files[include]);
             this.implementations.push(...included.implements);
         }
     }

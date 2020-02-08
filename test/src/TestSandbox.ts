@@ -1,7 +1,7 @@
 import { OneCompiler } from "@one/OneCompiler";
 import { readFile, writeFile } from "@one/Utils/NodeUtils";
 require("../Utils/Extensions.js");
-global["YAML"] = require('yamljs'); 
+import * as YAML from "js-yaml";
 
 const programCode = `
 <?php

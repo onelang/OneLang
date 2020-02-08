@@ -32,7 +32,7 @@ import { WhileToForTransform } from "./One/Transforms/WhileToFor";
 import { ProcessTypeHints } from "./One/Transforms/ProcessTypeHints";
 import { LangFilePreprocessor } from "./Generator/LangFilePreprocessor";
 import { PackageManager } from "./StdLib/PackageManager";
-import * as YAML from "yamljs";
+import * as YAML from "js-yaml";
 
 SchemaTransformer.instance.addTransform(new FillNameTransform());
 SchemaTransformer.instance.addTransform(new FillParentTransform());
@@ -57,7 +57,7 @@ export class OneCompiler {
 
         const overlaySchema = TypeScriptParser2.parseFile(overlayCode);
         const stdlibSchema = TypeScriptParser2.parseFile(stdlibCode);
-        this.genericTransformer = new GenericTransformer(<GenericTransformerFile> YAML.parse(genericTransformerYaml));
+        this.genericTransformer = new GenericTransformer(<GenericTransformerFile> YAML.safeLoad(genericTransformerYaml));
 
         overlaySchema.sourceType = "overlay";
         stdlibSchema.sourceType = "stdlib";
@@ -168,7 +168,7 @@ export class OneCompiler {
     }
 
     static parseLangSchema(langYaml: string, pacMan: PackageManager, stdlib: one.Schema) {
-        const schema = <LangFileSchema.LangFile> YAML.parse(langYaml);
+        const schema = <LangFileSchema.LangFile> YAML.safeLoad(langYaml);
         pacMan.loadImplsIntoLangFile(schema);
         LangFilePreprocessor.preprocess(schema, stdlib);
         return schema;
