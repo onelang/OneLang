@@ -40,7 +40,7 @@
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
-    "@types/node": "^8.0.28",
+    "@types/node": "^8.10.59",
     "mkdirp": "^0.5.1",
     "module-alias": "^2.2.2",
     "request": "^2.88.0",
