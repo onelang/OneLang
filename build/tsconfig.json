@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "baseUrl": "../",
+        "paths": {
+            "@one/*": ["src/*"]
+        },
+        "target": "es2017",
+        "module": "umd",
+        "moduleResolution": "node",
+    },
+    "include": ["*.ts"],
+    "references": [
+        { "path": "../" }
+    ] 
+}

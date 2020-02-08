@@ -10,3 +10,5 @@ schema\.json
 tmp/
 .secret_token
 *.tsbuildinfo
+build/*.js
+packages/bundle.json
