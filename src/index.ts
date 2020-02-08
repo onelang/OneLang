@@ -1,5 +1,4 @@
-import { PackageManager, PackagesFolderSource } from "./StdLib/PackageManager";
-import { readFile } from "./Utils/NodeUtils";
+import { PackageManager, PackageSource } from "./StdLib/PackageManager";
 import { OneCompiler } from "./OneCompiler";
 import { ExprLangLexer } from "./Generator/ExprLang/ExprLangLexer";
 import { ExprLangParser } from "./Generator/ExprLang/ExprLangParser";
@@ -8,9 +7,32 @@ import { ExprLangAstPrinter } from "./Generator/ExprLang/ExprLangAstPrinter";
 import { ExprLangVM, VariableContext, VariableSource } from "./Generator/ExprLang/ExprLangVM";
 import { AstHelper } from "./One/AstHelper";
 import { OverviewGenerator } from "./One/OverviewGenerator";
+import { PackageBundleSource } from "./StdLib/PackageBundleSource";
+import { PackagesFolderSource } from "./StdLib/PackagesFolderSource";
 import * as LangConfigs from "./Generator/LangConfigs";
 
-const rootDir = `${__dirname}/..`;
+function isNode() { return typeof process !== 'undefined' && process.versions != null && process.versions.node != null; }
+
+async function readFile(filename: string) {
+    if (isNode()) {
+        const fs = require("fs");
+        return fs.readFileSync(`${__dirname}/../${filename}`, "utf8");
+    } else {
+        const url = (<any>require).toUrl(`./${filename}`);
+        console.log('fetching file', url);
+        const resp = await fetch(url);
+        const respText = await resp.text();
+        return respText;
+    }
+}
+
+async function getPackageSource(): Promise<PackageSource> {
+    if (isNode) {
+        return new PackagesFolderSource(`${__dirname}/../packages`);
+    } else {
+        return new PackageBundleSource(JSON.parse(await readFile("packages/bundle.json")));
+    }
+}
 
 class OneLangGlobal {
     getCapabilities() { 
@@ -21,18 +43,18 @@ class OneLangGlobal {
     }
 
     async transpile(source: string, sourceLang: string, targetLang: string): Promise<string> {
-        const pacMan = new PackageManager(new PackagesFolderSource());
+        const pacMan = new PackageManager(await getPackageSource());
         await pacMan.loadAllCached();
 
-        const overlayCode = readFile(`${rootDir}/langs/NativeResolvers/${sourceLang}.ts`);
+        const overlayCode = await readFile(`langs/NativeResolvers/${sourceLang}.ts`);
         const stdlibCode = pacMan.getInterfaceDefinitions();
-        const genericTransforms = readFile(`${rootDir}/langs/NativeResolvers/GenericTransforms.yaml`);
+        const genericTransforms = await readFile(`langs/NativeResolvers/GenericTransforms.yaml`);
 
         const compiler = new OneCompiler();
         compiler.setup(overlayCode, stdlibCode, genericTransforms);
         compiler.parse(sourceLang, source);
 
-        const langYaml = readFile(`${rootDir}/langs/${targetLang}.yaml`);
+        const langYaml = await readFile(`langs/${targetLang}.yaml`);
         const langSchema = OneCompiler.parseLangSchema(langYaml, pacMan, compiler.stdlibCtx.schema);
 
         const codeGen = compiler.getCodeGenerator(langSchema);
@@ -42,5 +64,5 @@ class OneLangGlobal {
 }
 
 export const OneLang = new OneLangGlobal();
-export { ExprLangLexer, ExprLangParser, ExprLangAst, ExprLangAstPrinter, ExprLangVM, VariableContext, VariableSource, OneCompiler, AstHelper, OverviewGenerator };
+export { ExprLangLexer, ExprLangParser, ExprLangAst, ExprLangAstPrinter, ExprLangVM, VariableContext, VariableSource, OneCompiler, AstHelper, OverviewGenerator, PackageManager, PackagesFolderSource, PackageBundleSource };
 export { LangConfigs };
