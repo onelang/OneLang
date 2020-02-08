@@ -1,12 +1,6 @@
 import { LangFileSchema } from "../Generator/LangFileSchema";
-import { AstHelper } from "../One/AstHelper";
 import { extend } from "../Utils/Helpers";
-import * as path from 'path';
-
-const fs = require("fs");
-const glob = require("glob");
-global["YAML"] = require('yamljs'); 
-declare var YAML;
+import * as YAML from "yamljs";
 
 export class PackageId {
     type: "Interface"|"Implementation";
@@ -82,37 +76,6 @@ export class ImplementationPackage {
             const included = <ImplPackageYaml> YAML.parse(content.files[include]);
             this.implementations.push(...included.implements);
         }
-    }
-}
-
-export class PackagesFolderSource implements PackageSource {
-    getPackageBundle(ids: PackageId[], cachedOnly: boolean): Promise<PackageBundle> {
-        throw new Error("Method not implemented.");
-    }
-
-    async getAllCached(): Promise<PackageBundle> {
-        const packages: { [id: string]: PackageContent } = {};
-        const baseDir = `${__dirname}/../../packages/`;
-        const allFiles = glob.sync(`${baseDir}**/*`, { nodir: true });
-        for (const fn of allFiles) {
-            const [type, pkgDir, ...pathParts] = path.relative(baseDir, fn).split("/"); // [0]=packages, [1]=implementations/interfaces, [2]=package-name, [3:]=path
-            let pkg = packages[`${type}/${pkgDir}`];
-            if (!pkg) {
-                const pkgDirParts: string[] = pkgDir.split("-");
-                const version = pkgDirParts.pop().replace(/^v/, "");
-                pkg = packages[`${type}/${pkgDir}`] = <PackageContent> { 
-                    id: <PackageId> {
-                        name: pkgDirParts.join("-"),
-                        type: type === "implementations" ? "Implementation" : "Interface",
-                        version
-                    },
-                    fromCache: true,
-                    files: {}
-                };
-            }
-            pkg.files[pathParts.join("/")] = fs.readFileSync(fn, "utf-8");
-        }
-        return <PackageBundle> { packages: Object.values(packages) };
     }
 }
 

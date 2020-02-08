@@ -3,7 +3,8 @@ import * as fs from 'fs';
 import { writeFile, readFile, jsonRequest, timeNow } from "@one/Utils/NodeUtils";
 import { OneCompiler } from "@one/OneCompiler";
 import { langConfigs, CompileResult } from "@one/Generator/LangConfigs";
-import { PackagesFolderSource, PackageManager } from "@one/StdLib/PackageManager";
+import { PackageManager } from "@one/StdLib/PackageManager";
+import { PackagesFolderSource } from "@one/StdLib/PackagesFolderSource";
 
 const pacMan = new PackageManager(new PackagesFolderSource());
 pacMan.loadAllCached().then(() => main());

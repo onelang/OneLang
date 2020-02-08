@@ -8,7 +8,8 @@ import { OneCompiler } from "@one/OneCompiler";
 import { RubyParser } from "@one/Parsers/RubyParser";
 import { PhpParser } from "@one/Parsers/PhpParser";
 import * as fs from 'fs';
-import { PackageManager, PackagesFolderSource } from '@one/StdLib/PackageManager';
+import { PackageManager } from '@one/StdLib/PackageManager';
+import { PackagesFolderSource } from "@one/StdLib/PackagesFolderSource";
 
 (async () => {
 
