@@ -18,8 +18,8 @@ async function readFile(filename: string) {
         const fs = require("fs");
         return fs.readFileSync(`${__dirname}/../${filename}`, "utf8");
     } else {
-        const url = (<any>require).toUrl(`./${filename}`);
-        console.log('fetching file', url);
+        const dirName = (<any>require).toUrl("./");
+        const url = `${dirName}../${filename}`;
         const resp = await fetch(url);
         const respText = await resp.text();
         return respText;
@@ -27,7 +27,7 @@ async function readFile(filename: string) {
 }
 
 async function getPackageSource(): Promise<PackageSource> {
-    if (isNode) {
+    if (isNode()) {
         return new PackagesFolderSource(`${__dirname}/../packages`);
     } else {
         return new PackageBundleSource(JSON.parse(await readFile("packages/bundle.json")));
