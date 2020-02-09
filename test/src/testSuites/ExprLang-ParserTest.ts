@@ -1,4 +1,4 @@
-import { runYamlTestSuite, assert } from "./TestUtils";
+import { runYamlTestSuite, assert } from "../TestUtils";
 import { ExprLangParser } from "@one/Generator/ExprLang/ExprLangParser";
 import { ExprLangAstPrinter } from '@one/Generator/ExprLang/ExprLangAstPrinter';
 

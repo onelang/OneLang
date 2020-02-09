@@ -1,4 +1,4 @@
-import { runYamlTestSuite, assert } from "./TestUtils";
+import { runYamlTestSuite, assert } from "../TestUtils";
 import { TemplateParser } from "@one/Generator/OneTemplate/TemplateParser";
 import { TemplateGenerator, TemplateMethod } from "@one/Generator/OneTemplate/TemplateGenerator";
 import { TemplateAst } from "@one/Generator/OneTemplate/TemplateAst";

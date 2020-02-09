@@ -1,4 +1,4 @@
-import { runYamlTestSuite, assert } from "./TestUtils";
+import { runYamlTestSuite, assert } from "../TestUtils";
 import { Token, ExprLangLexer, ExprLangLexerException } from "@one/Generator/ExprLang/ExprLangLexer";
 import { operators } from "@one/Generator/ExprLang/ExprLangParser";
 
