@@ -31,8 +31,9 @@
   ],
   "directories": {},
   "scripts": {
-    "prepare": "npm run build",
-    "build": "tsc -b",
+    "prepare": "npm run build && npm run bundle",
+    "build": "tsc -b . build",
+    "bundle": "node build/bundle-packages.js",
     "pretest": "tsc -b . test",
     "test": "node test/lib/main.js"
   },
