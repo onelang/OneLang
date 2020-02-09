@@ -35,14 +35,18 @@
     "build": "tsc -b . build",
     "bundle": "node build/bundle-packages.js",
     "pretest": "tsc -b . test",
-    "test": "node test/lib/main.js"
+    "test": "npx mocha"
   },
   "dependencies": {
     "js-yaml": "^3.13.1"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.8",
+    "@types/js-yaml": "^3.12.2",
+    "@types/mocha": "^7.0.1",
     "@types/node": "^8.10.59",
     "mkdirp": "^0.5.1",
+    "mocha": "^7.0.1",
     "module-alias": "^2.2.2",
     "request": "^2.88.0",
     "typescript": "^3.7.5"

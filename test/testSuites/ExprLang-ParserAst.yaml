@@ -1,0 +1,28 @@
+'a': { kind: identifier, text: a }
+'1': { kind: literal, type: number, value: 1 }
+'"x"': { kind: literal, type: string, value: x }
+'!condition':
+  kind: unary
+  op: "!"
+  expr: { kind: identifier, text: condition }
+'~-condition':
+  kind: unary
+  op: "~"
+  expr:
+    kind: unary
+    op: "-"
+    expr: { kind: identifier, text: condition }
+'2+3':
+  kind: binary
+  op: +
+  left: { kind: literal, type: number, value: 2 }
+  right: { kind: literal, type: number, value: 3 }
+'1-2-3':
+  kind: binary
+  op: "-"
+  left:
+    kind: binary
+    op: "-"
+    left: { kind: literal, type: number, value: 1 }
+    right: { kind: literal, type: number, value: 2 }
+  right: { kind: literal, type: number, value: 3 }

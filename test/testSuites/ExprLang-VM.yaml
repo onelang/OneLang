@@ -1,0 +1,7 @@
+'1': { expected: 1 }
+'a': { expected: 2, model: { a: 2 } }
+'"a"': { expected: "a" }
+'1+2': { expected: 3 }
+'1-2-3': { expected: -4 }
+'obj.method(9)': { expected: 20 }
+'obj.a + obj.b / 2 + c': { expected: 10, model: { c: 2 } }
