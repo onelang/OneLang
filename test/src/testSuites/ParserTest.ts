@@ -9,4 +9,4 @@ function testFolder(folder: string) {
 
 describe("Native resolvers", () => testFolder("langs/NativeResolvers"));
 describe("Package interfaces", () => testFolder("packages/interfaces"));
-describe("Test inputs", () => testFolder("test/input"));
+describe("Test inputs", () => testFolder("test/testSuites/CompilationTest"));
