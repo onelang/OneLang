@@ -1,5 +1,5 @@
 import { OneCompiler } from "@one/OneCompiler";
-import { readFile, writeFile } from "@one/Utils/NodeUtils";
+import { readFile, writeFile } from "./TestUtils";
 require("../Utils/Extensions.js");
 import * as YAML from "js-yaml";
 

@@ -4,7 +4,7 @@ import { TemplateGenerator, TemplateMethod } from "@one/Generator/OneTemplate/Te
 import { TemplateAst } from "@one/Generator/OneTemplate/TemplateAst";
 import { TemplateAstPrinter } from "@one/Generator/OneTemplate/TemplateAstPrinter";
 import { VariableContext, VariableSource } from "@one/Generator/ExprLang/ExprLangVM";
-import { writeFile } from "@one/Utils/NodeUtils";
+import { writeFile } from "../TestUtils";
 
 interface TemplateTest {
     tmpl: string;
