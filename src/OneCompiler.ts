@@ -50,7 +50,7 @@ export class OneCompiler {
     genericTransformer: GenericTransformer;
     langName: string;
 
-    saveSchemaStateCallback: (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, data: string) => void;
+    saveSchemaStateCallback: (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, generator: () => string) => void;
 
     setup(overlayCode: string, stdlibCode: string, genericTransformerYaml: string) {
         overlayCode = overlayCode.replace(/^[^\n]*<reference.*stdlib.d.ts[^\n]*\n/, "");
@@ -160,11 +160,8 @@ export class OneCompiler {
     protected saveSchemaState(schemaCtx: SchemaContext, name: string) {
         if (!this.saveSchemaStateCallback) return;
 
-        const schemaOverview = new OverviewGenerator().generate(schemaCtx);
-        this.saveSchemaStateCallback("overviewText", schemaCtx.schema.sourceType, name, schemaOverview);
-
-        const schemaJson = AstHelper.toJson(schemaCtx.schema);
-        this.saveSchemaStateCallback("schemaJson", schemaCtx.schema.sourceType, name, schemaJson);
+        this.saveSchemaStateCallback("overviewText", schemaCtx.schema.sourceType, name, () => new OverviewGenerator().generate(schemaCtx));
+        this.saveSchemaStateCallback("schemaJson", schemaCtx.schema.sourceType, name, () => AstHelper.toJson(schemaCtx.schema));
     }
 
     static parseLangSchema(langYaml: string, pacMan: PackageManager, stdlib: one.Schema) {

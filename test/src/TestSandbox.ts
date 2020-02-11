@@ -22,9 +22,9 @@ print("result = " . $calc->calc(10, 5) . "\n");
 `.trim();
 
 const compiler = new OneCompiler();
-compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, data: string) => {
+compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, generator: () => string) => {
     if (type === "schemaJson" && schemaType === "program" && name === "0_Original")
-        writeFile("tmp/debug.json", data);
+        writeFile("tmp/debug.json", generator());
 };
 const overlayCode = readFile(`langs/NativeResolvers/php.ts`);
 const stdlibCode = readFile(`langs/StdLibs/stdlib.d.ts`);

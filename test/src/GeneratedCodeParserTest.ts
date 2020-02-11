@@ -1,7 +1,7 @@
 import 'module-alias/register';
 import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser2";
 import { CSharpParser } from "@one/Parsers/CSharpParser";
-import { readFile, writeFile } from "@one/Utils/NodeUtils";
+import { readFile, writeFile } from "./TestUtils";
 import { OneAst as ast } from "@one/One/Ast";
 import { AstHelper } from "@one/One/AstHelper";
 import { OneCompiler } from "@one/OneCompiler";
@@ -53,9 +53,9 @@ for (const langName of langsToTest) {
         writeFile(`${outDir}/regen/0_Original_${langData.ext}.json`, AstHelper.toJson(schema));
 
         const compiler = new OneCompiler();
-        compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, data: string) => {
+        compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, generator: () => string) => {
             if (schemaType !== "program") return;
-            writeFile(`${outDir}/regen/schemaStates_${langName}/${name}.${type === "overviewText" ? "txt" : "json"}`, data);
+            writeFile(`${outDir}/regen/schemaStates_${langName}/${name}.txt`, generator());
         };
         compiler.setup(overlayCode, stdlibCode, genericTransforms);
         compiler.parse(langName, content);
