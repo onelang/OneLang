@@ -4,7 +4,6 @@ import * as YAML from "js-yaml";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as mkdirp from 'mkdirp';
-import * as crypto from 'crypto';
 
 export { assert };
 
