@@ -7,3 +7,4 @@ describe('Expression language (ExprLang)', function () {
 
 describe('OneTemplate',          () => require("./lib/testSuites/OneTemplateTest"));
 describe('OneLang Parser tests', () => require("./lib/testSuites/ParserTest"));
+describe("Compilation tests",    () => require("./lib/testSuites/CompilationTest"));
