@@ -4,9 +4,11 @@ import { FolderCacheBundle } from "./FolderCacheBundle";
 
 export class ArtifactManager {
     public cache: FolderCacheBundle;
+
     constructor(artifactsFolder = "test/artifacts", bundlePath = "tmp/artifacts.json") {
         this.cache = new FolderCacheBundle(artifactsFolder, bundlePath);
     }
+    
     throwIfModified(destPath: string, newContent: string) {
         const pathParts = path.parse(destPath);
         const approvedPath = path.join(pathParts.dir, `${pathParts.name}.approved${pathParts.ext}`);
