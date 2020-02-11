@@ -1,7 +1,9 @@
 import * as crypto from "crypto";
 import { glob, readFile, exists, writeFile, deleteFile } from './TestUtils';
+import { IArtifactFileSystem } from "./ArtifactManager";
+import { load } from "js-yaml";
 
-export class FolderCacheBundle {
+export class FolderCacheBundle implements IArtifactFileSystem {
     public cacheIdFn = ".cacheId";
     public files: { [path: string]: string; } = {};
     public isLoaded = false;
@@ -18,7 +20,7 @@ export class FolderCacheBundle {
         this.isDirty = true;
     }
 
-    loadCache() {
+    init() {
         if (this.bundlePath) {
             const cacheIdPath = `${this.cachedFolder}/${this.cacheIdFn}`;
             if (!exists(this.bundlePath) || !exists(cacheIdPath)) {
@@ -35,7 +37,7 @@ export class FolderCacheBundle {
         this.isLoaded = true;
     }
 
-    save() {
+    destroy() {
         if (!this.isDirty || !this.isLoaded) return;
         
         if (this.bundlePath) {
@@ -53,7 +55,7 @@ export class FolderCacheBundle {
     }
 
     writeFile(path: string, content: string) {
-        if (!this.isLoaded) this.loadCache();
+        if (!this.isLoaded) this.init();
         if (this.files[path] === content) return;
         this.files[path] = content;
         this.saveActions[path] = "write";
@@ -61,12 +63,12 @@ export class FolderCacheBundle {
     }
 
     readFile(path: string) {
-        if (!this.isLoaded) this.loadCache();
+        if (!this.isLoaded) this.init();
         return this.files[path];
     }
 
     deleteFile(path: string) {
-        if (!this.isLoaded) this.loadCache();
+        if (!this.isLoaded) this.init();
         if (!this.files[path]) return;
         delete this.files[path];
         this.saveActions[path] = "delete";

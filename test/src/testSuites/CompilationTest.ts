@@ -1,14 +1,16 @@
 import 'module-alias/register';
 import * as fs from 'fs';
 import { readFile, timeNow } from "../TestUtils";
-import { ArtifactManager } from "../ArtifactManager";
+import { ArtifactManager, LocalFileSystem } from "../ArtifactManager";
 import { OneCompiler } from "@one/OneCompiler";
 import { langConfigs } from "@one/Generator/LangConfigs";
 import { PackageManager } from "@one/StdLib/PackageManager";
 import { PackagesFolderSource } from "@one/StdLib/PackagesFolderSource";
+import { FolderCacheBundle } from '../FolderCacheBundle';
 
 const compiler = new OneCompiler();
-const artifactMan = new ArtifactManager("test/artifacts/CompilationTest", "tmp/artifacts_CompilationTest.json");
+const artifactMan = new ArtifactManager(new FolderCacheBundle("test/artifacts/CompilationTest", null));
+//const artifactMan = new ArtifactManager(new LocalFileSystem("test/artifacts/CompilationTest"));
 
 async function initCompiler() {
     const pacMan = new PackageManager(new PackagesFolderSource());
@@ -33,13 +35,13 @@ const prgCodes: { [name: string]: string } = {};
 // load / prepare everything, so only parse + compilation time matters in tests
 before(async () => {
     await initCompiler();
-    artifactMan.cache.loadCache();
+    artifactMan.fs.init();
     for (const prgName of prgNames)
         prgCodes[prgName] = readFile(`${testBaseDir}/${prgName}.ts`).replace(/\r\n/g, '\n');
 });
 
 after(() => {
-    artifactMan.cache.save();
+    artifactMan.fs.destroy();
 });
 
 for (const prgName of prgNames) {
