@@ -14,7 +14,7 @@ export class FolderCacheBundle {
         this.files = {};
         const filenames = glob(this.cachedFolder);
         for (const fn of filenames)
-            this.files[fn] = readFile(fn);
+            this.files[fn] = readFile(`${this.cachedFolder}/${fn}`);
         this.isDirty = true;
     }
 

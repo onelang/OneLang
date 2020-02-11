@@ -8,7 +8,7 @@ import { PackageManager } from "@one/StdLib/PackageManager";
 import { PackagesFolderSource } from "@one/StdLib/PackagesFolderSource";
 
 const compiler = new OneCompiler();
-const artifactMan = new ArtifactManager();
+const artifactMan = new ArtifactManager("test/artifacts/CompilationTest", "tmp/artifacts_CompilationTest.json");
 
 async function initCompiler() {
     const pacMan = new PackageManager(new PackagesFolderSource());
@@ -26,7 +26,6 @@ async function initCompiler() {
     }
 }
 
-const artifactDir = `test/artifacts/CompilationTest`;
 const testBaseDir = `test/testSuites/CompilationTest`;
 const prgNames = fs.readdirSync(testBaseDir).filter(x => x.endsWith(".ts")).map(x => x.replace(".ts", ""));
 const prgCodes: { [name: string]: string } = {};
@@ -48,7 +47,7 @@ for (const prgName of prgNames) {
         compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, generator: () => string) => {
             if (type !== "overviewText") return;
             if (schemaType !== "program") throw new Error(`Expected schemaType "program", but got "${schemaType}"`);
-            artifactMan.throwIfModified(`${artifactDir}/${prgName}/schemaStates/${name}.txt`, generator()); 
+            artifactMan.throwIfModified(`${prgName}/schemaStates/${name}.txt`, generator()); 
         };
     
         compiler.parse("typescript", prgCodes[prgName]);
@@ -56,7 +55,7 @@ for (const prgName of prgNames) {
         for (const lang of Object.values(langConfigs)) {
             const codeGen = compiler.getCodeGenerator(lang.schema);
             const generatedCode = codeGen.generate(true);
-            artifactMan.throwIfModified(`${artifactDir}/${prgName}/results/${prgName}.${codeGen.lang.extension}`, generatedCode);
+            artifactMan.throwIfModified(`${prgName}/results/${prgName}.${codeGen.lang.extension}`, generatedCode);
         }
     });
 }

@@ -7,23 +7,23 @@ import * as mkdirp from 'mkdirp';
 
 export { assert };
 
-const baseDir = `${__dirname}/../../`;
+const baseDir = `${__dirname}/../..`;
 
 export function readFile(fn: string): string {
-    return fs.readFileSync(`${baseDir}${fn}`, "utf8");
+    return fs.readFileSync(`${baseDir}/${fn}`, "utf8");
 }
 
 export function writeFile(fn: string, data: any) {
     mkdirp.sync(path.dirname(fn));
-    fs.writeFileSync(`${baseDir}${fn}`, data);
+    fs.writeFileSync(`${baseDir}/${fn}`, data);
 }
 
 export function deleteFile(fn: string) {
-    fs.unlinkSync(`${baseDir}${fn}`);
+    fs.unlinkSync(`${baseDir}/${fn}`);
 }
 
 export function exists(fn: string) {
-    return fs.existsSync(`${baseDir}${fn}`);
+    return fs.existsSync(`${baseDir}/${fn}`);
 }
 
 export function getYamlTestSuite(name: string){ 
@@ -36,13 +36,14 @@ export function runYamlTestSuite(name: string, caseRunner: (key: string, value: 
         it(key, () => caseRunner(key, cases[key]));
 }
 
-export function glob(dir: string, result: string[] = []) {
-    for (const entry of fs.readdirSync(`${baseDir}${dir}`).map(x => path.join(dir, x))) {
-        const isDir = fs.statSync(`${baseDir}${entry}`).isDirectory();
+export function glob(dir: string, result: string[] = [], path = '') {
+    const fullPath = `${baseDir}/${dir}/${path}`;
+    for (const entry of fs.readdirSync(fullPath)) {
+        const isDir = fs.statSync(`${fullPath}/${entry}`).isDirectory();
         if (isDir)
-            glob(entry, result);
+            glob(dir, result, `${path}${entry}/`);
         else
-            result.push(entry);
+            result.push(`${path}${entry}`);
     }
     return result;
 }

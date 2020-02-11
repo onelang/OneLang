@@ -4,7 +4,7 @@ import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser2";
 function testFolder(folder: string) {
     const files = glob(folder).filter(x => x.endsWith(".ts"));
     for (const file of files)
-        it(file, () => TypeScriptParser2.parseFile(readFile(file)));
+        it(file, () => TypeScriptParser2.parseFile(readFile(`${folder}/${file}`)));
 }
 
 describe("Native resolvers", () => testFolder("langs/NativeResolvers"));
