@@ -49,9 +49,10 @@ export namespace LangFileSchema {
 
     export interface LangFile {
         name?: string;
+        extension: string;
+        main?: string;
         classes: { [name: string]: Class };
         operators: { [name: string]: Operator };
-        extension: string;
         casing: CasingOptions;
         primitiveTypes: {
             void?: string;

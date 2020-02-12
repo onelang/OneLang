@@ -219,11 +219,5 @@ export const langConfigs: LangConfigs = {
     },
 };
 
-export interface CompileResult {
-    result?: string;
-    elapsedMs?: number;
-    exceptionText?: string;
-}
-
 for (const langName of Object.keys(langConfigs))
     langConfigs[langName].name = langName;

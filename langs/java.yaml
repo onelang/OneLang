@@ -1,5 +1,6 @@
 name: java
 extension: java
+main: Program.main
 casing:
   class: pascal_case
   enum: pascal_case

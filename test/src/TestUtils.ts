@@ -4,6 +4,7 @@ import * as YAML from "js-yaml";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as mkdirp from 'mkdirp';
+import { LangFileSchema } from '@one/Generator/LangFileSchema';
 
 export { assert };
 
@@ -24,6 +25,25 @@ export function deleteFile(fn: string) {
 
 export function exists(fn: string) {
     return fs.existsSync(`${baseDir}/${fn}`);
+}
+
+export function readDir(path: string) {
+    return fs.readdirSync(`${baseDir}/${path}`);
+}
+
+export function getCompilationTestPrgNames() {
+    return readDir("test/testSuites/CompilationTest").map(x => x.replace(".ts", ""));
+}
+
+export function getLangNames() {
+    return readDir("langs").filter(x => x.endsWith(".yaml")).map(x => x.replace(".yaml", ""));
+}
+
+export function getLangFiles() {
+    const result: { [name: string]: LangFileSchema.LangFile } = {};
+    for (const name of getLangNames())
+        result[name] = YAML.safeLoad(readFile(`langs/${name}.yaml`));
+    return result;
 }
 
 export function getYamlTestSuite(name: string){ 
