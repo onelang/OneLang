@@ -1,6 +1,6 @@
 import 'module-alias/register';
 import * as fs from 'fs';
-import { readFile, timeNow } from "../TestUtils";
+import { readFile, timeNow, glob, readDir } from "../TestUtils";
 import { ArtifactManager, LocalFileSystem } from "../ArtifactManager";
 import { OneCompiler } from "@one/OneCompiler";
 import { langConfigs } from "@one/Generator/LangConfigs";
@@ -13,7 +13,7 @@ const artifactMan = new ArtifactManager(new FolderCacheBundle("test/artifacts/Co
 //const artifactMan = new ArtifactManager(new LocalFileSystem("test/artifacts/CompilationTest"));
 
 async function initCompiler() {
-    const pacMan = new PackageManager(new PackagesFolderSource());
+    const pacMan = new PackageManager(new PackagesFolderSource(`${__dirname}/../../../packages`));
     await pacMan.loadAllCached();
 
     const overlayCode = readFile(`langs/NativeResolvers/typescript.ts`);
@@ -29,7 +29,7 @@ async function initCompiler() {
 }
 
 const testBaseDir = `test/testSuites/CompilationTest`;
-const prgNames = fs.readdirSync(testBaseDir).filter(x => x.endsWith(".ts")).map(x => x.replace(".ts", ""));
+const prgNames = readDir(testBaseDir).filter(x => x.endsWith(".ts")).map(x => x.replace(".ts", ""));
 const prgCodes: { [name: string]: string } = {};
 
 // load / prepare everything, so only parse + compilation time matters in tests

@@ -18,7 +18,7 @@ let prgNames = (<string[]>fs.readdirSync("test/artifacts")).filter(x => !x.start
 
 prgNames = prgNames.filter(x => !prgExcludeList.includes(x));
 
-const pacMan = new PackageManager(new PackagesFolderSource());
+const pacMan = new PackageManager(new PackagesFolderSource(`${__dirname}/../../../packages`));
 await pacMan.loadAllCached();
 const stdlibCode = pacMan.getInterfaceDefinitions();
 
