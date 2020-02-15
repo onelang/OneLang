@@ -15,8 +15,8 @@
               "${workspaceFolder}/lib/**/*.js",
               "${workspaceFolder}/test/lib/**/*.js"
             ]
-          },
-          {
+        },
+        {
             "type": "node",
             "request": "launch",
             "name": "Mocha Tests",
@@ -29,6 +29,34 @@
                 "${file}"
             ],
             "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+          "type": "node",
+          "request": "launch",
+          "name": "CompiledCodeRunner",
+          "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+          "cwd": "${workspaceFolder}/test",
+          "args": [
+              "--require", "ts-node/register",
+              "--require", "tsconfig-paths/register",
+              "--colors", "--recursive",
+              "${workspaceFolder}/test/src/testSuites/CompiledCodeRunner.ts"
+          ],
+          "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+          "type": "node",
+          "request": "launch",
+          "name": "CompilationTest",
+          "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+          "cwd": "${workspaceFolder}/test",
+          "args": [
+            "--require", "ts-node/register",
+            "--require", "tsconfig-paths/register",
+            "--colors", "--recursive",
+            "${workspaceFolder}/test/src/testSuites/CompilationTest.ts"
+          ],
+          "internalConsoleOptions": "openOnSessionStart"
         }
     ]
 }
