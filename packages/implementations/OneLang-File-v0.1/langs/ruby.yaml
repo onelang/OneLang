@@ -6,3 +6,4 @@ implements:
         OneFile:
           methods:
             readText: "IO.read({{fn}})"
+            writeText: "IO.write({{fn}}, {{content}})"

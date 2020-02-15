@@ -11,3 +11,8 @@ implements:
                 open my $fh, '<', {{fn}} or die "Can't open file $!";
                 read $fh, my ${{result}}, -s $fh;
                 close($fh);
+            writeText:
+              template: |-
+                open my $fh2, '>', {{fn}} or die "Can't open file $!";
+                print $fh2, {{content}}, -s $fh2;
+                close $fh2;

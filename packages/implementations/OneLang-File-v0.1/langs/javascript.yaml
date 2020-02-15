@@ -7,3 +7,4 @@ implements:
           includes: [fs]
           methods:
             readText: "fs.readFileSync({{fn}}, 'utf-8')"
+            writeText: "fs.writeFileSync({{fn}}, {{content}})"

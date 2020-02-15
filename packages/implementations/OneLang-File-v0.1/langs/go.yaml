@@ -11,3 +11,6 @@ implements:
               template: |-
                 {{result}}Bytes, _ := ioutil.ReadFile({{fn}})
                 {{result}} := string({{result}}Bytes)
+            writeText:
+              template: |-
+                ioutil.WriteFile({{fn}}, []byte({{content}}), 0644)

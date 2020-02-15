@@ -8,3 +8,5 @@ implements:
             readText:
               extraArgs: [result]
               template: "with open({{fn}}, 'r') as f: {{result}} = f.read()"
+            writeText:
+              template: "with open({{fn}}, 'w') as f: f.write({{content}})"

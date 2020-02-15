@@ -6,3 +6,4 @@ implements:
         OneFile:
           methods:
             readText: "file_get_contents({{fn}})"
+            writeText: "file_put_contents({{fn}}, {{content}})"

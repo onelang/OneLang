@@ -8,3 +8,7 @@ implements:
             readText:
               includes: [Foundation]
               template: "try! String(contentsOfFile: {{fn}}, encoding: String.Encoding.utf8)"
+            writeText:
+              includes: [Foundation]
+              template: |-
+                try! {{content}}.write(toFile: {{fn}}, atomically: false, encoding: .utf8)

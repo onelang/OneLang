@@ -7,3 +7,4 @@ implements:
           includes: [System.IO]
           methods:
             readText: "File.ReadAllText({{fn}})"
+            writeText: "File.WriteAllText({{fn}}, {{content}})"
