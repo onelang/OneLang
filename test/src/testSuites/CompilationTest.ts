@@ -51,6 +51,7 @@ for (const prgName of prgNames) {
         compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, generator: () => string) => {
             if (type !== "overviewText") return;
             if (schemaType !== "program") throw new Error(`Expected schemaType "program", but got "${schemaType}"`);
+            if (name.includes("_Init")) return;
             artifactMan.throwIfModified(`${prgName}/schemaStates/${name}.txt`, generator()); 
         };
     
