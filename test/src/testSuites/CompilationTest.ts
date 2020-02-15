@@ -46,6 +46,8 @@ after(() => {
 
 for (const prgName of prgNames) {
     it(prgName, () => {
+        artifactMan.delayThrows();
+
         compiler.saveSchemaStateCallback = (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, generator: () => string) => {
             if (type !== "overviewText") return;
             if (schemaType !== "program") throw new Error(`Expected schemaType "program", but got "${schemaType}"`);
@@ -59,6 +61,8 @@ for (const prgName of prgNames) {
             const generatedCode = codeGen.generate(true);
             artifactMan.throwIfModified(`${prgName}/results/${prgName}.${codeGen.lang.extension}`, generatedCode);
         }
+
+        artifactMan.throwFirstDelayed();
     });
 }
 

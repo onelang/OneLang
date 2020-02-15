@@ -31,29 +31,52 @@ export class LocalFileSystem implements IArtifactFileSystem {
 }
 
 export class ArtifactManager {
+    errors: { fn: string; actual: string; expected: string; }[] = [];
+    throwsAreDelayed = false;
+
     constructor(public fs: IArtifactFileSystem) { }
 
-    throwIfModified(destPath: string, newContent: string) {
-        const pathParts = path.parse(destPath);
-        const approvedPath = path.join(pathParts.dir, `${pathParts.name}.approved${pathParts.ext}`);
+    delayThrows() {
+        this.throwsAreDelayed = true;
+        this.errors = [];
+    }
+
+    throwFirstDelayed() {
+        this.throwsAreDelayed = false;
+        if (this.errors.length === 0) return;
+        const err = this.errors[0];
+        assert.equal(err.actual, err.expected, `Artifact content changed: ${err.fn}`);
+    }
+
+    equals(fn, actual, expected) {
+        if (actual === expected) return;
+        if (this.throwsAreDelayed)
+            this.errors.push({ fn, actual, expected });
+        else
+            assert.equal(actual, expected);
+    }
         
+    throwIfModified(fn: string, newContent: string) {
+        const pathParts = path.parse(fn);
+        const approvedPath = path.join(pathParts.dir, `approved.${pathParts.name}${pathParts.ext}`);
+
         const approved = this.fs.readFile(approvedPath);
-        const currentContent = this.fs.readFile(destPath);
+        const currentContent = this.fs.readFile(fn);
         try {
             if (approved) {
                 if (approved === newContent)
                     this.fs.deleteFile(approvedPath);
                 else
-                    assert.equal(newContent, approved);
+                    return this.equals(fn, newContent, approved);
             } else if (currentContent) {
                 if (newContent !== currentContent)
                     this.fs.writeFile(approvedPath, currentContent);
-                assert.equal(newContent, currentContent);
+                return this.equals(fn, newContent, currentContent);
             }
         }
         finally {
             if (currentContent !== newContent)
-                this.fs.writeFile(destPath, newContent);
+                this.fs.writeFile(fn, newContent);
         }
     }
 }
