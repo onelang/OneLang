@@ -6,9 +6,5 @@ class TokenType {
     static NoInitializer: string;
 }
 
-class TestClass {
-    testMethod(): string {
-        const casingTest = TokenType.EndToken;
-        return casingTest;
-    }
-}
+const casingTest = TokenType.EndToken;
+console.log(casingTest);

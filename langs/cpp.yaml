@@ -12,17 +12,19 @@ primitiveTypes:
   void: void
   any: any
 templates:
-  testGenerator: |-
-    int main()
-    {
-        try {
-            {{class}} c;
-            c.{{method}}();
-        } catch(std::exception& err) {
-            std::cout << "Exception: " << err.what() << '\n';
+  testGenerator:
+      includes: ['iostream']
+      template: |-
+        int main()
+        {
+            try {
+                {{class}} c;
+                c.{{method}}();
+            } catch(std::exception& err) {
+                std::cout << "Exception: " << err.what() << '\n';
+            }
+            return 0;
         }
-        return 0;
-    }
 
   main: |-
     {{for inc in includes|sep=\n}}

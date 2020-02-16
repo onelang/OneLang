@@ -13,7 +13,9 @@ implements:
             substring: "{{self}}.substr({{start}}, {{end}} - {{start}})"
             split: "OneStringHelper::split({{self}}, {{separator}})"
             get: "{{self}}[{{idx}}]"
-            replace: "OneStringHelper::replace({{self}}, {{from}}, {{to}})"
+            replace:
+              includes: ['OneLang-Core-v0.1/one.hpp']
+              template: "OneStringHelper::replace({{self}}, {{from}}, {{to}})"
             substrMatch: "{{self}}.compare({{offset}}, {{str}}.size(), {{str}}) == 0"
         OneNumber:
           type: int
