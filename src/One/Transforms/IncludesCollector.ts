@@ -42,6 +42,12 @@ export class IncludesCollector extends AstVisitor<void> {
         for (const include of op.includes)
             this.includes.add(include);
     }
+
+    protected visitType(type: one.Type) {
+        super.visitType(type);
+        if (type.isClassOrInterface)
+            this.useInclude(type.className);
+    }
     
     protected visitMethodReference(methodRef: one.MethodReference) {
         super.visitMethodReference(methodRef, null);
