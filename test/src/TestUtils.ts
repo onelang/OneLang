@@ -15,8 +15,9 @@ export function readFile(fn: string): string {
 }
 
 export function writeFile(fn: string, data: any) {
-    mkdirp.sync(path.dirname(fn));
-    fs.writeFileSync(`${baseDir}/${fn}`, data);
+    const fullFn = `${baseDir}/${fn}`;
+    mkdirp.sync(path.dirname(fullFn));
+    fs.writeFileSync(fullFn, data);
 }
 
 export function deleteFile(fn: string) {
@@ -40,9 +41,9 @@ export function getLangNames() {
 }
 
 export function getLangFiles() {
-    const result: { [name: string]: LangFileSchema.LangFile } = {};
+    const result: LangFileSchema.LangFile[] = [];
     for (const name of getLangNames())
-        result[name] = YAML.safeLoad(readFile(`langs/${name}.yaml`));
+        result.push(YAML.safeLoad(readFile(`langs/${name}.yaml`)));
     return result;
 }
 
