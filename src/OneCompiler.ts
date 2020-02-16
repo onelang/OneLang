@@ -164,11 +164,9 @@ export class OneCompiler {
         this.saveSchemaStateCallback("schemaJson", schemaCtx.schema.sourceType, name, () => AstHelper.toJson(schemaCtx.schema));
     }
 
-    static parseLangSchema(langYaml: string, pacMan: PackageManager, stdlib: one.Schema) {
-        const schema = <LangFileSchema.LangFile> YAML.safeLoad(langYaml);
-        pacMan.loadImplsIntoLangFile(schema);
-        LangFilePreprocessor.preprocess(schema, stdlib);
-        return schema;
+    static setupLangSchema(langSchema: LangFileSchema.LangFile, pacMan: PackageManager, stdlib: one.Schema) {
+        pacMan.loadImplsIntoLangFile(langSchema);
+        LangFilePreprocessor.preprocess(langSchema, stdlib);
     }
 
     getCodeGenerator(lang: LangFileSchema.LangFile) {
@@ -182,9 +180,9 @@ export class OneCompiler {
         return codeGen;
     }
 
-    compile(langCode: string, pacMan: PackageManager, callTestMethod = true, genMeta = false) {
-        const lang = OneCompiler.parseLangSchema(langCode, pacMan, this.stdlibCtx.schema);
-        const codeGen = this.getCodeGenerator(lang);
+    compile(langSchema: LangFileSchema.LangFile, pacMan: PackageManager, callTestMethod = true, genMeta = false) {
+        OneCompiler.setupLangSchema(langSchema, pacMan, this.stdlibCtx.schema);
+        const codeGen = this.getCodeGenerator(langSchema);
         codeGen.model.config.genMeta = genMeta;
         const generatedCode = codeGen.generate(callTestMethod);
         return generatedCode;

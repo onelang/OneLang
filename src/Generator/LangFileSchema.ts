@@ -48,7 +48,7 @@ export namespace LangFileSchema {
     }
 
     export interface LangFile {
-        name?: string;
+        name: string;
         extension: string;
         main?: string;
         classes: { [name: string]: Class };

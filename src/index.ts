@@ -9,7 +9,8 @@ import { AstHelper } from "./One/AstHelper";
 import { OverviewGenerator } from "./One/OverviewGenerator";
 import { PackageBundleSource } from "./StdLib/PackageBundleSource";
 import { PackagesFolderSource } from "./StdLib/PackagesFolderSource";
-import * as LangConfigs from "./Generator/LangConfigs";
+import * as YAML from "js-yaml";
+import { LangFileSchema } from "./Generator/LangFileSchema";
 
 function isNode() { return typeof process !== 'undefined' && process.versions != null && process.versions.node != null; }
 
@@ -54,8 +55,8 @@ class OneLangGlobal {
         compiler.setup(overlayCode, stdlibCode, genericTransforms);
         compiler.parse(sourceLang, source);
 
-        const langYaml = await readFile(`langs/${targetLang}.yaml`);
-        const langSchema = OneCompiler.parseLangSchema(langYaml, pacMan, compiler.stdlibCtx.schema);
+        const langSchema = <LangFileSchema.LangFile> YAML.safeLoad(await readFile(`langs/${targetLang}.yaml`));
+        OneCompiler.setupLangSchema(langSchema, pacMan, compiler.stdlibCtx.schema);
 
         const codeGen = compiler.getCodeGenerator(langSchema);
         const generatedCode = codeGen.generate(false);
@@ -65,4 +66,3 @@ class OneLangGlobal {
 
 export const OneLang = new OneLangGlobal();
 export { ExprLangLexer, ExprLangParser, ExprLangAst, ExprLangAstPrinter, ExprLangVM, VariableContext, VariableSource, OneCompiler, AstHelper, OverviewGenerator, PackageManager, PackagesFolderSource, PackageBundleSource };
-export { LangConfigs };

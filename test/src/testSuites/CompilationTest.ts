@@ -1,9 +1,8 @@
 import 'module-alias/register';
 import * as fs from 'fs';
-import { readFile, timeNow, glob, readDir } from "../TestUtils";
+import { readFile, timeNow, glob, readDir, getCompilationTestPrgNames, getLangFiles } from "../TestUtils";
 import { ArtifactManager, LocalFileSystem } from "../ArtifactManager";
 import { OneCompiler } from "@one/OneCompiler";
-import { langConfigs } from "@one/Generator/LangConfigs";
 import { PackageManager } from "@one/StdLib/PackageManager";
 import { PackagesFolderSource } from "@one/StdLib/PackagesFolderSource";
 import { FolderCacheBundle } from '../FolderCacheBundle';
@@ -11,6 +10,8 @@ import { FolderCacheBundle } from '../FolderCacheBundle';
 const compiler = new OneCompiler();
 const artifactMan = new ArtifactManager(new FolderCacheBundle("test/artifacts/CompilationTest", null));
 //const artifactMan = new ArtifactManager(new LocalFileSystem("test/artifacts/CompilationTest"));
+
+const langs = getLangFiles();
 
 async function initCompiler() {
     const pacMan = new PackageManager(new PackagesFolderSource(`${__dirname}/../../../packages`));
@@ -22,29 +23,25 @@ async function initCompiler() {
     
     compiler.setup(overlayCode, stdlibCode, genericTransforms);
     
-    for (const langConfig of Object.values(langConfigs)) {
-        const langYaml = readFile(`langs/${langConfig.name}.yaml`);
-        langConfig.schema = OneCompiler.parseLangSchema(langYaml, pacMan, compiler.stdlibCtx.schema);
+    for (const lang of langs) {
+        OneCompiler.setupLangSchema(lang, pacMan, compiler.stdlibCtx.schema);
     }
 }
 
-const testBaseDir = `test/testSuites/CompilationTest`;
-const prgNames = readDir(testBaseDir).filter(x => x.endsWith(".ts")).map(x => x.replace(".ts", ""));
-const prgCodes: { [name: string]: string } = {};
+const prgs = getCompilationTestPrgNames().map(name => ({ name, 
+    code: readFile(`test/testSuites/CompilationTest/${name}.ts`).replace(/\r\n/g, '\n') }));
 
 // load / prepare everything, so only parse + compilation time matters in tests
 before(async () => {
     await initCompiler();
     artifactMan.fs.init();
-    for (const prgName of prgNames)
-        prgCodes[prgName] = readFile(`${testBaseDir}/${prgName}.ts`).replace(/\r\n/g, '\n');
 });
 
 after(() => {
     artifactMan.fs.destroy();
 });
 
-for (const prgName of prgNames) {
+for (const { name: prgName, code: prgCode } of prgs) {
     it(prgName, () => {
         artifactMan.delayThrows();
 
@@ -55,10 +52,10 @@ for (const prgName of prgNames) {
             artifactMan.throwIfModified(`${prgName}/schemaStates/${name}.txt`, generator()); 
         };
     
-        compiler.parse("typescript", prgCodes[prgName]);
+        compiler.parse("typescript", prgCode);
         
-        for (const lang of Object.values(langConfigs)) {
-            const codeGen = compiler.getCodeGenerator(lang.schema);
+        for (const lang of Object.values(langs)) {
+            const codeGen = compiler.getCodeGenerator(lang);
             const generatedCode = codeGen.generate(true);
             artifactMan.throwIfModified(`${prgName}/results/${prgName}.${codeGen.lang.extension}`, generatedCode);
         }
