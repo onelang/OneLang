@@ -16,5 +16,4 @@ implements:
                   OneReflect.Publish(typeof({{class.name}}));
               }
             {{/if}}
-    native-includes:
-      - one.cs
+    native-includes: [one.cs]
