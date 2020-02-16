@@ -25,12 +25,12 @@ templates:
             }
             return 0;
         }
-
-  main: |-
+  includes: |-
     {{for inc in includes|sep=\n}}
       #include <{{inc.source}}>
     {{/for}}
 
+  main: |-
     {{for enum in enums|sep=\n}}
       enum class {{enum.name}} { 
       {{for item in enum.values|inline sep=", "}}
@@ -102,8 +102,10 @@ templates:
       - name: item
     template: |-
       {{if item.isComplexClass && !item.isOneArray}}
+        {{ include("OneLang-Core-v0.1/one.hpp") }}
         one::sp<{{typeName(item)}}>
       {{elif item.isOneArray}}
+        {{ include("OneLang-Core-v0.1/one.hpp") }}
         one::vec<{{getType(item.typeArguments[0])}}>
       {{else}}
         {{typeName(item)}}

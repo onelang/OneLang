@@ -102,7 +102,7 @@ class CodeGeneratorModel {
 
     typeName(type: one.Type) {
         const cls = this.generator.lang.classes[type.className];
-        const result = cls ? this.generator.call(cls.generator, [type.typeArguments.map(x => this.typeName(x)), type.typeArguments]) : this.generator.getTypeName(type);
+        const result = cls ? this.generator.callTmpl(cls, [type.typeArguments.map(x => this.typeName(x)), type.typeArguments]) : this.generator.getTypeName(type);
         return result;
     }
 
@@ -156,7 +156,7 @@ class CodeGeneratorModel {
         const overlayFunc = this.generator.lang.classes[className].methods[methodName];
         const typeArgs = methodRef.thisExpr && methodRef.thisExpr.valueType.typeArguments.map(x => this.typeName(x));
 
-        const code = this.generator.call(overlayFunc.generator, [thisArg, typeArgs, ...exprCallArgs, ...extraArgValues]);
+        const code = this.generator.callTmpl(overlayFunc, [thisArg, typeArgs, ...exprCallArgs, ...extraArgValues]);
         return code;
     }
 
@@ -219,7 +219,7 @@ class CodeGeneratorModel {
                     const gen = cls.fields[fieldName];
                     //this.log(varPath);
                     if (gen) {
-                        const code = this.generator.call(gen.generator, [thisArg]);
+                        const code = this.generator.callTmpl(gen, [thisArg]);
                         return code;
                     }
                 }
@@ -260,7 +260,7 @@ class CodeGeneratorModel {
                 return binaryExpr.operator === op && (left === "any" || left === leftType) && (right === "any" || right === rightType);
             });
             if (opMatch)
-                return this.generator.call(ops[opMatch].generator, [binaryExpr.left, binaryExpr.right]);
+                return this.generator.callTmpl(ops[opMatch], [binaryExpr.left, binaryExpr.right]);
 
             const fullName = `binary${binaryExpr.operator}`;
             if (this.generator.lang.expressions[fullName])
@@ -292,7 +292,7 @@ class CodeGeneratorModel {
         if (usingResult)
             this.tempVarHandler.create();
 
-        let genResult = this.generator.call(exprTmpl.generator, [obj, ...genArgs]);
+        let genResult = this.generator.callTmpl(exprTmpl, [obj, ...genArgs]);
 
         if (usingResult)
             genResult = [new GeneratedNode(this.tempVarHandler.finish(genResult))];
@@ -321,6 +321,7 @@ export class CodeGenerator {
     generatedCode: string;
     templateGenerator: TemplateGenerator;
     templateVars = new VariableSource("Templates");
+    includes: { [name: string]: string } = {}; // name -> path
 
     // templates: { [name: string]: TemplateMethod } = {};
     // operatorGenerators: { [name: string]: TemplateMethod } = {};
@@ -352,6 +353,7 @@ export class CodeGenerator {
         codeGenVars.addCallback("enums", () => this.model.enums);
         codeGenVars.addCallback("mainBlock", () => this.schema.mainBlock);
         codeGenVars.addCallback("result", () => this.model.result);
+        codeGenVars.setVariable("include", name => { this.includes[name] = name; return null; });
         for (const name of ["gen", "isIfBlock", "typeName", "escapeQuotes", "clsName"])
             codeGenVars.setVariable(name, (...args) => this.model[name].apply(this.model, args));
         for (const name of Object.keys(this.lang.templates))
@@ -367,12 +369,18 @@ export class CodeGenerator {
         return this.templateGenerator.methodCall(method, args, this.model, varContext);
     }
 
+    callTmpl(tmpl: LangFileSchema.TemplateObj, args: any[]) {
+        for (const incl of tmpl.includes || [])
+            this.includes[incl] = incl;
+        return this.call(tmpl.generator, args);
+    }
+
     getTypeName(type: one.Type): string {
         if (!type) return "???";
         if (type.isClassOrInterface) {
             const cls = this.model.generator.lang.classes[type.className];
             if (cls) {
-                return this.call(cls.generator, [type.typeArguments.map(x => this.getTypeName(x)), type.typeArguments])
+                return this.callTmpl(cls, [type.typeArguments.map(x => this.getTypeName(x)), type.typeArguments])
                     .map(x => x.text).join("");
             } else {
                 let result = this.caseConverter.getName(type.className, "class");
@@ -428,8 +436,9 @@ export class CodeGenerator {
     setupIncludes() {
         const includesCollector = new IncludesCollector(this.lang);
         includesCollector.process(this.schema);
-        const includes = Array.from(includesCollector.includes).map(name => ({ name, source: this.lang.includeSources[name] || name }));
-        this.model.includes = sortBy(includes, x => x.name);
+        for (const name of includesCollector.includes)
+            this.includes[name] = this.lang.includeSources[name] || name;
+        this.model.includes = sortBy(Object.entries(this.includes).map(x => ({ name: x[0], source: x[1] })), x => x.name);
     }
 
     setupEnums() {
@@ -515,18 +524,31 @@ export class CodeGenerator {
     }
 
     generate(callTestMethod: boolean) {
-        const generatedNodes = this.call(this.lang.templates["main"].generator, []);
         this.generatedCode = "";
-        for (const tmplNode of generatedNodes||[]) {
-            if (tmplNode.astNode && tmplNode.astNode.nodeData) {
-                const nodeData = tmplNode.astNode.nodeData;
-                let dstRange = nodeData.destRanges[this.lang.name];
-                if (!dstRange)
-                    dstRange = nodeData.destRanges[this.lang.name] = { start: this.generatedCode.length, end: -1 };
-                dstRange.end = this.generatedCode.length + tmplNode.text.length;
+
+        const mainNodes = this.callTmpl(this.lang.templates["main"], []) || [];
+        // main template in the previous line is already generated the dynamic include list which we can use now
+        this.model.includes = sortBy(Object.entries(this.includes).map(x => ({ name: x[0], source: x[1] })), x => x.name);
+        const includesNodes = this.lang.templates["includes"] ? this.call(this.lang.templates["includes"].generator, []) : null;
+
+        const processNodes = (nodes: GeneratedNode[]) => {
+            for (const tmplNode of nodes) {
+                if (tmplNode.astNode && tmplNode.astNode.nodeData) {
+                    const nodeData = tmplNode.astNode.nodeData;
+                    let dstRange = nodeData.destRanges[this.lang.name];
+                    if (!dstRange)
+                        dstRange = nodeData.destRanges[this.lang.name] = { start: this.generatedCode.length, end: -1 };
+                    dstRange.end = this.generatedCode.length + tmplNode.text.length;
+                }
+                this.generatedCode += tmplNode.text;
             }
-            this.generatedCode += tmplNode.text;
         }
+
+        if (includesNodes) {
+            processNodes(includesNodes);
+            this.generatedCode += "\n\n";
+        }
+        processNodes(mainNodes);
 
         if (callTestMethod) {
             const testClassName = this.caseConverter.getName("test_class", "class");
@@ -534,7 +556,7 @@ export class CodeGenerator {
             const testClass = this.model.classes.find(x => x.name === testClassName);
             if (testClass) {
                 const testMethod = testClass.methods.find(x => x.name === testMethodName);
-                this.generatedCode += "\n\n" + this.call(this.lang.templates["testGenerator"].generator,
+                this.generatedCode += "\n\n" + this.callTmpl(this.lang.templates["testGenerator"],
                     [testClassName, testMethodName, testMethod]).map(x => x.text).join("");
             }
         }

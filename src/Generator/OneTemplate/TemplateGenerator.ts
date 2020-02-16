@@ -83,7 +83,7 @@ export class TemplateGenerator implements IModelHandler {
         } else if (typeof method === "function") {
             result = method.apply(thisObj, args);
         } else {
-            throw new Error(`Expected TemplateMethod or function, but got ${method}`);
+            throw new Error(`Expected TemplateMethod or function, but got '${method}' (typeof ${typeof method})`);
         }
 
         this.callStack.pop();
