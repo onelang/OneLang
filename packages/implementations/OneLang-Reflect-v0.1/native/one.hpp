@@ -3,7 +3,7 @@
 #include <vector>
 #include <map>
 #include <iostream>
-#include <experimental/any>
+#include <any>
 
 class OneClass;
 
@@ -22,15 +22,15 @@ class OneReflectUtil {
     }
 };
 
-typedef any (*OneFieldGetter)(sp<ReflectedClass> obj);
-typedef void (*OneFieldSetter)(sp<ReflectedClass> obj, any value);
+typedef any (*OneFieldGetter)(one::sp<ReflectedClass> obj);
+typedef void (*OneFieldSetter)(pne::sp<ReflectedClass> obj, any value);
 
 class OneField {
   public:
-    sp<OneClass> cls;
-    string name;
+    one::sp<OneClass> cls;
+    std::string name;
     bool isStatic;
-    string type;
+    std::string type;
 
     OneFieldGetter getter;
     OneFieldSetter setter;
@@ -38,75 +38,75 @@ class OneField {
     OneField(const string& name, bool isStatic, const string& type, OneFieldGetter getter, OneFieldSetter setter)
         : name(name), isStatic(isStatic), type(type), getter(getter), setter(setter) { }
 
-    any getValue(sp<ReflectedClass> obj) {
+    any getValue(one::sp<ReflectedClass> obj) {
         return this->getter(obj);
     }
 
-    void setValue(sp<ReflectedClass> obj, any value) {
+    void setValue(one::sp<ReflectedClass> obj, any value) {
         this->setter(obj, value);
     }
 };
 
 class OneMethodArgument {
   public:
-    string name;
-    string type;
+    std::string name;
+    std::string type;
 
-    OneMethodArgument(const string& name, const string& type)
+    OneMethodArgument(const std::string& name, const std::string& type)
         : name(name), type(type) { }
 };
 
-typedef any (*OneMethodInvoker)(sp<ReflectedClass> obj, vec<any> args);
+typedef any (*OneMethodInvoker)(one::sp<ReflectedClass> obj, one::vec<any> args);
 
 class OneMethod {
   public:
-    sp<OneClass> cls;
+    one::sp<OneClass> cls;
     string name;
     bool isStatic;
-    string returnType;
-    vector<OneMethodArgument> args;
+    std::string returnType;
+    std::vector<OneMethodArgument> args;
     OneMethodInvoker invoker;
 
-    OneMethod(const string& name, bool isStatic, const string& returnType, const vector<OneMethodArgument>&& args, OneMethodInvoker invoker)
+    OneMethod(const std::string& name, bool isStatic, const std::string& returnType, const std::vector<OneMethodArgument>&& args, OneMethodInvoker invoker)
         : name(name), isStatic(isStatic), returnType(returnType), args(args), invoker(invoker) { }
 
-    any call(sp<ReflectedClass> obj, vec<any> args) {
+    any call(one::sp<ReflectedClass> obj, one::vec<any> args) {
         return this->invoker(obj, args);
     }
 };
 
 class OneClass {
     public:
-    string name;
+    std::string name;
     const type_info& typeInfo;
-    map<string, sp<OneField>> fields;
-    map<string, sp<OneMethod>> methods;
+    std::map<std::string, one::sp<OneField>> fields;
+    std::map<std::string, one::sp<OneMethod>> methods;
 
-    OneClass(const string& name, const type_info& typeInfo)
+    OneClass(const std::string& name, const std::type_info& typeInfo)
         : name(name), typeInfo(typeInfo) { }
 
-    OneClass& addMethod(sp<OneMethod> method) {
+    OneClass& addMethod(one::sp<OneMethod> method) {
         this->methods[OneReflectUtil::nameKey(method->name)] = method;
         return *this;
     }
 
-    OneClass& addField(sp<OneField> field) {
+    OneClass& addField(one::sp<OneField> field) {
         this->fields[OneReflectUtil::nameKey(field->name)] = field;
         return *this;
     }
 
-    sp<OneField> getField(const string& name) { return this->fields[OneReflectUtil::nameKey(name)]; }
-    sp<OneMethod> getMethod(const string& name) { return this->methods[OneReflectUtil::nameKey(name)]; }
+    one::sp<OneField> getField(const string& name) { return this->fields[OneReflectUtil::nameKey(name)]; }
+    one::sp<OneMethod> getMethod(const string& name) { return this->methods[OneReflectUtil::nameKey(name)]; }
 
-    vec<sp<OneField>> getFields() {
-        vec<sp<OneField>> result;
+    one::vec<one::sp<OneField>> getFields() {
+        one::vec<one::sp<OneField>> result;
         for(auto it = this->fields.begin(); it != this->fields.end(); ++it)
             result->push_back(it->second);
         return result;
     }
 
-    vec<sp<OneMethod>> getMethods() {
-        vec<sp<OneMethod>> result;
+    one::vec<one::sp<OneMethod>> getMethods() {
+        one::vec<one::sp<OneMethod>> result;
         for(auto it = this->methods.begin(); it != this->methods.end(); ++it)
             result->push_back(it->second);
         return result;
@@ -115,35 +115,35 @@ class OneClass {
 
 class OneReflect {
   public:
-    static map<string, sp<OneClass>> classesByName;
-    static map<size_t, sp<OneClass>> classesByTypeHash;
+    static std::map<string, one::sp<OneClass>> classesByName;
+    static std::map<size_t, one::sp<OneClass>> classesByTypeHash;
 
-    static sp<OneClass> getClass(sp<ReflectedClass> cls) {
+    static one::sp<OneClass> getClass(one::sp<ReflectedClass> cls) {
         return classesByTypeHash[typeid(*cls).hash_code()];
     }
 
-    static sp<OneClass> getClassByName(const string& name) {
+    static one::sp<OneClass> getClassByName(const std::string& name) {
         return classesByName[OneReflectUtil::nameKey(name)];
     }
 
-    static OneClass& addClass(const string& name, const type_info& typeInfo) {
-        auto oneClass = make_shared<OneClass>(name, typeInfo);
+    static OneClass& addClass(const std::string& name, const std::type_info& typeInfo) {
+        auto oneClass = std::make_shared<OneClass>(name, typeInfo);
         classesByName[OneReflectUtil::nameKey(name)] = oneClass;
         classesByTypeHash[typeInfo.hash_code()] = oneClass;
         return *oneClass;
     }
 };
 
-map<string, sp<OneClass>> OneReflect::classesByName;
-map<size_t, sp<OneClass>> OneReflect::classesByTypeHash;
+std::map<std::string, one::sp<OneClass>> OneReflect::classesByName;
+std::map<size_t, one::sp<OneClass>> OneReflect::classesByTypeHash;
 
-string operator+(const string& str, const any& value) {
+std::string operator+(const std::string& str, const any& value) {
     try {
         auto& type = value.type();
         if (type == typeid(int)) {
-            return str + to_string(any_cast<int>(value));
+            return str + std::to_string(any_cast<int>(value));
         } else if (type == typeid(string)) {
-            return str + any_cast<string>(value);
+            return str + std::any_cast<std::string>(value);
         } else {
             return str + "any<" + type.name() + ">";
         }

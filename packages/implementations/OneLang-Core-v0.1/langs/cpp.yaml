@@ -1,11 +1,11 @@
 implements:
   - interface: { name: One.Core, minver: 0.1, maxver: 0.1 }
     language: cpp
-    native-files:
-      - one.hpp
+    native-includes: [one.hpp]
     implementation:
       classes:
         OneString:
+          includes: ['string']
           type: "std::string"
           fields:
             length: "{{self}}.size()"
@@ -20,8 +20,8 @@ implements:
         OneBoolean:
           type: bool
         OneArray:
-          includes: [vector]
-          type: "vec<{{typeArgs[0]}}>"
+          includes: ['OneLang-Core-v0.1/one.hpp']
+          type: "one::vec<{{typeArgs[0]}}>"
           fields:
             length:  "{{self}}->size()"
           methods:
@@ -47,15 +47,15 @@ implements:
       operators:
         OneString + OneNumber:
           includes: [string]
-          template: "{{left}} + to_string({{right}})"
+          template: "{{left}} + std::to_string({{right}})"
         OneString + OneBoolean:
           template: '{{left}} + ({{right}} ? "true" : "false")'
       expressions:
         arrayLiteral: "std::make_shared<std::vector<{{getType(expr.valueType.typeArguments[0])}}>>(std::initializer_list<{{getType(expr.valueType.typeArguments[0])}}>{ {{genParams(expr.items)}} })"
         mapLiteral:
-          includes: ['{{libDir}}/one.hpp']
+          includes: ['OneLang-Core-v0.1/one.hpp']
           template: |-
-            make_shared_map<{{getType(expr.valueType.typeArguments[0])}}, {{getType(expr.valueType.typeArguments[1])}}>({
+            one::make_shared_map<{{getType(expr.valueType.typeArguments[0])}}, {{getType(expr.valueType.typeArguments[1])}}>({
               {{for prop in expr.properties|sep=",\n"}}
                 { "{{prop.name}}", {{gen(prop.initializer)}} }
               {{/for}}
