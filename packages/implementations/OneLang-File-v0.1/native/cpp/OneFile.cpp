@@ -1,4 +1,4 @@
-#include "./OneFile.hpp"
+#include "OneFile.hpp"
 #include <string>
 #include <fstream>
 

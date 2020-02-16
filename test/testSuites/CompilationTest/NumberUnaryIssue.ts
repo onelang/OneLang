@@ -3,3 +3,5 @@ class NumberUnaryIssue {
         num--;
     }
 }
+
+console.log("ok");

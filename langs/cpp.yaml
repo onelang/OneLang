@@ -10,7 +10,7 @@ casing:
   enumMember: pascal_case
 primitiveTypes:
   void: void
-  any: any
+  any: std::any
 templates:
   testGenerator:
       includes: ['iostream']
@@ -107,6 +107,9 @@ templates:
       {{elif item.isOneArray}}
         {{ include("OneLang-Core-v0.1/one.hpp") }}
         one::vec<{{getType(item.typeArguments[0])}}>
+      {{elif item.isAny}}
+        {{ include("any") }}
+        std::any
       {{else}}
         {{typeName(item)}}
       {{/if}}

@@ -15,3 +15,5 @@ class Container {
     method0(){}
     method1(str: string = "x"){ return str; }
 }
+
+console.log("ok");

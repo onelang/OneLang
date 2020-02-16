@@ -7,6 +7,7 @@ implements:
           args: [class]
           template: |-
             {{if class.attributes["reflect"]}}
+              {{ include("any") }}
               static struct Reflection{{class.name}}
               {
                 Reflection{{class.name}}() {
