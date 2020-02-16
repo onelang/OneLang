@@ -24,7 +24,9 @@ export interface PackageSource {
 }
 
 export interface PackageNativeImpl {
-    packageName: string;
+    pkgName: string;
+    pkgVendor: string;
+    pkgVersion: string;
     fileName: string;
     code: string;
 }
@@ -113,21 +115,28 @@ export class PackageManager {
         let result = [];
         for (const pkg of this.implementationPkgs) {
             for (const impl of pkg.implementations.filter(x => x.language === langName)) {
-                const fileNames = [];
+                const fileNamePaths: { [name: string]: string } = {};
                 for (const fileName of impl["native-includes"] || [])
-                    fileNames.push(fileName);
+                    fileNamePaths[fileName] = `native/${fileName}`;
 
                 let incDir = impl["native-include-dir"];
                 if (incDir) {
                     if (!incDir.endsWith("/")) incDir += "/";
-                    fileNames.push(...Object.keys(pkg.content.files)
-                        .filter(x => x.startsWith(`native/${incDir}`)).map(x => x.substr("native/".length)));
+                    const prefix = `native/${incDir}`;
+                    for (const fn of Object.keys(pkg.content.files).filter(x => x.startsWith(prefix)).map(x => x.substr(prefix.length)))
+                        fileNamePaths[fn] = `${prefix}${fn}`;
                 }
 
-                for (const fileName of fileNames) {
-                    const code = pkg.content.files[`native/${fileName}`];
+                for (const [fileName, path] of Object.entries(fileNamePaths)) {
+                    const code = pkg.content.files[path];
                     if (!code) throw new Error(`File '${fileName}' was not found for package '${pkg.implementationYaml.name}'`);
-                    result.push({ packageName: pkg.implementationYaml.name, fileName, code });
+                    result.push({ 
+                        pkgName: pkg.implementationYaml.name,
+                        pkgVendor: pkg.implementationYaml.vendor,
+                        pkgVersion: pkg.implementationYaml.version,
+                        fileName,
+                        code
+                    });
                 }
 
             }
