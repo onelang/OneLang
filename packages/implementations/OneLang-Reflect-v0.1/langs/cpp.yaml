@@ -1,6 +1,7 @@
 implements:
   - interface: { name: One.Reflect, minver: 0.1, maxver: 0.1 }
     language: cpp
+    native-includes: [one.hpp]
     implementation:
       templates:
         afterClass:
@@ -8,6 +9,8 @@ implements:
           template: |-
             {{if class.attributes["reflect"]}}
               {{ include("any") }}
+              {{ include("OneLang-Core-v0.1/one.hpp") }}
+              {{ include("OneLang-Reflect-v0.1/one.hpp") }}
               static struct Reflection{{class.name}}
               {
                 Reflection{{class.name}}() {
@@ -15,12 +18,12 @@ implements:
                     {{for field in class.fields}}
                       {{if field.static}}
                         .addField(std::make_shared<OneField>("{{field.name}}", /*isStatic*/ true, "{{field.type}}", 
-                            [](sp<ReflectedClass> obj){ return (any){{class.name}}::{{field.name}}; },
-                            [](sp<ReflectedClass> obj, any value){ {{class.name}}::{{field.name}} = any_cast<{{field.type}}>(value); }))
+                            [](one::sp<ReflectedClass> obj){ return (std::any){{class.name}}::{{field.name}}; },
+                            [](one::sp<ReflectedClass> obj, std::any value){ {{class.name}}::{{field.name}} = std::any_cast<{{field.type}}>(value); }))
                       {{else}}
                         .addField(std::make_shared<OneField>("{{field.name}}", /*isStatic*/ false, "{{field.type}}", 
-                            [](sp<ReflectedClass> obj){ return (any)static_pointer_cast<{{class.name}}>(obj)->{{field.name}}; },
-                            [](sp<ReflectedClass> obj, any value){ static_pointer_cast<{{class.name}}>(obj)->{{field.name}} = any_cast<{{field.type}}>(value); }))
+                            [](one::sp<ReflectedClass> obj){ return (std::any)std::static_pointer_cast<{{class.name}}>(obj)->{{field.name}}; },
+                            [](one::sp<ReflectedClass> obj, std::any value){ std::static_pointer_cast<{{class.name}}>(obj)->{{field.name}} = std::any_cast<{{field.type}}>(value); }))
                       {{/if}}
                     {{/for}}
                     {{for method in class.methods}}
@@ -29,19 +32,19 @@ implements:
                             OneMethodArgument("{{param.name}}", "{{param.type}}"),
                           {{/for}}
                         }, 
-                        [](sp<ReflectedClass> obj, vec<any> args){ 
-                          {{if !method.returnTypeInfo.isVoid}}return (any){{/if}}
+                        [](one::sp<ReflectedClass> obj, one::vec<std::any> args){ 
+                          {{if !method.returnTypeInfo.isVoid}}return (std::any){{/if}}
                           {{if method.static|inline}}
                             {{class.name}}::{{method.name}}
                           {{else|inline}}
-                            static_pointer_cast<{{class.name}}>(obj)->{{method.name}}
+                            std::static_pointer_cast<{{class.name}}>(obj)->{{method.name}}
                           {{/if}}
                           (
                             {{for param in method.parameters|inline sep=,}}
-                              any_cast<{{param.type}}>(args->at({{param_idx}}))
+                              std::any_cast<{{param.type}}>(args->at({{param_idx}}))
                             {{/for}}
                           ); 
-                          {{if method.returnTypeInfo.isVoid|inline}}return (any)nullptr; {{/if}}
+                          {{if method.returnTypeInfo.isVoid|inline}}return (std::any)nullptr; {{/if}}
                         }))
                     {{/for}}
                     ;
