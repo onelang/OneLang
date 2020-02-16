@@ -57,9 +57,7 @@ export class ArtifactManager {
     }
         
     throwIfModified(fn: string, newContent: string) {
-        const pathParts = path.parse(fn);
-        const approvedPath = path.join(pathParts.dir, `approved.${pathParts.name}${pathParts.ext}`);
-
+        const approvedPath = `.approved/${fn}`;
         const approved = this.fs.readFile(approvedPath);
         const currentContent = this.fs.readFile(fn);
         try {
