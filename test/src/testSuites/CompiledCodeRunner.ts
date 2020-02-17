@@ -24,25 +24,27 @@ for (const prg of prgs) {
             if (filter && !filter.exec(`${prg}:${lang.name}`)) continue;
             if (todoFilter && todoFilter.exec(`${prg}:${lang.name}`)) continue;
             const [mainClass, mainMethod] = (lang.main || "").split('.');
-            it(lang.name, async () => {
+            it(lang.name, async function() {
+                this.timeout(5000);
                 const sourceCode = readFile(`test/artifacts/CompilationTest/${prg}/results/${prg}.${lang.extension}`);
                 const nativeImpl = pacMan.getLangNativeImpls(lang.name);
                 const packageSources = nativeImpl.map(x => ({ packageName: `${x.pkgVendor}-${x.pkgName}-v${x.pkgVersion}`, fileName: x.fileName, code: x.code }));
                 const request: CompileRequest = { lang: lang.name, code: sourceCode, packageSources, className: mainClass, methodName: mainMethod };
+                console.log(request.code.split('\n\n')[0], request.packageSources.map(x => `${x.packageName}:${x.fileName}`));
                 let res = await jsonRequest<CompileResult>(`${backendUrl}/compile?useCache`, request);
                 
                 if (res.exceptionText && res.fromCache)
                     res = await jsonRequest<CompileResult>(`${backendUrl}/compile`, request);
 
                 if (res.exceptionText)
-                    throw new Error(`Compilation failed (${res.tmpDir||res.cacheId}): ${res.exceptionText}`);
+                    throw new Error(`Compilation failed (${res.tmpDir||res.cacheId}): ${res.exceptionText}\nOutput: ${res.result}`);
 
-                const expected = expectedResults[prg];
-                if (typeof expected !== "undefined")
+                const expected = expectedResults[`${prg}-${lang.name}`] || expectedResults[prg];
+                if (typeof expected === "undefined") {
+                    if (lang.name === "javascript")
+                        console.error(`Expected result was not set for program "${prg}", current result is ${JSON.stringify(res.result)}`);
+                } else
                     assert.equal(res.result, expected, `Result was incorrect (${res.tmpDir||res.cacheId})`);
-
-                else if (lang.name === "javascript")
-                    console.error(`Expected result was not set for program "${prg}", current result is ${JSON.stringify(res.result)}`);
             })
         }
     })
