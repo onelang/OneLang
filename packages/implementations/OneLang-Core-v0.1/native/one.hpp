@@ -43,7 +43,7 @@ class OneStringHelper {
   public:
     static one::vec<std::string> split(const std::string& str, const std::string& delim)
     {
-        one::vec<std::string> tokens;
+        one::vec<std::string> tokens(new std::vector<std::string>());
         
         size_t prev = 0, pos = 0;
         do

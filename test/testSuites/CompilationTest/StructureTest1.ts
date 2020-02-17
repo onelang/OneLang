@@ -1,4 +1,4 @@
-class List<T> {
+class MyList<T> {
     items: T[];
 }
 
@@ -9,8 +9,8 @@ class Item {
 }
 
 class Container {
-    itemList: List<Item>;
-    stringList: List<string>;
+    itemList: MyList<Item>;
+    stringList: MyList<string>;
 
     method0(){}
     method1(str: string = "x"){ return str; }

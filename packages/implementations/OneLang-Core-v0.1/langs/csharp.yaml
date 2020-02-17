@@ -9,7 +9,9 @@ implements:
             length: "{{self}}.Length"
           methods:
             substring: "{{self}}.Substring({{start}}, {{end}} - {{start}})"
-            split: "{{self}}.Split(new[]{ {{separator}} }, StringSplitOptions.None)"
+            split:
+              includes: ["System"]
+              template: "{{self}}.Split(new[]{ {{separator}} }, StringSplitOptions.None)"
             get: "{{self}}[{{idx}}]"
             replace: "{{self}}.Replace({{from}}, {{to}})"
             substrMatch: "String.Compare({{self}}, {{offset}}, {{str}}, 0, ({{str}}).Length) == 0"
