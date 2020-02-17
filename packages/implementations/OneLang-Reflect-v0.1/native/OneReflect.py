@@ -1,21 +1,16 @@
-class Reflect:
-    classes = {}
+classes = {}
 
-    @staticmethod
-    def get_class(obj):
-        return Reflect.classes.get(Reflect.name_key(obj.__class__.__name__))
+def get_class(obj):
+    return classes.get(name_key(obj.__class__.__name__))
 
-    @staticmethod
-    def get_class_by_name(name):
-        return Reflect.classes.get(Reflect.name_key(name))
+def get_class_by_name(name):
+    return classes.get(name_key(name))
 
-    @staticmethod
-    def setup_class(cls):
-        Reflect.classes[Reflect.name_key(cls.name)] = cls
+def setup_class(cls):
+    classes[name_key(cls.name)] = cls
 
-    @staticmethod
-    def name_key(name):
-        return name.lower().replace("_", "")
+def name_key(name):
+    return name.lower().replace("_", "")
 
 class Class:
     def __init__(self, typeObj, fields, methods):
@@ -25,18 +20,18 @@ class Class:
         self.fields = {}
         for field in fields:
             field.cls = self
-            self.fields[Reflect.name_key(field.name)] = field
+            self.fields[name_key(field.name)] = field
         
         self.methods = {}
         for method in methods:
             method.cls = self
-            self.methods[Reflect.name_key(method.name)] = method
+            self.methods[name_key(method.name)] = method
     
     def get_field(self, name):
-        return self.fields.get(Reflect.name_key(name))
+        return self.fields.get(name_key(name))
         
     def get_method(self, name):
-        return self.methods.get(Reflect.name_key(name))
+        return self.methods.get(name_key(name))
 
     def get_fields(self):
         return self.fields.values()

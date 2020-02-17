@@ -1,25 +1,26 @@
 implements:
   - interface: { name: One.Reflect, minver: 0.1, maxver: 0.1 }
     language: python
+    native-includes: ["OneReflect.py"]
     implementation:
       classes:
         OneReflect:
-          includes: ["one"]
-          template: "one.Reflect"
+          includes: ["OneReflect"]
+          template: "OneReflect"
       templates:
         endClass:
           args: [class]
           template: |-
             {{if class.attributes["reflect"]}}
-              one.Reflect.setup_class(one.Class({{class.name}}, [
+              OneReflect.setup_class(OneReflect.Class({{class.name}}, [
                   {{for field in class.fields|sep=\n}}
-                    one.Field("{{field.name}}", {{if field.static}}True{{else}}False{{/if}}, "{{field.type}}"),
+                    OneReflect.Field("{{field.name}}", {{if field.static}}True{{else}}False{{/if}}, "{{field.type}}"),
                   {{/for}}
                 ], [
                   {{for method in class.methods|sep=\n}}
-                    one.Method("{{method.name}}", {{if method.static}}True{{else}}False{{/if}}, "{{method.returnType}}", [
+                    OneReflect.Method("{{method.name}}", {{if method.static}}True{{else}}False{{/if}}, "{{method.returnType}}", [
                       {{for param in method.parameters|sep=\n}}
-                        one.MethodArgument("{{param.name}}", "{{param.type}}"),
+                        OneReflect.MethodArgument("{{param.name}}", "{{param.type}}"),
                       {{/for}}
                     ]),
                   {{/for}}
