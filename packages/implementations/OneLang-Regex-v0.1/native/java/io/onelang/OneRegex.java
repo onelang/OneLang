@@ -1,9 +1,11 @@
+package io.onelang;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class OneRegex
+public class OneRegex
 {
     public static List<String> matchFromIndex(String pattern, String input, int offset) {
         Pattern patternObj = Pattern.compile("\\G" + pattern);
