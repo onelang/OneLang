@@ -1,12 +1,3 @@
-class Reflect {
-    static getClass(obj) { return this.classes[obj.constructor.name.toLowerCase()]; }
-    static getClassByName(name) { return this.classes[name.toLowerCase()]; }
-
-    static setupClass(cls) { this.classes[cls.name.toLowerCase()] = cls; }
-}
-
-Reflect.classes = {};
-
 class Class {
     constructor(typeObj, fields, methods) {
         this.typeObj = typeObj;
@@ -75,4 +66,14 @@ class MethodArgument {
     }
 }
 
-module.exports = { Reflect, Class, Field, Method, MethodArgument };
+module.exports = {
+    Reflect,
+    Class,
+    Field,
+    Method,
+    MethodArgument,
+    classes: {},
+    getClass: function(obj) { return this.classes[obj.constructor.name.toLowerCase()]; },
+    getClassByName: function(name) { return this.classes[name.toLowerCase()]; },
+    setupClass: function(cls) { this.classes[cls.name.toLowerCase()] = cls; }
+};

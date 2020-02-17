@@ -1,8 +1,11 @@
 implements:
   - interface: { name: One.Regex, minver: 0.1, maxver: 0.1 }
     language: javascript
+    native-includes: ["OneRegex.js"]
     implementation:
+      includeSources:
+        OneRegex: "OneLang-Regex-v0.1/OneRegex"
       classes:
         OneRegex:
-          includes: ["one"]
-          template: "one.Regex"
+          includes: ["OneRegex"]
+          template: "OneRegex"

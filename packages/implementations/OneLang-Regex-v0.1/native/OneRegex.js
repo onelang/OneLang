@@ -1,4 +1,4 @@
-class Regex {
+class OneRegex {
     static matchFromIndex(pattern, input, offset) {
         const regex = new RegExp(pattern, "gy");
         regex.lastIndex = offset;
@@ -7,4 +7,4 @@ class Regex {
     }
 }
 
-module.exports = { Regex };
+module.exports = OneRegex;
