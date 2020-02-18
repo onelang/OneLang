@@ -13,7 +13,7 @@ templates:
     begin
         {{class}}.new().{{method}}()
     rescue Exception => err
-        print "Exception: #{err}"
+        puts "Exception: #{err}"
     end
 
   main: |-
