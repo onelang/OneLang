@@ -1,5 +1,6 @@
 name: csharp
 extension: cs
+mainFilename: Program.cs
 casing: # based on https://msdn.microsoft.com/en-us/library/x2dbyw72(v=vs.71).aspx
   class: pascal_case
   method: pascal_case

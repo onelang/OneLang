@@ -4,8 +4,9 @@ import { PackageManager } from '@one/StdLib/PackageManager';
 import { PackagesFolderSource } from '@one/StdLib/PackagesFolderSource';
 
 //const filter: RegExp = /cpp:(ArrayTest|HelloWorld|HelloWorldRaw)/;
-const filter: RegExp = /StrLenInferIssue:cpp/;
-const todoFilter: RegExp = /BigInteger:cpp/;
+//const filter: RegExp = /:(cpp|csharp|java|javascript|python|ruby)$/;
+const filter: RegExp = /:csharp$/;
+const todoFilter: RegExp = /(BigInteger:cpp|JsonParseTest:cpp|:perl)$/;
 
 const backendUrl = "http://127.0.0.1:11111";
 const expectedResults: { [prgName: string]: string } = getYamlTestSuite("CompiledCodeRunner");
@@ -27,24 +28,32 @@ for (const prg of prgs) {
             it(lang.name, async function() {
                 this.timeout(5000);
                 const sourceCode = readFile(`test/artifacts/CompilationTest/${prg}/results/${prg}.${lang.extension}`);
-                const nativeImpl = pacMan.getLangNativeImpls(lang.name);
-                const packageSources = nativeImpl.map(x => ({ packageName: `${x.pkgVendor}-${x.pkgName}-v${x.pkgVersion}`, fileName: x.fileName, code: x.code }));
-                const request: CompileRequest = { lang: lang.name, code: sourceCode, packageSources, className: mainClass, methodName: mainMethod };
-                console.log(request.code.split('\n\n')[0], request.packageSources.map(x => `${x.packageName}:${x.fileName}`));
+
+                const files = { [lang.mainFilename]: sourceCode };
+                for (const f of pacMan.getLangNativeImpls(lang.name))
+                    files[`${f.pkgVendor}-${f.pkgName}-v${f.pkgVersion}/${f.fileName}`] = f.code;
+
+                const request: CompileRequest = { lang: lang.name, name: prg, files, mode: "native" };
+                //console.log(request.code.split('\n\n')[0], request.packageSources.map(x => `${x.packageName}:${x.fileName}`));
                 let res = await jsonRequest<CompileResult>(`${backendUrl}/compile?useCache`, request);
-                
-                if (res.exceptionText && res.fromCache)
+
+                //console.log(JSON.stringify(res, null, 4));
+                if (!res.success || res.error)
+                    throw new Error(`[${res.tmpDir||res.cacheId}]: ${res.error}`);
+
+                //console.log(JSON.stringify(res));
+                if (!res.success && res.fromCache)
                     res = await jsonRequest<CompileResult>(`${backendUrl}/compile`, request);
 
-                if (res.exceptionText)
-                    throw new Error(`Compilation failed (${res.tmpDir||res.cacheId}): ${res.exceptionText}\nOutput: ${res.result}`);
+                if (!res.success)
+                    throw new Error(`[${res.tmpDir||res.cacheId}]: ${res.error}`);
 
                 const expected = expectedResults[`${prg}-${lang.name}`] || expectedResults[prg];
                 if (typeof expected === "undefined") {
                     if (lang.name === "javascript")
-                        console.error(`Expected result was not set for program "${prg}", current result is ${JSON.stringify(res.result)}`);
+                        console.error(`Expected result was not set for program "${prg}", current result is ${JSON.stringify(res.run.stdout)}`);
                 } else
-                    assert.equal(res.result, expected, `Result was incorrect (${res.tmpDir||res.cacheId})`);
+                    assert.equal(res.run.stdout, expected, `Result was incorrect (${res.tmpDir||res.cacheId})`);
             })
         }
     })
@@ -52,21 +61,26 @@ for (const prg of prgs) {
 
 interface CompileRequest {
     lang?: string;
-    code: string;
+    code?: string;
+    name: string;
+    mode?: "auto"|"jsonRepl"|"server"|"native";
     packageSources?: {
         packageName: string;
         fileName: string;
         code: string;
     }[];
+    files: { [name: string]: string };
     className?: string;
     methodName?: string;
 }
 
 interface CompileResult {
-    result?: string;
     elapsedMs?: number;
-    exceptionText?: string;
     fromCache: boolean;
     cacheId: string;
     tmpDir: string;
+    error: string;
+    success: boolean;
+    compilation: { stdout: string; stderr: string; exitCode: number; success: boolean };
+    run: { stdout: string; stderr: string; exitCode: number; success: boolean };
 }

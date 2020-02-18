@@ -51,6 +51,7 @@ export namespace LangFileSchema {
         name: string;
         extension: string;
         main?: string;
+        mainFilename: string;
         classes: { [name: string]: Class };
         operators: { [name: string]: Operator };
         casing: CasingOptions;
