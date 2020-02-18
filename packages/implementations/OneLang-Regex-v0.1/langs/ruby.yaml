@@ -1,8 +1,9 @@
 implements:
   - interface: { name: One.Regex, minver: 0.1, maxver: 0.1 }
     language: ruby
+    native-includes: ["OneRegex.rb"]
     implementation:
       classes:
         OneRegex:
-          includes: ["one"]
-          template: "One::Regex"
+          includes: ["OneRegex"]
+          template: "OneRegex"

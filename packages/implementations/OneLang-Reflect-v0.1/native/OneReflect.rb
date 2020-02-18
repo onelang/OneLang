@@ -1,26 +1,24 @@
-module One
-    class Reflect
-        @classes = {}
+class OneReflect
+    @classes = {}
 
-        class << self
-          attr_accessor :classes
-        end        
+    class << self
+        attr_accessor :classes
+    end        
 
-        def self.get_class(obj)
-            return Reflect::get_class_by_name(obj.class.name)
-        end
+    def self.get_class(obj)
+        return get_class_by_name(obj.class.name)
+    end
 
-        def self.get_class_by_name(name)
-            return self::classes[Reflect::name_key(name)]
-        end
-    
-        def self.setup_class(cls)
-            self::classes[Reflect::name_key(cls.name)] = cls
-        end
+    def self.get_class_by_name(name)
+        return self::classes[OneReflect.name_key(name)]
+    end
 
-        def self.name_key(name)
-            return name.downcase.gsub(/_/, "")
-        end
+    def self.setup_class(cls)
+        self::classes[OneReflect.name_key(cls.name)] = cls
+    end
+
+    def self.name_key(name)
+        return name.downcase.gsub(/_/, "")
     end
 
     class Class
@@ -33,22 +31,22 @@ module One
             @fields = {}
             for field in fields
                 field.cls = self
-                @fields[Reflect::name_key(field.name)] = field
+                @fields[OneReflect.name_key(field.name)] = field
             end
 
             @methods = {}
             for method in methods
                 method.cls = self
-                @methods[Reflect::name_key(method.name)] = method
+                @methods[OneReflect.name_key(method.name)] = method
             end
         end
 
         def get_field(name)
-            return self.fields[Reflect::name_key(name)]
+            return self.fields[OneReflect.name_key(name)]
         end
 
         def get_method(name)
-            return self.methods[Reflect::name_key(name)]
+            return self.methods[OneReflect.name_key(name)]
         end
     
         def get_fields()
