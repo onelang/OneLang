@@ -38,12 +38,18 @@ export namespace OneAst {
         classes: { [name: string]: Class };
         interfaces: { [name: string]: Interface };
         mainBlock: Block;
+        imports: Import[];
     }
 
     export interface NamedItem extends INode {
         name?: string;
         outName?: string;
         metaPath?: string;
+    }
+
+    export interface Import extends NamedItem {
+        package: string;
+        leadingTrivia: string;
     }
 
     export interface Enum extends NamedItem {
@@ -67,7 +73,7 @@ export namespace OneAst {
             iterable?: boolean;
         };
         leadingTrivia: string;
-        attributes: { [name: string]: any };        
+        attributes: { [name: string]: any };
         baseInterfaces: string[];
     }
 

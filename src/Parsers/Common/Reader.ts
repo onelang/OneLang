@@ -131,6 +131,13 @@ export class Reader {
             this.fail(errorMsg || `expected token '${token}'`);
     }
 
+    expectString(errorMsg: string = null) {
+        const result = this.readString();
+        if (result === null)
+            this.fail(errorMsg || `expected string`);
+        return result;
+    }
+
     expectOneOf(tokens: string[]) {
         const result = this.readAnyOf(tokens);
         if (result === null)

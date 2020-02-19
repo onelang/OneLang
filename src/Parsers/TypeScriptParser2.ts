@@ -466,11 +466,45 @@ export class TypeScriptParser2 implements IParser {
         return enumObj;
     }
 
+    parseImport() {
+        if (!this.reader.readToken("import")) return null;
+        const importStart = this.reader.prevTokenOffset;
+
+        const imports: ast.Import[] = [];
+
+        this.reader.expectToken("{");
+        do {
+            if (this.reader.peekToken("}")) break;
+
+            const imp = <ast.Import>{ name: this.reader.expectIdentifier() };
+            this.nodeManager.addNode(imp, this.reader.prevTokenOffset);
+            imports.push(imp);
+        } while(this.reader.readToken(","));
+        this.reader.expectToken("}");
+
+        this.reader.expectToken("from");
+        const packageName = this.reader.expectString();
+        for (const imp of imports)
+            imp.package = packageName;
+
+        this.reader.expectToken(";");
+
+        //this.nodeManager.addNode(imports, importStart);
+        return imports;
+    }
+
     parseSchema() {
-        const schema = <ast.Schema> { classes: {}, enums: {}, globals: {}, interfaces: {}, langData: this.langData, mainBlock: { statements: [] } };
+        const schema = <ast.Schema> { classes: {}, enums: {}, globals: {}, interfaces: {}, langData: this.langData, mainBlock: { statements: [] }, imports: [] };
         while (true) {
             const leadingTrivia = this.reader.readLeadingTrivia();
             if (this.reader.eof) break;
+
+            const imps = this.parseImport();
+            if (imps !== null) {
+                imps[0].leadingTrivia = leadingTrivia;
+                schema.imports.push(...imps);
+                continue;
+            }
 
             const modifiers = this.reader.readModifiers(["export"]);
 
@@ -478,7 +512,7 @@ export class TypeScriptParser2 implements IParser {
             if (cls !== null) {
                 cls.leadingTrivia = leadingTrivia;
                 schema.classes[cls.name] = cls;
-                continue;                
+                continue;
             }
 
             const enumObj = this.parseEnum();
