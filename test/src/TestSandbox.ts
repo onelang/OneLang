@@ -34,7 +34,7 @@ const phpYaml = readFile(`langs/php.yaml`);
 const csharpYaml = readFile(`langs/csharp.yaml`);
 const rubyYaml = readFile(`langs/ruby.yaml`);
 
-compiler.setup(overlayCode, stdlibCode, genericTransforms);
+compiler.setupWithSource(overlayCode, stdlibCode, genericTransforms);
 compiler.parse("php", programCode);
 // TODO: pacMan is null
 const result = compiler.compile(YAML.safeLoad(rubyYaml), null, true);

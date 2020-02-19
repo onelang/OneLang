@@ -57,7 +57,7 @@ for (const langName of langsToTest) {
             if (schemaType !== "program") return;
             writeFile(`${outDir}/regen/schemaStates_${langName}/${name}.txt`, generator());
         };
-        compiler.setup(overlayCode, stdlibCode, genericTransforms);
+        compiler.setupWithSource(overlayCode, stdlibCode, genericTransforms);
         compiler.parse(langName, content);
     }
 }

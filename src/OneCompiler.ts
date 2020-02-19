@@ -43,24 +43,25 @@ SchemaTransformer.instance.addTransform(new TriviaCommentTransform());
 SchemaTransformer.instance.addTransform(new InferCharacterTypes());
 
 export class OneCompiler {
-    parser: IParser;
     schemaCtx: SchemaContext;
     overlayCtx: SchemaContext;
     stdlibCtx: SchemaContext;
+    additionalSchemas: SchemaContext[];
     genericTransformer: GenericTransformer;
-    langName: string;
 
     saveSchemaStateCallback: (type: "overviewText"|"schemaJson", schemaType: "program"|"overlay"|"stdlib", name: string, generator: () => string) => void;
 
-    setup(overlayCode: string, stdlibCode: string, genericTransformerYaml: string) {
-        overlayCode = overlayCode.replace(/^[^\n]*<reference.*stdlib.d.ts[^\n]*\n/, "");
-
+    setupWithSource(overlayCode: string, stdlibCode: string, genericTransformerYaml: string) {
         const overlaySchema = TypeScriptParser2.parseFile(overlayCode);
         const stdlibSchema = TypeScriptParser2.parseFile(stdlibCode);
-        this.genericTransformer = new GenericTransformer(<GenericTransformerFile> YAML.safeLoad(genericTransformerYaml));
+        const genericTransformer = new GenericTransformer(<GenericTransformerFile> YAML.safeLoad(genericTransformerYaml));
+        this.setup(overlaySchema, stdlibSchema, genericTransformer);
+    }
 
+    setup(overlaySchema: one.Schema, stdlibSchema: one.Schema, genericTransformer: GenericTransformer) {
         overlaySchema.sourceType = "overlay";
         stdlibSchema.sourceType = "stdlib";
+        this.genericTransformer = genericTransformer;
 
         this.stdlibCtx = new SchemaContext(stdlibSchema, "stdlib");
         new FixGenericAndEnumTypes().process(this.stdlibCtx.schema);
@@ -81,43 +82,37 @@ export class OneCompiler {
         new InferTypesTransform(this.overlayCtx).transform();
         this.overlayCtx.ensureTransforms("convertInlineThisRef");
         this.saveSchemaState(this.overlayCtx, "1_Converted");
+
+        // TODO: hack
+        //this.overlayCtx.schema.classes[this.schemaCtx.arrayType].meta = { iterable: true };
+        this.stdlibCtx.schema.classes["OneArray"].meta = { iterable: true };
+        this.stdlibCtx.schema.classes["OneError"].methods["raise"].throws = true;
     }
 
-    /**
-     * Schema types:
-     *  - program: the input program to be compiled into another language
-     *  - overlay: helper classes which map the input language's built-in methods / properties to OneLang methods (eg. Object.keys(map) -> map.keys())
-     *  - stdlib: declaration (not implementation!) of OneLang methods (eg. map.keys) which are implemented in every language separately
-     */
-    parse(langName: string, programCode: string) {
-        this.langName = langName;
-        let arrayName: string;
+    static parseSchema(langName: string, programCode: string, schemaType: "program"|"overlay"|"stdlib" = "program"): SchemaContext {
+        let parser: IParser;
         if (langName === "typescript") {
-            this.parser = new TypeScriptParser2(programCode);
+            parser = new TypeScriptParser2(programCode);
         } else if (langName === "csharp") {
-            this.parser = new CSharpParser(programCode);
+            parser = new CSharpParser(programCode);
         } else if (langName === "ruby") {
-            this.parser = new RubyParser(programCode);
+            parser = new RubyParser(programCode);
         } else if (langName === "php") {
-            this.parser = new PhpParser(programCode);
+            parser = new PhpParser(programCode);
         } else {
             throw new Error(`[OneCompiler] Unsupported language: ${langName}`);
         }
 
-        const schema = this.parser.parse();
+        const schema = parser.parse();
+        schema.sourceType = schemaType;
 
-        // TODO: hack
-        this.overlayCtx.schema.classes[this.parser.langData.literalClassNames.array].meta = { iterable: true };
-        this.stdlibCtx.schema.classes["OneArray"].meta = { iterable: true };
-        this.stdlibCtx.schema.classes["OneError"].methods["raise"].throws = true;
-        
-        schema.sourceType = "program";
+        const schemaCtx = new SchemaContext(schema, schemaType);
+        schemaCtx.arrayType = parser.langData.literalClassNames.array;
+        schemaCtx.mapType = parser.langData.literalClassNames.map;
+        return schemaCtx;
+    }
 
-        this.schemaCtx = new SchemaContext(schema, "program");
-        // TODO: move to somewhere else...
-        this.schemaCtx.arrayType = this.parser.langData.literalClassNames.array;
-        this.schemaCtx.mapType = this.parser.langData.literalClassNames.map;
-
+    processSchema() {
         new RemoveEmptyTemplateStringLiterals().process(this.schemaCtx.schema);
         new FixGenericAndEnumTypes().process(this.schemaCtx.schema);
         new ExtractCommentAttributes().process(this.schemaCtx.schema);
@@ -155,6 +150,17 @@ export class OneCompiler {
         new ProcessTypeHints().transform(this.schemaCtx);
 
         this.saveSchemaState(this.schemaCtx, `6_PostProcess`);
+    }
+
+    /**
+     * Schema types:
+     *  - program: the input program to be compiled into another language
+     *  - overlay: helper classes which map the input language's built-in methods / properties to OneLang methods (eg. Object.keys(map) -> map.keys())
+     *  - stdlib: declaration (not implementation!) of OneLang methods (eg. map.keys) which are implemented in every language separately
+     */
+    parse(langName: string, programCode: string) {
+        this.schemaCtx = OneCompiler.parseSchema(langName, programCode);
+        this.processSchema();
     }
 
     protected saveSchemaState(schemaCtx: SchemaContext, name: string) {

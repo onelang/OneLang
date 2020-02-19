@@ -21,7 +21,7 @@ async function initCompiler() {
     const stdlibCode = pacMan.getInterfaceDefinitions();
     const genericTransforms = readFile(`langs/NativeResolvers/GenericTransforms.yaml`);
     
-    compiler.setup(overlayCode, stdlibCode, genericTransforms);
+    compiler.setupWithSource(overlayCode, stdlibCode, genericTransforms);
     
     for (const lang of langs) {
         OneCompiler.setupLangSchema(lang, pacMan, compiler.stdlibCtx.schema);

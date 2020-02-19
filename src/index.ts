@@ -52,7 +52,7 @@ class OneLangGlobal {
         const genericTransforms = await readFile(`langs/NativeResolvers/GenericTransforms.yaml`);
 
         const compiler = new OneCompiler();
-        compiler.setup(overlayCode, stdlibCode, genericTransforms);
+        compiler.setupWithSource(overlayCode, stdlibCode, genericTransforms);
         compiler.parse(sourceLang, source);
 
         const langSchema = <LangFileSchema.LangFile> YAML.safeLoad(await readFile(`langs/${targetLang}.yaml`));
