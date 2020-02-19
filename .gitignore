@@ -12,3 +12,4 @@ tmp/
 *.tsbuildinfo
 build/*.js
 packages/bundle.json
+dist/

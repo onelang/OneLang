@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "baseUrl": "./",
+        "target": "es2017",
+        "module": "CommonJS",
+        "outDir": "dist",
+        "moduleResolution": "node",
+        "paths": { "@one/*": ["../../../../packages/interfaces/*"]}
+    },
+    "include": ["src/**/*.ts"],
+}

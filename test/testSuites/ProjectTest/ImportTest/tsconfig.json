@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "baseUrl": "./",
+        "target": "es2017",
+        "outDir": "dist",
+        "moduleResolution": "node",
+        "paths": { "*": ["../../../../packages/interfaces/*" ]}
+    },
+    "include": ["src/**/*.ts"],
+}
