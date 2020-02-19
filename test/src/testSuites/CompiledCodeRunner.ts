@@ -1,5 +1,5 @@
 import 'module-alias/register';
-import { getCompilationTestPrgNames, getLangFiles, readFile, jsonRequest, assert, getYamlTestSuite, timeNow } from '../TestUtils';
+import { getCompilationTestPrgNames, getLangFiles, readFile, jsonRequest, assert, getYamlTestSuite, timeNow, baseDir } from '../TestUtils';
 import { PackageManager } from '@one/StdLib/PackageManager';
 import { PackagesFolderSource } from '@one/StdLib/PackagesFolderSource';
 
@@ -13,7 +13,7 @@ const expectedResults: { [prgName: string]: string } = getYamlTestSuite("Compile
 const prgs = getCompilationTestPrgNames();
 const langs = getLangFiles();
 
-const pacMan = new PackageManager(new PackagesFolderSource(`${__dirname}/../../../packages`));
+const pacMan = new PackageManager(new PackagesFolderSource(`${baseDir}/packages`));
 before(async () => await pacMan.loadAllCached());
 
 // init compiler backend

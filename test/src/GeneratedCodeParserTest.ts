@@ -1,7 +1,7 @@
 import 'module-alias/register';
 import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser2";
 import { CSharpParser } from "@one/Parsers/CSharpParser";
-import { readFile, writeFile } from "./TestUtils";
+import { readFile, writeFile, baseDir } from "./TestUtils";
 import { OneAst as ast } from "@one/One/Ast";
 import { AstHelper } from "@one/One/AstHelper";
 import { OneCompiler } from "@one/OneCompiler";
@@ -18,7 +18,7 @@ let prgNames = (<string[]>fs.readdirSync("test/artifacts")).filter(x => !x.start
 
 prgNames = prgNames.filter(x => !prgExcludeList.includes(x));
 
-const pacMan = new PackageManager(new PackagesFolderSource(`${__dirname}/../../../packages`));
+const pacMan = new PackageManager(new PackagesFolderSource(`${baseDir}/packages`));
 await pacMan.loadAllCached();
 const stdlibCode = pacMan.getInterfaceDefinitions();
 

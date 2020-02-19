@@ -1,6 +1,6 @@
 import 'module-alias/register';
 import * as fs from 'fs';
-import { readFile, timeNow, glob, readDir, getCompilationTestPrgNames, getLangFiles } from "../TestUtils";
+import { readFile, timeNow, glob, readDir, getCompilationTestPrgNames, getLangFiles, baseDir } from "../TestUtils";
 import { ArtifactManager, LocalFileSystem } from "../ArtifactManager";
 import { OneCompiler } from "@one/OneCompiler";
 import { PackageManager } from "@one/StdLib/PackageManager";
@@ -14,7 +14,7 @@ const artifactMan = new ArtifactManager(new FolderCacheBundle("test/artifacts/Co
 const langs = getLangFiles();
 
 async function initCompiler() {
-    const pacMan = new PackageManager(new PackagesFolderSource(`${__dirname}/../../../packages`));
+    const pacMan = new PackageManager(new PackagesFolderSource(`${baseDir}/packages`));
     await pacMan.loadAllCached();
 
     const overlayCode = readFile(`langs/NativeResolvers/typescript.ts`);

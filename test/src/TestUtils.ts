@@ -8,7 +8,7 @@ import { LangFileSchema } from '@one/Generator/LangFileSchema';
 
 export { assert };
 
-const baseDir = `${__dirname}/../..`;
+export const baseDir = `${__dirname}/../..`;
 
 export function readFile(fn: string): string {
     return fs.readFileSync(`${baseDir}/${fn}`, "utf8");
