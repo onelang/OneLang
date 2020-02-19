@@ -1,4 +1,5 @@
-/// <reference path="../StdLibs/stdlib.d.ts" />
+/// <reference path="../../packages/interfaces/One.Core-v0.1/index.d.ts" />
+/// <reference path="../../packages/interfaces/One.Console-v0.1/index.d.ts" />
 
 class TsMapOperators {
     op_in<K,V>(left: K, right: TsMap<K,V>): boolean {

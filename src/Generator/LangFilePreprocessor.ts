@@ -72,7 +72,7 @@ export class LangFilePreprocessor {
 
         for (const clsName of Object.keys(lang.classes)) {
             const cls = lang.classes[clsName];
-            const clsGen = cls.generator = new TemplateMethod("typeGenerator", ["typeArgs", "typeArguments"], cls.type || clsName);
+            cls.generator = new TemplateMethod("typeGenerator", ["typeArgs", "typeArguments"], cls.type || clsName);
 
             for (const methodName of Object.keys(cls.methods)) {
                 const method = cls.methods[methodName]; 

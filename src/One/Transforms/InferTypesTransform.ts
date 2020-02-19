@@ -64,7 +64,7 @@ export class InferTypesTransform extends AstTransformer<void> {
     }
 
     protected visitIdentifier(id: one.Identifier) {
-        this.log(`No identifier should be here!`);
+        this.log(`Identifier '${id.text}' should've already been resolved by now.`);
     }
 
     protected visitTemplateString(expr: one.TemplateString) {
