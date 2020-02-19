@@ -2,4 +2,4 @@ file-version: 1
 vendor: One
 name: BigInteger
 version: 0.1
-definition-file: One.BigInteger.d.ts
+definition-file: index.d.ts

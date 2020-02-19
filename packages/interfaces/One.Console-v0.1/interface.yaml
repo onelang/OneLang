@@ -2,4 +2,4 @@ file-version: 1
 vendor: One
 name: Console
 version: 0.1
-definition-file: One.Console.d.ts
+definition-file: index.d.ts

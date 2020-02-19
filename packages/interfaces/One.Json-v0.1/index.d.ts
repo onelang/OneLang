@@ -1,18 +1,18 @@
-///<reference path="../One.Core-v0.1/One.Core.d.ts" />
+///<reference path="../One.Core-v0.1/index.d.ts" />
 
-declare class OneJProperty {
+export declare class OneJProperty {
     getName(): OneString;
     getValue(obj: OneJValue): OneJValue;
 }
 
-declare class OneJObject {
+export declare class OneJObject {
     getProperties(): OneArray<OneJProperty>;
     count(): OneNumber;
     names(): OneArray<OneString>;
     get(name: string): OneJValue;
 }
 
-declare class OneJValue {
+export declare class OneJValue {
     isObject(): OneBoolean;
     isArray(): OneBoolean;
     isString(): OneBoolean;
@@ -28,6 +28,7 @@ declare class OneJValue {
     getArrayItems(): OneArray<OneJValue>;
 }
 
-declare class OneJson {
+export declare class OneJson {
     static parse(str: string): OneJValue;
+    static deserialize<T>(str: string): T;
 }

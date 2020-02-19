@@ -2,7 +2,7 @@ file-version: 1
 vendor: One
 name: Regex
 version: 0.1
-definition-file: One.Regex.d.ts
+definition-file: index.d.ts
 dependencies:
   - name: One.Core
     minver: 0.1
