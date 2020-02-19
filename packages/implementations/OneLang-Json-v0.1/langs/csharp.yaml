@@ -1,6 +1,9 @@
 implements:
   - interface: { name: One.Json, minver: 0.1, maxver: 0.1 }
     language: csharp
+    nativePackages:
+      - name: Newtonsoft.Json
+        version: 12.0.3
     implementation:
       classes:
         OneJson:

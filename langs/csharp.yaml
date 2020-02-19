@@ -12,6 +12,28 @@ casing: # based on https://msdn.microsoft.com/en-us/library/x2dbyw72(v=vs.71).as
 primitiveTypes:
   void: void
   any: object
+variables:
+  projectSdk:
+    default: Microsoft.NET.Sdk
+  outputType:
+    default: Exe
+  targetFramework:
+    default: netcoreapp3.0
+  onePackageDir:
+    default: "OnePackages"
+projectFiles:
+  "{{projectName}}.csproj": |-
+    <Project Sdk="{{projectSdk}}">
+      <PropertyGroup>
+        <OutputType>{{outputType}}</OutputType>
+        <TargetFramework>{{targetFramework}}</TargetFramework>
+      </PropertyGroup>
+      <ItemGroup>
+        {{for pkg in nativePackages}}
+          <PackageReference Include="{{pkg.name}}" Version="{{pkg.version}}" />
+        {{/for}}
+      </ItemGroup>
+    </Project>
 templates:
   testGenerator: |-
     public class Program
