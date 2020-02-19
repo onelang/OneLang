@@ -30,9 +30,9 @@ export namespace OneAst {
     }
 
     export interface Schema {
+        runtimeData: { isTransformAlreadyRun?: { [name: string]: boolean } };
         sourceType: "program"|"overlay"|"stdlib";
         langData: ILangData;
-        meta: { transforms?: { [name: string]: boolean } };
         globals: { [name: string]: VariableDeclaration };
         enums: { [name: string]: Enum };
         classes: { [name: string]: Class };

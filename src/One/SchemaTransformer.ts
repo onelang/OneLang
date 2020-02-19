@@ -25,11 +25,11 @@ export class SchemaTransformer {
 
     ensure(schemaCtx: SchemaContext, ...transformNames: string[]) {
         const schema = schemaCtx.schema;
-        if (!schema.meta) schema.meta = {};
-        if (!schema.meta.transforms) schema.meta.transforms = {};
+        if (!schema.runtimeData) schema.runtimeData = {};
+        if (!schema.runtimeData.isTransformAlreadyRun) schema.runtimeData.isTransformAlreadyRun = {};
 
         for (const transformName of transformNames) {
-            if(schema.meta.transforms[transformName]) continue;
+            if(schema.runtimeData.isTransformAlreadyRun[transformName]) continue;
             
             const transformer = this.transformers[transformName];
             if (!transformer) {
@@ -41,7 +41,7 @@ export class SchemaTransformer {
                 this.ensure(schemaCtx, ...transformer.dependencies);
 
             transformer.transform(schemaCtx);
-            schema.meta.transforms[transformName] = true;
+            schema.runtimeData.isTransformAlreadyRun[transformName] = true;
         }
     }
 }
