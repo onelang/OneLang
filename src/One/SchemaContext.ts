@@ -4,12 +4,12 @@ import { Context as TiContext } from "./Transforms/ResolveIdentifiersTransform";
 import { LangFileSchema } from "../Generator/LangFileSchema";
 
 export class SchemaContext {
+    fileName: string;
     arrayType: string;
     mapType: string;
     transformer: SchemaTransformer;
     tiContext = new TiContext();
-    stdlib: SchemaContext;
-    overlay: SchemaContext;
+    additionalSchemas: SchemaContext[] = [];
 
     constructor(public schema: one.Schema, public schemaType: "program"|"overlay"|"stdlib") {
         this.transformer = SchemaTransformer.instance;
@@ -24,13 +24,7 @@ export class SchemaContext {
     }
 
     addDependencySchema(schemaCtx: SchemaContext) {
-        if (schemaCtx.schemaType === "stdlib") {
-            this.stdlib = schemaCtx;
-        } else if (schemaCtx.schemaType === "overlay") {
-            this.overlay = schemaCtx;
-        } else {
-            throw new Error("Only overlay and stdlib schemas are allowed as dependencies!");
-        }
+        this.additionalSchemas.push(schemaCtx);
 
         for (const glob of Object.values(schemaCtx.schema.globals))
             this.tiContext.addLocalVar(glob);
@@ -105,7 +99,7 @@ export class SchemaContext {
     }
 
     getClass(name: string, required = false): one.Class {
-        const result = this.schema.classes[name] || (this.overlay && this.overlay.schema.classes[name]) || (this.stdlib && this.stdlib.schema.classes[name]);
+        const result = this.schema.classes[name] || this.additionalSchemas.map(x => x.schema.classes[name]).find(x => x != null);
         if (required && !result)
             this.log(`Class was not found: ${name}`);
         return result;
