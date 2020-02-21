@@ -1,4 +1,4 @@
-import { ExprLangAst as ExprAst } from "../ExprLang/ExprLangAst";
+import { Expression } from "../ExprLang/ExprLangAst";
 
 export namespace TemplateAst {
     export interface Node { }
@@ -27,7 +27,7 @@ export namespace TemplateAst {
     
     export class TemplateNode implements LineItem {
         kind = "template";
-        constructor(public expr: ExprAst.Expression) { }
+    constructor(public expr: Expression) { }
     }
     
     export class ForNode implements BlockItem {
@@ -35,11 +35,11 @@ export namespace TemplateAst {
         body: ItemContainer;
         else: ItemContainer;
     
-        constructor(public itemName: string, public arrayExpr: ExprAst.Expression, public inline: boolean, public separator = "") { }
+    constructor(public itemName: string, public arrayExpr: Expression, public inline: boolean, public separator = "") { }
     }
     
     export class IfItem {
-        constructor(public condition: ExprAst.Expression, public body?: ItemContainer) { }
+    constructor(public condition: Expression, public body?: ItemContainer) { }
     }
     
     export class IfNode implements LineItem, BlockItem {

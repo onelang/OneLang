@@ -1,4 +1,4 @@
-import { ExprLangAst as Ast } from "./ExprLangAst";
+import * as Ast from "./ExprLangAst";
 
 export class ExprLangAstPrinter {
     static removeOuterParen(repr: string) {

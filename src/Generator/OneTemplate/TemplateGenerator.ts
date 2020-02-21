@@ -1,4 +1,4 @@
-import { ExprLangAst as ExprAst } from "../ExprLang/ExprLangAst";
+import * as ExprAst from "../ExprLang/ExprLangAst";
 import { ExprLangParser } from "../ExprLang/ExprLangParser";
 import { ExprLangVM, IModelHandler, VariableContext, VariableSource, JSModelHandler } from "../ExprLang/ExprLangVM";
 import { TemplateAst as Ast } from "./TemplateAst";

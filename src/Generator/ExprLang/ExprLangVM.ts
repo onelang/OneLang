@@ -1,4 +1,4 @@
-import { ExprLangAst as Ast } from "./ExprLangAst";
+import * as Ast from "./ExprLangAst";
 
 class ExprLangError extends Error { }
 
