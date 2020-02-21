@@ -8,6 +8,7 @@ import * as YAML from "js-yaml";
 import { TSOverviewGenerator } from '@one/One/TSOverviewGenerator';
 import { SourceFile } from '@one/One/Ast/Types';
 import { FillAttributesFromTrivia } from "@one/One/Transforms/FillAttributesFromTrivia";
+import { FillParent } from "@one/One/Transforms/FillParent";
 
 const langs = getLangFiles();
 
@@ -35,6 +36,7 @@ initCompiler().then(() => {
         const projSchemas: { [path: string]: SourceFile } = {};
         for (const file of projFiles) {
             const schema = projSchemas[file] = TypeScriptParser2.parseFile(readFile(`${projDir}/${file}`));
+            FillParent.processFile(schema);
             FillAttributesFromTrivia.processFile(schema);
             //schemaCtx.fileName = file;
             const tsOverview = new TSOverviewGenerator().generate(schema);

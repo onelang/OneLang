@@ -22,6 +22,10 @@ export interface IHasAttributesAndTrivia {
     attributes: { [name: string]: string|true };
 }
 
+export interface ISourceFileMember {
+    parentFile: SourceFile;
+}
+
 export class SourceFile {
     /** @creator TypeScriptParser2 */
     constructor(
@@ -35,26 +39,28 @@ export class SourceFile {
 /**
  * The following object types can be imported: Enum, Interface, Class
  */
-export class Import implements IHasAttributesAndTrivia {
+export class Import implements IHasAttributesAndTrivia, ISourceFileMember {
     /** @creator TypeScriptParser2 */
     constructor(
         public fileName: string,
         public importedType: Type,
         public leadingTrivia: string) { }
     
+    /** @creator FillParent */
     parentFile: SourceFile;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string|true };
     importedFile: SourceFile;
 }
 
-export class Enum implements IHasAttributesAndTrivia, IImportable {
+export class Enum implements IHasAttributesAndTrivia, IImportable, ISourceFileMember {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
         public values: EnumMember[],
         public leadingTrivia: string) { }
 
+    /** @creator FillParent */
     parentFile: SourceFile;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string|true };
@@ -64,6 +70,7 @@ export class EnumMember {
     /** @creator TypeScriptParser2 */
     constructor(public name: string) { }
 
+    /** @creator FillParent */
     parentEnum: Enum;
 }
 
@@ -77,7 +84,7 @@ export interface IInterface {
 
 export interface IImportable {}
 
-export class Interface implements IHasAttributesAndTrivia, IInterface, IImportable {
+export class Interface implements IHasAttributesAndTrivia, IInterface, IImportable, ISourceFileMember {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -86,12 +93,13 @@ export class Interface implements IHasAttributesAndTrivia, IInterface, IImportab
         public methods: { [name: string]: Method },
         public leadingTrivia: string) { }
 
+    /** @creator FillParent */
     parentFile: SourceFile;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string|true };
 }
 
-export class Class implements IHasAttributesAndTrivia, IInterface, IImportable {
+export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, ISourceFileMember {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -104,6 +112,7 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IImportable {
         public methods: { [name: string]: Method },
         public leadingTrivia: string) { }
 
+    /** @creator FillParent */
     parentFile: SourceFile;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string|true };
@@ -119,6 +128,7 @@ export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia 
         public isStatic: boolean,
         public leadingTrivia: string) { }
 
+    /** @creator FillParent */
     parentClass: Class;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string|true };
@@ -135,6 +145,7 @@ export class Property implements IVariable, IHasAttributesAndTrivia {
         public isStatic: boolean,
         public leadingTrivia: string) { }
 
+    /** @creator FillParent */
     parentClass: Class;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string|true };
@@ -147,11 +158,11 @@ export class MethodParameter implements IVariableWithInitializer {
         public type: Type,
         public initializer: Expression) { }
 
+    /** @creator FillParent */
     parentMethod: Method;
 }
 
 export interface IMethodBase extends IHasAttributesAndTrivia {
-    parentClass: Class;
     parameters: MethodParameter[];
     body: Block;
     throws: boolean;
@@ -164,10 +175,11 @@ export class Constructor implements IMethodBase, IHasAttributesAndTrivia {
         public body: Block,
         public leadingTrivia: string) { }
 
+    /** @creator FillParent */
     parentClass: Class;
-    throws: boolean;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string|true };
+    throws: boolean;
 }
 
 export class Method implements IMethodBase, IHasAttributesAndTrivia {
@@ -182,11 +194,12 @@ export class Method implements IMethodBase, IHasAttributesAndTrivia {
         public returns: Type,
         public leadingTrivia: string) { }
     
-    parentClass: Class;
-    throws: boolean;
-    mutates: boolean;
+    /** @creator FillParent */
+    parentInterface: IInterface;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string|true };
+    throws: boolean;
+    mutates: boolean;
 }
 
 export class Block {
