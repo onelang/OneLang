@@ -1,5 +1,4 @@
-import { OneAst as one } from "../One/Ast";
-import { LangFileSchema } from "./LangFileSchema";
+import * as LangFileSchema from "./LangFileSchema";
 import { TemplateMethod } from "./OneTemplate/TemplateGenerator";
 
 export class LangFilePreprocessor {

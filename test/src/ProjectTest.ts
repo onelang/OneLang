@@ -4,8 +4,7 @@ import { readFile, glob, readDir, baseDir, getLangFiles } from "./TestUtils";
 import { OneAst } from '@one/One/Ast';
 import { PackageManager } from '@one/StdLib/PackageManager';
 import { PackagesFolderSource } from '@one/StdLib/PackagesFolderSource';
-import { OneCompiler } from '@one/OneCompiler';
-import { LangFileSchema } from '@one/Generator/LangFileSchema';
+import * as LangFileSchema from '@one/Generator/LangFileSchema';
 import * as YAML from "js-yaml";
 import { SchemaContext } from '@one/One/SchemaContext';
 
