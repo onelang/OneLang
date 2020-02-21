@@ -1,28 +1,28 @@
 import 'module-alias/register';
 import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser2";
 import { readFile, glob, readDir, baseDir, getLangFiles } from "./TestUtils";
-import { OneAst } from '@one/One/Ast';
 import { PackageManager } from '@one/StdLib/PackageManager';
 import { PackagesFolderSource } from '@one/StdLib/PackagesFolderSource';
 import * as LangFileSchema from '@one/Generator/LangFileSchema';
 import * as YAML from "js-yaml";
-import { SchemaContext } from '@one/One/SchemaContext';
+import { TSOverviewGenerator } from '@one/One/TSOverviewGenerator';
+import { SourceFile } from '@one/One/Ast/Types';
 
 const langs = getLangFiles();
 
-const compiler = new OneCompiler();
+//const compiler = new OneCompiler();
 async function initCompiler() {
-    const pacMan = new PackageManager(new PackagesFolderSource(`${baseDir}/packages`));
-    await pacMan.loadAllCached();
+    // const pacMan = new PackageManager(new PackagesFolderSource(`${baseDir}/packages`));
+    // await pacMan.loadAllCached();
 
-    const overlayCode = await readFile(`langs/NativeResolvers/typescript.ts`);
-    const stdlibCode = pacMan.getInterfaceDefinitions();
-    const genericTransforms = await readFile(`langs/NativeResolvers/GenericTransforms.yaml`);
+    // const overlayCode = await readFile(`langs/NativeResolvers/typescript.ts`);
+    // const stdlibCode = pacMan.getInterfaceDefinitions();
+    // const genericTransforms = await readFile(`langs/NativeResolvers/GenericTransforms.yaml`);
 
-    compiler.setupWithSource(overlayCode, stdlibCode, genericTransforms);
+    // compiler.setupWithSource(overlayCode, stdlibCode, genericTransforms);
 
-    for (const lang of langs)
-        OneCompiler.setupLangSchema(lang, pacMan, compiler.stdlibCtx.schema);
+    // for (const lang of langs)
+    //     OneCompiler.setupLangSchema(lang, pacMan, compiler.stdlibCtx.schema);
 }
 
 initCompiler().then(() => {
@@ -31,23 +31,28 @@ initCompiler().then(() => {
         const projDir = `${testsDir}/${projName}/src`;
         const projFiles = glob(projDir);
         
-        const projSchemas: { [path: string]: SchemaContext } = {};
+        const projSchemas: { [path: string]: SourceFile } = {};
         for (const file of projFiles) {
-            const schema = projSchemas[file] = OneCompiler.parseSchema("typescript", readFile(`${projDir}/${file}`));
-            schema.fileName = file;
+            const schema = projSchemas[file] = TypeScriptParser2.parseFile(readFile(`${projDir}/${file}`));
+            //ExtractCommentAttributes.i.process(schema);
+            //schemaCtx.fileName = file;
+            const tsOverview = new TSOverviewGenerator().generate(schema);
+            console.log(`=== ${file} ===\n${tsOverview}`);
         }
 
-        const outFiles: { [path: string]: string } = {};
-        for (const file of projFiles) {
-            const schema = projSchemas[file];
-            for (const s of Object.values(projSchemas).filter(x => x !== schema))
-                schema.addDependencySchema(s);
-            compiler.schemaCtx = schema;
-            compiler.processSchema();
+        continue;
 
-            const codeGen = compiler.getCodeGenerator(langs.find(x => x.name === "csharp"));
-            const generatedCode = codeGen.generate(false);
-            outFiles[file] = generatedCode;
-        }
+        // const outFiles: { [path: string]: string } = {};
+        // for (const file of projFiles) {
+        //     const schema = projSchemas[file];
+        //     for (const s of Object.values(projSchemas).filter(x => x !== schema))
+        //         schema.addDependencySchema(s);
+        //     compiler.schemaCtx = schema;
+        //     compiler.processSchema();
+
+        //     const codeGen = compiler.getCodeGenerator(langs.find(x => x.name === "csharp"));
+        //     const generatedCode = codeGen.generate(false);
+        //     outFiles[file] = generatedCode;
+        // }
     }
 })
