@@ -2,7 +2,11 @@ import { Statement } from "./Statements";
 import { Type } from "./AstTypes";
 import { Expression } from "./Expressions";
 
-export enum Visibility { Public = "public", Protected = "protected", Private = "private" }
+export enum Visibility {
+    Public = "public",
+    Protected = "protected",
+    Private = "private"
+}
 
 export interface IVariable {
     name: string;

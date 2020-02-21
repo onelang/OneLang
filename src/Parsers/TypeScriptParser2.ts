@@ -146,7 +146,7 @@ export class TypeScriptParser2 implements IParser {
         if (stmt === null)
             this.reader.fail("expected block or statement");
 
-        return <Block> { statements: [stmt] };
+        return new Block([stmt]);
     }
 
     parseStatement() {
@@ -232,14 +232,15 @@ export class TypeScriptParser2 implements IParser {
         if (!this.reader.readToken("{")) return null;
         const startPos = this.reader.prevTokenOffset;
 
-        const block = <Block> { statements: [] };
-        if (this.reader.readToken("}")) return block;
+        const statements: Statement[] = [];
+        if (!this.reader.readToken("}")) {
+            do {
+                const statement = this.parseStatement();
+                statements.push(statement);
+            } while(!this.reader.readToken("}"));
+        }
 
-        do {
-            const statement = this.parseStatement();
-            block.statements.push(statement);
-        } while(!this.reader.readToken("}"));
-
+        const block = new Block(statements);
         this.nodeManager.addNode(block, startPos);
         return block;
     }

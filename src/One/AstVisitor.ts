@@ -1,7 +1,7 @@
 import { Type, IHasTypeArguments, ClassType, InterfaceType } from "./Ast/AstTypes";
 import { Identifier, BinaryExpression, CallExpression, ConditionalExpression, NewExpression, Literal, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression } from "./Ast/Expressions";
-import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement, IVariable, IVariableWithInitializer } from "./Ast/Statements";
-import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile } from "./Ast/Types";
+import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement } from "./Ast/Statements";
+import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer } from "./Ast/Types";
 
 export abstract class AstVisitor<TContext> {
     protected log(data: any) {
@@ -11,7 +11,7 @@ export abstract class AstVisitor<TContext> {
 
     protected visitType(type: Type, context: TContext) {
         if (type instanceof ClassType || type instanceof InterfaceType)
-            for (const typeArg of (<IHasTypeArguments>type).typeArguments)
+            for (const typeArg of type.typeArguments)
                 this.visitType(typeArg, context);
     }
  

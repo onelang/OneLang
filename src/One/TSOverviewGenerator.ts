@@ -1,6 +1,6 @@
 import { NewExpression, Identifier, Literal, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, CallExpression, ElementAccessExpression, BinaryExpression } from "./Ast/Expressions";
-import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, IVariable, BreakStatement } from "./Ast/Statements";
-import { Method, Block, Class, SourceFile, IMethodBase, MethodParameter, Constructor } from "./Ast/Types";
+import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement } from "./Ast/Statements";
+import { Method, Block, Class, SourceFile, IMethodBase, MethodParameter, Constructor, IVariable } from "./Ast/Types";
 import { Type, VoidType, AnyType, NullType, EnumType, GenericsType, MethodType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments } from "./Ast/AstTypes";
 
 export class TSOverviewGenerator {
@@ -61,8 +61,6 @@ export class TSOverviewGenerator {
 
     expr(expr: Expression) {
         if (!expr) return null;
-
-        const litMap = Object.fromEntries("numeric={NUM},string=,character={CHR},boolean={BOOL},null={NULL}".split(',').map(x => x.split('=')));
 
         let res = "UNKNOWN-EXPR";
         if (expr instanceof NewExpression) {
