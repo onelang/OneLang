@@ -1,15 +1,14 @@
-import { OneAst as ast } from "../../One/Ast";
 import { Reader } from "./Reader";
 import { sortBy } from "../../Utils/ArrayHelpers";
 
 export class NodeManager {
-    nodes: ast.INode[] = [];
+    nodes: any[] = [];
 
     constructor(public reader: Reader) {
     }
 
-    addNode(node: ast.INode, start: number) {
-        node.nodeData = { sourceRange: { start, end: this.reader.wsOffset }, destRanges: {} };
+    addNode(node: any, start: number) {
+        //node.nodeData = { sourceRange: { start, end: this.reader.wsOffset }, destRanges: {} };
         this.nodes.push(node);
     }
 

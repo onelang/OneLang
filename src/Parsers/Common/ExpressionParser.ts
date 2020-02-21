@@ -1,6 +1,7 @@
-import { OneAst as ast } from "../../One/Ast";
+import * as ast from "../../One/Ast/Expressions";
 import { Reader } from "./Reader";
 import { NodeManager } from "./NodeManager";
+import { UnresolvedType } from "../../One/Ast/AstTypes";
 
 class Operator {
     constructor(public text: string, public precedence: number, public isBinary: boolean, public isRightAssoc: boolean, public isPostfix: boolean) { }
@@ -80,38 +81,36 @@ export class ExpressionParser {
     parseMapLiteral(keySeparator = ":", startToken = "{", endToken = "}") {
         if (!this.reader.readToken(startToken)) return null;
 
-        const mapLiteral = <ast.MapLiteral> { exprKind: "MapLiteral", properties: [] };
+        const items: { [name: string]: ast.Expression } = {};
         do {
             if (this.reader.peekToken(endToken)) break;
 
-            const item = <ast.VariableDeclaration> { };
-            mapLiteral.properties.push(item);
-
-            item.name = this.reader.readString();
-            if (item.name === null)
-                item.name = this.reader.expectIdentifier("expected string or identifier as map key");
+            let name = this.reader.readString();
+            if (name === null)
+                name = this.reader.expectIdentifier("expected string or identifier as map key");
 
             this.reader.expectToken(keySeparator);
-            item.initializer = this.parse();
+            const initializer = this.parse();
+            items[name] = initializer;
         } while(this.reader.readToken(","));
 
         this.reader.expectToken(endToken);
-        return mapLiteral;
+        return new ast.MapLiteral(items);
     }
 
     parseArrayLiteral(startToken = "[", endToken = "]") {
         if (!this.reader.readToken(startToken)) return null;
         
-        const arrayLiteral = <ast.ArrayLiteral> { exprKind: "ArrayLiteral", items: [] };
+        const items: ast.Expression[] = [];
         if (!this.reader.readToken(endToken)) {
             do {
                 const item = this.parse();
-                arrayLiteral.items.push(item);
+                items.push(item);
             } while(this.reader.readToken(","));
 
             this.reader.expectToken(endToken);
         }
-        return arrayLiteral;
+        return new ast.ArrayLiteral(items);
     }
 
     parseLeft(required = true): ast.Expression {
@@ -121,25 +120,25 @@ export class ExpressionParser {
         const unary = this.reader.readAnyOf(this.config.unary);
         if (unary !== null) {
             const right = this.parse(this.prefixPrecedence);
-            return <ast.UnaryExpression> { exprKind: "Unary", unaryType: "prefix", operator: unary, operand: right };
+            return new ast.UnaryExpression("prefix", unary, right);
         }
 
         const id = this.reader.readIdentifier();
         if (id !== null)
-            return <ast.Identifier> { exprKind: "Identifier", text: id };
+            return new ast.Identifier(id);
 
         const num = this.reader.readNumber();
         if (num !== null)
-            return <ast.Literal> { exprKind: "Literal", literalType: "numeric", value: num };
+            return new ast.NumericLiteral(num);
 
         const str = this.reader.readString();
         if (str !== null)
-            return <ast.Literal> { exprKind: "Literal", literalType: "string", value: str };
+            return new ast.StringLiteral(str);
 
         if (this.reader.readToken("(")) {
             const expr = this.parse();
             this.reader.expectToken(")");
-            return <ast.ParenthesizedExpression> { exprKind: "Parenthesized", expression: expr };
+            return new ast.ParenthesizedExpression(expr);
         }
 
         if (required)
@@ -172,7 +171,7 @@ export class ExpressionParser {
         return args;
     }
 
-    addNode(node: ast.INode, start: number) {
+    addNode(node: any, start: number) {
         if (this.nodeManager !== null)
             this.nodeManager.addNode(node, start);
     }
@@ -201,24 +200,24 @@ export class ExpressionParser {
 
             if (op.isBinary) {
                 const right = this.parse(op.isRightAssoc ? op.precedence - 1 : op.precedence);
-                left = <ast.BinaryExpression> { exprKind: "Binary", operator: opText, left, right };
+                left = new ast.BinaryExpression(left, opText, right);
             } else if (op.isPostfix) {
-                left = <ast.UnaryExpression> { exprKind: "Unary", unaryType: "postfix", operator: opText, operand: left };
+                left = new ast.UnaryExpression("postfix", opText, left);
             } else if (op.text === "?") {
                 const whenTrue = this.parse();
                 this.reader.expectToken(":");
                 const whenFalse = this.parse(op.precedence - 1);
-                left = <ast.ConditionalExpression> { exprKind: "Conditional", condition: left, whenTrue, whenFalse };
+                left = new ast.ConditionalExpression(left, whenTrue, whenFalse);
             } else if (op.text === "(") {
                 const args = this.parseCallArguments();
-                left = <ast.CallExpression> { exprKind: "Call", method: left, arguments: args };
+                left = new ast.CallExpression(left, args);
             } else if (op.text === "[") {
                 const elementExpr = this.parse();
                 this.reader.expectToken("]");
-                left = <ast.ElementAccessExpression> { exprKind: "ElementAccess", object: left, elementExpr };
+                left = new ast.ElementAccessExpression(left, elementExpr);
             } else if (this.config.propertyAccessOps.includes(op.text)) {
                 const prop = this.reader.expectIdentifier("expected identifier as property name");
-                left = <ast.PropertyAccessExpression> { exprKind: "PropertyAccess", object: left, propertyName: prop };
+                left = new ast.PropertyAccessExpression(left, prop);
             } else {
                 this.reader.fail(`parsing '${op.text}' is not yet implemented`);
             }
@@ -226,17 +225,10 @@ export class ExpressionParser {
             this.addNode(left, leftStart);
         }
 
-        if (left.exprKind === ast.ExpressionKind.Parenthesized) {
-            const paren = <ast.ParenthesizedExpression> left;
-            if (paren.expression.exprKind === ast.ExpressionKind.Identifier) {
-                const expr = this.parse(0, false);
-                if (expr !== null) {
-                    return <ast.CastExpression> { exprKind: "Cast",
-                        newType: ast.Type.Class((<ast.Identifier>paren.expression).text),
-                        expression: expr
-                    };
-                }
-            }
+        if (left instanceof ast.ParenthesizedExpression && left.expression instanceof ast.Identifier) {
+            const expr = this.parse(0, false);
+            if (expr !== null)
+                return new ast.CastExpression(new UnresolvedType(left.expression.text), expr);
         }
 
         return left;

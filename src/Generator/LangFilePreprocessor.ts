@@ -1,8 +1,9 @@
 import * as LangFileSchema from "./LangFileSchema";
 import { TemplateMethod } from "./OneTemplate/TemplateGenerator";
+import { SourceFile } from "../One/Ast/Types";
 
 export class LangFilePreprocessor {
-    static preprocess(schema: LangFileSchema.LangFile, stdlib: one.Schema) {
+    static preprocess(schema: LangFileSchema.LangFile, stdlib: SourceFile) {
         this.stabilizeStructure(schema);
         this.compileTemplates(schema, stdlib);
     }
@@ -55,7 +56,7 @@ export class LangFilePreprocessor {
         }
     }
 
-    static compileTemplates(lang: LangFileSchema.LangFile, stdlib: one.Schema) {
+    static compileTemplates(lang: LangFileSchema.LangFile, stdlib: SourceFile) {
         for (const name of Object.keys(lang.expressions))
             lang.expressions[name].generator = new TemplateMethod(name, ["expr"], lang.expressions[name].template);
 

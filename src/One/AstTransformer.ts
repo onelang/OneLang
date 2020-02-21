@@ -1,30 +1,30 @@
-import { OneAst as one } from "./Ast";
 import { AstVisitor } from "./AstVisitor";
+import { Class, Method, SourceFile } from "./Ast/Types";
 
 export class AstTransformer<T> extends AstVisitor<T> {
-    schema: one.Schema;
-    currentClass: one.Class;
-    currentMethod: one.Method;
+    schema: SourceFile;
+    currentClass: Class;
+    currentMethod: Method;
 
-    protected visitMethod(method: one.Method, context: T) {
+    protected visitMethod(method: Method, context: T) {
         this.currentMethod = method;
         super.visitMethod(method, context);
         this.currentMethod = null;
     }
 
-    protected visitClass(cls: one.Class, context: T) {
+    protected visitClass(cls: Class, context: T) {
         this.currentClass = cls;
         super.visitClass(cls, context);
         this.currentClass = null;
     }
 
-    protected visitSchema(schema: one.Schema, context: T) {
+    protected visitSchema(schema: SourceFile, context: T) {
         this.schema = schema;
-        super.visitSchema(schema, context);
+        super.visitSourceFile(schema, context);
         this.schema = null;
     }
 
-    process(schema: one.Schema) {
-        this.visitSchema(schema, null);
+    process(schema: SourceFile) {
+        this.visitSourceFile(schema, null);
     }
 }

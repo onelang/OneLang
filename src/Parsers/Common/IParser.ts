@@ -1,8 +1,8 @@
-import { OneAst as one } from "../../One/Ast";
 import { NodeManager } from "./NodeManager";
+import { SourceFile } from "../../One/Ast/Types";
 
 export interface IParser {
-    parse(): one.Schema;
+    parse(): SourceFile;
     nodeManager: NodeManager;
-    langData: one.ILangData;
+    //langData: ILangData;
 }

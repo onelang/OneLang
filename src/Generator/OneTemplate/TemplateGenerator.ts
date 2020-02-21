@@ -3,7 +3,6 @@ import { ExprLangParser } from "../ExprLang/ExprLangParser";
 import { ExprLangVM, IModelHandler, VariableContext, VariableSource, JSModelHandler } from "../ExprLang/ExprLangVM";
 import * as Ast from "./TemplateAst";
 import { TemplateParser } from "./TemplateParser";
-import { OneAst as one } from "../../One/Ast";
 
 /**
  * Some important notes:
@@ -48,7 +47,7 @@ export class CallStackItem {
 }
 
 export class GeneratedNode {
-    astNode: one.INode;
+    astNode: any;
     constructor(public text: string) { }
 }
 
