@@ -506,7 +506,7 @@ export class TypeScriptParser2 implements IParser {
         const packageName = this.reader.expectString();
         this.reader.expectToken(";");
 
-        const imports = names.map(name => new Import(packageName, name, null));
+        const imports = names.map(name => new Import(packageName, new UnresolvedType(name), null));
         //this.nodeManager.addNode(imports, importStart);
         return imports;
     }

@@ -31,17 +31,20 @@ export class SourceFile {
         public mainBlock: Block) { }
 }
 
+/**
+ * The following object types can be imported: Enum, Interface, Class
+ */
 export class Import implements IHasAttributesAndTrivia {
     constructor(
         public packageName: string,
-        public importName: string,
+        public importedType: Type,
         public leadingTrivia: string) { }
     
     parentFile: SourceFile;
     attributes: { [name: string]: string|true };
 }
 
-export class Enum implements IHasAttributesAndTrivia {
+export class Enum implements IHasAttributesAndTrivia, IImportable {
     constructor(
         public name: string,
         public values: EnumMember[],
@@ -65,7 +68,9 @@ export interface IInterface {
     leadingTrivia: string;
 }
 
-export class Interface implements IHasAttributesAndTrivia, IInterface {
+export interface IImportable {}
+
+export class Interface implements IHasAttributesAndTrivia, IInterface, IImportable {
     constructor(
         public name: string,
         public typeArguments: string[],
@@ -77,7 +82,7 @@ export class Interface implements IHasAttributesAndTrivia, IInterface {
     attributes: { [name: string]: string|true };
 }
 
-export class Class implements IHasAttributesAndTrivia, IInterface {
+export class Class implements IHasAttributesAndTrivia, IInterface, IImportable {
     constructor(
         public name: string,
         public typeArguments: string[],
