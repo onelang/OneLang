@@ -1,10 +1,11 @@
-import { Block, IVariableWithInitializer, IVariable } from "./Types";
+import { Block, IVariableWithInitializer, IVariable, IHasAttributesAndTrivia } from "./Types";
 import { Expression } from "./Expressions";
 import { Type } from "./AstTypes";
 
-export class Statement {
-    leadingTrivia?: string;
-    parentRef?: Block;
+export class Statement implements IHasAttributesAndTrivia {
+    leadingTrivia: string;
+    attributes: { [name: string]: string|true };
+    parentBlock: Block;
 }
 
 export class IfStatement extends Statement {

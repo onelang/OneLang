@@ -1,9 +1,10 @@
-import { OneAst as one } from "../Ast";
 import { AstTransformer } from "../AstTransformer";
 import { regexMatches } from "../../Utils/RegexHelpers";
+import { SourceFile, IMethodBase, Block, IHasAttributesAndTrivia } from "../Ast/Types";
+import { ForeachStatement, ForStatement, IfStatement } from "../Ast/Statements";
 
 export class ExtractCommentAttributes extends AstTransformer<void> {
-    processTrivia(trivia: string) {
+    static processTrivia(trivia: string) {
         const result = {};
         if (trivia !== "") {
             const matches = regexMatches(/(?:\n|^)\s*(?:\/\/|#)\s*@([a-z0-9_.-]+)(?: ([^\n]+)|$|\n)/g, trivia);
@@ -13,18 +14,53 @@ export class ExtractCommentAttributes extends AstTransformer<void> {
         return result;
     }
 
-    protected visitMethodLike(method: one.Method|one.Constructor) {
-        method.attributes = this.processTrivia(method.leadingTrivia);
-        super.visitMethodLike(method, null);
+    private static process(items: IHasAttributesAndTrivia[]) {
+        for (const item of items)
+            item.attributes = this.processTrivia(item.leadingTrivia);
     }
 
-    protected visitClass(cls: one.Class) {
-        cls.attributes = this.processTrivia(cls.leadingTrivia);
-        super.visitClass(cls, null);
+    private static processMethod(method: IMethodBase) {
+        if (method === null) return;
+        this.process([method]);
+        this.processBlock(method.body);
     }
-    
-    protected visitInterface(intf: one.Interface) {
-        intf.attributes = this.processTrivia(intf.leadingTrivia);
-        super.visitInterface(intf, null);
+
+    private static processBlock(block: Block) {
+        if (block === null) return;
+        this.process(block.statements);
+        for (const stmt of block.statements) {
+            if (stmt instanceof ForeachStatement)
+                this.processBlock(stmt.body);
+            else if (stmt instanceof ForStatement)
+                this.processBlock(stmt.body);
+            else if (stmt instanceof IfStatement) {
+                this.processBlock(stmt.then);
+                this.processBlock(stmt.else);
+            }
+        }
+    }
+
+    static processSourceFile(file: SourceFile) {
+        this.process(file.imports);
+        this.process(Object.values(file.enums));
+        this.process(Object.values(file.interfaces));
+        this.process(Object.values(file.classes));
+        this.processBlock(file.mainBlock);
+
+        for (const intf of Object.values(file.interfaces))
+            for (const method of Object.values(intf.methods))
+                this.processMethod(method);
+
+        for (const cls of Object.values(file.classes)) {
+            this.processMethod(cls.constructor_);
+            this.process(Object.values(cls.fields));
+            this.process(Object.values(cls.properties));
+            for (const prop of Object.values(cls.properties)) {
+                this.processBlock(prop.getter);
+                this.processBlock(prop.setter);
+            }
+            for (const method of Object.values(cls.methods))
+                this.processMethod(method);
+        }
     }
 }

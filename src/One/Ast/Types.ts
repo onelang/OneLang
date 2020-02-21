@@ -17,6 +17,11 @@ export interface IVariableWithInitializer extends IVariable {
     initializer: Expression;
 }
 
+export interface IHasAttributesAndTrivia {
+    leadingTrivia: string;
+    attributes: { [name: string]: string|true };
+}
+
 export class SourceFile {
     constructor(
         public imports: Import[],
@@ -26,16 +31,17 @@ export class SourceFile {
         public mainBlock: Block) { }
 }
 
-export class Import {
+export class Import implements IHasAttributesAndTrivia {
     constructor(
         public packageName: string,
         public importName: string,
         public leadingTrivia: string) { }
     
     parentFile: SourceFile;
+    attributes: { [name: string]: string|true };
 }
 
-export class Enum {
+export class Enum implements IHasAttributesAndTrivia {
     constructor(
         public name: string,
         public values: EnumMember[],
@@ -51,7 +57,15 @@ export class EnumMember {
     parentEnum: Enum;
 }
 
-export class Interface {
+export interface IInterface {
+    name: string;
+    typeArguments: string[];
+    baseInterfaces: Type[];
+    methods: { [name: string]: Method };
+    leadingTrivia: string;
+}
+
+export class Interface implements IHasAttributesAndTrivia, IInterface {
     constructor(
         public name: string,
         public typeArguments: string[],
@@ -63,7 +77,7 @@ export class Interface {
     attributes: { [name: string]: string|true };
 }
 
-export class Class {
+export class Class implements IHasAttributesAndTrivia, IInterface {
     constructor(
         public name: string,
         public typeArguments: string[],
@@ -79,7 +93,7 @@ export class Class {
     attributes: { [name: string]: string|true };
 }
 
-export class Field implements IVariableWithInitializer {
+export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia {
     constructor(
         public name: string,
         public type: Type,
@@ -92,7 +106,7 @@ export class Field implements IVariableWithInitializer {
     attributes: { [name: string]: string|true };
 }
 
-export class Property implements IVariable {
+export class Property implements IVariable, IHasAttributesAndTrivia {
     constructor(
         public name: string,
         public type: Type,
@@ -115,16 +129,14 @@ export class MethodParameter implements IVariableWithInitializer {
     parentMethod: Method;
 }
 
-export interface IMethodBase {
+export interface IMethodBase extends IHasAttributesAndTrivia {
     parentClass: Class;
     parameters: MethodParameter[];
     body: Block;
-    leadingTrivia: string;
     throws: boolean;
-    attributes: { [name: string]: string|true };
 }
 
-export class Constructor implements IMethodBase {
+export class Constructor implements IMethodBase, IHasAttributesAndTrivia {
     constructor(
         public parameters: MethodParameter[],
         public body: Block,
@@ -135,7 +147,7 @@ export class Constructor implements IMethodBase {
     attributes: { [name: string]: string|true };
 }
 
-export class Method implements IMethodBase {
+export class Method implements IMethodBase, IHasAttributesAndTrivia {
     constructor(
         public name: string,
         public typeArguments: string[],
