@@ -1,15 +1,6 @@
-import { Block } from "./Types";
+import { Block, IVariableWithInitializer, IVariable } from "./Types";
 import { Expression } from "./Expressions";
 import { Type } from "./AstTypes";
-
-export interface IVariable {
-    name: string;
-    type: Type;
-}
-
-export interface IVariableWithInitializer extends IVariable {
-    initializer: Expression;
-}
 
 export class Statement {
     leadingTrivia?: string;

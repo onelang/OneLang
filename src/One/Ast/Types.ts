@@ -1,8 +1,17 @@
-import { VariableDeclaration, Statement, IVariableWithInitializer, IVariable } from "./Statements";
+import { Statement } from "./Statements";
 import { Type } from "./AstTypes";
 import { Expression } from "./Expressions";
 
 export enum Visibility { Public = "public", Protected = "protected", Private = "private" }
+
+export interface IVariable {
+    name: string;
+    type: Type;
+}
+
+export interface IVariableWithInitializer extends IVariable {
+    initializer: Expression;
+}
 
 export class SourceFile {
     constructor(

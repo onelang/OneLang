@@ -1,5 +1,5 @@
 import { Type } from "./AstTypes";
-import { Statement, VariableDeclaration } from "./Statements";
+import { Statement } from "./Statements";
 
 export class Expression {
     parentRef?: Expression|Statement;
