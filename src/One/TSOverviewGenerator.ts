@@ -139,7 +139,7 @@ export class TSOverviewGenerator {
     pad(str: string){ return str.split("\n").map(x => `    ${x}`).join('\n'); }
 
     generate(sourceFile: SourceFile) {
-        const imps = this.array(sourceFile.imports, imp => `import { ${this.type(imp.importedType)} } from "${imp.packageName}";`);
+        const imps = this.array(sourceFile.imports, imp => `import { ${this.type(imp.importedType)} } from "${imp.fileName}";`);
         const enums = this.map(sourceFile.enums, enum_ => `enum ${enum_.name} { ${enum_.values.map(x => x.name).join(", ")} }`);
         const intfs = this.map(sourceFile.interfaces, intf => `interface ${this.name(intf)}`+
             `${this.pre(" extends ", intf.baseInterfaces)} {\n${this.classLike(<Class>intf)}\n}`);

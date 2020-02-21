@@ -3,7 +3,7 @@ import { regexMatches } from "../../Utils/RegexHelpers";
 import { SourceFile, IMethodBase, Block, IHasAttributesAndTrivia } from "../Ast/Types";
 import { ForeachStatement, ForStatement, IfStatement } from "../Ast/Statements";
 
-export class ExtractCommentAttributes extends AstTransformer<void> {
+export class FillAttributesFromTrivia extends AstTransformer<void> {
     static processTrivia(trivia: string) {
         const result = {};
         if (trivia !== "") {
@@ -40,7 +40,7 @@ export class ExtractCommentAttributes extends AstTransformer<void> {
         }
     }
 
-    static processSourceFile(file: SourceFile) {
+    static processFile(file: SourceFile) {
         this.process(file.imports);
         this.process(Object.values(file.enums));
         this.process(Object.values(file.interfaces));

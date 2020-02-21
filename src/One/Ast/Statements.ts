@@ -4,6 +4,7 @@ import { Type } from "./AstTypes";
 
 export class Statement implements IHasAttributesAndTrivia {
     leadingTrivia: string;
+    /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string|true };
     parentBlock: Block;
 }
