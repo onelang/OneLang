@@ -1,4 +1,4 @@
-import { TemplateAst as Ast } from "./TemplateAst";
+import * as Ast from "./TemplateAst";
 import * as ExprAst from "../ExprLang/ExprLangAst";
 import { ExprLangParser } from "../ExprLang/ExprLangParser";
 

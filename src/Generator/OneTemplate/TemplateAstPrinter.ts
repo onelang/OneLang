@@ -1,4 +1,4 @@
-import { TemplateAst as Ast } from "./TemplateAst";
+import * as Ast from "./TemplateAst";
 import { ExprLangAstPrinter } from "../ExprLang/ExprLangAstPrinter";
 
 // Node types: Block, Line, ForNode, IfNode, TextNode, TemplateNode

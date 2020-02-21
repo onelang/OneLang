@@ -1,7 +1,7 @@
 import { runYamlTestSuite, assert } from "../TestUtils";
 import { TemplateParser } from "@one/Generator/OneTemplate/TemplateParser";
 import { TemplateGenerator, TemplateMethod } from "@one/Generator/OneTemplate/TemplateGenerator";
-import { TemplateAst } from "@one/Generator/OneTemplate/TemplateAst";
+import * as TemplateAst from "@one/Generator/OneTemplate/TemplateAst";
 import { TemplateAstPrinter } from "@one/Generator/OneTemplate/TemplateAstPrinter";
 import { VariableContext, VariableSource } from "@one/Generator/ExprLang/ExprLangVM";
 import { writeFile } from "../TestUtils";
