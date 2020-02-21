@@ -1,4 +1,4 @@
-import { OneJson } from "@one/One.Json-v0.1";
+import { OneJson } from "One.Json-v0.1";
 
 import { Group } from "./Db/Group";
 import { User } from "./Db/User";
