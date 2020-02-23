@@ -10,6 +10,10 @@ import { SourceFile, SourcePath, Package, Workspace } from '@one/One/Ast/Types';
 import { ResolveImports } from "@one/One/Transforms/ResolveImports";
 import { FillAttributesFromTrivia } from "@one/One/Transforms/FillAttributesFromTrivia";
 import { FillParent } from "@one/One/Transforms/FillParent";
+import { writeFile } from 'fs';
+import * as jsdiff from "diff";
+import * as c from "ansi-colors";
+import { _ } from '@one/Utils/Underscore';
 
 const pacMan = new PackageManager(new PackagesFolderSource(`${baseDir}/packages`));
 const langs = getLangFiles();
@@ -40,34 +44,65 @@ function createWorkspace() {
     return ws;
 }
 
+class FileStateChanges {
+    constructor(public pkgName: string, public fileName: string, public diff: jsdiff.Change[]) { }
+
+    hasChanges() { return this.diff.length > 1; }
+    colorText() { return this.diff.map(ch => ch.added ? c.green(ch.value) : ch.removed ? c.red(ch.value) : ch.value).join(""); }
+}
+
+class WorkspaceStateChanges {
+    constructor(public fileChanges: FileStateChanges[]) { }
+
+    printChangedFiles() {
+        console.log(this.fileChanges.filter(x => x.hasChanges()).map(x => `${c.bgBlue(`=== ${x.fileName} ===`)}\n${x.colorText()}`).join("\n\n"))
+    }
+}
+
+class PackageStateCapture {
+    overviews: { [name: string]: string } = {};
+
+    constructor(public pkg: Package) { 
+        for (const file of Object.values(pkg.files))
+            this.overviews[file.sourcePath.path] = TSOverviewGenerator.generate(file);
+    }
+
+    diff(baseLine: PackageStateCapture) {
+        const result: FileStateChanges[] = [];
+        for (const file of Object.keys(this.overviews)) {
+            const diff = jsdiff.diffChars(baseLine.overviews[file], this.overviews[file]);
+            result.push(new FileStateChanges(this.pkg.name, file, diff));
+        }
+        return new WorkspaceStateChanges(result);
+    }
+}
+
 initCompiler().then(() => {
     const testsDir = "test/testSuites/ProjectTest";
     for (const projName of readDir(testsDir)) {
         const workspace = createWorkspace();
-
-        const projDir = `${testsDir}/${projName}/src`;
-        const projFiles = glob(projDir);
-        
         const projectPkg = new Package("@");
         workspace.addPackage(projectPkg);
 
-        for (const file of projFiles) {
-            const sourceFile = TypeScriptParser2.parseFile(readFile(`${projDir}/${file}`), new SourcePath(projectPkg, file));
-            projectPkg.addFile(sourceFile);
-            
-            FillParent.processFile(sourceFile);
-            FillAttributesFromTrivia.processFile(sourceFile);
-        }
+        const projDir = `${testsDir}/${projName}/src`;
+        for (const file of glob(projDir))
+            projectPkg.addFile(TypeScriptParser2.parseFile(readFile(`${projDir}/${file}`), new SourcePath(projectPkg, file)));
 
-        ResolveImports.processWorkspace(workspace);
+        const saveState = () => new PackageStateCapture(projectPkg);
+        const s0 = saveState();
 
         for (const file of Object.values(projectPkg.files)) {
-
-            const tsOverview = new TSOverviewGenerator().generate(file);
-            console.log(`=== ${file.sourcePath.path} ===\n${tsOverview}`);
+            FillParent.processFile(file);
+            FillAttributesFromTrivia.processFile(file);
         }
 
-        continue;
+        const s1 = saveState();
+        ResolveImports.processWorkspace(workspace);
+
+        const s2 = saveState();
+        s2.diff(s0).printChangedFiles();
+
+        debugger;
 
         // const outFiles: { [path: string]: string } = {};
         // for (const file of projFiles) {

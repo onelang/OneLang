@@ -50,7 +50,7 @@
           "name": "ProjectTest",
           "program": "${workspaceFolder}/test/lib/ProjectTest.js",
           "cwd": "${workspaceFolder}",
-          "protocol": "inspector",
+          "protocol": "inspector"
         },
         {
           "type": "node",
