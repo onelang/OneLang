@@ -4,7 +4,7 @@ import { Method, Block, Class, SourceFile, IMethodBase, MethodParameter, Constru
 import { Type, VoidType, AnyType, NullType, EnumType, GenericsType, MethodType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments } from "./Ast/AstTypes";
 
 export class TSOverviewGenerator {
-    leading(item: any) {
+    static leading(item: any) {
         let result = "";
         if ((<any>item).leadingTrivia && (<any>item).leadingTrivia.trim().length > 0)
             result += (<any>item).leadingTrivia;
@@ -13,16 +13,16 @@ export class TSOverviewGenerator {
         return result;
     }
 
-    array<T>(items: T[], callback: (item: T) => string) {
+    static array<T>(items: T[], callback: (item: T) => string) {
         return items.map(item => this.leading(item) + callback(item));
     }
 
-    map<T>(items: { [name: string]: T }, callback: (item: T) => string) {
+    static map<T>(items: { [name: string]: T }, callback: (item: T) => string) {
         return Object.entries(items).map(([name, item]) => this.leading(item) + 
             (name !== (<any>item).name ? `/* name on object "${(<any>item).name}" is different from "${name}" */` : "") + callback(item));
     }
 
-    pre(prefix: string, value: any, separator = ", ") {
+    static pre(prefix: string, value: any, separator = ", ") {
         if (Array.isArray(value))
             return value.length > 0 ? `${prefix}${value.join(separator)}` : "";
         else if (typeof value === "boolean")
@@ -32,10 +32,10 @@ export class TSOverviewGenerator {
         return "";
     }
 
-    name(obj: any) { return `${obj instanceof Constructor ? "constructor" : obj.name}${this.typeArgs(obj.typeArguments)}`; }
-    typeArgs(args: string[]) { return args && args.length > 0 ? `<${args.join(", ")}>` : ""; }
+    static name_(obj: any) { return `${obj instanceof Constructor ? "constructor" : obj.name}${this.typeArgs(obj.typeArguments)}`; }
+    static typeArgs(args: string[]) { return args && args.length > 0 ? `<${args.join(", ")}>` : ""; }
     
-    type(t: Type, raw = false) {
+    static type(t: Type, raw = false) {
         const repr = !t ? "???" :
             t instanceof VoidType ? "void" :
             t instanceof AnyType ? "any" :
@@ -51,7 +51,7 @@ export class TSOverviewGenerator {
         return (raw ? "" : "{T}") + repr + (typeArgs && typeArgs.length > 0 ? `<${typeArgs.map(x => this.type(x, true)).join(", ")}>` : "");
     }
 
-    var(v: IVariable) { return `` + 
+    static var(v: IVariable) { return `` + 
         this.pre("static ", (<any>v).static) + 
         ((<any>v).visibility ? `${(<any>v).visibility} ` : "") +
         this.pre("/* unused */", (<any>v).isUnused) + 
@@ -59,7 +59,7 @@ export class TSOverviewGenerator {
         `${v.name}: ${this.type(v.type)}${this.pre(" = ", this.expr((<any>v).initializer))}`;
     }
 
-    expr(expr: Expression) {
+    static expr(expr: Expression) {
         if (!expr) return null;
 
         let res = "UNKNOWN-EXPR";
@@ -93,7 +93,7 @@ export class TSOverviewGenerator {
         return res;
     }
 
-    stmt(stmt: Statement) {
+    static stmt(stmt: Statement) {
         let res = "UNKNOWN-STATEMENT";
         if (stmt instanceof BreakStatement) {
             res = "break";
@@ -111,16 +111,16 @@ export class TSOverviewGenerator {
         return this.leading(stmt) + res + ';';
     }
 
-    block(block: Block) { return block.statements.map(stmt => this.stmt(stmt)).join("\n"); }
+    static block(block: Block) { return block.statements.map(stmt => this.stmt(stmt)).join("\n"); }
 
-    methodBase(method: IMethodBase, returns: Type = null) {
+    static methodBase(method: IMethodBase, returns: Type = null) {
         if (!method) return "";
         return this.pre("/* throws */ ", method.throws) + 
-            `${this.name(method)}(${method.parameters.map(p => this.var(p)).join(", ")})`+
+            `${this.name_(method)}(${method.parameters.map(p => this.var(p)).join(", ")})`+
             `${returns ? `: ${this.type(returns)}` : ""} {\n${this.pad(this.block(method.body))}\n}`;
     }
 
-    method(method: Method) {
+    static method(method: Method) {
         if (!method) return "";
         return "" +
             this.pre("static ", method.isStatic) + 
@@ -128,7 +128,7 @@ export class TSOverviewGenerator {
             this.methodBase(method, method.returns);
     }
 
-    classLike(cls: Class) {
+    static classLike(cls: Class) {
         const fields = this.map(cls.fields, field => `${this.var(field)};`);
         const props = this.map(cls.properties, prop => `${this.var(prop)};`);
         const constr = this.methodBase(cls.constructor_);
@@ -136,16 +136,16 @@ export class TSOverviewGenerator {
         return this.pad([fields.join("\n"), props.join("\n"), constr, methods.join("\n\n")].filter(x => x !== "").join("\n\n"));
     }
 
-    pad(str: string){ return str.split("\n").map(x => `    ${x}`).join('\n'); }
+    static pad(str: string){ return str.split("\n").map(x => `    ${x}`).join('\n'); }
 
-    generate(sourceFile: SourceFile) {
+    static generate(sourceFile: SourceFile) {
         const imps = this.array(sourceFile.imports, imp => 
             (imp.importAll ? `import * as ${imp.importAs}` : `import { ${imp.importedTypes.map(x => this.type(x)).join(", ")} }`) +
             ` from "${imp.exportScope.packageName}${this.pre("/", imp.exportScope.scopeName)}";`);
         const enums = this.map(sourceFile.enums, enum_ => `enum ${enum_.name} { ${enum_.values.map(x => x.name).join(", ")} }`);
-        const intfs = this.map(sourceFile.interfaces, intf => `interface ${this.name(intf)}`+
+        const intfs = this.map(sourceFile.interfaces, intf => `interface ${this.name_(intf)}`+
             `${this.pre(" extends ", intf.baseInterfaces)} {\n${this.classLike(<Class>intf)}\n}`);
-        const classes = this.map(sourceFile.classes, cls => `class ${this.name(cls)}`+
+        const classes = this.map(sourceFile.classes, cls => `class ${this.name_(cls)}`+
             `${this.pre(" extends ", cls.baseClass)}${this.pre(" implements ", cls.baseInterfaces)} {\n${this.classLike(cls)}\n}`);
         const main = this.block(sourceFile.mainBlock);
         const result = `// export scope: ${sourceFile.exportScope.packageName}/${sourceFile.exportScope.scopeName}\n`+
