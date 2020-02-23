@@ -293,7 +293,11 @@ export class TypeScriptParser2 implements IParser {
             this.reader.expectToken(")");
         }
 
-        const returns = !isConstructor && this.reader.readToken(":") ? this.parseType() : new AnyType();
+        let returns: Type = null;
+        if (!isConstructor) { // in case of constructor, "returns" won't be used
+            this.reader.expectToken(":");
+            returns = this.parseType();
+        }
 
         let body: Block = null;
         if (declarationOnly) {
