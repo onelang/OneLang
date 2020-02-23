@@ -34,13 +34,14 @@ initCompiler().then(() => {
         const projFiles = glob(projDir);
         
         const projectPkg = new Package("@");
-        const projSchemas: { [path: string]: SourceFile } = {};
         for (const file of projFiles) {
-            const schema = projSchemas[file] = TypeScriptParser2.parseFile(readFile(`${projDir}/${file}`), new SourcePath(projectPkg, file));
-            FillParent.processFile(schema);
-            FillAttributesFromTrivia.processFile(schema);
-            //schemaCtx.fileName = file;
-            const tsOverview = new TSOverviewGenerator().generate(schema);
+            const sourceFile = TypeScriptParser2.parseFile(readFile(`${projDir}/${file}`), new SourcePath(projectPkg, file));
+            projectPkg.files.push(sourceFile);
+            
+            FillParent.processFile(sourceFile);
+            FillAttributesFromTrivia.processFile(sourceFile);
+
+            const tsOverview = new TSOverviewGenerator().generate(sourceFile);
             console.log(`=== ${file} ===\n${tsOverview}`);
         }
 

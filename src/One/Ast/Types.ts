@@ -28,6 +28,8 @@ export interface ISourceFileMember {
 
 export class Package {
     constructor(public name: string) { }
+
+    files: SourceFile[] = [];
 }
 
 export class SourcePath {

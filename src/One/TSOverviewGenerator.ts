@@ -147,7 +147,8 @@ export class TSOverviewGenerator {
         const classes = this.map(sourceFile.classes, cls => `class ${this.name(cls)}`+
             `${this.pre(" extends ", cls.baseClass)}${this.pre(" implements ", cls.baseInterfaces)} {\n${this.classLike(cls)}\n}`);
         const main = this.block(sourceFile.mainBlock);
-        const result = [imps.join("\n"), enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), main].filter(x => x !== "").join("\n\n");
+        const result = `// export scope: ${sourceFile.exportScope.packageName}/${sourceFile.exportScope.scopeName}\n`+
+            [imps.join("\n"), enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), main].filter(x => x !== "").join("\n\n");
         return result;
     }
 }
