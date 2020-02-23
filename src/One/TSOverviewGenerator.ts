@@ -42,7 +42,7 @@ export class TSOverviewGenerator {
             t instanceof NullType ? "null" :
             t instanceof EnumType ? `E:${t.decl.name}` :
             t instanceof GenericsType ? `G:${t.typeVarName}` :
-            t instanceof MethodType ? `M:${t.decl.parentClass.name}::${t.decl.name}` :
+            t instanceof MethodType ? `M:${t.decl.parentInterface.name}::${t.decl.name}` :
             t instanceof ClassType ? `C:${t.decl.name}` :
             t instanceof InterfaceType ? `I:${t.decl.name}` :
             t instanceof UnresolvedType ? `X:${t.typeName}` :
@@ -139,7 +139,8 @@ export class TSOverviewGenerator {
     pad(str: string){ return str.split("\n").map(x => `    ${x}`).join('\n'); }
 
     generate(sourceFile: SourceFile) {
-        const imps = this.array(sourceFile.imports, imp => `import { ${this.type(imp.importedType)} } from "${imp.fileName}";`);
+        const imps = this.array(sourceFile.imports, imp => `import { ${this.type(imp.importedType)} } `+
+            `from "${imp.exportScope.packageName}${this.pre("/", imp.exportScope.scopeName)}";`);
         const enums = this.map(sourceFile.enums, enum_ => `enum ${enum_.name} { ${enum_.values.map(x => x.name).join(", ")} }`);
         const intfs = this.map(sourceFile.interfaces, intf => `interface ${this.name(intf)}`+
             `${this.pre(" extends ", intf.baseInterfaces)} {\n${this.classLike(<Class>intf)}\n}`);

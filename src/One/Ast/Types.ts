@@ -26,6 +26,17 @@ export interface ISourceFileMember {
     parentFile: SourceFile;
 }
 
+export class Package {
+    constructor(public name: string) { }
+}
+
+export class SourcePath {
+    constructor(
+        public pkg: Package,
+        public path: string
+    ) { }
+}
+
 export class SourceFile {
     /** @creator TypeScriptParser2 */
     constructor(
@@ -33,7 +44,15 @@ export class SourceFile {
         public interfaces: { [name: string]: Interface },
         public classes: { [name: string]: Class },
         public enums: { [name: string]: Enum },
-        public mainBlock: Block) { }
+        public mainBlock: Block,
+        public sourcePath: SourcePath,
+        public exportScope: ExportScope) { }
+}
+
+export class ExportScope {
+    constructor(
+        public packageName: string,
+        public scopeName: string) { }
 }
 
 /**
@@ -42,22 +61,27 @@ export class SourceFile {
 export class Import implements IHasAttributesAndTrivia, ISourceFileMember {
     /** @creator TypeScriptParser2 */
     constructor(
-        public fileName: string,
+        /** module and filename in TS, namespace in C#, package name in Go, etc */
+        public exportScope: ExportScope,
+        /** null means it will import everything from the namespace */
         public importedType: Type,
+        public importAs: string,
         public leadingTrivia: string) { }
     
     /** @creator FillParent */
     parentFile: SourceFile;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string|true };
-    importedFile: SourceFile;
+
+    get importAll() { return this.importedType === null; }
 }
 
-export class Enum implements IHasAttributesAndTrivia, IImportable, ISourceFileMember {
+export class Enum implements IHasAttributesAndTrivia, IExportable, ISourceFileMember {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
         public values: EnumMember[],
+        public isExported: boolean,
         public leadingTrivia: string) { }
 
     /** @creator FillParent */
@@ -82,15 +106,18 @@ export interface IInterface {
     leadingTrivia: string;
 }
 
-export interface IImportable {}
+export interface IExportable {
+    isExported: boolean;
+}
 
-export class Interface implements IHasAttributesAndTrivia, IInterface, IImportable, ISourceFileMember {
+export class Interface implements IHasAttributesAndTrivia, IInterface, IExportable, ISourceFileMember {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
         public typeArguments: string[],
         public baseInterfaces: Type[],
         public methods: { [name: string]: Method },
+        public isExported: boolean,
         public leadingTrivia: string) { }
 
     /** @creator FillParent */
@@ -99,7 +126,7 @@ export class Interface implements IHasAttributesAndTrivia, IInterface, IImportab
     attributes: { [name: string]: string|true };
 }
 
-export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, ISourceFileMember {
+export class Class implements IHasAttributesAndTrivia, IInterface, IExportable, ISourceFileMember {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -110,6 +137,7 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, 
         public properties: { [name: string]: Property },
         public constructor_: Constructor,
         public methods: { [name: string]: Method },
+        public isExported: boolean,
         public leadingTrivia: string) { }
 
     /** @creator FillParent */

@@ -6,7 +6,7 @@ import { PackagesFolderSource } from '@one/StdLib/PackagesFolderSource';
 import * as LangFileSchema from '@one/Generator/LangFileSchema';
 import * as YAML from "js-yaml";
 import { TSOverviewGenerator } from '@one/One/TSOverviewGenerator';
-import { SourceFile } from '@one/One/Ast/Types';
+import { SourceFile, SourcePath, Package } from '@one/One/Ast/Types';
 import { FillAttributesFromTrivia } from "@one/One/Transforms/FillAttributesFromTrivia";
 import { FillParent } from "@one/One/Transforms/FillParent";
 
@@ -33,9 +33,10 @@ initCompiler().then(() => {
         const projDir = `${testsDir}/${projName}/src`;
         const projFiles = glob(projDir);
         
+        const projectPkg = new Package("@");
         const projSchemas: { [path: string]: SourceFile } = {};
         for (const file of projFiles) {
-            const schema = projSchemas[file] = TypeScriptParser2.parseFile(readFile(`${projDir}/${file}`));
+            const schema = projSchemas[file] = TypeScriptParser2.parseFile(readFile(`${projDir}/${file}`), new SourcePath(projectPkg, file));
             FillParent.processFile(schema);
             FillAttributesFromTrivia.processFile(schema);
             //schemaCtx.fileName = file;
