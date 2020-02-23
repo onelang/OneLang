@@ -5,7 +5,7 @@ import { IParser } from "./Common/IParser";
 import { Type, AnyType, VoidType, UnresolvedType } from "../One/Ast/AstTypes";
 import { Expression, Literal, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, CallExpression, BinaryExpression, UnaryExpression } from "../One/Ast/Expressions";
 import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileStatement, ForeachStatement, ForStatement, ReturnStatement, ThrowStatement, BreakStatement, ExpressionStatement, ForeachVariable, ForVariable } from "../One/Ast/Statements";
-import { Block, Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScope } from "../One/Ast/Types";
+import { Block, Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package } from "../One/Ast/Types";
 
 export class TypeScriptParser2 implements IParser {
     // langData: LangData = {
@@ -27,7 +27,7 @@ export class TypeScriptParser2 implements IParser {
     reader: Reader;
     expressionParser: ExpressionParser;
     nodeManager: NodeManager;
-    exportScope: ExportScope;
+    exportScope: ExportScopeRef;
 
     constructor(source: string, public path: SourcePath = null) {
         this.reader = new Reader(source);
@@ -36,7 +36,7 @@ export class TypeScriptParser2 implements IParser {
         };
         this.nodeManager = new NodeManager(this.reader);
         this.expressionParser = this.createExpressionParser(this.reader, this.nodeManager);
-        this.exportScope = this.path ? new ExportScope(this.path.pkg.name, this.path.path.replace(/.ts$/, "")) : null;
+        this.exportScope = this.path ? new ExportScopeRef(this.path.pkg.name, this.path.path ? this.path.path.replace(/.ts$/, "") : null) : null;
     }
 
     createExpressionParser(reader: Reader, nodeManager: NodeManager = null) {
@@ -507,12 +507,12 @@ export class TypeScriptParser2 implements IParser {
         return curr.join("/");
     }
 
-    static calculateImportScope(currScope: ExportScope, importFile: string) {
+    static calculateImportScope(currScope: ExportScopeRef, importFile: string) {
         if (importFile.startsWith(".")) // relative
-            return new ExportScope(currScope.packageName, this.calculateRelativePath(currScope.scopeName, importFile));
+            return new ExportScopeRef(currScope.packageName, this.calculateRelativePath(currScope.scopeName, importFile));
         else {
             const [pkgName, ...path] = importFile.split('/');
-            return new ExportScope(pkgName, path.length === 0 ? null : path.join('/'));
+            return new ExportScopeRef(pkgName, path.length === 0 ? Package.INDEX : path.join('/'));
         }
     }
 
@@ -544,9 +544,9 @@ export class TypeScriptParser2 implements IParser {
         this.reader.expectToken(";");
 
         const importScope = this.exportScope ? TypeScriptParser2.calculateImportScope(this.exportScope, moduleName) : null;
-        const imports = Object.entries(nameAliases).map(([name, importAs]) => new Import(importScope, new UnresolvedType(name), importAs, leadingTrivia));
+        const imports = Object.entries(nameAliases).map(([name, importAs]) => new Import(importScope, false, [new UnresolvedType(name)], importAs, leadingTrivia));
         if (importAllAlias !== null)
-            imports.push(new Import(importScope, null /* import all ('*') */, importAllAlias, leadingTrivia));
+            imports.push(new Import(importScope, true, null, importAllAlias, leadingTrivia));
         //this.nodeManager.addNode(imports, importStart);
         return imports;
     }

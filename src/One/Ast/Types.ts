@@ -1,5 +1,5 @@
 import { Statement } from "./Statements";
-import { Type } from "./AstTypes";
+import { Type, ClassType, InterfaceType, EnumType } from "./AstTypes";
 import { Expression } from "./Expressions";
 
 export enum Visibility {
@@ -26,17 +26,72 @@ export interface ISourceFileMember {
     parentFile: SourceFile;
 }
 
+class ExportedScope {
+    types: { [name: string]: Type } = {};
+
+    getType(name: string) {
+        const type = this.types[name];
+        if (!type)
+            throw new Error(`Type ${name} was not found in exported symbols.`);
+        return type;
+    }
+
+    getAllTypes() { return Object.values(this.types); }
+}
+
 export class Package {
     constructor(public name: string) { }
 
-    files: SourceFile[] = [];
+    static readonly INDEX = "index";
+
+    files: { [name: string]: SourceFile } = {};
+    exportedScopes: { [name: string]: ExportedScope } = {};
+
+    addFile(file: SourceFile) {
+        if (file.sourcePath.pkg !== this || file.exportScope.packageName !== this.name)
+            throw new Error("This file belongs to another package!");
+        
+        this.files[file.sourcePath.path] = file;
+        const scope = this.exportedScopes[file.exportScope.scopeName] || 
+            (this.exportedScopes[file.exportScope.scopeName] = new ExportedScope());
+
+        for (const cls of Object.values(file.classes).filter(x => x.isExported))
+            scope.types[cls.name] = new ClassType(cls);
+
+        for (const intf of Object.values(file.interfaces).filter(x => x.isExported))
+            scope.types[intf.name] = new InterfaceType(intf);
+
+        for (const enum_ of Object.values(file.enums).filter(x => x.isExported))
+            scope.types[enum_.name] = new EnumType(enum_);
+    }
+
+    getExportedScope(name: string) {
+        const scope = this.exportedScopes[name];
+        if (!scope)
+            throw new Error(`Scope "${name}" was not found in package "${this.name}"`);
+        return scope;
+    }
+}
+
+export class Workspace {
+    packages: { [name: string]: Package } = {};
+
+    addPackage(pkg: Package) { 
+        this.packages[pkg.name] = pkg;
+    }
+
+    getPackage(name: string) {
+        const pkg = this.packages[name];
+        if (!pkg)
+            throw new Error(`Package was not found: "${name}"`);
+        return pkg;
+    }
 }
 
 export class SourcePath {
     constructor(
         public pkg: Package,
-        public path: string
-    ) { }
+        public path: string) { }
 }
 
 export class SourceFile {
@@ -48,10 +103,10 @@ export class SourceFile {
         public enums: { [name: string]: Enum },
         public mainBlock: Block,
         public sourcePath: SourcePath,
-        public exportScope: ExportScope) { }
+        public exportScope: ExportScopeRef) { }
 }
 
-export class ExportScope {
+export class ExportScopeRef {
     constructor(
         public packageName: string,
         public scopeName: string) { }
@@ -64,18 +119,19 @@ export class Import implements IHasAttributesAndTrivia, ISourceFileMember {
     /** @creator TypeScriptParser2 */
     constructor(
         /** module and filename in TS, namespace in C#, package name in Go, etc */
-        public exportScope: ExportScope,
-        /** null means it will import everything from the namespace */
-        public importedType: Type,
+        public exportScope: ExportScopeRef,
+        public importAll: boolean,
+        public importedTypes: Type[],
         public importAs: string,
-        public leadingTrivia: string) { }
+        public leadingTrivia: string) {
+            if (importAs && !importAll)
+                throw new Error("importAs only supported with importAll!");
+        }
     
     /** @creator FillParent */
     parentFile: SourceFile;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string|true };
-
-    get importAll() { return this.importedType === null; }
 }
 
 export class Enum implements IHasAttributesAndTrivia, IExportable, ISourceFileMember {
