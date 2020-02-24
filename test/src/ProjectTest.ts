@@ -11,9 +11,8 @@ import { ResolveImports } from "@one/One/Transforms/ResolveImports";
 import { FillAttributesFromTrivia } from "@one/One/Transforms/FillAttributesFromTrivia";
 import { FillParent } from "@one/One/Transforms/FillParent";
 import { writeFile } from 'fs';
-import * as jsdiff from "diff";
-import * as c from "ansi-colors";
 import { _ } from '@one/Utils/Underscore';
+import { PackageStateCapture } from './DiffUtils';
 
 const pacMan = new PackageManager(new PackagesFolderSource(`${baseDir}/packages`));
 const langs = getLangFiles();
@@ -44,38 +43,7 @@ function createWorkspace() {
     return ws;
 }
 
-class FileStateChanges {
-    constructor(public pkgName: string, public fileName: string, public diff: jsdiff.Change[]) { }
 
-    hasChanges() { return this.diff.length > 1; }
-    colorText() { return this.diff.map(ch => ch.added ? c.green(ch.value) : ch.removed ? c.red(ch.value) : ch.value).join(""); }
-}
-
-class WorkspaceStateChanges {
-    constructor(public fileChanges: FileStateChanges[]) { }
-
-    printChangedFiles() {
-        console.log(this.fileChanges.filter(x => x.hasChanges()).map(x => `${c.bgBlue(`=== ${x.fileName} ===`)}\n${x.colorText()}`).join("\n\n"))
-    }
-}
-
-class PackageStateCapture {
-    overviews: { [name: string]: string } = {};
-
-    constructor(public pkg: Package) { 
-        for (const file of Object.values(pkg.files))
-            this.overviews[file.sourcePath.path] = TSOverviewGenerator.generate(file);
-    }
-
-    diff(baseLine: PackageStateCapture) {
-        const result: FileStateChanges[] = [];
-        for (const file of Object.keys(this.overviews)) {
-            const diff = jsdiff.diffChars(baseLine.overviews[file], this.overviews[file]);
-            result.push(new FileStateChanges(this.pkg.name, file, diff));
-        }
-        return new WorkspaceStateChanges(result);
-    }
-}
 
 initCompiler().then(() => {
     const testsDir = "test/testSuites/ProjectTest";
