@@ -9,10 +9,12 @@ import { TSOverviewGenerator } from '@one/One/TSOverviewGenerator';
 import { SourceFile, SourcePath, Package, Workspace } from '@one/One/Ast/Types';
 import { ResolveImports } from "@one/One/Transforms/ResolveImports";
 import { FillAttributesFromTrivia } from "@one/One/Transforms/FillAttributesFromTrivia";
+import { ResolveGenericIdentifiers } from "@one/One/Transforms/ResolveGenericIdentifiers";
 import { FillParent } from "@one/One/Transforms/FillParent";
 import { writeFile } from 'fs';
 import { _ } from '@one/Utils/Underscore';
 import { PackageStateCapture } from './DiffUtils';
+import * as color from "ansi-colors";
 
 const pacMan = new PackageManager(new PackagesFolderSource(`${baseDir}/packages`));
 const langs = getLangFiles();
@@ -43,7 +45,10 @@ function createWorkspace() {
     return ws;
 }
 
-
+function head(text: string) { 
+    const x = "~".repeat(text.length+4);
+    console.log(color.bgRed(` ~~~~~~~~${x}~~~~~~~~ \n ~~~~~~~~  ${text}  ~~~~~~~~ \n ~~~~~~~~${x}~~~~~~~~ `));
+}
 
 initCompiler().then(() => {
     const testsDir = "test/testSuites/ProjectTest";
@@ -68,7 +73,15 @@ initCompiler().then(() => {
         ResolveImports.processWorkspace(workspace);
 
         const s2 = saveState();
-        s2.diff(s0).printChangedFiles();
+        for (const file of Object.values(projectPkg.files))
+            new ResolveGenericIdentifiers().visitSourceFile(file);
+        const s3 = saveState();
+
+        head("SUMMARY");
+        s3.diff(s2).printChangedFiles("summary");
+
+        head("FULL");
+        s3.diff(s0).printChangedFiles("full");
 
         debugger;
 

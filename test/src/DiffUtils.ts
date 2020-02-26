@@ -1,5 +1,5 @@
 import * as jsdiff from "diff";
-import * as c from "ansi-colors";
+import * as color from "ansi-colors";
 import { Package } from "@one/One/Ast/Types";
 import { TSOverviewGenerator } from "@one/One/TSOverviewGenerator";
 
@@ -8,19 +8,26 @@ class FileStateChanges {
 
     hasChanges() { return this.diff.length > 1; }
 
-    colorText() {
+    colorText(mode: "full"|"summary"|"minimal") {
         return this.diff.map((ch, i) => {
             if(ch.type === ChangeType.Added) {
-                return c.green(ch.value);
+                return color.green(ch.value);
             } else if(ch.type === ChangeType.Removed) {
-                return c.red(ch.value);
+                return color.red(ch.value);
             } else if(ch.type === ChangeType.SameText) {
                 return ch.value;
-            } else if(ch.type === ChangeType.SameBlock/* && i !== 0 && i !== this.diff.length - 1*/) {
-                const nlOffs = ch.value.indexOf("\n");
-                if (nlOffs === -1 || nlOffs === ch.value.length - 1)
+            } else if(ch.type === ChangeType.SameBlock) {
+                if (mode === "full") {
                     return ch.value;
-                return "...\n";
+                } else {
+                    const last = i === this.diff.length - 1;
+                    if (mode === "minimal" && (i === 0 || last)) return "";
+
+                    const nlOffs = ch.value.indexOf("\n");
+                    if (nlOffs === -1 || nlOffs === ch.value.length - 1)
+                        return ch.value;
+                    return "...\n";
+                }
             }
         }).join("");
     }
@@ -29,8 +36,8 @@ class FileStateChanges {
 class WorkspaceStateChanges {
     constructor(public fileChanges: FileStateChanges[]) { }
 
-    printChangedFiles() {
-        console.log(this.fileChanges.filter(x => x.hasChanges()).map(x => `${c.bgBlue(`=== ${x.fileName} ===`)}\n${x.colorText()}`).join("\n"))
+    printChangedFiles(mode: "full"|"summary"|"minimal") {
+        console.log(this.fileChanges.filter(x => x.hasChanges()).map(x => `${color.bgBlue(` === ${x.fileName} === `)}\n${x.colorText(mode)}`).join("\n\n"))
     }
 }
 
