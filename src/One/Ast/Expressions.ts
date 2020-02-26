@@ -3,8 +3,7 @@ import { Statement } from "./Statements";
 
 export class Expression {
     parentRef?: Expression|Statement;
-    valueType?: Type;
-    //typeArgs?: string[];
+    inferedType?: Type;
 }
 
 export class Identifier extends Expression {

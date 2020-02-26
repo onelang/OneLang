@@ -1,6 +1,6 @@
 import { Enum, Method, Interface, Class } from "./Types";
 
-export class Type { $type = "Type"; }
+export class Type { $tsDiscriminator = "Type"; }
 
 export class PrimitiveType extends Type { }
 

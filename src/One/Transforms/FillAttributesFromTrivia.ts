@@ -1,9 +1,8 @@
-import { AstTransformer } from "../AstTransformer";
 import { regexMatches } from "../../Utils/RegexHelpers";
 import { SourceFile, IMethodBase, Block, IHasAttributesAndTrivia } from "../Ast/Types";
 import { ForeachStatement, ForStatement, IfStatement } from "../Ast/Statements";
 
-export class FillAttributesFromTrivia extends AstTransformer<void> {
+export class FillAttributesFromTrivia {
     static processTrivia(trivia: string) {
         const result = {};
         if (trivia !== "") {
