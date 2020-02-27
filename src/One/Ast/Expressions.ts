@@ -101,11 +101,11 @@ export class ElementAccessExpression extends Expression {
         public elementExpr: Expression) { super(); }
 }
 
-export class CallExpression extends Expression {
+export class UnresolvedCallExpression extends Expression {
     constructor(
-        public method: Expression/*|MethodReference*/,
-        public args: CallArgument[]) { super(); }
-}
+        public method: Expression,
+        public typeArgs: Type[],
+        public args: Expression[]) { super(); }
 
 export class CallArgument extends Expression {
     constructor(public paramName?: string) { super(); }

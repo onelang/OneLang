@@ -210,7 +210,7 @@ export class ExpressionParser {
                 left = new ast.ConditionalExpression(left, whenTrue, whenFalse);
             } else if (op.text === "(") {
                 const args = this.parseCallArguments();
-                left = new ast.CallExpression(left, args);
+                left = new ast.UnresolvedCallExpression(left, [], args);
             } else if (op.text === "[") {
                 const elementExpr = this.parse();
                 this.reader.expectToken("]");

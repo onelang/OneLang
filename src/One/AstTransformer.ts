@@ -114,7 +114,7 @@ export abstract class AstTransformer<TContext> {
         expr.right = this.visitExpression(expr.right, context) || expr.right;
     }
 
-    protected visitCallExpression(expr: CallExpression, context: TContext): CallExpression|void {
+    protected visitCallExpression(expr: UnresolvedCallExpression, context: TContext): UnresolvedCallExpression|void {
         expr.method = this.visitExpression(expr.method, context) || expr.method;
         expr.args = expr.args.map(x => this.visitExpression(x, context) || x);
     }
@@ -194,7 +194,7 @@ export abstract class AstTransformer<TContext> {
     protected visitExpression(expression: Expression, context: TContext): Expression|void {
         if (expression instanceof BinaryExpression) {
             return this.visitBinaryExpression(expression, context);
-        } else if (expression instanceof CallExpression) {
+        } else if (expression instanceof UnresolvedCallExpression) {
             return this.visitCallExpression(expression, context);
         } else if (expression instanceof ConditionalExpression) {
             return this.visitConditionalExpression(expression, context);

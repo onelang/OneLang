@@ -33,10 +33,6 @@ export class Reader {
         this.cursorSearch = new CursorPositionSearch(input);
     }
 
-    clone() {
-        return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
-    }
-
     get eof() { return this.offset >= this.input.length; }
 
     get cursor() { return this.cursorSearch.getCursorForOffset(this.offset); }
@@ -150,7 +146,12 @@ export class Reader {
         regex.lastIndex = offset;
         const matches = regex.exec(input);
         return matches === null ? null : Array.from(matches);
-    }    
+    }
+
+    peekRegex(pattern: string) {
+        const matches = Reader.matchFromIndex(pattern, this.input, this.offset);
+        return matches;
+    }
 
     readRegex(pattern: string) {
         const matches = Reader.matchFromIndex(pattern, this.input, this.offset);

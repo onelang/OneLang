@@ -69,8 +69,9 @@ export class TSOverviewGenerator {
             res = `{ID}${expr.text}`;
         } else if (expr instanceof PropertyAccessExpression) {
             res = `${this.expr(expr.object)}.{PA}${expr.propertyName}`;
-        } else if (expr instanceof CallExpression) {
-            res = `${this.expr(expr.method)}(${expr.args.map(x => this.expr(x)).join(", ")})`;
+        } else if (expr instanceof UnresolvedCallExpression) {
+            const typeArgs = expr.typeArgs.length > 0 ? `<${expr.typeArgs.map(x => this.type(x)).join(", ")}>` : "";
+            res = `${this.expr(expr.method)}${typeArgs}(${expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof BooleanLiteral) {
             res = `${expr.boolValue}`;
         } else if (expr instanceof StringLiteral) { 
