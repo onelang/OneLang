@@ -1,4 +1,4 @@
-import { AstTransformer } from "../AstVisitor";
+import { AstTransformer } from "../AstTransformer";
 import { Type, UnresolvedType, GenericsType } from "../Ast/AstTypes";
 import { Class, Method } from "../Ast/Types";
 
