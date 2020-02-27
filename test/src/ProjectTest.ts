@@ -51,6 +51,7 @@ function head(text: string) {
 }
 
 initCompiler().then(() => {
+    const nativeResolver = TypeScriptParser2.parseFile(readFile(`langs/NativeResolvers/typescript.ts`));
     const testsDir = "test/testSuites/ProjectTest";
     for (const projName of readDir(testsDir)) {
         const workspace = createWorkspace();

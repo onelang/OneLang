@@ -8,7 +8,7 @@ class TsMapOperators {
 }
 
 class console {
-    static log(data: any) {
+    static log(data: any): void {
         OneConsole.print(data);
     }
 }
@@ -26,17 +26,17 @@ class Object {
 class TsArray<T> {
     _one: OneArray<T>;
 
-    get length(): number { return this._one.length; }
+    get length(): OneNumber { return this._one.length; }
 
-    push(item: T) {
+    push(item: T): void {
         this._one.add(item);
     }
 
-    get(index: number) {
+    get(index: number): T {
         return this._one.get(index);
     }
 
-    set(index: number, value: T) {
+    set(index: number, value: T): void {
         return this._one.set(index, value);
     }
 }
@@ -44,15 +44,15 @@ class TsArray<T> {
 class TsMap<K,V> {
     _one: OneMap<K,V>;
 
-    get(key: K) {
-        this._one.get(key);
+    get(key: K): V {
+        return this._one.get(key);
     }
 
-    set(key: K, value: V) {
+    set(key: K, value: V): void {
         this._one.set(key, value);
     }
 
-    delete(key: K) {
+    delete(key: K): void {
         this._one.remove(key);
     }
 }
