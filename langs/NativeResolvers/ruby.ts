@@ -3,7 +3,7 @@ class RubyArray<T> {
 
     get length(): number { return this._one.length; }
 
-    get(index: number) {
+    get(index: number): T {
         return this._one.get(index);
     }
 
@@ -15,8 +15,8 @@ class RubyArray<T> {
 class RubyMap<K,V> {
     _one: OneMap<K,V>;
 
-    get(key: K) {
-        this._one.get(key);
+    get(key: K): V {
+        return this._one.get(key);
     }
 
     set(key: K, value: V) {

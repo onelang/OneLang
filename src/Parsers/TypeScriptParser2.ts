@@ -199,7 +199,7 @@ export class TypeScriptParser2 implements IParser {
                 const incrementor = this.parseExpression();
                 this.reader.expectToken(")");
                 const body = this.parseBlockOrStatement();
-                statement = new ForStatement(new ForVariable(name, type, init), condition, incrementor, body);
+                statement = new ForStatement(new ForVariable(itemVarName, type, init), condition, incrementor, body);
             }
         } else if (this.reader.readToken("return")) {
             const expr = this.reader.peekToken(";") ? null : this.parseExpression();
@@ -308,10 +308,8 @@ export class TypeScriptParser2 implements IParser {
         }
 
         let returns: Type = null;
-        if (!isConstructor) { // in case of constructor, "returns" won't be used
-            this.reader.expectToken(":");
-            returns = this.parseType();
-        }
+        if (!isConstructor) // in case of constructor, "returns" won't be used
+            returns = this.reader.readToken(":") ? this.parseType() : new VoidType();
 
         let body: Block = null;
         if (declarationOnly) {

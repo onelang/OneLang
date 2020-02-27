@@ -7,7 +7,7 @@ class CsArray<T> {
         this._one.add(item);
     }
 
-    get(index: number) {
+    get(index: number): T {
         return this._one.get(index);
     }
 
@@ -19,8 +19,8 @@ class CsArray<T> {
 class CsMap<K,V> {
     _one: OneMap<K,V>;
 
-    get(key: K) {
-        this._one.get(key);
+    get(key: K): V {
+        return this._one.get(key);
     }
 
     set(key: K, value: V) {

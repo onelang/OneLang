@@ -8,7 +8,7 @@ class TsMapOperators {
 }
 
 class console {
-    static log(data: any): void {
+    static log(data: any) {
         OneConsole.print(data);
     }
 }
