@@ -9,12 +9,14 @@ import { TSOverviewGenerator } from '@one/One/TSOverviewGenerator';
 import { SourceFile, SourcePath, Package, Workspace } from '@one/One/Ast/Types';
 import { ResolveImports } from "@one/One/Transforms/ResolveImports";
 import { FillAttributesFromTrivia } from "@one/One/Transforms/FillAttributesFromTrivia";
-import { ResolveGenericIdentifiers } from "@one/One/Transforms/ResolveGenericIdentifiers";
+import { ResolveGenericTypeIdentifiers } from "@one/One/Transforms/ResolveGenericTypeIdentifiers";
+import { ResolveUnresolvedTypes } from "@one/One/Transforms/ResolveUnresolvedTypes";
 import { FillParent } from "@one/One/Transforms/FillParent";
 import { writeFile } from 'fs';
 import { _ } from '@one/Utils/Underscore';
 import { PackageStateCapture } from './DiffUtils';
 import * as color from "ansi-colors";
+import { ClassType } from '@one/One/Ast/AstTypes';
 
 const pacMan = new PackageManager(new PackagesFolderSource(`${baseDir}/packages`));
 const langs = getLangFiles();
@@ -50,39 +52,60 @@ function head(text: string) {
     console.log(color.bgRed(` ~~~~~~~~${x}~~~~~~~~ \n ~~~~~~~~  ${text}  ~~~~~~~~ \n ~~~~~~~~${x}~~~~~~~~ `));
 }
 
+// AST TODO:
+//  * Class / Method references should not have specialized generic types (so it should only store "List" and not "List<string>")
+//  * Class specialization happens via NewExpression which gives back a specialized INSTANCE
+//  * NewExpression can only specialize Classes, no Enums or Interfaces, etc
+//  * NewExpression should not contain typeArguments, only a UnresolvedType which itself can have typeArguments
+//  * ClassType should have typeArguments (somewhere we should store e.g. an instance is specialized)
+//  * (???) Method generics type should be stored in CallExpression as basically they are specialized before the call
+//    * And this way a language Parser can store method type generics somewhere: here `.method<string>()` method is a property accessor,
+//    *   that should not have typeArguments, but the call itself can have!
+
 initCompiler().then(() => {
     const nativeResolver = TypeScriptParser2.parseFile(readFile(`langs/NativeResolvers/typescript.ts`));
+    //nativeResolver.classes.map(cls => new ClassType(cls))
+
     const testsDir = "test/testSuites/ProjectTest";
-    for (const projName of readDir(testsDir)) {
+    const tests = readDir(testsDir).map(projName => ({ projName, projDir: `${testsDir}/${projName}/src` }));
+    tests.push({ projName: "OneLang", projDir: `src` });
+
+    for (const test of tests) {
+        //if (test.projName !== "OneLang") continue;
+        if (test.projName !== "ComplexTest01") continue;
+
         const workspace = createWorkspace();
         const projectPkg = new Package("@");
         workspace.addPackage(projectPkg);
 
-        const projDir = `${testsDir}/${projName}/src`;
-        for (const file of glob(projDir))
-            projectPkg.addFile(TypeScriptParser2.parseFile(readFile(`${projDir}/${file}`), new SourcePath(projectPkg, file)));
+        for (const file of glob(test.projDir))
+            projectPkg.addFile(TypeScriptParser2.parseFile(readFile(`${test.projDir}/${file}`), new SourcePath(projectPkg, file)));
 
-        const saveState = () => new PackageStateCapture(projectPkg);
-        const s0 = saveState();
+        const pkgStates: PackageStateCapture[] = [];
+        const saveState = () => pkgStates.push(new PackageStateCapture(projectPkg));
+        saveState();
 
         for (const file of Object.values(projectPkg.files)) {
             FillParent.processFile(file);
             FillAttributesFromTrivia.processFile(file);
         }
 
-        const s1 = saveState();
+        saveState();
         ResolveImports.processWorkspace(workspace);
 
-        const s2 = saveState();
+        saveState();
         for (const file of Object.values(projectPkg.files))
-            new ResolveGenericIdentifiers().visitSourceFile(file);
-        const s3 = saveState();
+            new ResolveGenericTypeIdentifiers().visitSourceFile(file);
 
-        head("SUMMARY");
-        s3.diff(s2).printChangedFiles("summary");
+        //saveState();
+        //for (const file of Object.values(projectPkg.files))
+        //    new ResolveUnresolvedTypes().visitSourceFile(file);
 
+        saveState();
+        //head("SUMMARY");
+        //_(pkgStates).last().diff(pkgStates[pkgStates.length - 2]).printChangedFiles("summary");
         head("FULL");
-        s3.diff(s0).printChangedFiles("full");
+        _(pkgStates).last().diff(pkgStates[0]).printChangedFiles("full");
 
         debugger;
 
