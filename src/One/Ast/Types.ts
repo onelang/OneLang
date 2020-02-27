@@ -1,5 +1,5 @@
 import { Statement } from "./Statements";
-import { Type, ClassType, InterfaceType, EnumType } from "./AstTypes";
+import { Type, ClassType, InterfaceType, EnumType, IImportedType as IExportedType, IImportedType, IType } from "./AstTypes";
 import { Expression } from "./Expressions";
 
 export enum Visibility {
@@ -27,7 +27,7 @@ export interface ISourceFileMember {
 }
 
 class ExportedScope {
-    types: { [name: string]: Type } = {};
+    types: { [name: string]: IExportedType } = {};
 
     getType(name: string) {
         const type = this.types[name];
@@ -121,7 +121,7 @@ export class Import implements IHasAttributesAndTrivia, ISourceFileMember {
         /** module and filename in TS, namespace in C#, package name in Go, etc */
         public exportScope: ExportScopeRef,
         public importAll: boolean,
-        public importedTypes: Type[],
+        public importedTypes: IType[],
         public importAs: string,
         public leadingTrivia: string) {
             if (importAs && !importAll)

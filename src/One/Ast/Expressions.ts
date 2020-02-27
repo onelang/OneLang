@@ -1,4 +1,4 @@
-import { Type } from "./AstTypes";
+import { Type, ICreatableType } from "./AstTypes";
 import { Statement } from "./Statements";
 
 export class Expression {
@@ -54,8 +54,8 @@ export class MapLiteral extends Expression {
 
 export class NewExpression extends Expression {
     constructor(
-        public cls: Type,
-        public args: CallArgument[]) { super(); }
+        public cls: ICreatableType,
+        public args: Expression[]) { super(); }
 }
 
 export class BinaryExpression extends Expression {
@@ -106,7 +106,4 @@ export class UnresolvedCallExpression extends Expression {
         public method: Expression,
         public typeArgs: Type[],
         public args: Expression[]) { super(); }
-
-export class CallArgument extends Expression {
-    constructor(public paramName?: string) { super(); }
 }

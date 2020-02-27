@@ -1,7 +1,7 @@
-import { NewExpression, Identifier, Literal, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, CallExpression, ElementAccessExpression, BinaryExpression } from "./Ast/Expressions";
-import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement } from "./Ast/Statements";
+import { NewExpression, Identifier, Literal, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression } from "./Ast/Expressions";
+import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement } from "./Ast/Statements";
 import { Method, Block, Class, SourceFile, IMethodBase, MethodParameter, Constructor, IVariable } from "./Ast/Types";
-import { Type, VoidType, AnyType, NullType, EnumType, GenericsType, MethodType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments } from "./Ast/AstTypes";
+import { Type, VoidType, AnyType, NullType, EnumType, GenericsType, MethodType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments, IType } from "./Ast/AstTypes";
 
 export class TSOverviewGenerator {
     static leading(item: any) {
@@ -35,7 +35,7 @@ export class TSOverviewGenerator {
     static name_(obj: any) { return `${obj instanceof Constructor ? "constructor" : obj.name}${this.typeArgs(obj.typeArguments)}`; }
     static typeArgs(args: string[]) { return args && args.length > 0 ? `<${args.join(", ")}>` : ""; }
     
-    static type(t: Type, raw = false) {
+    static type(t: IType, raw = false) {
         const repr = !t ? "???" :
             t instanceof VoidType ? "void" :
             t instanceof AnyType ? "any" :

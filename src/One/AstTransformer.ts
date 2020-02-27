@@ -1,5 +1,5 @@
-import { Type, IHasTypeArguments, ClassType, InterfaceType, UnresolvedType } from "./Ast/AstTypes";
-import { Identifier, BinaryExpression, CallExpression, ConditionalExpression, NewExpression, Literal, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression } from "./Ast/Expressions";
+import { Type, IHasTypeArguments, ClassType, InterfaceType, UnresolvedType, IType } from "./Ast/AstTypes";
+import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, Literal, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression } from "./Ast/Expressions";
 import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement } from "./Ast/Statements";
 import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter } from "./Ast/Types";
 
@@ -9,7 +9,7 @@ export abstract class AstTransformer<TContext> {
         console.log(`[${thisClassName}]`, data);
     }
 
-    protected visitType(type: Type, context: TContext): Type|void {
+    protected visitType(type: IType, context: TContext): Type|void {
         if (type instanceof ClassType || type instanceof InterfaceType || type instanceof UnresolvedType)
             type.typeArguments = type.typeArguments.map(x => this.visitType(x, context) || x);
     }
