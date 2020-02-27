@@ -97,19 +97,23 @@ export class TSOverviewGenerator {
     static stmt(stmt: Statement) {
         let res = "UNKNOWN-STATEMENT";
         if (stmt instanceof BreakStatement) {
-            res = "break";
+            res = "break;";
         } else if (stmt instanceof ReturnStatement) {
-            res = `return ${this.expr(stmt.expression)}`;
+            res = `return ${this.expr(stmt.expression)};`;
         } else if (stmt instanceof UnsetStatement) {
-            res = `unset ${this.expr(stmt.expression)}`;
+            res = `unset ${this.expr(stmt.expression)};`;
         } else if (stmt instanceof ThrowStatement) {
-            res = `throw ${this.expr(stmt.expression)}`;
+            res = `throw ${this.expr(stmt.expression)};`;
         } else if (stmt instanceof ExpressionStatement) {
-            res = this.expr(stmt.expression);
+            res = `${this.expr(stmt.expression)};`;
         } else if (stmt instanceof VariableDeclaration) {
-            res = `${stmt.isMutable ? "let" : "const"} ${this.var(stmt)}`;
+            res = `${stmt.isMutable ? "let" : "const"} ${this.var(stmt)};`;
+        } else if (stmt instanceof ForeachStatement) {
+            const stmtLen = stmt.body.statements.length;
+            res = `for (const ${stmt.itemVar.name} of ${this.expr(stmt.items)})` + 
+                (stmtLen === 0 ? " { }" : stmtLen === 1 ? `\n${this.pad(this.block(stmt.body))}` : ` {\n${this.pad(this.block(stmt.body))}\n}`);
         } else debugger;
-        return this.leading(stmt) + res + ';';
+        return this.leading(stmt) + res;
     }
 
     static block(block: Block) { return block.statements.map(stmt => this.stmt(stmt)).join("\n"); }
