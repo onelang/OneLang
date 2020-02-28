@@ -1,14 +1,14 @@
-import * as LangFileSchema from "./LangFileSchema";
 import { TemplateMethod } from "./OneTemplate/TemplateGenerator";
 import { SourceFile } from "../One/Ast/Types";
+import { LangFile, TemplateObj } from "./LangFileSchema";
 
 export class LangFilePreprocessor {
-    static preprocess(schema: LangFileSchema.LangFile, stdlib: SourceFile) {
+    static preprocess(schema: LangFile, stdlib: SourceFile) {
         this.stabilizeStructure(schema);
         this.compileTemplates(schema, stdlib);
     }
 
-    static stabilizeStructure(lang: LangFileSchema.LangFile) {
+    static stabilizeStructure(lang: LangFile) {
         if (!lang.operators) lang.operators = {};
         if (!lang.classes) lang.classes = {};
         if (!lang.includeSources) lang.includeSources = {};
@@ -41,7 +41,7 @@ export class LangFilePreprocessor {
             if (!op.includes) op.includes = [];
     }
 
-    static objectifyTemplateMap(map: { [name: string]: LangFileSchema.TemplateObj; }) {
+    static objectifyTemplateMap(map: { [name: string]: TemplateObj }) {
         for (const name of Object.keys(map)) {
             if (typeof map[name] === "string")
                 map[name] = { template: <string><any>map[name], args: [], includes: [] };
@@ -56,7 +56,7 @@ export class LangFilePreprocessor {
         }
     }
 
-    static compileTemplates(lang: LangFileSchema.LangFile, stdlib: SourceFile) {
+    static compileTemplates(lang: LangFile, stdlib: SourceFile) {
         for (const name of Object.keys(lang.expressions))
             lang.expressions[name].generator = new TemplateMethod(name, ["expr"], lang.expressions[name].template);
 
@@ -78,7 +78,11 @@ export class LangFilePreprocessor {
                 const method = cls.methods[methodName]; 
                 const stdMethod = stdlib.classes[clsName].methods[methodName]; 
                 const methodArgs = stdMethod ? stdMethod.parameters.map(x => x.name) : []; 
-                const funcArgs = ["self", "typeArgs", ...methodArgs, ...method.extraArgs];
+                const funcArgs = ["self", "typeArgs"];
+                for (const item of methodArgs)
+                    funcArgs.push(item);
+                for (const item of method.extraArgs)
+                    funcArgs.push(item);
                 method.generator = new TemplateMethod(methodName, funcArgs, method.template);
             }
 

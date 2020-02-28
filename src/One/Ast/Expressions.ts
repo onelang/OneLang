@@ -1,5 +1,6 @@
 import { Type, ICreatableType } from "./AstTypes";
 import { Statement } from "./Statements";
+import { MethodParameter } from "./Types";
 
 export class Expression {
     parentRef?: Expression|Statement;
