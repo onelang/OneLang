@@ -4,8 +4,8 @@ import { NodeManager } from "./Common/NodeManager";
 import { IParser } from "./Common/IParser";
 import { Type, AnyType, VoidType, UnresolvedType } from "../One/Ast/AstTypes";
 import { Expression, Literal, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, BinaryExpression, UnaryExpression, UnresolvedCallExpression, PropertyAccessExpression, InstanceOfExpression, RegexLiteral } from "../One/Ast/Expressions";
-import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileStatement, ForeachStatement, ForStatement, ReturnStatement, ThrowStatement, BreakStatement, ExpressionStatement, ForeachVariable, ForVariable } from "../One/Ast/Statements";
-import { Block, Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package } from "../One/Ast/Types";
+import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileStatement, ForeachStatement, ForStatement, ReturnStatement, ThrowStatement, BreakStatement, ExpressionStatement, ForeachVariable, ForVariable, DoStatement } from "../One/Ast/Statements";
+import { Block, Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package, Lambda } from "../One/Ast/Types";
 
 export class TypeScriptParser2 implements IParser {
     // langData: LangData = {
@@ -67,6 +67,18 @@ export class TypeScriptParser2 implements IParser {
     }
 
     parseType() {
+        if (this.reader.readToken("{")) {
+            this.reader.expectToken("[");
+            this.reader.readIdentifier();
+            this.reader.expectToken(":");
+            this.reader.expectToken("string");
+            this.reader.expectToken("]");
+            this.reader.expectToken(":");
+            const mapValueType = this.parseType();
+            this.reader.expectToken("}");
+            return new UnresolvedType("TsMap", [new UnresolvedType("TsString"), mapValueType]);
+        }
+
         const typeName = this.reader.expectIdentifier();
         const startPos = this.reader.prevTokenOffset;
 
@@ -137,6 +149,13 @@ export class TypeScriptParser2 implements IParser {
             this.reader.expectToken("/");
             const modifiers = this.reader.readModifiers(["g", "i"]);
             return new RegexLiteral(pattern, modifiers.includes("i"), modifiers.includes("g"));
+        } else if (this.reader.readToken("typeof")) {
+            const expr = this.expressionParser.parse(this.expressionParser.prefixPrecedence);
+            this.reader.expectToken("===");
+            const check = this.reader.expectString();
+            if (check !== "string")
+                this.reader.fail("unexpected typeof comparison");
+            return new InstanceOfExpression(expr, new UnresolvedType("TsString"));
         }
 
         const mapLiteral = this.expressionParser.parseMapLiteral();
