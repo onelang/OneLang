@@ -107,3 +107,9 @@ export class UnresolvedCallExpression extends Expression {
         public typeArgs: Type[],
         public args: Expression[]) { super(); }
 }
+
+export class InstanceOfExpression extends Expression { 
+    constructor(
+        public expr: Expression,
+        public type: Type) { super(); }
+}

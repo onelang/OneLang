@@ -3,7 +3,7 @@ import { ExpressionParser } from "./Common/ExpressionParser";
 import { NodeManager } from "./Common/NodeManager";
 import { IParser } from "./Common/IParser";
 import { Type, AnyType, VoidType, UnresolvedType } from "../One/Ast/AstTypes";
-import { Expression, Literal, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, BinaryExpression, UnaryExpression, UnresolvedCallExpression, PropertyAccessExpression } from "../One/Ast/Expressions";
+import { Expression, Literal, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, BinaryExpression, UnaryExpression, UnresolvedCallExpression, PropertyAccessExpression, InstanceOfExpression, RegexLiteral } from "../One/Ast/Expressions";
 import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileStatement, ForeachStatement, ForStatement, ReturnStatement, ThrowStatement, BreakStatement, ExpressionStatement, ForeachVariable, ForVariable } from "../One/Ast/Statements";
 import { Block, Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package } from "../One/Ast/Types";
 
@@ -42,16 +42,21 @@ export class TypeScriptParser2 implements IParser {
     createExpressionParser(reader: Reader, nodeManager: NodeManager = null) {
         const expressionParser = new ExpressionParser(reader, nodeManager);
         expressionParser.unaryPrehook = () => this.parseExpressionToken();
-        expressionParser.infixPrehook = left => {
-            if (left instanceof PropertyAccessExpression && this.reader.peekRegex("<[A-Za-z0-9_<>]*?>\\(") !== null) {
-                const typeArgs = this.parseTypeArgs();
-                this.reader.expectToken("(");
-                const args = expressionParser.parseCallArguments();
-                return new UnresolvedCallExpression(left, typeArgs, args);
-            }
-            return null;
-        }
+        expressionParser.infixPrehook = left => this.parseInfix(left);
         return expressionParser;
+    }
+
+    parseInfix(left: Expression) {
+        if (left instanceof PropertyAccessExpression && this.reader.peekRegex("<[A-Za-z0-9_<>]*?>\\(") !== null) {
+            const typeArgs = this.parseTypeArgs();
+            this.reader.expectToken("(");
+            const args = this.expressionParser.parseCallArguments();
+            return new UnresolvedCallExpression(left, typeArgs, args);
+        } else if (this.reader.readToken("instanceof")) {
+            const type = this.parseType();
+            return new InstanceOfExpression(left, type);
+        }
+        return null;
     }
 
     parseType() {
