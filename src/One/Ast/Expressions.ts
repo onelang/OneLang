@@ -113,3 +113,10 @@ export class InstanceOfExpression extends Expression {
         public expr: Expression,
         public type: Type) { super(); }
 }
+
+export class RegexLiteral extends Literal {
+    constructor(
+        public pattern: string,
+        public caseInsensitive: boolean,
+        public global: boolean) { super(); }
+}

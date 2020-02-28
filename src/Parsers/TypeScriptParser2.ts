@@ -125,6 +125,11 @@ export class TypeScriptParser2 implements IParser {
             this.reader.expectToken(">");
             const expression = this.parseExpression();
             return new CastExpression(newType, expression);
+        } else if (this.reader.readToken("/")) {
+            const pattern = this.reader.readRegex("[^/]+")[0];
+            this.reader.expectToken("/");
+            const modifiers = this.reader.readModifiers(["g", "i"]);
+            return new RegexLiteral(pattern, modifiers.includes("i"), modifiers.includes("g"));
         }
 
         const mapLiteral = this.expressionParser.parseMapLiteral();
