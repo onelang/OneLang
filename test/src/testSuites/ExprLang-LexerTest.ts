@@ -1,11 +1,11 @@
 import { runYamlTestSuite, assert } from "../TestUtils";
 import { Token, ExprLangLexer, ExprLangLexerException, TokenKind } from "@one/Generator/ExprLang/ExprLangLexer";
-import { operators } from "@one/Generator/ExprLang/ExprLangParser";
+import { ExprLangParser } from "@one/Generator/ExprLang/ExprLangParser";
 
 runYamlTestSuite("ExprLang-Lexer", (expr, expectedDesc: { op?: string, i?: string, n?: string, s?: string }[]) => {
     let actual;
     try {
-        actual = new ExprLangLexer(expr, operators).tokens;
+        actual = new ExprLangLexer(expr, ExprLangParser.operators).tokens;
     } catch(e) {
         if (e instanceof ExprLangLexerException)
             actual = { errorOffset: e.errorOffset, message: e.message };

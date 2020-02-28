@@ -3,33 +3,40 @@ import { IExpression, IdentifierExpression, LiteralExpression, UnaryExpression, 
 
 // http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
 
-export const operators = ["**", "+", "-", "*", "/", "<<", ">>", ">=", "!=", "==", "<=", "<", ">", "~", "(", ")", "[", "]", ",", ".", "?", ":", "not", "!", "or", "||", "and", "&&"];
+export class OperatorGroup {
+    constructor(
+        public name: string,
+        public operators: string[]) { }
+    precedence: number;
+}
 
 export class ExprLangParser {
+    static operators = ["**", "+", "-", "*", "/", "<<", ">>", ">=", "!=", "==", "<=", "<", ">", "~", "(", ")", "[", "]", ",", ".", "?", ":", "not", "!", "or", "||", "and", "&&"];
+
     tokens: Token[];
     tokenMap = { not: '!', and: '&&', or: '||' };
     unary = ['!', '+', '-', '~'];
     binary = ['+', '-', '*', '**', '/', '<<', '>>', '>=', '!=', '==', '<=', '>', '<', '&&', '||'];
-    rightAssoc = ['**']
-    precedenceLevels: { name: string, operators?: string[], precedence?: number }[] = [
-        { name: "assignment", operators: ['='] },
-        { name: "conditional", operators: ['?'] },
-        { name: "or", operators: ['||'] },
-        { name: "and", operators: ['&&'] },
-        { name: "comparison", operators: ['>=', '!=', '==', '<=', '>', '<'] },
-        { name: "sum", operators: ['+','-'] },
-        { name: "product", operators: ['*','/'] },
-        { name: "exponent", operators: ['**'] },
-        { name: "prefix" },
-        { name: "postfix" },
-        { name: "call", operators: ['('] },
-        { name: "propertyAccess", operators: ['.', '['] },
+    rightAssoc = ['**'];
+    precedenceLevels: OperatorGroup[] = [
+        new OperatorGroup("assignment", ['=']),
+        new OperatorGroup("conditional", ['?']),
+        new OperatorGroup("or", ['||']),
+        new OperatorGroup("and", ['&&']),
+        new OperatorGroup("comparison", ['>=', '!=', '==', '<=', '>', '<']),
+        new OperatorGroup("sum", ['+','-']),
+        new OperatorGroup("product", ['*','/']),
+        new OperatorGroup("exponent", ['**']),
+        new OperatorGroup("prefix", null),
+        new OperatorGroup("postfix", null),
+        new OperatorGroup("call", ['(']),
+        new OperatorGroup("propertyAccess", ['.', '['])
     ];
 
     precedenceMap: { [name: string]: number } = {};
 
     constructor(public expression: string) {
-        this.tokens = new ExprLangLexer(expression, operators).tokens;
+        this.tokens = new ExprLangLexer(expression, ExprLangParser.operators).tokens;
         this.setupPrecedenceMap();
     }
 

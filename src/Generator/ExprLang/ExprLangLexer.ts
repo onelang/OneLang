@@ -1,4 +1,4 @@
-export enum TokenKind { Number = "number", Identifier = "identifier", Operator = "operator", String = "string" }
+export enum TokenKind { Number, Identifier, Operator, String }
 
 export class Token
 {
