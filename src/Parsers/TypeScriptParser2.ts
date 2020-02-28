@@ -55,6 +55,13 @@ export class TypeScriptParser2 implements IParser {
         } else if (this.reader.readToken("instanceof")) {
             const type = this.parseType();
             return new InstanceOfExpression(left, type);
+        } else if (left instanceof Identifier && this.reader.readToken("=>")) {
+            let block = this.parseBlock();
+            if (block === null) {
+                const returnExpr = this.parseExpression();
+                block = new Block([new ReturnStatement(returnExpr)]);
+            }
+            return new Lambda([new MethodParameter(left.text, new AnyType(), null)], block);
         }
         return null;
     }

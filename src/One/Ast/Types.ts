@@ -292,3 +292,9 @@ export class Block {
     /** @creator TypeScriptParser2 */
     constructor(public statements: Statement[]) { }
 }
+
+export class Lambda extends Expression {
+    constructor(
+        public parameters: MethodParameter[],
+        public block: Block) { super(); }
+}
