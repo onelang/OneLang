@@ -53,6 +53,12 @@ export class WhileStatement extends Statement {
         public body: Block) { super(); }
 }
 
+export class DoStatement extends Statement {
+    constructor(
+        public condition: Expression,
+        public body: Block) { super(); }
+}
+
 export class ForeachVariable implements IVariable {
     constructor(public name: string) { }
     type: Type;

@@ -191,6 +191,14 @@ export class TypeScriptParser2 implements IParser {
             this.reader.expectToken(")");
             const body = this.parseBlockOrStatement();
             statement = new WhileStatement(condition, body);
+        } else if (this.reader.readToken("do")) {
+            requiresClosing = false;
+            const body = this.parseBlockOrStatement();
+            this.reader.expectToken("while");
+            this.reader.expectToken("(");
+            const condition = this.parseExpression();
+            this.reader.expectToken(")");
+            statement = new DoStatement(condition, body);
         } else if (this.reader.readToken("for")) {
             requiresClosing = false;
             this.reader.expectToken("(");
