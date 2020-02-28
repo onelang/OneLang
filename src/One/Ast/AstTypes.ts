@@ -1,4 +1,4 @@
-import { Enum, Method, Interface, Class, IExportable } from "./Types";
+import { Enum, Method, Interface, Class, IExportable, MethodParameter } from "./Types";
 
 export interface IType { }
 export interface ICreatableType extends IType { }
@@ -39,3 +39,6 @@ export class UnresolvedType extends Type implements IHasTypeArguments, ICreatabl
     constructor(public typeName: string, public typeArguments: Type[] = []) { super(); }
 }
 
+export class LambdaType extends Type {
+    constructor(public parameters: MethodParameter[], public returnType: Type) { super(); }
+}

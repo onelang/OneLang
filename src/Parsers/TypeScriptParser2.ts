@@ -2,7 +2,7 @@ import { Reader } from "./Common/Reader";
 import { ExpressionParser } from "./Common/ExpressionParser";
 import { NodeManager } from "./Common/NodeManager";
 import { IParser } from "./Common/IParser";
-import { Type, AnyType, VoidType, UnresolvedType } from "../One/Ast/AstTypes";
+import { Type, AnyType, VoidType, UnresolvedType, LambdaType } from "../One/Ast/AstTypes";
 import { Expression, Literal, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, BinaryExpression, UnaryExpression, UnresolvedCallExpression, PropertyAccessExpression, InstanceOfExpression, RegexLiteral } from "../One/Ast/Expressions";
 import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileStatement, ForeachStatement, ForStatement, ReturnStatement, ThrowStatement, BreakStatement, ExpressionStatement, ForeachVariable, ForVariable, DoStatement } from "../One/Ast/Statements";
 import { Block, Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package, Lambda } from "../One/Ast/Types";
@@ -56,14 +56,25 @@ export class TypeScriptParser2 implements IParser {
             const type = this.parseType();
             return new InstanceOfExpression(left, type);
         } else if (left instanceof Identifier && this.reader.readToken("=>")) {
-            let block = this.parseBlock();
-            if (block === null) {
-                const returnExpr = this.parseExpression();
-                block = new Block([new ReturnStatement(returnExpr)]);
-            }
+            const block = this.parseLambdaBlock();
             return new Lambda([new MethodParameter(left.text, new AnyType(), null)], block);
         }
         return null;
+    }
+
+    parseLambdaParams(): MethodParameter[] {
+        if (!this.reader.readToken("(")) return null;
+
+        const params: MethodParameter[] = [];
+        if (!this.reader.readToken(")")) {
+            do {
+                const paramName = this.reader.expectIdentifier();
+                const type = this.reader.readToken(":") ? this.parseType() : null;
+                params.push(new MethodParameter(paramName, type, null));
+            } while (this.reader.readToken(","));
+            this.reader.expectToken(")");
+        }
+        return params;
     }
 
     parseType() {
@@ -77,6 +88,13 @@ export class TypeScriptParser2 implements IParser {
             const mapValueType = this.parseType();
             this.reader.expectToken("}");
             return new UnresolvedType("TsMap", [new UnresolvedType("TsString"), mapValueType]);
+        }
+
+        if (this.reader.peekToken("(")) {
+            const params = this.parseLambdaParams();
+            this.reader.expectToken("=>");
+            const returnType = this.parseType();
+            return new LambdaType(params, returnType);
         }
 
         const typeName = this.reader.expectIdentifier();
@@ -145,7 +163,7 @@ export class TypeScriptParser2 implements IParser {
             const expression = this.parseExpression();
             return new CastExpression(newType, expression);
         } else if (this.reader.readToken("/")) {
-            const pattern = this.reader.readRegex("[^/]+")[0];
+            const pattern = this.reader.readRegex("([\\\\]/|[^/])+")[0];
             this.reader.expectToken("/");
             const modifiers = this.reader.readModifiers(["g", "i"]);
             return new RegexLiteral(pattern, modifiers.includes("i"), modifiers.includes("g"));
@@ -156,6 +174,11 @@ export class TypeScriptParser2 implements IParser {
             if (check !== "string")
                 this.reader.fail("unexpected typeof comparison");
             return new InstanceOfExpression(expr, new UnresolvedType("TsString"));
+        } else if (this.reader.peekRegex("\\([A-Za-z0-9_]+\\s*[:,]|\\(\\)")) {
+            const params = this.parseLambdaParams();
+            this.reader.expectToken("=>");
+            const block = this.parseLambdaBlock();
+            return new Lambda(params, block);
         }
 
         const mapLiteral = this.expressionParser.parseMapLiteral();
@@ -165,6 +188,14 @@ export class TypeScriptParser2 implements IParser {
         if (arrayLiteral != null) return arrayLiteral;
 
         return null;
+    }
+
+    parseLambdaBlock() {
+        const block = this.parseBlock();
+        if (block !== null) return block;
+        
+        const returnExpr = this.parseExpression();
+        return new Block([new ReturnStatement(returnExpr)]);
     }
 
     parseTypeAndInit() {
