@@ -1,47 +1,46 @@
 import { IExpression } from "../ExprLang/ExprLangAst";
 
 export interface Node { }
-export interface BlockItem extends Node { inline: boolean; }
+export interface BlockItem extends Node { 
+    isInline(): boolean;
+}
+
 export interface LineItem extends Node { }
 export interface ItemContainer extends Node { }
 
 export class Block implements ItemContainer {
-    kind = "block";
     lines: BlockItem[] = [];
 }
 
 export class Line implements BlockItem, ItemContainer {
-    kind = "line";
-    inline = false;
+    isInline() { return false; }
     indentLen = 0;
     items: LineItem[] = [];
 }
 
 export class TextNode implements LineItem {
-    kind = "text";
     constructor(public value: string) { }
 }
 
 export class TemplateNode implements LineItem {
-    kind = "template";
     constructor(public expr: IExpression) { }
 }
 
 export class ForNode implements BlockItem {
-    kind = "for";
     body: ItemContainer;
     else: ItemContainer;
 
     constructor(public itemName: string, public arrayExpr: IExpression, public inline: boolean, public separator = "") { }
+    isInline() { return this.inline; }
 }
 
 export class IfItem {
-    constructor(public condition: IExpression, public body?: ItemContainer) { }
+    constructor(public condition: IExpression, public body: ItemContainer = null) { }
 }
 
 export class IfNode implements LineItem, BlockItem {
-    kind = "if";
     items: IfItem[] = [];
     else: ItemContainer;
     inline: boolean;
+    isInline() { return this.inline; }
 }

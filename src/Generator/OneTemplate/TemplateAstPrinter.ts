@@ -1,5 +1,5 @@
-import * as Ast from "./TemplateAst";
 import { ExprLangAstPrinter } from "../ExprLang/ExprLangAstPrinter";
+import { Node, Block, Line, TextNode, TemplateNode, ForNode, IfNode } from "./TemplateAst";
 
 // Node types: Block, Line, ForNode, IfNode, TextNode, TemplateNode
 // Block: BlockItem[]
@@ -14,23 +14,23 @@ export class TemplateAstPrinter {
         this.result += `${"  ".repeat(this.indent)}${line}\n`;
     }
 
-    processNode(node: Ast.Node) {
+    processNode(node: Node) {
         this.indent++;
-        if (node instanceof Ast.Block) {
+        if (node instanceof Block) {
             for (let iLine = 0; iLine < node.lines.length; iLine++) {
                 const line = node.lines[iLine];
-                const indentText = line instanceof Ast.Line ? ` [indent=${line.indentLen}]` : "";
+                const indentText = line instanceof Line ? ` [indent=${line.indentLen}]` : "";
                 this.addLine(`Line #${iLine + 1}${indentText}:`);
                 this.processNode(line);
             }
-        } else if (node instanceof Ast.Line) {
+        } else if (node instanceof Line) {
             for (let iItem = 0; iItem < node.items.length; iItem++) {
                 const item = node.items[iItem];
                 
                 let inlineValue = null;
-                if (item instanceof Ast.TextNode) {
+                if (item instanceof TextNode) {
                     inlineValue = `"${item.value.replace(/\n/g, "\\n")}"`;
-                } else if (item instanceof Ast.TemplateNode) {
+                } else if (item instanceof TemplateNode) {
                     const exprText = ExprLangAstPrinter.print(item.expr);
                     inlineValue = `"${exprText}"`;
                 }
@@ -39,7 +39,7 @@ export class TemplateAstPrinter {
                 if (!inlineValue)
                     this.processNode(item);
             }
-        } else if (node instanceof Ast.ForNode) {
+        } else if (node instanceof ForNode) {
             const arrayExprText = ExprLangAstPrinter.print(node.arrayExpr);
             this.addLine(`For ${node.itemName} in ${arrayExprText}:${node.inline ? " [inline]" : ""}`);
             this.processNode(node.body);
@@ -47,7 +47,7 @@ export class TemplateAstPrinter {
                 this.addLine(`Else:`);
                 this.processNode(node.else);
             }
-        } else if (node instanceof Ast.IfNode) {
+        } else if (node instanceof IfNode) {
             let first = true;
             for (const item of node.items) {
                 const condText = ExprLangAstPrinter.print(item.condition);
@@ -66,7 +66,7 @@ export class TemplateAstPrinter {
         this.indent--;
     }
 
-    print(node: Ast.Node) {
+    print(node: Node) {
         this.processNode(node);
         return this.result;
     }

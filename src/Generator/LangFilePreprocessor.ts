@@ -12,9 +12,9 @@ export class LangFilePreprocessor {
         if (!lang.operators) lang.operators = {};
         if (!lang.classes) lang.classes = {};
         if (!lang.includeSources) lang.includeSources = {};
-        if (!lang.primitiveTypes) lang.primitiveTypes = {};
+        if (!lang.primitiveTypes) lang.primitiveTypes = <any>{};
         if (!lang.expressions) lang.expressions = {};
-        if (!lang.casing) lang.casing = {};
+        if (!lang.casing) lang.casing = <any>{};
         if (!lang.templates) lang.templates = {};
         if (!lang.includes) lang.includes = [];
 
@@ -44,7 +44,7 @@ export class LangFilePreprocessor {
     static objectifyTemplateMap(map: { [name: string]: TemplateObj }) {
         for (const name of Object.keys(map)) {
             if (typeof map[name] === "string")
-                map[name] = { template: <string><any>map[name], args: [], includes: [] };
+                map[name] = <any>{ template: <string><any>map[name], args: [], includes: [] };
 
             if (!map[name].args)
                 map[name].args = [];

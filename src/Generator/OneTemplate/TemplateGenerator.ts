@@ -1,8 +1,8 @@
-import * as ExprAst from "../ExprLang/ExprLangAst";
 import { ExprLangParser } from "../ExprLang/ExprLangParser";
 import { ExprLangVM, IModelHandler, VariableContext, VariableSource, JSModelHandler } from "../ExprLang/ExprLangVM";
-import * as Ast from "./TemplateAst";
 import { TemplateParser } from "./TemplateParser";
+import { Node, Block, Line, BlockItem, TextNode, IfNode, ForNode, TemplateNode } from "./TemplateAst";
+import { CallExpression, IdentifierExpression } from "../ExprLang/ExprLangAst";
 
 /**
  * Some important notes:
@@ -19,7 +19,7 @@ import { TemplateParser } from "./TemplateParser";
  */
 
 export class TemplateMethod {
-    body: Ast.Block;
+    body: Block;
 
     constructor(public name: string, public args: string[], public template: string) {
         this.body = TemplateParser.parse(template.replace(/\\#/g, "#"));
@@ -27,11 +27,11 @@ export class TemplateMethod {
 
     static fromSignature(signature: string, template: string) {
         const expr = ExprLangParser.parse(signature);
-        if (expr instanceof ExprAst.CallExpression) {
-            const name = (<ExprAst.IdentifierExpression> expr.method).text;
-            const args = expr.args.map(x => (<ExprAst.IdentifierExpression> x).text);
+        if (expr instanceof CallExpression) {
+            const name = (<IdentifierExpression> expr.method).text;
+            const args = expr.args.map(x => (<IdentifierExpression> x).text);
             return new TemplateMethod(name, args, template);
-        } else if (expr instanceof ExprAst.IdentifierExpression) {
+        } else if (expr instanceof IdentifierExpression) {
             const name = expr.text;
             return new TemplateMethod(name, [], template);
         } else {
@@ -91,8 +91,8 @@ export class TemplateGenerator implements IModelHandler {
         return JSModelHandler.memberAccess(obj, memberName, isProperty);
     }
 
-    isSimpleTextNode(node: Ast.BlockItem) {
-        return node instanceof Ast.Line && node.items[0] instanceof Ast.TextNode;
+    isSimpleTextNode(node: BlockItem) {
+        return node instanceof Line && node.items[0] instanceof TextNode;
     }
 
     static join(items: GeneratedNode[], separator: string) {
@@ -115,7 +115,7 @@ export class TemplateGenerator implements IModelHandler {
         return result;
     }
 
-    processBlockNode(node: Ast.Block, vars: VariableContext): GeneratedNode[] {
+    processBlockNode(node: Block, vars: VariableContext): GeneratedNode[] {
         const lines = node.lines.map(x => this.generateNode(x, vars));
         const removeWs = lines.map(x => x === null);
         const resultLines: GeneratedNode[][] = [];
@@ -124,7 +124,7 @@ export class TemplateGenerator implements IModelHandler {
             if (line === null) continue;
 
             const origLine = node.lines[iLine];
-            const origLineWs = origLine instanceof Ast.Line && origLine.items.length === 0;
+            const origLineWs = origLine instanceof Line && origLine.items.length === 0;
 
             if (origLineWs) {
                 if (removeWs[iLine - 1]) {
@@ -144,7 +144,7 @@ export class TemplateGenerator implements IModelHandler {
         return result;
     }
 
-    processLineNode(node: Ast.Line, vars: VariableContext): GeneratedNode[] {
+    processLineNode(node: Line, vars: VariableContext): GeneratedNode[] {
         const lines = node.items.map(x => this.generateNode(x, vars));
         const nonNullLines = lines.filter(x => x !== null);
         
@@ -179,7 +179,7 @@ export class TemplateGenerator implements IModelHandler {
         }
     }
 
-    processIfNode(node: Ast.IfNode, vars: VariableContext): GeneratedNode[] {
+    processIfNode(node: IfNode, vars: VariableContext): GeneratedNode[] {
         let resultBlock = node.else;
 
         for (const item of node.items)
@@ -195,7 +195,7 @@ export class TemplateGenerator implements IModelHandler {
         return result;
     }
 
-    processForNode(node: Ast.ForNode, vars: VariableContext): GeneratedNode[] {
+    processForNode(node: ForNode, vars: VariableContext): GeneratedNode[] {
         let result: GeneratedNode[];
 
         const array = <any[]> this.vm.evaluate(node.arrayExpr, vars);
@@ -221,7 +221,7 @@ export class TemplateGenerator implements IModelHandler {
         return result;
     }
 
-    processTemplateNode(node: Ast.TemplateNode, vars: VariableContext): GeneratedNode[] {
+    processTemplateNode(node: TemplateNode, vars: VariableContext): GeneratedNode[] {
         const result = this.vm.evaluate(node.expr, vars);
         if (result === null) {
             return null;
@@ -234,20 +234,20 @@ export class TemplateGenerator implements IModelHandler {
         }
     }
 
-    generateNode(node: Ast.Node, vars: VariableContext): GeneratedNode[] {
+    generateNode(node: Node, vars: VariableContext): GeneratedNode[] {
         let result: GeneratedNode[];
 
-        if (node instanceof Ast.TextNode) {
+        if (node instanceof TextNode) {
             result = [new GeneratedNode(node.value)];
-        } else if (node instanceof Ast.TemplateNode) {
+        } else if (node instanceof TemplateNode) {
             result = this.processTemplateNode(node, vars);
-        } else if (node instanceof Ast.Block) {
+        } else if (node instanceof Block) {
             result = this.processBlockNode(node, vars);
-        } else if (node instanceof Ast.Line) {
+        } else if (node instanceof Line) {
             result = this.processLineNode(node, vars);
-        } else if (node instanceof Ast.IfNode) {
+        } else if (node instanceof IfNode) {
             result = this.processIfNode(node, vars);
-        } else if (node instanceof Ast.ForNode) {
+        } else if (node instanceof ForNode) {
             result = this.processForNode(node, vars);
         } else {
             throw new Error("Unexpected node type");
@@ -256,7 +256,7 @@ export class TemplateGenerator implements IModelHandler {
         return result;
     }
 
-    generate(template: Ast.Node): string {
+    generate(template: Node): string {
         const nodes = this.generateNode(template, this.rootVars);
         const result = nodes.map(x => x.text).join("");
         return result;
