@@ -1,4 +1,4 @@
-export type TokenKind = "number"|"identifier"|"operator"|"string";
+export enum TokenKind { Number = "number", Identifier = "identifier", Operator = "operator", String = "string" }
 
 export class Token
 {
@@ -60,13 +60,13 @@ export class ExprLangLexer {
     tryToReadOperator() {
         this.skipWhitespace();
         const op = this.operators.find(op => this.expression.startsWith(op, this.offset));
-        return this.addIf("operator", op);
+        return this.addIf(TokenKind.Operator, op);
     }
 
     tryToReadNumber() {
         this.skipWhitespace();
         const number = this.tryToMatch("[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)");
-        const success = this.addIf("number", number);
+        const success = this.addIf(TokenKind.Number, number);
         if (success && this.tryToMatch("[0-9a-zA-Z]"))
             this.fail("invalid character in number");
         return success;
@@ -75,7 +75,7 @@ export class ExprLangLexer {
     tryToReadIdentifier() {
         this.skipWhitespace();
         const identifier = this.tryToMatch("[a-zA-Z_][a-zA-Z0-9_]*");
-        return this.addIf("identifier", identifier);
+        return this.addIf(TokenKind.Identifier, identifier);
     }
 
     tryToReadString() {
@@ -85,7 +85,7 @@ export class ExprLangLexer {
 
         let str = match.substr(1, match.length - 2);
         str = match[0] === "'" ? str.replace("\\'", "'") : str.replace('\\"', '"');
-        this.tokens.push(new Token("string", str));
+        this.tokens.push(new Token(TokenKind.String, str));
         this.offset += match.length;
         return true;
     }

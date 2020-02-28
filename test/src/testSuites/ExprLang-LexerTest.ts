@@ -1,5 +1,5 @@
 import { runYamlTestSuite, assert } from "../TestUtils";
-import { Token, ExprLangLexer, ExprLangLexerException } from "@one/Generator/ExprLang/ExprLangLexer";
+import { Token, ExprLangLexer, ExprLangLexerException, TokenKind } from "@one/Generator/ExprLang/ExprLangLexer";
 import { operators } from "@one/Generator/ExprLang/ExprLangParser";
 
 runYamlTestSuite("ExprLang-Lexer", (expr, expectedDesc: { op?: string, i?: string, n?: string, s?: string }[]) => {
@@ -14,10 +14,10 @@ runYamlTestSuite("ExprLang-Lexer", (expr, expectedDesc: { op?: string, i?: strin
     }
 
     const expected = Array.isArray(expectedDesc) ? expectedDesc.map(x => 
-        x.op ? new Token("operator", x.op) :
-        x.i ? new Token("identifier", x.i) : 
-        x.n ? new Token("number", x.n) :
-        x.s ? new Token("string", x.s) :
+        x.op ? new Token(TokenKind.Operator, x.op) :
+        x.i ? new Token(TokenKind.Identifier, x.i) : 
+        x.n ? new Token(TokenKind.Number, x.n) :
+        x.s ? new Token(TokenKind.String, x.s) :
         "UNKNOWN") : expectedDesc;
 
     assert.deepStrictEqual(actual, expected);

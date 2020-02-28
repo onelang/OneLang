@@ -1,4 +1,4 @@
-import * as Ast from "./ExprLangAst";
+import { LiteralExpression, IdentifierExpression, UnaryExpression, BinaryExpression, ParenthesizedExpression, ConditionalExpression, CallExpression, PropertyAccessExpression, ElementAccessExpression, IExpression } from "./ExprLangAst";
 
 class ExprLangError extends Error { }
 
@@ -128,107 +128,98 @@ export class ExprLangVM {
         this.modelHandler = modelHandler || new JSModelHandler();
     }
 
-    evaluate(expr: Ast.Expression, vars?: VariableContext) {
-        if (expr.kind === "literal") {
-            const litExpr = <Ast.LiteralExpression> expr;
-            return litExpr.value;
-        } else if (expr.kind === "identifier") {
-            const identifier = <Ast.IdentifierExpression> expr;
-            if (identifier.text === "true") {
+    evaluate(expr: IExpression, vars?: VariableContext) {
+        if (expr instanceof LiteralExpression) {
+            return expr.value;
+        } else if (expr instanceof IdentifierExpression) {
+            if (expr.text === "true") {
                 return true;
-            } else if (identifier.text === "false") {
+            } else if (expr.text === "false") {
                 return false;
-            } else if (identifier.text === "null") {
+            } else if (expr.text === "null") {
                 return null;
             } else {
                 if (!vars)
                     throw new ExprLangError(`Variable context was not set!`);
 
-                const result = vars.getVariable(identifier.text);
+                const result = vars.getVariable(expr.text);
                 return result;
             }
-        } else if (expr.kind === "unary") {
-            const unaryExpr = <Ast.UnaryExpression> expr;
-            const exprValue = this.evaluate(unaryExpr.expr, vars);
-            if (unaryExpr.op === "!") {
+        } else if (expr instanceof UnaryExpression) {
+            const exprValue = this.evaluate(expr.expr, vars);
+            if (expr.op === "!") {
                 return !exprValue;
-            } else if (unaryExpr.op === "+") {
+            } else if (expr.op === "+") {
                 return +exprValue;
-            } else if (unaryExpr.op === "-") {
+            } else if (expr.op === "-") {
                 return -exprValue;
             } else
-                throw new ExprLangError(`Unexpected unary operator: '${unaryExpr.op}'`);
-        } else if (expr.kind === "binary") {
-            const binaryExpr = <Ast.BinaryExpression> expr;
-            const leftValue = this.evaluate(binaryExpr.left, vars);
-            const rightValue = this.evaluate(binaryExpr.right, vars);
-            if (binaryExpr.op === "+") {
+                throw new ExprLangError(`Unexpected unary operator: '${expr.op}'`);
+        } else if (expr instanceof BinaryExpression) {
+            const leftValue = this.evaluate(expr.left, vars);
+            const rightValue = this.evaluate(expr.right, vars);
+            if (expr.op === "+") {
                 return leftValue + rightValue;
-            } else if (binaryExpr.op === "-") {
+            } else if (expr.op === "-") {
                 return leftValue - rightValue;
-            } else if (binaryExpr.op === "*") {
+            } else if (expr.op === "*") {
                 return leftValue * rightValue;
-            } else if (binaryExpr.op === "/") {
+            } else if (expr.op === "/") {
                 return leftValue / rightValue;
-            } else if (binaryExpr.op === "<<") {
+            } else if (expr.op === "<<") {
                 return leftValue << rightValue;
-            } else if (binaryExpr.op === ">>") {
+            } else if (expr.op === ">>") {
                 return leftValue >> rightValue;
-            } else if (binaryExpr.op === "==") {
+            } else if (expr.op === "==") {
                 return leftValue === rightValue;
-            } else if (binaryExpr.op === "!=") {
+            } else if (expr.op === "!=") {
                 return leftValue !== rightValue;
-            } else if (binaryExpr.op === ">=") {
+            } else if (expr.op === ">=") {
                 return leftValue >= rightValue;
-            } else if (binaryExpr.op === "<=") {
+            } else if (expr.op === "<=") {
                 return leftValue <= rightValue;
-            } else if (binaryExpr.op === "<") {
+            } else if (expr.op === "<") {
                 return leftValue < rightValue;
-            } else if (binaryExpr.op === ">") {
+            } else if (expr.op === ">") {
                 return leftValue > rightValue;
-            } else if (binaryExpr.op === "&&") {
+            } else if (expr.op === "&&") {
                 return leftValue && rightValue;
-            } else if (binaryExpr.op === "||") {
+            } else if (expr.op === "||") {
                 return leftValue || rightValue;
             } else
-                throw new ExprLangError(`Unexpected binary operator: '${binaryExpr.op}'`);
-        } else if (expr.kind === "parenthesized") {
-            const parenExpr = <Ast.ParenthesizedExpression> expr;
-            const exprValue = this.evaluate(parenExpr, vars);
+                throw new ExprLangError(`Unexpected binary operator: '${expr.op}'`);
+        } else if (expr instanceof ParenthesizedExpression) {
+            const exprValue = this.evaluate(expr, vars);
             return exprValue;
-        } else if (expr.kind === "conditional") {
-            const condExpr = <Ast.ConditionalExpression> expr;
-            const condValue = this.evaluate(condExpr.condition, vars);
-            const result = this.evaluate(condValue ? condExpr.whenTrue : condExpr.whenFalse, vars);
+        } else if (expr instanceof ConditionalExpression) {
+            const condValue = this.evaluate(expr.condition, vars);
+            const result = this.evaluate(condValue ? expr.whenTrue : expr.whenFalse, vars);
             return result;
-        } else if (expr.kind === "call") {
-            const callExpr = <Ast.CallExpression> expr;
-            const method = this.evaluate(callExpr.method, vars);
+        } else if (expr instanceof CallExpression) {
+            const method = this.evaluate(expr.method, vars);
 
             let thisObj;
-            if (callExpr.method.kind === "propertyAccess") {
-                const thisObjExpr = (<Ast.PropertyAccessExpression> callExpr.method).object;
+            if (expr.method instanceof PropertyAccessExpression) {
+                const thisObjExpr = expr.method.object;
                 thisObj = this.evaluate(thisObjExpr, vars);
             } else {
                 thisObj = null;
             }
 
-            const args = callExpr.arguments.map(arg => this.evaluate(arg, vars));
+            const args = expr.args.map(arg => this.evaluate(arg, vars));
             const result = this.modelHandler.methodCall(method, args, thisObj, vars);
             return result;
-        } else if (expr.kind === "propertyAccess") {
-            const propAccExpr = <Ast.PropertyAccessExpression> expr;
-            const object = this.evaluate(propAccExpr.object, vars);
-            const result = this.modelHandler.memberAccess(object, propAccExpr.propertyName, true);
+        } else if (expr instanceof PropertyAccessExpression) {
+            const object = this.evaluate(expr.object, vars);
+            const result = this.modelHandler.memberAccess(object, expr.propertyName, true);
             return result;
-        } else if (expr.kind === "elementAccess") {
-            const elemAccExpr = <Ast.ElementAccessExpression> expr;
-            const object = this.evaluate(elemAccExpr.object, vars);
-            const memberName = this.evaluate(elemAccExpr.elementExpr, vars);
+        } else if (expr instanceof ElementAccessExpression) {
+            const object = this.evaluate(expr.object, vars);
+            const memberName = this.evaluate(expr.elementExpr, vars);
             const result = this.modelHandler.memberAccess(object, memberName, false);
             return result;
         } else {
-            throw new ExprLangError(`Unknown expression kind: '${expr.kind}'`);
+            throw new ExprLangError(`Unknown expression kind: '${expr.constructor.name}'`);
         }
     }
 }

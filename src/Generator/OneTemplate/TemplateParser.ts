@@ -22,10 +22,10 @@ class TemplatePart {
     params: { [name: string]: string|boolean } = {};
 
     textValue: string;
-    for: { itemName: string, array: ExprAst.Expression };
-    if: { condition: ExprAst.Expression };
-    elif: { condition: ExprAst.Expression };
-    template: { expr: ExprAst.Expression };
+    for: { itemName: string, array: ExprAst.IExpression };
+    if: { condition: ExprAst.IExpression };
+    elif: { condition: ExprAst.IExpression };
+    template: { expr: ExprAst.IExpression };
     
     isWhitespace = false;
 

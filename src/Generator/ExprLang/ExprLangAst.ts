@@ -1,57 +1,42 @@
-export interface Expression {
-    kind: "binary"|"unary"|"literal"|"identifier"|"parenthesized"|"conditional"|"call"|"propertyAccess"|"elementAccess";
+export interface IExpression {
 }
 
-export interface BinaryExpression extends Expression {
-    kind: "binary";
-    op: "+"|"-"|"*"|"/"|"<<"|">>";
-    left: Expression;
-    right: Expression;
+export class BinaryExpression implements IExpression {
+    // op == "+"|"-"|"*"|"/"|"<<"|">>";
+    constructor(public op: string, public left: IExpression, public right: IExpression) { }
 }
 
-export interface UnaryExpression extends Expression {
-    kind: "unary";
-    op: "!"|"+"|"-"|"!";
-    expr: Expression;
+export class UnaryExpression implements IExpression {
+    // "!"|"+"|"-"|"!";
+    constructor(public op: string, public expr: IExpression) { }
 }
 
-export interface LiteralExpression extends Expression {
-    kind: "literal";
-    type: "number"|"string"|"boolean";
-    value: any;
+export enum LiteralType { Number, String, Boolean }
+
+export class LiteralExpression implements IExpression {
+    constructor(public type: LiteralType, public value: any) { }
 }
 
-export interface IdentifierExpression extends Expression {
-    kind: "identifier";
-    text: string;
+export class IdentifierExpression implements IExpression {
+    constructor(public text: string) { }
 }
 
-export interface ParenthesizedExpression extends Expression {
-    kind: "parenthesized";
-    expr: Expression;
+export class ParenthesizedExpression implements IExpression {
+    constructor(public expr: IExpression) { }
 }
 
-export interface ConditionalExpression extends Expression {
-    kind: "conditional";
-    condition: Expression;
-    whenTrue: Expression;
-    whenFalse: Expression;
+export class ConditionalExpression implements IExpression {
+    constructor(public condition: IExpression, public whenTrue: IExpression, public whenFalse: IExpression) { }
 }
 
-export interface CallExpression extends Expression {
-    kind: "call";
-    method: Expression;
-    arguments: Expression[];
+export class CallExpression implements IExpression {
+    constructor(public method: IExpression, public args: IExpression[]) { }
 }
 
-export interface PropertyAccessExpression extends Expression {
-    kind: "propertyAccess";
-    object: Expression;
-    propertyName: string;
+export class PropertyAccessExpression implements IExpression {
+    constructor(public object: IExpression, public propertyName: string) { }
 }
 
-export interface ElementAccessExpression extends Expression {
-    kind: "elementAccess";
-    object: Expression;
-    elementExpr: Expression;
+export class ElementAccessExpression implements IExpression {
+    constructor(public object: IExpression, public elementExpr: IExpression) { }
 }

@@ -1,4 +1,4 @@
-import { Expression } from "../ExprLang/ExprLangAst";
+import { IExpression } from "../ExprLang/ExprLangAst";
 
 export interface Node { }
 export interface BlockItem extends Node { inline: boolean; }
@@ -24,7 +24,7 @@ export class TextNode implements LineItem {
 
 export class TemplateNode implements LineItem {
     kind = "template";
-    constructor(public expr: Expression) { }
+    constructor(public expr: IExpression) { }
 }
 
 export class ForNode implements BlockItem {
@@ -32,11 +32,11 @@ export class ForNode implements BlockItem {
     body: ItemContainer;
     else: ItemContainer;
 
-    constructor(public itemName: string, public arrayExpr: Expression, public inline: boolean, public separator = "") { }
+    constructor(public itemName: string, public arrayExpr: IExpression, public inline: boolean, public separator = "") { }
 }
 
 export class IfItem {
-    constructor(public condition: Expression, public body?: ItemContainer) { }
+    constructor(public condition: IExpression, public body?: ItemContainer) { }
 }
 
 export class IfNode implements LineItem, BlockItem {

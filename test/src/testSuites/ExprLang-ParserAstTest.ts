@@ -1,8 +1,8 @@
 import { runYamlTestSuite, assert } from "../TestUtils";
 import { ExprLangParser } from "@one/Generator/ExprLang/ExprLangParser";
-import { Expression } from "@one/Generator/ExprLang/ExprLangAst";
+import { IExpression } from "@one/Generator/ExprLang/ExprLangAst";
 
-runYamlTestSuite("ExprLang-ParserAst", (expr, expected: Expression) => {
+runYamlTestSuite("ExprLang-ParserAst", (expr, expected: IExpression) => {
     const actual = ExprLangParser.parse(expr);
-    assert.deepStrictEqual(actual, expected);
+    assert.deepEqual(actual, expected);
 });

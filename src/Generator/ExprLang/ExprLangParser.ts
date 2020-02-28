@@ -1,5 +1,5 @@
-import * as Ast from "./ExprLangAst";
-import { ExprLangLexer, Token } from "./ExprLangLexer";
+import { ExprLangLexer, Token, TokenKind } from "./ExprLangLexer";
+import { IExpression, IdentifierExpression, LiteralExpression, UnaryExpression, ParenthesizedExpression, BinaryExpression, ConditionalExpression, CallExpression, ElementAccessExpression, PropertyAccessExpression, LiteralType } from "./ExprLangAst";
 
 // http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
 
@@ -56,13 +56,13 @@ export class ExprLangParser {
     
     consumeOp(op: string) {
         const token = this.consume();
-        if (token.kind !== "operator" || token.value !== op)
+        if (token.kind !== TokenKind.Operator || token.value !== op)
             this.fail(`Expected operator '${op}', got token '${token.value}' (${token.kind})`);
     }
 
     consumeOpIf(op: string) {
         const token = this.tokens[0];
-        if (token && token.kind === "operator" && token.value === op) {
+        if (token && token.kind === TokenKind.Operator && token.value === op) {
             this.consume();
             return true;
         }
@@ -72,23 +72,23 @@ export class ExprLangParser {
     process(precedence = 0) {
         const token = this.consume();
 
-        let left: Ast.Expression = null;
-        if (token.kind === "identifier") {
-            left = <Ast.IdentifierExpression> { kind: "identifier", text: token.value };
-        } else if (token.kind === "string") {
-            left = <Ast.LiteralExpression> { kind: "literal", type: "string", value: token.value.replace(/\\n/g, "\n") };
-        } else if (token.kind === "number") {
+        let left: IExpression = null;
+        if (token.kind === TokenKind.Identifier) {
+            left = new IdentifierExpression(token.value);
+        } else if (token.kind === TokenKind.String) {
+            left = new LiteralExpression(LiteralType.String, token.value.replace(/\\n/g, "\n"));
+        } else if (token.kind === TokenKind.Number) {
             const value = parseInt(token.value);
-            left = <Ast.LiteralExpression> { kind: "literal", type: "number", value };
-        } else if (token.kind === "operator") {
+            left = new LiteralExpression(LiteralType.Number, value);
+        } else if (token.kind === TokenKind.Operator) {
             const operator = this.tokenMap[token.value] || token.value;
             if (this.unary.includes(operator)) {
                 const right = this.process(this.precedenceMap["prefix"]);
-                left = <Ast.UnaryExpression> { kind: "unary", op: operator, expr: right };
+                left = new UnaryExpression(operator, right);
             } else if (operator === "(") {
                 const expr = this.process();
                 this.consumeOp(")");
-                left = <Ast.ParenthesizedExpression> { kind: "parenthesized", expr };
+                left = new ParenthesizedExpression(expr);
             }
         }
 
@@ -97,7 +97,7 @@ export class ExprLangParser {
 
         while(this.tokens.length > 0) {
             const nextToken = this.tokens[0];
-            if (nextToken.kind !== "operator") break;
+            if (nextToken.kind !== TokenKind.Operator) break;
 
             const op = this.tokenMap[nextToken.value] || nextToken.value;
             const infixPrecedence = this.precedenceMap[op] || 0;
@@ -107,12 +107,12 @@ export class ExprLangParser {
             if (this.binary.includes(op)) {
                 const isRightAssoc = this.rightAssoc.includes(op);
                 const right = this.process(isRightAssoc ? infixPrecedence - 1 : infixPrecedence);
-                left = <Ast.BinaryExpression> { kind: "binary", op, left, right };
+                left = new BinaryExpression(op, left, right);
             } else if (op === "?") {
                 const whenTrue = this.process();
                 this.consumeOp(":");
                 const whenFalse = this.process(infixPrecedence - 1);
-                left = <Ast.ConditionalExpression> { kind: "conditional", condition: left, whenTrue, whenFalse };
+                left = new ConditionalExpression(left, whenTrue, whenFalse);
             } else if (op === "(") {
                 const args = [];
 
@@ -125,17 +125,17 @@ export class ExprLangParser {
                     this.consumeOp(")");
                 }
 
-                left = <Ast.CallExpression> { kind: "call", method: left, arguments: args };
+                left = new CallExpression(left, args);
             } else if (op === "[") {
                 const elementExpr = this.process();
                 this.consumeOp("]");
-                left = <Ast.ElementAccessExpression> { kind: "elementAccess", object: left, elementExpr };
+                left = new ElementAccessExpression(left, elementExpr);
             } else if (op === ".") {
                 do {
                     const prop = this.consume();
-                    if (prop.kind !== "identifier")
+                    if (prop.kind !== TokenKind.Identifier)
                         this.fail(`Expected identifier as property name, got token '${prop.value}' (${prop.kind})`);
-                    left = <Ast.PropertyAccessExpression> { kind: "propertyAccess", object: left, propertyName: prop.value };
+                    left = new PropertyAccessExpression(left, prop.value);
                 } while (this.consumeOpIf("."));
             } else {
                 this.fail(`Could not parse infix operator: '${op}'`);

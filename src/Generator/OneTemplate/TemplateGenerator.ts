@@ -26,15 +26,13 @@ export class TemplateMethod {
     }
 
     static fromSignature(signature: string, template: string) {
-        const signatureAst = ExprLangParser.parse(signature);
-        if (signatureAst.kind === "call") {
-            const callExpr = <ExprAst.CallExpression> signatureAst;
-            const name = (<ExprAst.IdentifierExpression> callExpr.method).text;
-            const args = callExpr.arguments.map(x => (<ExprAst.IdentifierExpression> x).text);
+        const expr = ExprLangParser.parse(signature);
+        if (expr instanceof ExprAst.CallExpression) {
+            const name = (<ExprAst.IdentifierExpression> expr.method).text;
+            const args = expr.args.map(x => (<ExprAst.IdentifierExpression> x).text);
             return new TemplateMethod(name, args, template);
-        } else if (signatureAst.kind === "identifier") {
-            const idExpr = <ExprAst.IdentifierExpression> signatureAst;
-            const name = idExpr.text;
+        } else if (expr instanceof ExprAst.IdentifierExpression) {
+            const name = expr.text;
             return new TemplateMethod(name, [], template);
         } else {
             throw new Error(`Could not parse method signature: '${signature}'`);
