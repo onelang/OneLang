@@ -3,7 +3,7 @@ import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser2";
 import { readFile, glob, readDir, baseDir, getLangFiles } from "./TestUtils";
 import { PackageManager } from '@one/StdLib/PackageManager';
 import { PackagesFolderSource } from '@one/StdLib/PackagesFolderSource';
-import { SourcePath, Package, Workspace } from '@one/One/Ast/Types';
+import { SourcePath, Package, Workspace, SourceFile, ExportScopeRef } from '@one/One/Ast/Types';
 import { ResolveImports } from "@one/One/Transforms/ResolveImports";
 import { FillAttributesFromTrivia } from "@one/One/Transforms/FillAttributesFromTrivia";
 import { ResolveGenericTypeIdentifiers } from "@one/One/Transforms/ResolveGenericTypeIdentifiers";
@@ -72,6 +72,8 @@ initCompiler().then(() => {
         const projectPkg = new Package("@");
         workspace.addPackage(projectPkg);
 
+        workspace.addPackage(new Package("js-yaml", [new SourceFile([], {}, {}, {}, null, new SourcePath(null, "index"), new ExportScopeRef("js-yaml", "index"))]));
+
         const files = glob(test.projDir);
         for (const file of files)
             projectPkg.addFile(TypeScriptParser2.parseFile(readFile(`${test.projDir}/${file}`), new SourcePath(projectPkg, file)));
@@ -85,8 +87,8 @@ initCompiler().then(() => {
             FillAttributesFromTrivia.processFile(file);
         }
 
-        //saveState();
-        //ResolveImports.processWorkspace(workspace);
+        saveState();
+        ResolveImports.processWorkspace(workspace);
 
         //saveState();
         //for (const file of Object.values(projectPkg.files))

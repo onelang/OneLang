@@ -36,7 +36,13 @@ class ExportedScope {
 }
 
 export class Package {
-    constructor(public name: string) { }
+    constructor(public name: string, files: SourceFile[] = []) {
+        for (const file of files) {
+            if (file.sourcePath.pkg === null)
+                file.sourcePath.pkg = this;
+            this.addFile(file);
+        }
+    }
 
     static readonly INDEX = "index";
 
