@@ -85,6 +85,7 @@ export class TypeScriptParser2 implements IParser {
             this.reader.expectToken("]");
             this.reader.expectToken(":");
             const mapValueType = this.parseType();
+            this.reader.readToken(";");
             this.reader.expectToken("}");
             return new UnresolvedType("TsMap", [new UnresolvedType("TsString"), mapValueType]);
         }
@@ -162,7 +163,7 @@ export class TypeScriptParser2 implements IParser {
             const expression = this.parseExpression();
             return new CastExpression(newType, expression);
         } else if (this.reader.readToken("/")) {
-            const pattern = this.reader.readRegex("([\\\\]/|[^/])+")[0];
+            const pattern = this.reader.readRegex("((?<![\\\\])[\\\\]/|[^/])+")[0];
             this.reader.expectToken("/");
             const modifiers = this.reader.readModifiers(["g", "i"]);
             return new RegexLiteral(pattern, modifiers.includes("i"), modifiers.includes("g"));
@@ -170,9 +171,16 @@ export class TypeScriptParser2 implements IParser {
             const expr = this.expressionParser.parse(this.expressionParser.prefixPrecedence);
             this.reader.expectToken("===");
             const check = this.reader.expectString();
-            if (check !== "string")
+            
+            let tsType = null;
+            if (check === "string")
+                tsType = "TsString";
+            else if (check === "object")
+                tsType = "TsObject";
+            else
                 this.reader.fail("unexpected typeof comparison");
-            return new InstanceOfExpression(expr, new UnresolvedType("TsString"));
+
+            return new InstanceOfExpression(expr, new UnresolvedType(tsType));
         } else if (this.reader.peekRegex("\\([A-Za-z0-9_]+\\s*[:,]|\\(\\)")) {
             const params = this.parseLambdaParams();
             this.reader.expectToken("=>");
@@ -436,7 +444,7 @@ export class TypeScriptParser2 implements IParser {
             const leadingTrivia = this.reader.readLeadingTrivia();
 
             const memberStart = this.reader.offset;
-            const memberName = this.reader.expectIdentifier();
+            const memberName = this.parseIdentifierOrString();
             if (this.reader.readToken(":")) {
                 this.context.push(`F:${memberName}`);
 
@@ -447,16 +455,18 @@ export class TypeScriptParser2 implements IParser {
                 fields[field.name] = field;
 
                 this.nodeManager.addNode(field, memberStart);
+                this.context.pop();
             } else {
+                this.context.push(`M:${memberName}`);
                 const methodTypeArgs = this.parseGenericsArgs();
                 this.reader.expectToken("("); // method
     
                 const sig = this.parseMethodSignature(/* isConstructor = */ false, /* declarationOnly = */ true);
-                this.context.pop();
     
                 const method = new Method(memberName, methodTypeArgs, sig.params, sig.body, Visibility.Public, false, sig.returns, leadingTrivia);
                 methods[method.name] = method;
                 this.nodeManager.addNode(method, memberStart);
+                this.context.pop();
             }
         }
 
@@ -466,8 +476,14 @@ export class TypeScriptParser2 implements IParser {
         return intf;
     }
 
+    parseSpecifiedType() {
+        const typeName = this.reader.readIdentifier();
+        const typeArgs = this.parseTypeArgs();
+        return new UnresolvedType(typeName, typeArgs);
+    }
+
     parseClass(leadingTrivia: string, isExported: boolean) {
-        const clsModifiers = this.reader.readModifiers(["declare"]);
+        const clsModifiers = this.reader.readModifiers(["declare", "abstract"]);
         const declarationOnly = clsModifiers.includes("declare");
         if (!this.reader.readToken("class")) return null;
         const clsStart = this.reader.prevTokenOffset;
@@ -476,12 +492,12 @@ export class TypeScriptParser2 implements IParser {
         this.context.push(`C:${name}`);
 
         const typeArgs = this.parseGenericsArgs();
-        const baseClass = this.reader.readToken("extends") ? new UnresolvedType(this.reader.readIdentifier()) : null;
+        const baseClass = this.reader.readToken("extends") ? this.parseSpecifiedType() : null;
 
         const baseInterfaces: Type[] = [];
         if (this.reader.readToken("implements")) {
             do {
-                baseInterfaces.push(new UnresolvedType(this.reader.expectIdentifier()));
+                baseInterfaces.push(this.parseSpecifiedType());
             } while (this.reader.readToken(","))
         }
 
@@ -500,7 +516,7 @@ export class TypeScriptParser2 implements IParser {
             const visibility = modifiers.includes("private") ? Visibility.Private :
                 modifiers.includes("protected") ? Visibility.Protected : Visibility.Public;
 
-            const memberName = this.reader.expectIdentifier();
+            const memberName = this.parseIdentifierOrString();
             const methodTypeArgs = this.parseGenericsArgs();
             if (this.reader.readToken("(")) { // method
                 const isConstructor = memberName === "constructor";

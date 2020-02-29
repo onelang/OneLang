@@ -213,7 +213,7 @@ export class Reader {
 
     readString() {
         this.skipWhitespace();
-        const strMatch = this.readRegex("'(\\\\'|[^'])*'") || this.readRegex('"(\\\\"|[^"])*"');
+        const strMatch = this.readRegex("'((?<!\\\\)\\\\'|[^'\n])*'") || this.readRegex('"((?<!\\\\)\\\\"|[^"\n])*"');
         if (!strMatch) return null;
 
         let str = strMatch[0].substr(1, strMatch[0].length - 2);
