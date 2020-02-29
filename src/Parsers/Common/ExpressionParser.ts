@@ -26,11 +26,12 @@ export class ExpressionParser {
                 { name: "and", operators: ['&&', 'and'], binary: true },
                 { name: "comparison", operators: ['>=', '!=', '===', '!==', '==', '<=', '>', '<'], binary: true },
                 { name: "sum", operators: ['+','-'], binary: true },
-                { name: "product", operators: ['*','/'], binary: true },
+                { name: "product", operators: ['*','/','%'], binary: true },
                 { name: "bitwise", operators: ['|','&','^'], binary: true },
                 { name: "exponent", operators: ['**'], binary: true },
                 { name: "shift", operators: ['<<', '>>'], binary: true },
-                { name: "range", operators: ['...'], binary: true },
+                { name: "range", operators: ['...'], binary: true }, // TODO: move to lang
+                { name: "in", operators: ['in'], binary: true }, // TODO: move to lang
                 { name: "prefix" },
                 { name: "postfix", operators: ['++', '--'] },
                 { name: "call", operators: ['('] },
