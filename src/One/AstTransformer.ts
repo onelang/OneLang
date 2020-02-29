@@ -169,24 +169,6 @@ export abstract class AstTransformer<TContext> {
         this.log(`Unknown expression type: ${expr.constructor.name}`);
     }
 
-    // protected visitVariableRef(expr: VariableRef, context: TContext) {
-    //     if (expr.thisExpr)
-    //         this.visitExpression(expr.thisExpr, context);
-    // }
-
-    // protected visitMethodReference(expr: MethodReference, context: TContext) {
-    //     if (expr.thisExpr)
-    //         this.visitExpression(expr.thisExpr, context);
-    // }
-
-    // protected visitClassReference(expr: ClassReference, context: TContext) { }
-
-    // protected visitThisReference(expr: ThisReference, context: TContext) { }
-
-    // protected visitEnumReference(expr: EnumReference, context: TContext) { }
-
-    // protected visitEnumMemberReference(expr: EnumReference, context: TContext) { }
-
     protected visitCastExpression(expr: CastExpression, context: TContext): CastExpression|void { 
         expr.expression = this.visitExpression(expr.expression, context) || expr.expression;
     }
@@ -220,18 +202,6 @@ export abstract class AstTransformer<TContext> {
             return this.visitMapLiteral(expression, context);
         } else if (expression instanceof CastExpression) {
             return this.visitCastExpression(expression, context);
-        // } else if (expression instanceof VariableReference) {
-        //     return this.visitVariableRef(<VariableRef> expression, context);
-        // } else if (expression instanceof MethodReference) {
-        //     return this.visitMethodReference(<MethodReference> expression, context);
-        // } else if (expression instanceof ClassReference) {
-        //     return this.visitClassReference(<ClassReference> expression, context);
-        // } else if (expression instanceof ThisReference) {
-        //     return this.visitThisReference(<ThisReference> expression, context);
-        // } else if (expression instanceof EnumReference) {
-        //     return this.visitEnumReference(<EnumReference> expression, context);
-        // } else if (expression instanceof EnumMemberReference) {
-        //     return this.visitEnumMemberReference(<EnumMemberReference> expression, context);
         } else {
             return this.visitUnknownExpression(expression, context);
         }

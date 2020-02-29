@@ -8,21 +8,6 @@ import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileState
 import { Block, Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package, Lambda } from "../One/Ast/Types";
 
 export class TypeScriptParser2 implements IParser {
-    // langData: LangData = {
-    //     langId: "typescript",
-    //     literalClassNames: {
-    //         string: "TsString",
-    //         boolean: "TsBoolean",
-    //         numeric: "TsNumber",
-    //         character: "TsCharacter",
-    //         map: "TsMap",
-    //         array: "TsArray",
-    //     },
-    //     allowImplicitVariableDeclaration: false,
-    //     supportsTemplateStrings: true,
-    //     supportsFor: true,
-    // };
-
     context: string[] = [];
     reader: Reader;
     expressionParser: ExpressionParser;
