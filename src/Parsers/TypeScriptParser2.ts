@@ -260,21 +260,25 @@ export class TypeScriptParser2 implements IParser {
             requiresClosing = false;
             this.reader.expectToken("(");
             const varDeclMod = this.reader.readAnyOf(["const", "let", "var"]);
-            const itemVarName = this.reader.expectIdentifier();
-            if (this.reader.readToken("of")) {
+            const itemVarName = varDeclMod === null ? null : this.reader.expectIdentifier();
+            if (itemVarName !== null && this.reader.readToken("of")) {
                 const items = this.parseExpression();
                 this.reader.expectToken(")");
                 const body = this.parseBlockOrStatement();
                 statement = new ForeachStatement(new ForeachVariable(itemVarName), items, body);
             } else {
-                const { type, init } = this.parseTypeAndInit();
+                let forVar = null;
+                if (itemVarName !== null) {
+                    const { type, init } = this.parseTypeAndInit();
+                    forVar = new ForVariable(itemVarName, type, init);
+                }
                 this.reader.expectToken(";");
                 const condition = this.parseExpression();
                 this.reader.expectToken(";");
                 const incrementor = this.parseExpression();
                 this.reader.expectToken(")");
                 const body = this.parseBlockOrStatement();
-                statement = new ForStatement(new ForVariable(itemVarName, type, init), condition, incrementor, body);
+                statement = new ForStatement(forVar, condition, incrementor, body);
             }
         } else if (this.reader.readToken("return")) {
             const expr = this.reader.peekToken(";") ? null : this.parseExpression();
