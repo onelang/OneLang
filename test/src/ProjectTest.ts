@@ -71,14 +71,15 @@ initCompiler().then(() => {
     tests.push({ projName: "OneLang", projDir: `src` });
 
     for (const test of tests) {
-        //if (test.projName !== "OneLang") continue;
-        if (test.projName !== "ComplexTest01") continue;
+        if (test.projName !== "OneLang") continue;
+        //if (test.projName !== "ComplexTest01") continue;
 
         const workspace = createWorkspace();
         const projectPkg = new Package("@");
         workspace.addPackage(projectPkg);
 
-        for (const file of glob(test.projDir))
+        const files = glob(test.projDir).filter(x => !/ExprLangVM|TemplateGenerator/.test(x));
+        for (const file of files)
             projectPkg.addFile(TypeScriptParser2.parseFile(readFile(`${test.projDir}/${file}`), new SourcePath(projectPkg, file)));
 
         const pkgStates: PackageStateCapture[] = [];
