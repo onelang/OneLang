@@ -1,24 +1,24 @@
-import { NewExpression, Identifier, Literal, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression } from "@one/One/Ast/Expressions";
-import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement } from "@one/One/Ast/Statements";
-import { Method, Block, Class, SourceFile, IMethodBase, MethodParameter, Constructor, IVariable } from "@one/One/Ast/Types";
+import { NewExpression, Identifier, Literal, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression } from "@one/One/Ast/Expressions";
+import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement } from "@one/One/Ast/Statements";
+import { Method, Block, Class, SourceFile, IMethodBase, MethodParameter, Constructor, IVariable, Lambda } from "@one/One/Ast/Types";
 import { Type, VoidType, AnyType, NullType, EnumType, GenericsType, MethodType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments, IType } from "@one/One/Ast/AstTypes";
 
 export class TSOverviewGenerator {
-    static leading(item: any) {
+    static leading(item: any, isStmt: boolean) {
         let result = "";
-        if ((<any>item).leadingTrivia && (<any>item).leadingTrivia.trim().length > 0)
-            result += (<any>item).leadingTrivia;
-        if ((<any>item).attributes)
-            result += Object.entries((<any>item).attributes).map(([name, data]) => `/// {ATTR} name="${name}", value=${JSON.stringify(data)}\n`).join("");
+        if (item.leadingTrivia && (isStmt ? item.leadingTrivia.length > 0 : item.leadingTrivia.trim().length > 0))
+            result += item.leadingTrivia;
+        if (item.attributes)
+            result += Object.entries(item.attributes).map(([name, data]) => `/// {ATTR} name="${name}", value=${JSON.stringify(data)}\n`).join("");
         return result;
     }
 
     static array<T>(items: T[], callback: (item: T) => string) {
-        return items.map(item => this.leading(item) + callback(item));
+        return items.map(item => this.leading(item, false) + callback(item));
     }
 
     static map<T>(items: { [name: string]: T }, callback: (item: T) => string) {
-        return Object.entries(items).map(([name, item]) => this.leading(item) + 
+        return Object.entries(items).map(([name, item]) => this.leading(item, false) + 
             (name !== (<any>item).name ? `/* name on object "${(<any>item).name}" is different from "${name}" */` : "") + callback(item));
     }
 
@@ -90,8 +90,33 @@ export class TSOverviewGenerator {
             res = `[${expr.items.map(x => this.expr(x)).join(', ')}]`;
         } else if (expr instanceof CastExpression) {
             res = `<${this.type(expr.newType)}>${this.expr(expr.expression)}`;
+        } else if (expr instanceof ConditionalExpression) {
+            res = `${this.expr(expr.condition)} ? ${this.expr(expr.whenTrue)} : ${this.expr(expr.whenFalse)}`;
+        } else if (expr instanceof InstanceOfExpression) {
+            res = `${this.expr(expr.expr)} instanceof ${this.type(expr.type)}`;
+        } else if (expr instanceof ParenthesizedExpression) {
+            res = `(${this.expr(expr.expression)})`;
+        } else if (expr instanceof RegexLiteral) {
+            res = `/${expr.pattern}/${expr.global ? "g" : ""}${expr.caseInsensitive ? "g" : ""}`;
+        } else if (expr instanceof Lambda) {
+            res = `(${expr.parameters.map(x => x.name + (x.type ? `: ${this.type(x.type)}` : "")).join(", ")}) => ${this.block(expr.body)}`;
+        } else if (expr instanceof UnaryExpression && expr.unaryType === UnaryType.Prefix) {
+            res = `${expr.operator}${this.expr(expr.operand)}`;
+        } else if (expr instanceof UnaryExpression && expr.unaryType === UnaryType.Postfix) {
+            res = `${this.expr(expr.operand)}${expr.operator}`;
+        } else if (expr instanceof MapLiteral) {
+            res = `{\n${this.pad(Object.entries(expr.properties).map(([key, value]) => `${key}: ${this.expr(value)}`).join(",\n"))}\n}`;
+        } else if (expr instanceof NullLiteral) {
+            res = `null`;
+        } else if (expr instanceof AwaitExpression) {
+            res = `await ${this.expr(expr.expr)}`;
         } else debugger;
         return res;
+    }
+
+    static blockOrStmt(block: Block) {
+        const stmtLen = block.statements.length;
+        return stmtLen === 0 ? " { }" : stmtLen === 1 ? `\n${this.pad(this.block(block))}` : ` {\n${this.pad(this.block(block))}\n}`;
     }
 
     static stmt(stmt: Statement) {
@@ -109,11 +134,23 @@ export class TSOverviewGenerator {
         } else if (stmt instanceof VariableDeclaration) {
             res = `${stmt.isMutable ? "let" : "const"} ${this.var(stmt)};`;
         } else if (stmt instanceof ForeachStatement) {
-            const stmtLen = stmt.body.statements.length;
-            res = `for (const ${stmt.itemVar.name} of ${this.expr(stmt.items)})` + 
-                (stmtLen === 0 ? " { }" : stmtLen === 1 ? `\n${this.pad(this.block(stmt.body))}` : ` {\n${this.pad(this.block(stmt.body))}\n}`);
+            res = `for (const ${stmt.itemVar.name} of ${this.expr(stmt.items)})` + this.blockOrStmt(stmt.body);
+        } else if (stmt instanceof IfStatement) {
+            const elseIf = stmt.else && stmt.else.statements.length === 1 && stmt.else.statements[0] instanceof IfStatement;
+            res = `if (${this.expr(stmt.condition)})` + 
+                this.blockOrStmt(stmt.then) + 
+                (elseIf ? `\nelse ${this.stmt(stmt.else.statements[0])}` : "") +
+                (!elseIf && stmt.else ? `\nelse` + this.blockOrStmt(stmt.else) : "");
+        } else if (stmt instanceof WhileStatement) {
+            res = `while (${this.expr(stmt.condition)})` + this.blockOrStmt(stmt.body);
+        } else if (stmt instanceof ForStatement) {
+            res = `for (${stmt.itemVar ? this.var(stmt.itemVar) : ""}; ${this.expr(stmt.condition)}; ${this.expr(stmt.incrementor)})` + this.blockOrStmt(stmt.body);
+        } else if (stmt instanceof DoStatement) {
+            res = `do${this.blockOrStmt(stmt.body)} while (${this.expr(stmt.condition)})`;
+        } else if (stmt instanceof ContinueStatement) {
+            res = `continue;`;
         } else debugger;
-        return this.leading(stmt) + res;
+        return this.leading(stmt, true) + res;
     }
 
     static block(block: Block) { return block.statements.map(stmt => this.stmt(stmt)).join("\n"); }
@@ -121,8 +158,9 @@ export class TSOverviewGenerator {
     static methodBase(method: IMethodBase, returns: Type = null) {
         if (!method) return "";
         return this.pre("/* throws */ ", method.throws) + 
-            `${this.name_(method)}(${method.parameters.map(p => this.var(p)).join(", ")})`+
-            `${returns ? `: ${this.type(returns)}` : ""} {\n${this.pad(this.block(method.body))}\n}`;
+            `${this.name_(method)}(${method.parameters.map(p => this.var(p)).join(", ")})` +
+            (returns ? `: ${this.type(returns)}` : "") +
+            (method.body ? ` {\n${this.pad(this.block(method.body))}\n}` : "");
     }
 
     static method(method: Method) {

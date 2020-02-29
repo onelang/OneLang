@@ -37,7 +37,8 @@ class WorkspaceStateChanges {
     constructor(public fileChanges: FileStateChanges[]) { }
 
     printChangedFiles(mode: "full"|"summary"|"minimal") {
-        console.log(this.fileChanges.filter(x => x.hasChanges()).map(x => `${color.bgBlue(` === ${x.fileName} === `)}\n${x.colorText(mode)}`).join("\n\n"))
+        console.log(this.fileChanges.filter(x => mode === "full" ? true : x.hasChanges())
+            .map(x => `${color.bgBlue(` === ${x.fileName} === `)}\n${x.colorText(mode)}`).join("\n\n"));
     }
 }
 

@@ -85,12 +85,12 @@ initCompiler().then(() => {
             FillAttributesFromTrivia.processFile(file);
         }
 
-        saveState();
-        ResolveImports.processWorkspace(workspace);
+        //saveState();
+        //ResolveImports.processWorkspace(workspace);
 
-        saveState();
-        for (const file of Object.values(projectPkg.files))
-            new ResolveGenericTypeIdentifiers().visitSourceFile(file);
+        //saveState();
+        //for (const file of Object.values(projectPkg.files))
+        //    new ResolveGenericTypeIdentifiers().visitSourceFile(file);
 
         //saveState();
         //for (const file of Object.values(projectPkg.files))
