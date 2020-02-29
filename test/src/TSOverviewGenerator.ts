@@ -187,9 +187,11 @@ export class TSOverviewGenerator {
             ` from "${imp.exportScope.packageName}${this.pre("/", imp.exportScope.scopeName)}";`);
         const enums = this.map(sourceFile.enums, enum_ => `enum ${enum_.name} { ${enum_.values.map(x => x.name).join(", ")} }`);
         const intfs = this.map(sourceFile.interfaces, intf => `interface ${this.name_(intf)}`+
-            `${this.pre(" extends ", intf.baseInterfaces)} {\n${this.classLike(<Class>intf)}\n}`);
+            `${this.pre(" extends ", intf.baseInterfaces.map(x => this.type(x)))} {\n${this.classLike(<Class>intf)}\n}`);
         const classes = this.map(sourceFile.classes, cls => `class ${this.name_(cls)}`+
-            `${this.pre(" extends ", cls.baseClass)}${this.pre(" implements ", cls.baseInterfaces)} {\n${this.classLike(cls)}\n}`);
+            this.pre(" extends ", cls.baseClass ? this.type(cls.baseClass) : null) + 
+            this.pre(" implements ", cls.baseInterfaces.map(x => this.type(x))) + 
+            ` {\n${this.classLike(cls)}\n}`);
         const main = this.block(sourceFile.mainBlock);
         const result = `// export scope: ${sourceFile.exportScope.packageName}/${sourceFile.exportScope.scopeName}\n`+
             [imps.join("\n"), enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), main].filter(x => x !== "").join("\n\n");
