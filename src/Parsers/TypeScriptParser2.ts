@@ -177,6 +177,8 @@ export class TypeScriptParser2 implements IParser {
                 tsType = "TsString";
             else if (check === "object")
                 tsType = "TsObject";
+            else if (check === "function") // TODO: ???
+                tsType = "TsFunction";
             else
                 this.reader.fail("unexpected typeof comparison");
 

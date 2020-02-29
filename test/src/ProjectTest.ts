@@ -72,7 +72,7 @@ initCompiler().then(() => {
         const projectPkg = new Package("@");
         workspace.addPackage(projectPkg);
 
-        const files = glob(test.projDir).filter(x => !/ExprLangVM|TemplateGenerator/.test(x));
+        const files = glob(test.projDir);
         for (const file of files)
             projectPkg.addFile(TypeScriptParser2.parseFile(readFile(`${test.projDir}/${file}`), new SourcePath(projectPkg, file)));
 

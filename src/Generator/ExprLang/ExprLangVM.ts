@@ -4,20 +4,20 @@ class ExprLangError extends Error { }
 
 export interface IModelHandler {
     methodCall(method: any, args: any[], thisObj: object, model: object);
-    memberAccess(obj: object, memberName: string|number, isProperty: boolean);
+    memberAccess(obj: object, memberName: any, isProperty: boolean);
 }
 
 export class JSModelHandler implements IModelHandler {
     static methodCall(method: any, args: any[], thisObj: object, model: object) {
-        if (typeof method !== "function")
-            throw new ExprLangError(`Tried to call a non-method value: '${method}' (${typeof method})`);
+        if (!(typeof method === "function"))
+            throw new ExprLangError(`Tried to call a non-method value: '${method}'`); //  (${typeof method})
         const result = method.apply(thisObj, args);
         return result;
     }
 
-    static memberAccess(obj: object, memberName: string|number, isProperty: boolean) {
-        if (typeof obj !== "object")
-            throw new ExprLangError(`Expected object for accessing member: (${typeof obj})`);
+    static memberAccess(obj: object, memberName: any, isProperty: boolean) {
+        if (!(typeof obj === "object"))
+            throw new ExprLangError(`Expected object for accessing member: (${obj})`);
 
         if (!(memberName in obj))
             //throw new ExprLangError(`Member '${memberName}' not found in object '${obj.constructor.name}' (${typeof obj})`);
@@ -30,7 +30,7 @@ export class JSModelHandler implements IModelHandler {
         return JSModelHandler.methodCall(method, args, thisObj, model);
     }
 
-    memberAccess(obj: object, memberName: string|number, isProperty: boolean) {
+    memberAccess(obj: object, memberName: any, isProperty: boolean) {
         return JSModelHandler.memberAccess(obj, memberName, isProperty);
     }
 }
@@ -45,7 +45,7 @@ export class VariableSource {
         if (!varName)
             throw new ExprLangError("Variable name is missing!");
 
-        if (typeof varName !== "string")
+        if (!(typeof varName === "string"))
             throw new ExprLangError(`Expected string as variable name!`);
 
         if (varName in this.callbacks)
@@ -83,15 +83,15 @@ export class VariableSource {
         return result.map(x => `${x}\n`).join("");
     }
 
-    static createSingle(varName: string, value: any, sourceName?: string) {
+    static createSingle(varName: string, value: any, sourceName: string) {
         const source = new VariableSource(sourceName || `var: ${varName}`);
         source.setVariable(varName, value);
         return source;
     }
 
-    static fromObject(obj: object, sourceName?: string) {
+    static fromObject(obj: object, sourceName: string) {
         const source = new VariableSource(sourceName || `object`);
-        for (const key in obj)
+        for (const key of Object.keys(obj))
             source.setVariable(key, obj[key]);
         return source;
     }
@@ -100,8 +100,8 @@ export class VariableSource {
 export class VariableContext {
     constructor(public sources: VariableSource[] = []) { }
 
-    inherit(...newSources: VariableSource[]) {
-        return new VariableContext([...newSources, ...this.sources]);
+    inherit(newSource: VariableSource) {
+        return new VariableContext([newSource].concat(this.sources));
     }
 
     getVariable(varName: string) {
@@ -124,11 +124,11 @@ export class VariableContext {
 export class ExprLangVM {
     modelHandler: IModelHandler;
 
-    constructor(modelHandler?: IModelHandler) {
+    constructor(modelHandler: IModelHandler = null) {
         this.modelHandler = modelHandler || new JSModelHandler();
     }
 
-    evaluate(expr: IExpression, vars?: VariableContext) {
+    evaluate(expr: IExpression, vars: VariableContext = null) {
         if (expr instanceof LiteralExpression) {
             return expr.value;
         } else if (expr instanceof IdentifierExpression) {
@@ -198,12 +198,10 @@ export class ExprLangVM {
         } else if (expr instanceof CallExpression) {
             const method = this.evaluate(expr.method, vars);
 
-            let thisObj;
+            let thisObj = null;
             if (expr.method instanceof PropertyAccessExpression) {
                 const thisObjExpr = expr.method.object;
                 thisObj = this.evaluate(thisObjExpr, vars);
-            } else {
-                thisObj = null;
             }
 
             const args = expr.args.map(arg => this.evaluate(arg, vars));

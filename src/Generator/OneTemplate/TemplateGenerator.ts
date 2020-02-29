@@ -80,14 +80,14 @@ export class TemplateGenerator implements IModelHandler {
         } else if (typeof method === "function") {
             result = method.apply(thisObj, args);
         } else {
-            throw new Error(`Expected TemplateMethod or function, but got '${method}' (typeof ${typeof method})`);
+            throw new Error(`Expected TemplateMethod or function, but got '${method}'`); //  (typeof ${typeof method})
         }
 
         this.callStack.pop();
         return result;
     }
 
-    memberAccess(obj: object, memberName: string | number, isProperty: boolean) {
+    memberAccess(obj: object, memberName: any, isProperty: boolean) {
         return JSModelHandler.memberAccess(obj, memberName, isProperty);
     }
 
@@ -209,7 +209,7 @@ export class TemplateGenerator implements IModelHandler {
         } else {
             const lines: GeneratedNode[][] = [];
 
-            const varSource = new VariableSource(`for: ${node.itemName}`)
+            const varSource = new VariableSource(`for: ${node.itemName}`);
             const newVars = vars.inherit(varSource);
 
             for (let itemIdx = 0; itemIdx < array.length; itemIdx++) {
