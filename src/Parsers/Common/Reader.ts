@@ -1,4 +1,4 @@
-import { deindent } from "../../Generator/Utils";
+import { Utils } from "./Utils";
 
 export class Cursor {
     constructor(public offset: number, public line: number, public column: number, public lineStart: number, public lineEnd: number) { }
@@ -187,7 +187,7 @@ export class Reader {
             return "";
 
         let result = this.input.substring(this.wsOffset, thisLineStart + 1);
-        result = deindent(result);
+        result = Utils.deindent(result);
         this.wsOffset = thisLineStart;
         return result;
     }

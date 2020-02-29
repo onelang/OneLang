@@ -2,7 +2,7 @@ import { Enum, Method, Interface, Class, IExportable, MethodParameter } from "./
 
 export interface IType { }
 export interface ICreatableType extends IType { }
-export class Type implements IType { $tsDiscriminator: "Type"; }
+export class Type implements IType { }
 export interface IImportedType extends IType { decl: IExportable; }
 
 export class PrimitiveType extends Type { }

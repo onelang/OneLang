@@ -78,6 +78,10 @@ class TemplatePart {
     }
 }
 
+class ReadUntilResult {
+    constructor(public value: string, public token: string) { }
+}
+
 class ParamParser {
     pos = 0;
     params: { [name: string]: string } = { };
@@ -101,7 +105,7 @@ class ParamParser {
                 break;
 
         const value = this.str.substring(startPos, this.pos - (token||"").length);
-        return { value, token };
+        return new ReadUntilResult(value, token);
     }
 
     parse() {
@@ -140,18 +144,18 @@ class LineInfo {
                 break;
     }
 
-    match(...types: TemplatePartType[]) {
-        return this.controlPart && types.includes(this.controlPart.type);
+    match(type: TemplatePartType) {
+        return this.controlPart && this.controlPart.type === type;
     }
 
     fail(msg: string) {
         throw new Error(`${msg} (lineIdx: ${this.lineIdx}, line: '${this.line}'`);
     }
 
-    get inline() { return this.controlPart && this.controlPart.params["inline"] === "true" }
+    get inline() { return this.controlPart && this.controlPart.params["inline"] === "true"; }
     get sep() {
         return !this.controlPart ? null :
-            "sep" in this.controlPart.params ? <string>this.controlPart.params["sep"] :
+            "sep" in this.controlPart.params ? this.controlPart.params["sep"] :
             (this.inline ? "" : "\n");
     }
 }
@@ -234,7 +238,7 @@ export class TemplateParser {
 
     get currLine() { return this.lines[this.lineIdx]; }
 
-    match(...types: TemplatePartType[]) {
+    match(types: TemplatePartType[]) {
         const line = this.lines[this.lineIdx];
         return line.controlPart && types.includes(line.controlPart.type);
     }
@@ -249,7 +253,7 @@ export class TemplateParser {
         while(true) {
             const currLine = this.currLine;
             if (currLine.match(TemplatePartType.Elif)) {
-                const newItem = new IfItem(currLine.controlPart.elif.condition, this.readBlock())
+                const newItem = new IfItem(currLine.controlPart.elif.condition, this.readBlock());
                 ifNode.items.push(newItem);
             } else if (currLine.match(TemplatePartType.Else)) {
                 ifNode.else = this.readBlock();
@@ -346,7 +350,9 @@ export class TemplateParser {
                         const firstItem = (<TextNode>lineNode.items[0]);
                         firstItem.value = firstItem.value.substr(prevLine.indentLen);
                     }
-                    prevLine.items.push(...lineNode.items);
+                    
+                    for (const item of lineNode.items)
+                        prevLine.items.push(item);
                 } else
                     prevLine.items.push(lineNode);
             } else {

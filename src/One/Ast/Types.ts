@@ -1,12 +1,8 @@
 import { Statement } from "./Statements";
-import { Type, ClassType, InterfaceType, EnumType, IImportedType as IExportedType, IImportedType, IType } from "./AstTypes";
+import { Type, ClassType, InterfaceType, EnumType, IType, IImportedType } from "./AstTypes";
 import { Expression } from "./Expressions";
 
-export enum Visibility {
-    Public = "public",
-    Protected = "protected",
-    Private = "private"
-}
+export enum Visibility { Public, Protected, Private }
 
 export interface IVariable {
     name: string;
@@ -19,7 +15,7 @@ export interface IVariableWithInitializer extends IVariable {
 
 export interface IHasAttributesAndTrivia {
     leadingTrivia: string;
-    attributes: { [name: string]: string|true };
+    attributes: { [name: string]: string };
 }
 
 export interface ISourceFileMember {
@@ -27,7 +23,7 @@ export interface ISourceFileMember {
 }
 
 class ExportedScope {
-    types: { [name: string]: IExportedType } = {};
+    types: { [name: string]: IImportedType } = {};
 
     getType(name: string) {
         const type = this.types[name];
@@ -131,7 +127,7 @@ export class Import implements IHasAttributesAndTrivia, ISourceFileMember {
     /** @creator FillParent */
     parentFile: SourceFile;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string|true };
+    attributes: { [name: string]: string };
 }
 
 export class Enum implements IHasAttributesAndTrivia, IExportable, ISourceFileMember {
@@ -145,7 +141,7 @@ export class Enum implements IHasAttributesAndTrivia, IExportable, ISourceFileMe
     /** @creator FillParent */
     parentFile: SourceFile;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string|true };
+    attributes: { [name: string]: string };
 }
 
 export class EnumMember {
@@ -181,7 +177,7 @@ export class Interface implements IHasAttributesAndTrivia, IInterface, IExportab
     /** @creator FillParent */
     parentFile: SourceFile;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string|true };
+    attributes: { [name: string]: string };
 }
 
 export class Class implements IHasAttributesAndTrivia, IInterface, IExportable, ISourceFileMember {
@@ -201,7 +197,7 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IExportable, 
     /** @creator FillParent */
     parentFile: SourceFile;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string|true };
+    attributes: { [name: string]: string };
 }
 
 export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia {
@@ -217,7 +213,7 @@ export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia 
     /** @creator FillParent */
     parentClass: Class;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string|true };
+    attributes: { [name: string]: string };
 }
 
 export class Property implements IVariable, IHasAttributesAndTrivia {
@@ -234,7 +230,7 @@ export class Property implements IVariable, IHasAttributesAndTrivia {
     /** @creator FillParent */
     parentClass: Class;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string|true };
+    attributes: { [name: string]: string };
 }
 
 export class MethodParameter implements IVariableWithInitializer {
@@ -264,7 +260,7 @@ export class Constructor implements IMethodBase, IHasAttributesAndTrivia {
     /** @creator FillParent */
     parentClass: Class;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string|true };
+    attributes: { [name: string]: string };
     throws: boolean;
 }
 
@@ -283,7 +279,7 @@ export class Method implements IMethodBase, IHasAttributesAndTrivia {
     /** @creator FillParent */
     parentInterface: IInterface;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string|true };
+    attributes: { [name: string]: string };
     throws: boolean;
     mutates: boolean;
 }

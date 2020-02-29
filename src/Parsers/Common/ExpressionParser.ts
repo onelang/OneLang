@@ -120,7 +120,7 @@ export class ExpressionParser {
         const unary = this.reader.readAnyOf(this.config.unary);
         if (unary !== null) {
             const right = this.parse(this.prefixPrecedence);
-            return new ast.UnaryExpression("prefix", unary, right);
+            return new ast.UnaryExpression(ast.UnaryType.Prefix, unary, right);
         }
 
         const id = this.reader.readIdentifier();
@@ -202,7 +202,7 @@ export class ExpressionParser {
                 const right = this.parse(op.isRightAssoc ? op.precedence - 1 : op.precedence);
                 left = new ast.BinaryExpression(left, opText, right);
             } else if (op.isPostfix) {
-                left = new ast.UnaryExpression("postfix", opText, left);
+                left = new ast.UnaryExpression(ast.UnaryType.Postfix, opText, left);
             } else if (op.text === "?") {
                 const whenTrue = this.parse();
                 this.reader.expectToken(":");

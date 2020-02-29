@@ -3,8 +3,8 @@ import { Statement } from "./Statements";
 import { MethodParameter } from "./Types";
 
 export class Expression {
-    parentRef?: Expression|Statement;
-    inferedType?: Type;
+    //parentRef?: Expression|Statement;
+    //inferedType?: Type;
 }
 
 export class Identifier extends Expression {
@@ -66,9 +66,11 @@ export class BinaryExpression extends Expression {
         public right: Expression) { super(); }
 }
 
+export enum UnaryType { Postfix, Prefix }
+
 export class UnaryExpression extends Expression {
     constructor(
-        public unaryType: "postfix"|"prefix",
+        public unaryType: UnaryType,
         public operator: string, // "++" | "--" | "+" | "-" | "~" | "!"
         public operand: Expression) { super(); }
 }
