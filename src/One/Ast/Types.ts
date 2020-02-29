@@ -292,5 +292,5 @@ export class Block {
 export class Lambda extends Expression {
     constructor(
         public parameters: MethodParameter[],
-        public block: Block) { super(); }
+        public body: Block) { super(); }
 }
