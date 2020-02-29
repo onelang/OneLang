@@ -91,8 +91,9 @@ export class VariableSource {
 
     static fromObject(obj: object, sourceName: string) {
         const source = new VariableSource(sourceName || `object`);
-        for (const key of Object.keys(obj))
-            source.setVariable(key, obj[key]);
+        if (obj)
+            for (const key of Object.keys(obj))
+                source.setVariable(key, obj[key]);
         return source;
     }
 }
