@@ -290,6 +290,8 @@ export class TypeScriptParser2 implements IParser {
             statement = new ThrowStatement(expr);
         } else if (this.reader.readToken("break")) {
             statement = new BreakStatement();
+        } else if (this.reader.readToken("continue")) {
+            statement = new ContinueStatement();
         } else {
             const expr = this.parseExpression();
             statement = new ExpressionStatement(expr);

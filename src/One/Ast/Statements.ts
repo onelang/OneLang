@@ -35,6 +35,8 @@ export class ExpressionStatement extends Statement {
 
 export class BreakStatement extends Statement { }
 
+export class ContinueStatement extends Statement { }
+
 export class UnsetStatement extends Statement {
     constructor(public expression: Expression) { super(); }
 }
