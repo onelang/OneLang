@@ -62,7 +62,7 @@ export class TypeScriptParser2 implements IParser {
         return params;
     }
 
-    parseType() {
+    parseType(): Type {
         if (this.reader.readToken("{")) {
             this.reader.expectToken("[");
             this.reader.readIdentifier();
@@ -405,6 +405,7 @@ export class TypeScriptParser2 implements IParser {
         }
 
         const methods: { [name: string]: Method } = {};
+        const fields: { [name: string]: Field } = {};
 
         this.reader.expectToken("{");
         while(!this.reader.readToken("}")) {
@@ -412,16 +413,28 @@ export class TypeScriptParser2 implements IParser {
 
             const memberStart = this.reader.offset;
             const memberName = this.reader.expectIdentifier();
-            const methodTypeArgs = this.parseGenericsArgs();
-            this.reader.expectToken("("); // method
+            if (this.reader.readToken(":")) {
+                this.context.push(`F:${memberName}`);
 
-            this.context.push(`M:${memberName}`);
-            const { params, body, returns } = this.parseMethodSignature(/* isConstructor = */ false, /* declarationOnly = */ true);
-            this.context.pop();
+                const fieldType = this.parseType();
+                this.reader.expectToken(";");
 
-            const method = new Method(memberName, methodTypeArgs, params, body, Visibility.Public, false, returns, leadingTrivia);
-            methods[method.name] = method;
-            this.nodeManager.addNode(method, memberStart);
+                const field = new Field(memberName, fieldType, null, Visibility.Public, false, leadingTrivia);
+                fields[field.name] = field;
+
+                this.nodeManager.addNode(field, memberStart);
+            } else {
+                const methodTypeArgs = this.parseGenericsArgs();
+                this.reader.expectToken("("); // method
+    
+                this.context.push(`M:${memberName}`);
+                const { params, body, returns } = this.parseMethodSignature(/* isConstructor = */ false, /* declarationOnly = */ true);
+                this.context.pop();
+    
+                const method = new Method(memberName, methodTypeArgs, params, body, Visibility.Public, false, returns, leadingTrivia);
+                methods[method.name] = method;
+                this.nodeManager.addNode(method, memberStart);
+            }
         }
 
         const intf = new Interface(intfName, intfTypeArgs, baseInterfaces, methods, isExported, leadingTrivia);
