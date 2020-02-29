@@ -1,6 +1,6 @@
 import 'module-alias/register';
 import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser2";
-import { readFile, glob, readDir, baseDir, getLangFiles } from "./TestUtils";
+import { readFile, glob, readDir, baseDir, getLangFiles, writeFile } from "./TestUtils";
 import { PackageManager } from '@one/StdLib/PackageManager';
 import { PackagesFolderSource } from '@one/StdLib/PackagesFolderSource';
 import { SourcePath, Package, Workspace, SourceFile, ExportScopeRef } from '@one/One/Ast/Types';
@@ -90,9 +90,9 @@ initCompiler().then(() => {
         saveState();
         ResolveImports.processWorkspace(workspace);
 
-        //saveState();
-        //for (const file of Object.values(projectPkg.files))
-        //    new ResolveGenericTypeIdentifiers().visitSourceFile(file);
+        saveState();
+        for (const file of Object.values(projectPkg.files))
+            new ResolveGenericTypeIdentifiers().visitSourceFile(file);
 
         //saveState();
         //for (const file of Object.values(projectPkg.files))
@@ -102,7 +102,10 @@ initCompiler().then(() => {
         //head("SUMMARY");
         //_(pkgStates).last().diff(pkgStates[pkgStates.length - 2]).printChangedFiles("summary");
         head("FULL");
-        new Linq(pkgStates).last().diff(pkgStates[0]).printChangedFiles("full");
+        const allChanges = new Linq(pkgStates).last().diff(pkgStates[0]).getChanges("full");
+        console.log(allChanges);
+
+        writeFile(`test/artifacts/ProjectTest/${test.projName}/allChanges.txt`, allChanges);
 
         debugger;
 

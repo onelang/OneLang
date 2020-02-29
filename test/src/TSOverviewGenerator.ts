@@ -1,7 +1,7 @@
 import { NewExpression, Identifier, Literal, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression } from "@one/One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement } from "@one/One/Ast/Statements";
 import { Method, Block, Class, SourceFile, IMethodBase, MethodParameter, Constructor, IVariable, Lambda } from "@one/One/Ast/Types";
-import { Type, VoidType, AnyType, NullType, EnumType, GenericsType, MethodType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments, IType } from "@one/One/Ast/AstTypes";
+import { Type, VoidType, AnyType, NullType, EnumType, GenericsType, MethodType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments, IType, LambdaType } from "@one/One/Ast/AstTypes";
 
 export class TSOverviewGenerator {
     static leading(item: any, isStmt: boolean) {
@@ -46,7 +46,9 @@ export class TSOverviewGenerator {
             t instanceof ClassType ? `C:${t.decl.name}` :
             t instanceof InterfaceType ? `I:${t.decl.name}` :
             t instanceof UnresolvedType ? `X:${t.typeName}` :
+            t instanceof LambdaType ? `L:(${t.parameters.map(x => this.type(x.type, true)).join(", ")})=>${this.type(t.returnType, true)}` :
             "NOTIMPL";
+        if (repr === "NOTIMPL") debugger;
         const typeArgs = t && (<IHasTypeArguments><any>t).typeArguments;
         return (raw ? "" : "{T}") + repr + (typeArgs && typeArgs.length > 0 ? `<${typeArgs.map(x => this.type(x, true)).join(", ")}>` : "");
     }
