@@ -178,6 +178,9 @@ export class TypeScriptParser2 implements IParser {
             this.reader.expectToken("=>");
             const block = this.parseLambdaBlock();
             return new Lambda(params, block);
+        } else if (this.reader.readToken("await")) {
+            const expression = this.parseExpression();
+            return new AwaitExpression(expression);
         }
 
         const mapLiteral = this.expressionParser.parseMapLiteral();
@@ -490,7 +493,7 @@ export class TypeScriptParser2 implements IParser {
             const memberLeadingTrivia = this.reader.readLeadingTrivia();
 
             const memberStart = this.reader.offset;
-            const modifiers = this.reader.readModifiers(["static", "public", "protected", "private"]);
+            const modifiers = this.reader.readModifiers(["static", "public", "protected", "private", "readonly", "async"]);
             const isStatic = modifiers.includes("static");
             const visibility = modifiers.includes("private") ? Visibility.Private :
                 modifiers.includes("protected") ? Visibility.Protected : Visibility.Public;

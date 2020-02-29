@@ -123,3 +123,7 @@ export class RegexLiteral extends Literal {
         public caseInsensitive: boolean,
         public global: boolean) { super(); }
 }
+
+export class AwaitExpression extends Expression {
+    constructor(public expr: Expression) { super(); }
+}
