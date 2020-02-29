@@ -1,7 +1,7 @@
 import { Type, IHasTypeArguments, ClassType, InterfaceType, UnresolvedType, IType } from "./Ast/AstTypes";
-import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, Literal, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression } from "./Ast/Expressions";
-import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement } from "./Ast/Statements";
-import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter } from "./Ast/Types";
+import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, Literal, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression, InstanceOfExpression } from "./Ast/Expressions";
+import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement, ContinueStatement, DoStatement } from "./Ast/Statements";
+import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda } from "./Ast/Types";
 
 export abstract class AstTransformer<TContext> {
     protected log(data: any) {
@@ -67,8 +67,15 @@ export abstract class AstTransformer<TContext> {
         return null;
     }
 
+    protected visitDoStatement(stmt: DoStatement, context: TContext): DoStatement {
+        stmt.condition = this.visitExpression(stmt.condition, context) || stmt.condition;
+        stmt.body = this.visitBlock(stmt.body, context) || stmt.body;
+        return null;
+    }
+
     protected visitForStatement(stmt: ForStatement, context: TContext): ForStatement {
-        stmt.itemVar = this.visitVariableWithInitializer(stmt.itemVar, context) || stmt.itemVar;
+        if (stmt.itemVar)
+            stmt.itemVar = this.visitVariableWithInitializer(stmt.itemVar, context) || stmt.itemVar;
         stmt.condition = this.visitExpression(stmt.condition, context) || stmt.condition;
         stmt.incrementor = this.visitExpression(stmt.incrementor, context) || stmt.incrementor;
         stmt.body = this.visitBlock(stmt.body, context) || stmt.body;
@@ -88,6 +95,10 @@ export abstract class AstTransformer<TContext> {
 
     protected visitUnsetStatement(stmt: UnsetStatement, context: TContext): UnsetStatement { 
         stmt.expression = this.visitExpression(stmt.expression, context) || stmt.expression;
+        return null;
+    }
+
+    protected visitContinueStatement(stmt: ContinueStatement, context: TContext): ContinueStatement { 
         return null;
     }
 
@@ -117,6 +128,10 @@ export abstract class AstTransformer<TContext> {
             return this.visitBreakStatement(stmt, context);
         } else if (stmt instanceof UnsetStatement) {
             return this.visitUnsetStatement(stmt, context);
+        } else if (stmt instanceof ContinueStatement) {
+            return this.visitContinueStatement(stmt, context);
+        } else if (stmt instanceof DoStatement) {
+            return this.visitDoStatement(stmt, context);
         } else {
             return this.visitUnknownStatement(stmt, context);
         }
@@ -206,6 +221,18 @@ export abstract class AstTransformer<TContext> {
         return null;
     }
 
+    protected visitInstanceOfExpression(expr: InstanceOfExpression, context: TContext): InstanceOfExpression { 
+        expr.expr = this.visitExpression(expr.expr, context) || expr.expr;
+        expr.type = this.visitType(expr.type, context) || expr.type;
+        return null;
+    }
+
+    protected visitLambda(lambda: Lambda, context: TContext): Lambda {
+        lambda.parameters = lambda.parameters.map(x => this.visitMethodParameter(x, context) || x);
+        lambda.body = this.visitBlock(lambda.body, context) || lambda.body;
+        return null;
+    }
+
     protected visitExpression(expression: Expression, context: TContext): Expression {
         if (expression instanceof BinaryExpression) {
             return this.visitBinaryExpression(expression, context);
@@ -235,6 +262,10 @@ export abstract class AstTransformer<TContext> {
             return this.visitMapLiteral(expression, context);
         } else if (expression instanceof CastExpression) {
             return this.visitCastExpression(expression, context);
+        } else if (expression instanceof InstanceOfExpression) {
+            return this.visitInstanceOfExpression(expression, context);
+        } else if (expression instanceof Lambda) {
+            return this.visitLambda(expression, context);
         } else {
             return this.visitUnknownExpression(expression, context);
         }
