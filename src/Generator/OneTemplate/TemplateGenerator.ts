@@ -110,7 +110,8 @@ export class TemplateGenerator implements IModelHandler {
         for (const line of lines) {
             if (result.length !== 0)
                 result.push(new GeneratedNode(separator));
-            result.push(...line);
+            for (const item of line)
+                result.push(item);
         }
         return result;
     }
@@ -167,12 +168,16 @@ export class TemplateGenerator implements IModelHandler {
                         if (parts.length === 1) {
                             result.push(item);
                         } else {
-                            result.push(new GeneratedNode(parts[0]), new GeneratedNode("\n"));
-                            result.push(...TemplateGenerator.joinLines(parts.slice(1).map(x => [indent, new GeneratedNode(x)]), "\n"));
+                            result.push(new GeneratedNode(parts[0]));
+                            result.push(new GeneratedNode("\n"));
+                            const nodes = TemplateGenerator.joinLines(parts.slice(1).map(x => [indent, new GeneratedNode(x)]), "\n");
+                            for (const node of nodes)
+                                result.push(node);
                         }
                     }
                 } else {
-                    result.push(...line);
+                    for (const item of line)
+                        result.push(item);
                 }
             }
             return result;

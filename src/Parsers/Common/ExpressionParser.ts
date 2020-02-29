@@ -1,15 +1,19 @@
-import * as ast from "../../One/Ast/Expressions";
 import { Reader } from "./Reader";
 import { NodeManager } from "./NodeManager";
 import { UnresolvedType } from "../../One/Ast/AstTypes";
+import { Expression, MapLiteral, ArrayLiteral, UnaryType, Identifier, NumericLiteral, StringLiteral, UnresolvedCallExpression, CastExpression, BinaryExpression, UnaryExpression, ParenthesizedExpression, ConditionalExpression, ElementAccessExpression, PropertyAccessExpression } from "../../One/Ast/Expressions";
 
 class Operator {
     constructor(public text: string, public precedence: number, public isBinary: boolean, public isRightAssoc: boolean, public isPostfix: boolean) { }
 }
 
-export interface ExpressionParserConfig {
+export class PrecedenceLevel { 
+    constructor(public name: string, public operators: string[], public binary: boolean) { }
+}
+
+export class ExpressionParserConfig {
     unary: string[];
-    precedenceLevels: { name: string, operators?: string[], binary?: boolean }[];
+    precedenceLevels: PrecedenceLevel[];
     rightAssoc: string[];
     aliases: { [alias: string]: string };
     propertyAccessOps: string[];
@@ -17,39 +21,39 @@ export interface ExpressionParserConfig {
 
 export class ExpressionParser {
     static defaultConfig() {
-        return <ExpressionParserConfig> {
-            unary: ['!', 'not', '+', '-', '~'],
-            precedenceLevels: [
-                { name: "assignment", operators: ['=', '+=', '-=', '*=', '/=', '<<=', '>>='], binary: true },
-                { name: "conditional", operators: ['?'] },
-                { name: "or", operators: ['||', 'or'], binary: true },
-                { name: "and", operators: ['&&', 'and'], binary: true },
-                { name: "comparison", operators: ['>=', '!=', '===', '!==', '==', '<=', '>', '<'], binary: true },
-                { name: "sum", operators: ['+','-'], binary: true },
-                { name: "product", operators: ['*','/','%'], binary: true },
-                { name: "bitwise", operators: ['|','&','^'], binary: true },
-                { name: "exponent", operators: ['**'], binary: true },
-                { name: "shift", operators: ['<<', '>>'], binary: true },
-                { name: "range", operators: ['...'], binary: true }, // TODO: move to lang
-                { name: "in", operators: ['in'], binary: true }, // TODO: move to lang
-                { name: "prefix" },
-                { name: "postfix", operators: ['++', '--'] },
-                { name: "call", operators: ['('] },
-                { name: "propertyAccess", operators: [] },
-                { name: "elementAccess", operators: ['['] },
-            ],
-            rightAssoc: ['**'],
-            aliases: { "===": "==", "!==": "!=", "not": "!", "and": "&&", "or": "||" },
-            propertyAccessOps: [".", "::"],
-        };
+        const config = new ExpressionParserConfig();
+        config.unary = ['!', 'not', '+', '-', '~'];
+        config.precedenceLevels = [
+            new PrecedenceLevel("assignment", ['=', '+=', '-=', '*=', '/=', '<<=', '>>='], true),
+            new PrecedenceLevel("conditional", ['?'], false),
+            new PrecedenceLevel("or", ['||', 'or'], true),
+            new PrecedenceLevel("and", ['&&', 'and'], true),
+            new PrecedenceLevel("comparison", ['>=', '!=', '===', '!==', '==', '<=', '>', '<'], true),
+            new PrecedenceLevel("sum", ['+','-'], true),
+            new PrecedenceLevel("product", ['*','/','%'], true),
+            new PrecedenceLevel("bitwise", ['|','&','^'], true),
+            new PrecedenceLevel("exponent", ['**'], true),
+            new PrecedenceLevel("shift", ['<<', '>>'], true),
+            new PrecedenceLevel("range", ['...'], true), // TODO: move to lang
+            new PrecedenceLevel("in", ['in'], true), // TODO: move to lang
+            new PrecedenceLevel("prefix", [], false),
+            new PrecedenceLevel("postfix", ['++', '--'], false),
+            new PrecedenceLevel("call", ['('], false),
+            new PrecedenceLevel("propertyAccess", [], false),
+            new PrecedenceLevel("elementAccess", ['['], false)
+        ];
+        config.rightAssoc = ['**'];
+        config.aliases = { "===": "==", "!==": "!=", "not": "!", "and": "&&", "or": "||" };
+        config.propertyAccessOps = [".", "::"];
+        return config;
     }
 
     operatorMap: { [name: string]: Operator };
     operators: string[];
     prefixPrecedence: number;
 
-    unaryPrehook: () => ast.Expression = null;
-    infixPrehook: (left: ast.Expression) => ast.Expression = null;
+    unaryPrehook: () => Expression = null;
+    infixPrehook: (left: Expression) => Expression = null;
 
     constructor(public reader: Reader, public nodeManager: NodeManager = null, public config: ExpressionParserConfig = ExpressionParser.defaultConfig()) {
         this.reconfigure();
@@ -82,7 +86,7 @@ export class ExpressionParser {
     parseMapLiteral(keySeparator = ":", startToken = "{", endToken = "}") {
         if (!this.reader.readToken(startToken)) return null;
 
-        const items: { [name: string]: ast.Expression } = {};
+        const items: { [name: string]: Expression } = {};
         do {
             if (this.reader.peekToken(endToken)) break;
 
@@ -96,13 +100,13 @@ export class ExpressionParser {
         } while(this.reader.readToken(","));
 
         this.reader.expectToken(endToken);
-        return new ast.MapLiteral(items);
+        return new MapLiteral(items);
     }
 
     parseArrayLiteral(startToken = "[", endToken = "]") {
         if (!this.reader.readToken(startToken)) return null;
         
-        const items: ast.Expression[] = [];
+        const items: Expression[] = [];
         if (!this.reader.readToken(endToken)) {
             do {
                 const item = this.parse();
@@ -111,35 +115,35 @@ export class ExpressionParser {
 
             this.reader.expectToken(endToken);
         }
-        return new ast.ArrayLiteral(items);
+        return new ArrayLiteral(items);
     }
 
-    parseLeft(required = true): ast.Expression {
+    parseLeft(required = true): Expression {
         const result = this.unaryPrehook && this.unaryPrehook();
         if (result !== null) return result;
 
         const unary = this.reader.readAnyOf(this.config.unary);
         if (unary !== null) {
             const right = this.parse(this.prefixPrecedence);
-            return new ast.UnaryExpression(ast.UnaryType.Prefix, unary, right);
+            return new UnaryExpression(UnaryType.Prefix, unary, right);
         }
 
         const id = this.reader.readIdentifier();
         if (id !== null)
-            return new ast.Identifier(id);
+            return new Identifier(id);
 
         const num = this.reader.readNumber();
         if (num !== null)
-            return new ast.NumericLiteral(num);
+            return new NumericLiteral(num);
 
         const str = this.reader.readString();
         if (str !== null)
-            return new ast.StringLiteral(str);
+            return new StringLiteral(str);
 
         if (this.reader.readToken("(")) {
             const expr = this.parse();
             this.reader.expectToken(")");
-            return new ast.ParenthesizedExpression(expr);
+            return new ParenthesizedExpression(expr);
         }
 
         if (required)
@@ -158,7 +162,7 @@ export class ExpressionParser {
     }
 
     parseCallArguments() {
-        const args: ast.Expression[] = [];
+        const args: Expression[] = [];
 
         if (!this.reader.readToken(")")) {
             do {
@@ -177,7 +181,7 @@ export class ExpressionParser {
             this.nodeManager.addNode(node, start);
     }
 
-    parse(precedence = 0, required = true): ast.Expression {
+    parse(precedence = 0, required = true): Expression {
         this.reader.skipWhitespace();
         const leftStart = this.reader.offset;
         let left = this.parseLeft(required);
@@ -201,24 +205,24 @@ export class ExpressionParser {
 
             if (op.isBinary) {
                 const right = this.parse(op.isRightAssoc ? op.precedence - 1 : op.precedence);
-                left = new ast.BinaryExpression(left, opText, right);
+                left = new BinaryExpression(left, opText, right);
             } else if (op.isPostfix) {
-                left = new ast.UnaryExpression(ast.UnaryType.Postfix, opText, left);
+                left = new UnaryExpression(UnaryType.Postfix, opText, left);
             } else if (op.text === "?") {
                 const whenTrue = this.parse();
                 this.reader.expectToken(":");
                 const whenFalse = this.parse(op.precedence - 1);
-                left = new ast.ConditionalExpression(left, whenTrue, whenFalse);
+                left = new ConditionalExpression(left, whenTrue, whenFalse);
             } else if (op.text === "(") {
                 const args = this.parseCallArguments();
-                left = new ast.UnresolvedCallExpression(left, [], args);
+                left = new UnresolvedCallExpression(left, [], args);
             } else if (op.text === "[") {
                 const elementExpr = this.parse();
                 this.reader.expectToken("]");
-                left = new ast.ElementAccessExpression(left, elementExpr);
+                left = new ElementAccessExpression(left, elementExpr);
             } else if (this.config.propertyAccessOps.includes(op.text)) {
                 const prop = this.reader.expectIdentifier("expected identifier as property name");
-                left = new ast.PropertyAccessExpression(left, prop);
+                left = new PropertyAccessExpression(left, prop);
             } else {
                 this.reader.fail(`parsing '${op.text}' is not yet implemented`);
             }
@@ -226,10 +230,10 @@ export class ExpressionParser {
             this.addNode(left, leftStart);
         }
 
-        if (left instanceof ast.ParenthesizedExpression && left.expression instanceof ast.Identifier) {
+        if (left instanceof ParenthesizedExpression && left.expression instanceof Identifier) {
             const expr = this.parse(0, false);
             if (expr !== null)
-                return new ast.CastExpression(new UnresolvedType(left.expression.text), expr);
+                return new CastExpression(new UnresolvedType(left.expression.text), expr);
         }
 
         return left;

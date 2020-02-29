@@ -7,7 +7,7 @@ export class ResolveUnresolvedTypes extends AstTransformer<void> {
 
     protected visitType(type: Type) {
         super.visitType(type);
-        if (!(type instanceof UnresolvedType)) return;
+        if (!(type instanceof UnresolvedType)) return null;
         
         console.log(type);
         //this.sourceFile.imports[0].importedTypes
@@ -16,6 +16,6 @@ export class ResolveUnresolvedTypes extends AstTransformer<void> {
 
     public visitSourceFile(sourceFile: SourceFile) {
         this.sourceFile = sourceFile;
-        super.visitSourceFile(sourceFile);
+        return super.visitSourceFile(sourceFile);
     }
 }

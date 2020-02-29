@@ -1,21 +1,19 @@
-import { extend } from "../Utils/Helpers";
+import { Helpers } from "../Utils/Helpers";
 import * as YAML from "js-yaml";
 import { LangFile } from "../Generator/LangFileSchema";
 
+export enum PackageType { Interface, Implementation }
+
 export class PackageId {
-    type: "Interface"|"Implementation";
-    name: string;
-    version: string;
+    constructor(public type: PackageType, public name: string, public version: string) { }
 }
 
-export interface PackageContent {
-    id: PackageId;
-    files: { [path: string]: string };
-    fromCache: boolean;
+export class PackageContent {
+    constructor(public id: PackageId, public files: { [path: string]: string }, fromCache: boolean) { }
 }
 
-export interface PackageBundle {
-    packages: PackageContent[];
+export class PackageBundle {
+    constructor(public packages: PackageContent[]) { }
 }
 
 export interface PackageSource {
@@ -23,7 +21,7 @@ export interface PackageSource {
     getAllCached(): Promise<PackageBundle>;
 }
 
-export interface PackageNativeImpl {
+export class PackageNativeImpl {
     pkgName: string;
     pkgVendor: string;
     pkgVersion: string;
@@ -49,8 +47,14 @@ export class InterfacePackage {
     }
 }
 
+export class ImplPkgImplIntf { 
+    name: string;
+    minver: number;
+    maxver: number;
+}
+
 export class ImplPkgImplementation {
-    interface: { name: string; minver: number; maxver: number };
+    interface: ImplPkgImplIntf;
     language: string;
     "native-includes": string[];
     "native-includes-dir": string;
@@ -62,7 +66,7 @@ export class ImplPackageYaml {
     vendor: string;
     name: string;
     description: string;
-    version: number;
+    version: string;
     includes: string[];
     implements: ImplPkgImplementation[];
 }
@@ -73,10 +77,13 @@ export class ImplementationPackage {
 
     constructor(public content: PackageContent) {
         this.implementationYaml = YAML.safeLoad(content.files["package.yaml"]);
-        this.implementations = [...this.implementationYaml.implements||[]];
+        this.implementations = [];
+        for (const impl of this.implementationYaml.implements||[])
+            this.implementations.push(impl);
         for (const include of this.implementationYaml.includes||[]) {
             const included = <ImplPackageYaml> YAML.safeLoad(content.files[include]);
-            this.implementations.push(...included.implements);
+            for (const impl of included.implements)
+                this.implementations.push(impl);
         }
     }
 }
@@ -90,21 +97,24 @@ export class PackageManager {
     async loadAllCached() {
         const allPackages = await this.source.getAllCached();
 
-        for (const content of allPackages.packages.filter(x => x.id.type === "Interface"))
+        for (const content of allPackages.packages.filter(x => x.id.type === PackageType.Interface))
             this.intefacesPkgs.push(new InterfacePackage(content));
 
-        for (const content of allPackages.packages.filter(x => x.id.type === "Implementation"))
+        for (const content of allPackages.packages.filter(x => x.id.type === PackageType.Implementation))
             this.implementationPkgs.push(new ImplementationPackage(content));
     }
 
     getLangImpls(langName: string): ImplPkgImplementation[] {
-        const allImpls = this.implementationPkgs.reduce((x,y) => [...x, ...y.implementations], []);
+        const allImpls = [];
+        for (const pkg of this.implementationPkgs)
+            for (const impl of pkg.implementations)
+                allImpls.push(impl);
         return allImpls.filter(x => x.language === langName);
     }
 
     loadImplsIntoLangFile(lang: LangFile) {
         for (const impl of this.getLangImpls(lang.name))
-            extend(lang, impl.implementation||{});
+            Helpers.extend(lang, impl.implementation||{});
     }
 
     getInterfaceDefinitions() {
@@ -127,16 +137,17 @@ export class PackageManager {
                         fileNamePaths[fn] = `${prefix}${fn}`;
                 }
 
-                for (const [fileName, path] of Object.entries(fileNamePaths)) {
+                for (const fileName of Object.keys(fileNamePaths)) {
+                    const path = fileNamePaths[fileName];
                     const code = pkg.content.files[path];
                     if (!code) throw new Error(`File '${fileName}' was not found for package '${pkg.implementationYaml.name}'`);
-                    result.push({ 
-                        pkgName: pkg.implementationYaml.name,
-                        pkgVendor: pkg.implementationYaml.vendor,
-                        pkgVersion: pkg.implementationYaml.version,
-                        fileName,
-                        code
-                    });
+                    const impl = new PackageNativeImpl();
+                    impl.pkgName = pkg.implementationYaml.name;
+                    impl.pkgVendor = pkg.implementationYaml.vendor;
+                    impl.pkgVersion = pkg.implementationYaml.version;
+                    impl.fileName = fileName;
+                    impl.code = code;
+                    result.push(impl);
                 }
 
             }

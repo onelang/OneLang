@@ -1,4 +1,4 @@
-import { regexMatches } from "../../Utils/RegexHelpers";
+import { RegexHelpers } from "../../Utils/RegexHelpers";
 import { SourceFile, IMethodBase, Block, IHasAttributesAndTrivia } from "../Ast/Types";
 import { ForeachStatement, ForStatement, IfStatement } from "../Ast/Statements";
 
@@ -6,7 +6,7 @@ export class FillAttributesFromTrivia {
     static processTrivia(trivia: string) {
         const result = {};
         if (trivia !== "") {
-            const matches = regexMatches(/(?:\n|^)\s*(?:\/\/|#)\s*@([a-z0-9_.-]+)(?: ([^\n]+)|$|\n)/g, trivia);
+            const matches = RegexHelpers.matches(/(?:\n|^)\s*(?:\/\/|#)\s*@([a-z0-9_.-]+)(?: ([^\n]+)|$|\n)/g, trivia);
             for (const match of matches)
                 result[match[1]] = match[2] || true;
         }

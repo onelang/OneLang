@@ -3,9 +3,23 @@ import { ExpressionParser } from "./Common/ExpressionParser";
 import { NodeManager } from "./Common/NodeManager";
 import { IParser } from "./Common/IParser";
 import { Type, AnyType, VoidType, UnresolvedType, LambdaType } from "../One/Ast/AstTypes";
-import { Expression, Literal, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, BinaryExpression, UnaryExpression, UnresolvedCallExpression, PropertyAccessExpression, InstanceOfExpression, RegexLiteral } from "../One/Ast/Expressions";
-import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileStatement, ForeachStatement, ForStatement, ReturnStatement, ThrowStatement, BreakStatement, ExpressionStatement, ForeachVariable, ForVariable, DoStatement } from "../One/Ast/Statements";
+import { Expression, Literal, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, BinaryExpression, UnaryExpression, UnresolvedCallExpression, PropertyAccessExpression, InstanceOfExpression, RegexLiteral, AwaitExpression } from "../One/Ast/Expressions";
+import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileStatement, ForeachStatement, ForStatement, ReturnStatement, ThrowStatement, BreakStatement, ExpressionStatement, ForeachVariable, ForVariable, DoStatement, ContinueStatement } from "../One/Ast/Statements";
 import { Block, Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package, Lambda } from "../One/Ast/Types";
+
+class TypeAndInit {
+    constructor(
+        public type: Type,
+        public init: Expression) { }
+}
+
+class MethodSignature {
+    constructor(
+        public params: MethodParameter[],
+        public fields: Field[],
+        public body: Block,
+        public returns: Type) { }
+}
 
 export class TypeScriptParser2 implements IParser {
     context: string[] = [];
@@ -190,7 +204,7 @@ export class TypeScriptParser2 implements IParser {
         if (type === null && init === null)
             this.reader.fail(`expected type declaration or initializer`);
 
-        return { type, init };
+        return new TypeAndInit(type, init);
     }
 
     parseBlockOrStatement() {
@@ -214,8 +228,8 @@ export class TypeScriptParser2 implements IParser {
         const varDeclMatches = this.reader.readRegex("(const|let|var)\\b");
         if (varDeclMatches !== null) {
             const name = this.reader.expectIdentifier("expected variable name");
-            const { type, init } = this.parseTypeAndInit();
-            statement = new VariableDeclaration(name, type, init);
+            const typeAndInit = this.parseTypeAndInit();
+            statement = new VariableDeclaration(name, typeAndInit.type, typeAndInit.init);
         } else if (this.reader.readToken("delete")) {
             statement = new UnsetStatement(this.parseExpression());
         } else if (this.reader.readToken("if")) {
@@ -254,8 +268,8 @@ export class TypeScriptParser2 implements IParser {
             } else {
                 let forVar = null;
                 if (itemVarName !== null) {
-                    const { type, init } = this.parseTypeAndInit();
-                    forVar = new ForVariable(itemVarName, type, init);
+                    const typeAndInit = this.parseTypeAndInit();
+                    forVar = new ForVariable(itemVarName, typeAndInit.type, typeAndInit.init);
                 }
                 this.reader.expectToken(";");
                 const condition = this.parseExpression();
@@ -355,12 +369,12 @@ export class TypeScriptParser2 implements IParser {
 
                 const paramName = this.reader.expectIdentifier();
                 this.context.push(`arg:${paramName}`);
-                const { type, init } = this.parseTypeAndInit();
-                const param = new MethodParameter(paramName, type, init);
+                const typeAndInit = this.parseTypeAndInit();
+                const param = new MethodParameter(paramName, typeAndInit.type, typeAndInit.init);
                 params.push(param);
 
                 if (isPublic) {
-                    fields.push(new Field(paramName, type, init, Visibility.Public, false, null));
+                    fields.push(new Field(paramName, typeAndInit.type, typeAndInit.init, Visibility.Public, false, null));
                     bodyPrefixStatements.push(this.parseExprStmtFromString(`this.${paramName} = ${paramName}`));
                 }
 
@@ -382,10 +396,15 @@ export class TypeScriptParser2 implements IParser {
             body = this.parseBlock();
             if (body === null)
                 this.reader.fail("method body is missing");
-            body.statements = [...bodyPrefixStatements, ...body.statements];
+
+            body.statements = bodyPrefixStatements.concat(body.statements);
         }
 
-        return { params, fields, body, returns };
+        return new MethodSignature(params, fields, body, returns);
+    }
+
+    parseIdentifierOrString() {
+        return this.reader.readString() || this.reader.expectIdentifier();
     }
 
     parseInterface(leadingTrivia: string, isExported: boolean) {
@@ -427,11 +446,10 @@ export class TypeScriptParser2 implements IParser {
                 const methodTypeArgs = this.parseGenericsArgs();
                 this.reader.expectToken("("); // method
     
-                this.context.push(`M:${memberName}`);
-                const { params, body, returns } = this.parseMethodSignature(/* isConstructor = */ false, /* declarationOnly = */ true);
+                const sig = this.parseMethodSignature(/* isConstructor = */ false, /* declarationOnly = */ true);
                 this.context.pop();
     
-                const method = new Method(memberName, methodTypeArgs, params, body, Visibility.Public, false, returns, leadingTrivia);
+                const method = new Method(memberName, methodTypeArgs, sig.params, sig.body, Visibility.Public, false, sig.returns, leadingTrivia);
                 methods[method.name] = method;
                 this.nodeManager.addNode(method, memberStart);
             }
@@ -483,13 +501,13 @@ export class TypeScriptParser2 implements IParser {
                 const isConstructor = memberName === "constructor";
 
                 let member: IMethodBase;
-                const { params, fields: constrFields, body, returns } = this.parseMethodSignature(isConstructor, declarationOnly);
+                const sig = this.parseMethodSignature(isConstructor, declarationOnly);
                 if (isConstructor) {
-                    member = constructor = new Constructor(params, body, memberLeadingTrivia);
-                    for (const field of constrFields)
+                    member = constructor = new Constructor(sig.params, sig.body, memberLeadingTrivia);
+                    for (const field of sig.fields)
                         fields[field.name] = field;
                 } else {
-                    const method = new Method(memberName, methodTypeArgs, params, body, visibility, isStatic, returns, memberLeadingTrivia);
+                    const method = new Method(memberName, methodTypeArgs, sig.params, sig.body, visibility, isStatic, sig.returns, memberLeadingTrivia);
                     member = methods[method.name] = method;
                 }
 
@@ -533,10 +551,10 @@ export class TypeScriptParser2 implements IParser {
             } else {
                 this.context.push(`F:${memberName}`);
 
-                const { type, init } = this.parseTypeAndInit();
+                const typeAndInit = this.parseTypeAndInit();
                 this.reader.expectToken(";");
 
-                const field = new Field(memberName, type, init, visibility, isStatic, memberLeadingTrivia);
+                const field = new Field(memberName, typeAndInit.type, typeAndInit.init, visibility, isStatic, memberLeadingTrivia);
                 fields[field.name] = field;
 
                 this.nodeManager.addNode(field, memberStart);
@@ -604,7 +622,8 @@ export class TypeScriptParser2 implements IParser {
         if (importFile.startsWith(".")) // relative
             return new ExportScopeRef(currScope.packageName, this.calculateRelativePath(currScope.scopeName, importFile));
         else {
-            const [pkgName, ...path] = importFile.split('/');
+            const path = importFile.split('/');
+            const pkgName = path.shift();
             return new ExportScopeRef(pkgName, path.length === 0 ? Package.INDEX : path.join('/'));
         }
     }
@@ -637,7 +656,11 @@ export class TypeScriptParser2 implements IParser {
         this.reader.expectToken(";");
 
         const importScope = this.exportScope ? TypeScriptParser2.calculateImportScope(this.exportScope, moduleName) : null;
-        const imports = Object.entries(nameAliases).map(([name, importAs]) => new Import(importScope, false, [new UnresolvedType(name)], importAs, leadingTrivia));
+        
+        const imports = [];
+        for (const name of Object.keys(nameAliases))
+            imports.push(new Import(importScope, false, [new UnresolvedType(name)], nameAliases[name], leadingTrivia));
+
         if (importAllAlias !== null)
             imports.push(new Import(importScope, true, null, importAllAlias, leadingTrivia));
         //this.nodeManager.addNode(imports, importStart);
@@ -655,7 +678,8 @@ export class TypeScriptParser2 implements IParser {
 
             const imps = this.parseImport(leadingTrivia);
             if (imps !== null) {
-                imports.push(...imps);
+                for (const imp of imps)
+                    imports.push(imp);
                 continue;
             }
 

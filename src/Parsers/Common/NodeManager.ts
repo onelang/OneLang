@@ -1,5 +1,5 @@
 import { Reader } from "./Reader";
-import { sortBy } from "../../Utils/ArrayHelpers";
+import { ArrayHelpers } from "../../Utils/ArrayHelpers";
 
 export class NodeManager {
     nodes: any[] = [];
@@ -13,7 +13,7 @@ export class NodeManager {
     }
 
     getNodeAtOffset(offset: number) {
-        const nodes = sortBy(this.nodes.filter(x => x.nodeData && x.nodeData.sourceRange.start <= offset && offset < x.nodeData.sourceRange.end),
+        const nodes = ArrayHelpers.sortBy(this.nodes.filter(x => x.nodeData && x.nodeData.sourceRange.start <= offset && offset < x.nodeData.sourceRange.end),
             x => x.nodeData.sourceRange.end - x.nodeData.sourceRange.start);
         return nodes.length === 0 ? null : nodes[0];
     }

@@ -3,20 +3,14 @@ import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser2";
 import { readFile, glob, readDir, baseDir, getLangFiles } from "./TestUtils";
 import { PackageManager } from '@one/StdLib/PackageManager';
 import { PackagesFolderSource } from '@one/StdLib/PackagesFolderSource';
-import * as LangFileSchema from '@one/Generator/LangFileSchema';
-import * as YAML from "js-yaml";
-import { TSOverviewGenerator } from '@one/One/TSOverviewGenerator';
-import { SourceFile, SourcePath, Package, Workspace } from '@one/One/Ast/Types';
+import { SourcePath, Package, Workspace } from '@one/One/Ast/Types';
 import { ResolveImports } from "@one/One/Transforms/ResolveImports";
 import { FillAttributesFromTrivia } from "@one/One/Transforms/FillAttributesFromTrivia";
 import { ResolveGenericTypeIdentifiers } from "@one/One/Transforms/ResolveGenericTypeIdentifiers";
-import { ResolveUnresolvedTypes } from "@one/One/Transforms/ResolveUnresolvedTypes";
 import { FillParent } from "@one/One/Transforms/FillParent";
-import { writeFile } from 'fs';
-import { _ } from '@one/Utils/Underscore';
+import { Linq } from '@one/Utils/Underscore';
 import { PackageStateCapture } from './DiffUtils';
 import * as color from "ansi-colors";
-import { ClassType } from '@one/One/Ast/AstTypes';
 
 const pacMan = new PackageManager(new PackagesFolderSource(`${baseDir}/packages`));
 const langs = getLangFiles();
@@ -106,7 +100,7 @@ initCompiler().then(() => {
         //head("SUMMARY");
         //_(pkgStates).last().diff(pkgStates[pkgStates.length - 2]).printChangedFiles("summary");
         head("FULL");
-        _(pkgStates).last().diff(pkgStates[0]).printChangedFiles("full");
+        new Linq(pkgStates).last().diff(pkgStates[0]).printChangedFiles("full");
 
         debugger;
 

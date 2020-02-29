@@ -1,7 +1,7 @@
-import { NewExpression, Identifier, Literal, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression } from "./Ast/Expressions";
-import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement } from "./Ast/Statements";
-import { Method, Block, Class, SourceFile, IMethodBase, MethodParameter, Constructor, IVariable } from "./Ast/Types";
-import { Type, VoidType, AnyType, NullType, EnumType, GenericsType, MethodType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments, IType } from "./Ast/AstTypes";
+import { NewExpression, Identifier, Literal, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression } from "@one/One/Ast/Expressions";
+import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement } from "@one/One/Ast/Statements";
+import { Method, Block, Class, SourceFile, IMethodBase, MethodParameter, Constructor, IVariable } from "@one/One/Ast/Types";
+import { Type, VoidType, AnyType, NullType, EnumType, GenericsType, MethodType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments, IType } from "@one/One/Ast/AstTypes";
 
 export class TSOverviewGenerator {
     static leading(item: any) {
@@ -134,8 +134,8 @@ export class TSOverviewGenerator {
     }
 
     static classLike(cls: Class) {
-        const fields = this.map(cls.fields, field => `${this.var(field)};`);
-        const props = this.map(cls.properties, prop => `${this.var(prop)};`);
+        const fields = cls.fields ? this.map(cls.fields, field => `${this.var(field)};`) : [];
+        const props = cls.properties ? this.map(cls.properties, prop => `${this.var(prop)};`) : [];
         const constr = this.methodBase(cls.constructor_);
         const methods = this.map(cls.methods, method => this.method(method));
         return this.pad([fields.join("\n"), props.join("\n"), constr, methods.join("\n\n")].filter(x => x !== "").join("\n\n"));

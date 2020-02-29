@@ -258,7 +258,8 @@ class CursorPositionSearch {
     }
 
     getLineIdxForOffset(offset: number) {
-        let low = 0, high = this.lineOffsets.length - 1;
+        let low = 0;
+        let high = this.lineOffsets.length - 1;
 
         while (low <= high) {
             const middle = Math.floor((low + high) / 2);
@@ -280,7 +281,7 @@ class CursorPositionSearch {
         const lineEnd = this.lineOffsets[lineIdx + 1];
         const column = offset - lineStart + 1;
         if (column < 1)
-            debugger;
+            throw new Error("Column should not be < 1");
         return new Cursor(offset, lineIdx + 1, offset - lineStart + 1, lineStart, lineEnd);
     }
 }

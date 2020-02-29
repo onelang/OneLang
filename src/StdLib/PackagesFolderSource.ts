@@ -1,4 +1,4 @@
-import { PackageSource, PackageId, PackageBundle, PackageContent } from "./PackageManager";
+import { PackageSource, PackageId, PackageBundle, PackageContent, PackageType } from "./PackageManager";
 
 export class PackagesFolderSource implements PackageSource {
     constructor(public packagesDir = "packages") { }
@@ -12,30 +12,23 @@ export class PackagesFolderSource implements PackageSource {
         const glob = await import("glob");
         const path = await import("path");
 
-        const packages: {
-            [id: string]: PackageContent;
-        } = {};
-        
+        const packages: { [id: string]: PackageContent } = {};
         const allFiles = glob.sync(`${this.packagesDir}/**/*`, { nodir: true });
         for (const fn of allFiles) {
-            const [type, pkgDir, ...pathParts] = path.relative(this.packagesDir, fn).split("/"); // [0]=implementations/interfaces, [1]=package-name, [2:]=path
+            const pathParts = path.relative(this.packagesDir, fn).split("/"); // [0]=implementations/interfaces, [1]=package-name, [2:]=path
+            const type = pathParts.shift();
+            const pkgDir = pathParts.shift();
             if (type !== "implementations" && type !== "interfaces") continue; // skip e.g. bundle.json
             let pkg = packages[`${type}/${pkgDir}`];
             if (!pkg) {
                 const pkgDirParts: string[] = pkgDir.split("-");
                 const version = pkgDirParts.pop().replace(/^v/, "");
-                pkg = packages[`${type}/${pkgDir}`] = <PackageContent>{
-                    id: <PackageId>{
-                        name: pkgDirParts.join("-"),
-                        type: type === "implementations" ? "Implementation" : "Interface",
-                        version
-                    },
-                    fromCache: true,
-                    files: {}
-                };
+                const pkgType = type === "implementations" ? PackageType.Implementation : PackageType.Interface;
+                const pkgId = new PackageId(pkgType, pkgDirParts.join("-"), version);
+                pkg = packages[`${type}/${pkgDir}`] = new PackageContent(pkgId, {}, true);
             }
             pkg.files[pathParts.join("/")] = fs.readFileSync(fn, "utf-8");
         }
-        return <PackageBundle>{ packages: Object.values(packages) };
+        return new PackageBundle(Object.values(packages));
     }
 }
