@@ -1,5 +1,5 @@
-import { Type, IHasTypeArguments, ClassType, InterfaceType, UnresolvedType, IType } from "./Ast/AstTypes";
-import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, Literal, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression, InstanceOfExpression } from "./Ast/Expressions";
+import { Type, IHasTypeArguments, ClassType, InterfaceType, UnresolvedType, IType, LambdaType } from "./Ast/AstTypes";
+import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, Literal, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression, InstanceOfExpression, AwaitExpression } from "./Ast/Expressions";
 import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement, ContinueStatement, DoStatement } from "./Ast/Statements";
 import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda } from "./Ast/Types";
 
@@ -12,6 +12,10 @@ export abstract class AstTransformer<TContext> {
     protected visitType(type: IType, context: TContext): Type {
         if (type instanceof ClassType || type instanceof InterfaceType || type instanceof UnresolvedType)
             type.typeArguments = type.typeArguments.map(x => this.visitType(x, context) || x);
+        else if (type instanceof LambdaType) {
+            type.parameters = type.parameters.map(x => this.visitMethodParameter(x, context) || x);
+            type.returnType = this.visitType(type.returnType, context) || type.returnType;
+        }
         return null;
     }
  
@@ -150,6 +154,7 @@ export abstract class AstTransformer<TContext> {
 
     protected visitCallExpression(expr: UnresolvedCallExpression, context: TContext): UnresolvedCallExpression {
         expr.method = this.visitExpression(expr.method, context) || expr.method;
+        expr.typeArgs = expr.typeArgs.map(x => this.visitType(x, context) || x);
         expr.args = expr.args.map(x => this.visitExpression(x, context) || x);
         return null;
     }
@@ -216,7 +221,8 @@ export abstract class AstTransformer<TContext> {
         return null;
     }
 
-    protected visitCastExpression(expr: CastExpression, context: TContext): CastExpression { 
+    protected visitCastExpression(expr: CastExpression, context: TContext): CastExpression {
+        expr.newType = this.visitType(expr.newType, context) || expr.newType;
         expr.expression = this.visitExpression(expr.expression, context) || expr.expression;
         return null;
     }
@@ -224,6 +230,11 @@ export abstract class AstTransformer<TContext> {
     protected visitInstanceOfExpression(expr: InstanceOfExpression, context: TContext): InstanceOfExpression { 
         expr.expr = this.visitExpression(expr.expr, context) || expr.expr;
         expr.type = this.visitType(expr.type, context) || expr.type;
+        return null;
+    }
+
+    protected visitAwaitExpression(expr: AwaitExpression, context: TContext): AwaitExpression { 
+        expr.expr = this.visitExpression(expr.expr, context) || expr.expr;
         return null;
     }
 
@@ -264,6 +275,8 @@ export abstract class AstTransformer<TContext> {
             return this.visitCastExpression(expression, context);
         } else if (expression instanceof InstanceOfExpression) {
             return this.visitInstanceOfExpression(expression, context);
+        } else if (expression instanceof AwaitExpression) {
+            return this.visitAwaitExpression(expression, context);
         } else if (expression instanceof Lambda) {
             return this.visitLambda(expression, context);
         } else {
@@ -315,6 +328,7 @@ export abstract class AstTransformer<TContext> {
     }
 
     protected visitInterface(intf: Interface, context: TContext): Interface {
+        intf.baseInterfaces = intf.baseInterfaces.map(x => this.visitType(x, context) || x);
         this.convertObjectMap(intf.methods, x => this.visitMethod(x, context));
         return null;
     }
@@ -323,6 +337,8 @@ export abstract class AstTransformer<TContext> {
         if (cls.constructor_)
             cls.constructor_ = this.visitConstructor(cls.constructor_, context) || cls.constructor_;
 
+        cls.baseClass = this.visitType(cls.baseClass, context) || cls.baseClass;
+        cls.baseInterfaces = cls.baseInterfaces.map(x => this.visitType(x, context) || x);
         this.convertObjectMap(cls.methods, x => this.visitMethod(x, context));
         this.convertObjectMap(cls.properties, x => this.visitProperty(x, context));
         this.convertObjectMap(cls.fields, x => this.visitField(x, context));

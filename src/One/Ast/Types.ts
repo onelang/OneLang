@@ -1,6 +1,7 @@
 import { Statement } from "./Statements";
 import { Type } from "./AstTypes";
 import { Expression } from "./Expressions";
+import { ErrorManager } from "../ErrorManager";
 
 export enum Visibility { Public, Protected, Private }
 
@@ -22,7 +23,7 @@ export interface ISourceFileMember {
     parentFile: SourceFile;
 }
 
-class ExportedScope {
+export class ExportedScope {
     exports: { [name: string]: IImportable } = {};
 
     getExport(name: string) {
@@ -36,35 +37,36 @@ class ExportedScope {
 }
 
 export class Package {
-    constructor(public name: string, files: SourceFile[] = []) {
-        for (const file of files) {
-            if (file.sourcePath.pkg === null)
-                file.sourcePath.pkg = this;
-            this.addFile(file);
-        }
-    }
+    constructor(public name: string) { }
 
     static readonly INDEX = "index";
 
     files: { [name: string]: SourceFile } = {};
     exportedScopes: { [name: string]: ExportedScope } = {};
 
-    addFile(file: SourceFile) {
+    static collectExportsFromFile(file: SourceFile, exportAll: boolean, scope: ExportedScope = null): ExportedScope {
+        if (scope === null)
+            scope = new ExportedScope();
+
+        for (const cls of Object.values(file.classes).filter(x => x.isExported || exportAll))
+            scope.exports[cls.name] = cls;
+
+        for (const intf of Object.values(file.interfaces).filter(x => x.isExported || exportAll))
+            scope.exports[intf.name] = intf;
+
+        for (const enum_ of Object.values(file.enums).filter(x => x.isExported || exportAll))
+            scope.exports[enum_.name] = enum_;
+        
+        return scope;
+    }
+
+    addFile(file: SourceFile, exportAll = false) {
         if (file.sourcePath.pkg !== this || file.exportScope.packageName !== this.name)
             throw new Error("This file belongs to another package!");
         
         this.files[file.sourcePath.path] = file;
-        const scope = this.exportedScopes[file.exportScope.scopeName] || 
-            (this.exportedScopes[file.exportScope.scopeName] = new ExportedScope());
-
-        for (const cls of Object.values(file.classes).filter(x => x.isExported))
-            scope.exports[cls.name] = cls;
-
-        for (const intf of Object.values(file.interfaces).filter(x => x.isExported))
-            scope.exports[intf.name] = intf;
-
-        for (const enum_ of Object.values(file.enums).filter(x => x.isExported))
-            scope.exports[enum_.name] = enum_;
+        const scopeName = file.exportScope.scopeName;
+        this.exportedScopes[scopeName] = Package.collectExportsFromFile(file, exportAll, this.exportedScopes[scopeName]);
     }
 
     getExportedScope(name: string) {
@@ -77,6 +79,7 @@ export class Package {
 
 export class Workspace {
     packages: { [name: string]: Package } = {};
+    errorManager = new ErrorManager();
 
     addPackage(pkg: Package) { 
         this.packages[pkg.name] = pkg;
@@ -94,6 +97,8 @@ export class SourcePath {
     constructor(
         public pkg: Package,
         public path: string) { }
+
+    toString() { return `${this.pkg.name}/${this.path}`; }
 }
 
 export class SourceFile {

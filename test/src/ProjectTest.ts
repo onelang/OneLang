@@ -7,6 +7,7 @@ import { SourcePath, Package, Workspace, SourceFile, ExportScopeRef } from '@one
 import { ResolveImports } from "@one/One/Transforms/ResolveImports";
 import { FillAttributesFromTrivia } from "@one/One/Transforms/FillAttributesFromTrivia";
 import { ResolveGenericTypeIdentifiers } from "@one/One/Transforms/ResolveGenericTypeIdentifiers";
+import { ResolveUnresolvedTypes } from "@one/One/Transforms/ResolveUnresolvedTypes";
 import { FillParent } from "@one/One/Transforms/FillParent";
 import { Linq } from '@one/Utils/Underscore';
 import { PackageStateCapture } from './DiffUtils';
@@ -57,8 +58,8 @@ function head(text: string) {
 //    *   that should not have typeArguments, but the call itself can have!
 
 initCompiler().then(() => {
-    const nativeResolver = TypeScriptParser2.parseFile(readFile(`langs/NativeResolvers/typescript.ts`));
-    //nativeResolver.classes.map(cls => new ClassType(cls))
+    const nativeFile = TypeScriptParser2.parseFile(readFile(`langs/NativeResolvers/typescript.ts`));
+    const nativeExports = Package.collectExportsFromFile(nativeFile, true);
 
     const testsDir = "test/testSuites/ProjectTest";
     const tests = readDir(testsDir).map(projName => ({ projName, projDir: `${testsDir}/${projName}/src` }));
@@ -72,7 +73,9 @@ initCompiler().then(() => {
         const projectPkg = new Package("@");
         workspace.addPackage(projectPkg);
 
-        workspace.addPackage(new Package("js-yaml", [new SourceFile([], {}, {}, {}, null, new SourcePath(null, "index"), new ExportScopeRef("js-yaml", "index"))]));
+        const jsYamlPkg = new Package("js-yaml");
+        jsYamlPkg.addFile(new SourceFile([], {}, {}, {}, null, new SourcePath(jsYamlPkg, "index"), new ExportScopeRef("js-yaml", "index")));
+        workspace.addPackage(jsYamlPkg);
 
         const files = glob(test.projDir);
         for (const file of files)
@@ -94,11 +97,14 @@ initCompiler().then(() => {
         for (const file of Object.values(projectPkg.files))
             new ResolveGenericTypeIdentifiers().visitSourceFile(file);
 
-        //saveState();
-        //for (const file of Object.values(projectPkg.files))
-        //    new ResolveUnresolvedTypes().visitSourceFile(file);
+        saveState();
+        for (const file of Object.values(projectPkg.files))
+            new ResolveUnresolvedTypes(nativeExports, workspace.errorManager).visitSourceFile(file);
 
         saveState();
+        if (workspace.errorManager.errors.length > 0)
+            debugger;
+
         //head("SUMMARY");
         //_(pkgStates).last().diff(pkgStates[pkgStates.length - 2]).printChangedFiles("summary");
         head("FULL");

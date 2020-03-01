@@ -13,7 +13,14 @@ export class Linq<T> {
     take(count: number): Linq<T> { return new Linq(this.items.filter((_, i) => i < count)); }
     skip(count: number): Linq<T> { return new Linq(this.items.filter((_, i) => i >= count)); }
     join(separator: string) { return this.items.join(separator); }
-    concat(arr2: T[]) { return this.items.concat(arr2); }
+    concat(arr2: T[]) { return new Linq(this.items.concat(arr2)); }
+
+    toObject(keySelector: (item: T) => string) { 
+        const result: { [key: string]: T } = { };
+        for (const item of this.items)
+            result[keySelector(item)] = item;
+        return result;
+    }
 
     get() { return this.items; }
     last() { return this.items[this.items.length - 1]; }
