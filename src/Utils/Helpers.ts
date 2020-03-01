@@ -1,5 +1,5 @@
 export class Helpers {
-    static extend(dest: object, src: object) {
+    static extend(dest: Object, src: Object) {
         for (const key of Object.keys(src)) {
             if (Array.isArray(dest[key])) {
                 for (const item of src[key])

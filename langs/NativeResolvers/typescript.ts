@@ -96,3 +96,20 @@ class TsCharacter {
 class TsBoolean {
     _one: OneBoolean;
 }
+
+class Error {
+    constructor(msg: string) { 
+        OneError.raise(msg);
+    }
+}
+
+class Promise<T> {
+
+}
+
+class RegExp {
+    constructor(pattern: string, modifiers: string) {}
+}
+
+class RegExpExecArray { }
+class Function { } // TODO: ???

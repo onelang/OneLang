@@ -7,7 +7,7 @@ export class ExprLangAstPrinter {
     
     static print(expr: IExpression): string {
         if (expr instanceof LiteralExpression) {
-            return expr.type === LiteralType.String ? `"${(<String>expr.value).replace(/"/g, '\\"')}"` : `${expr.value}`;
+            return expr.type === LiteralType.String ? `"${(<string>expr.value).replace(/"/g, '\\"')}"` : `${expr.value}`;
         } else if (expr instanceof IdentifierExpression) {
             return expr.text;
         } else if (expr instanceof UnaryExpression) {

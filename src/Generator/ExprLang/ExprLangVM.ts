@@ -3,19 +3,19 @@ import { LiteralExpression, IdentifierExpression, UnaryExpression, BinaryExpress
 class ExprLangError extends Error { }
 
 export interface IModelHandler {
-    methodCall(method: any, args: any[], thisObj: object, model: object);
-    memberAccess(obj: object, memberName: any, isProperty: boolean);
+    methodCall(method: any, args: any[], thisObj: Object, model: Object);
+    memberAccess(obj: Object, memberName: any, isProperty: boolean);
 }
 
 export class JSModelHandler implements IModelHandler {
-    static methodCall(method: any, args: any[], thisObj: object, model: object) {
+    static methodCall(method: any, args: any[], thisObj: Object, model: Object) {
         if (!(typeof method === "function"))
             throw new ExprLangError(`Tried to call a non-method value: '${method}'`); //  (${typeof method})
         const result = method.apply(thisObj, args);
         return result;
     }
 
-    static memberAccess(obj: object, memberName: any, isProperty: boolean) {
+    static memberAccess(obj: Object, memberName: any, isProperty: boolean) {
         if (!(typeof obj === "object"))
             throw new ExprLangError(`Expected object for accessing member: (${obj})`);
 
@@ -26,11 +26,11 @@ export class JSModelHandler implements IModelHandler {
         return obj[memberName];
     }
 
-    methodCall(method: any, args: any[], thisObj: object, model: object) {
+    methodCall(method: any, args: any[], thisObj: Object, model: Object) {
         return JSModelHandler.methodCall(method, args, thisObj, model);
     }
 
-    memberAccess(obj: object, memberName: any, isProperty: boolean) {
+    memberAccess(obj: Object, memberName: any, isProperty: boolean) {
         return JSModelHandler.memberAccess(obj, memberName, isProperty);
     }
 }
@@ -89,7 +89,7 @@ export class VariableSource {
         return source;
     }
 
-    static fromObject(obj: object, sourceName: string) {
+    static fromObject(obj: Object, sourceName: string) {
         const source = new VariableSource(sourceName || `object`);
         if (obj)
             for (const key of Object.keys(obj))

@@ -54,7 +54,7 @@ export class TemplateGenerator implements IModelHandler {
     rootVars: VariableContext;
     methods = new VariableSource("TemplateGenerator methods");
     callStack: CallStackItem[] = [];
-    objectHook: (obj: object) => GeneratedNode[] = null;
+    objectHook: (obj: Object) => GeneratedNode[] = null;
 
     constructor(variables: VariableContext) {
         this.rootVars = variables.inherit(this.methods);
@@ -87,7 +87,7 @@ export class TemplateGenerator implements IModelHandler {
         return result;
     }
 
-    memberAccess(obj: object, memberName: any, isProperty: boolean) {
+    memberAccess(obj: Object, memberName: any, isProperty: boolean) {
         return JSModelHandler.memberAccess(obj, memberName, isProperty);
     }
 

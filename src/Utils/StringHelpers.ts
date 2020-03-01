@@ -1,9 +1,9 @@
 export class StringHelpers {
-    static ucFirst(str: String) {
+    static ucFirst(str: string) {
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
     
-    static lcFirst(str: String) {
+    static lcFirst(str: string) {
         return str.charAt(0).toLowerCase() + str.slice(1);
     }
 }
