@@ -8,6 +8,7 @@ import { ResolveImports } from "@one/One/Transforms/ResolveImports";
 import { FillAttributesFromTrivia } from "@one/One/Transforms/FillAttributesFromTrivia";
 import { ResolveGenericTypeIdentifiers } from "@one/One/Transforms/ResolveGenericTypeIdentifiers";
 import { ResolveUnresolvedTypes } from "@one/One/Transforms/ResolveUnresolvedTypes";
+import { ResolveIdentifiers } from "@one/One/Transforms/ResolveIdentifiers";
 import { FillParent } from "@one/One/Transforms/FillParent";
 import { Linq } from '@one/Utils/Underscore';
 import { PackageStateCapture } from './DiffUtils';
@@ -100,6 +101,10 @@ initCompiler().then(() => {
         saveState();
         for (const file of Object.values(projectPkg.files))
             new ResolveUnresolvedTypes(workspace.errorManager).visitSourceFile(file);
+
+        saveState();
+        for (const file of Object.values(projectPkg.files))
+            new ResolveIdentifiers(workspace.errorManager).visitSourceFile(file);
 
         saveState();
         if (workspace.errorManager.errors.length > 0)

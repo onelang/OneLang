@@ -1,6 +1,7 @@
 import { Block, IVariableWithInitializer, IVariable, IHasAttributesAndTrivia } from "./Types";
 import { Expression } from "./Expressions";
 import { Type } from "./AstTypes";
+import { ForVariableReference, ForeachVariableReference } from "./References";
 
 export class Statement implements IHasAttributesAndTrivia {
     leadingTrivia: string;
@@ -64,6 +65,7 @@ export class DoStatement extends Statement {
 export class ForeachVariable implements IVariable {
     constructor(public name: string) { }
     type: Type;
+    selfReference = new ForeachVariableReference(this);
 }
 
 export class ForeachStatement extends Statement {
@@ -78,6 +80,7 @@ export class ForVariable implements IVariableWithInitializer {
         public name: string,
         public type: Type,
         public initializer: Expression) { }
+    selfReference = new ForVariableReference(this);
 }
 
 export class ForStatement extends Statement {

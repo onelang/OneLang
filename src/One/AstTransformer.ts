@@ -1,7 +1,8 @@
 import { Type, IHasTypeArguments, ClassType, InterfaceType, UnresolvedType, IType, LambdaType } from "./Ast/AstTypes";
 import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, Literal, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression, InstanceOfExpression, AwaitExpression } from "./Ast/Expressions";
 import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement, ContinueStatement, DoStatement } from "./Ast/Statements";
-import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda } from "./Ast/Types";
+import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda, IMethodBase } from "./Ast/Types";
+import { ClassReference, EnumReference, ThisReference } from "./Ast/References";
 
 export abstract class AstTransformer<TContext> {
     protected log(data: any) {
@@ -79,7 +80,7 @@ export abstract class AstTransformer<TContext> {
 
     protected visitForStatement(stmt: ForStatement, context: TContext): ForStatement {
         if (stmt.itemVar)
-            stmt.itemVar = this.visitVariableWithInitializer(stmt.itemVar, context) || stmt.itemVar;
+            this.visitVariableWithInitializer(stmt.itemVar, context);
         stmt.condition = this.visitExpression(stmt.condition, context) || stmt.condition;
         stmt.incrementor = this.visitExpression(stmt.incrementor, context) || stmt.incrementor;
         stmt.body = this.visitBlock(stmt.body, context) || stmt.body;
@@ -87,7 +88,7 @@ export abstract class AstTransformer<TContext> {
     }
 
     protected visitForeachStatement(stmt: ForeachStatement, context: TContext): ForeachStatement {
-        stmt.itemVar = this.visitVariable(stmt.itemVar, context) || stmt.itemVar;
+        this.visitVariable(stmt.itemVar, context);
         stmt.items = this.visitExpression(stmt.items, context) || stmt.items;
         stmt.body = this.visitBlock(stmt.body, context) || stmt.body;
         return null;
@@ -244,6 +245,18 @@ export abstract class AstTransformer<TContext> {
         return null;
     }
 
+    protected visitClassReference(expr: ClassReference, context: TContext): ClassReference { 
+        return null;
+    }
+
+    protected visitEnumReference(expr: EnumReference, context: TContext): EnumReference { 
+        return null;
+    }
+
+    protected visitThisReference(expr: ThisReference, context: TContext): ThisReference { 
+        return null;
+    }
+
     protected visitExpression(expression: Expression, context: TContext): Expression {
         if (expression instanceof BinaryExpression) {
             return this.visitBinaryExpression(expression, context);
@@ -279,6 +292,12 @@ export abstract class AstTransformer<TContext> {
             return this.visitAwaitExpression(expression, context);
         } else if (expression instanceof Lambda) {
             return this.visitLambda(expression, context);
+        } else if (expression instanceof ClassReference) {
+            return this.visitClassReference(expression, context);
+        } else if (expression instanceof EnumReference) {
+            return this.visitEnumReference(expression, context);
+        } else if (expression instanceof ThisReference) {
+            return this.visitThisReference(expression, context);
         } else {
             return this.visitUnknownExpression(expression, context);
         }
@@ -289,21 +308,21 @@ export abstract class AstTransformer<TContext> {
         return null;
     }
 
-    protected visitMethod(method: Method, context: TContext): Method {
-        if (method.body)
-            method.body = this.visitBlock(method.body, context) || method.body;
-
+    protected visitMethodBase(method: IMethodBase, context: TContext) {
         method.parameters = method.parameters.map(x => this.visitMethodParameter(x, context) || x);
 
+        if (method.body)
+            method.body = this.visitBlock(method.body, context) || method.body;
+    }
+
+    protected visitMethod(method: Method, context: TContext): Method {
+        this.visitMethodBase(method, context);
         method.returns = this.visitType(method.returns, context) || method.returns;
         return null;
     }
  
     protected visitConstructor(constructor: Constructor, context: TContext): Constructor {
-        if (constructor.body)
-            constructor.body = this.visitBlock(constructor.body, context) || constructor.body;
-
-        constructor.parameters = constructor.parameters.map(x => this.visitMethodParameter(x, context) || x);
+        this.visitMethodBase(constructor, context);
         return null;
     }
  

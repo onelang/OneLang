@@ -57,6 +57,10 @@ class TsMap<K,V> {
     }
 }
 
+class Map<K,V> {
+    
+}
+
 class TsString {
     _one: OneString;
     
@@ -113,3 +117,11 @@ class RegExp {
 
 class RegExpExecArray { }
 class Function { } // TODO: ???
+class Array { }
+class Math { }
+class YAML { }
+
+class Global {
+    parseInt() { }
+    import() { }
+}

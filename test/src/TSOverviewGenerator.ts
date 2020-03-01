@@ -1,7 +1,8 @@
 import { NewExpression, Identifier, Literal, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression } from "@one/One/Ast/Expressions";
-import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement } from "@one/One/Ast/Statements";
+import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable } from "@one/One/Ast/Statements";
 import { Method, Block, Class, SourceFile, IMethodBase, MethodParameter, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum } from "@one/One/Ast/Types";
 import { Type, VoidType, AnyType, NullType, EnumType, GenericsType, MethodType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments, IType, LambdaType } from "@one/One/Ast/AstTypes";
+import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference } from "@one/One/Ast/References";
 
 export class TSOverviewGenerator {
     static leading(item: any, isStmt: boolean) {
@@ -112,6 +113,22 @@ export class TSOverviewGenerator {
             res = `null`;
         } else if (expr instanceof AwaitExpression) {
             res = `await ${this.expr(expr.expr)}`;
+        } else if (expr instanceof ThisReference) {
+            res = `{THIS}this`;
+        } else if (expr instanceof EnumReference) {
+            res = `{ER}${expr.decl.name}`;
+        } else if (expr instanceof ClassReference) {
+            res = `{CR}${expr.decl.name}`;
+        } else if (expr instanceof MethodParameterReference) {
+            res = `{MPR}${expr.decl.name}`;
+        } else if (expr instanceof VariableDeclarationReference) {
+            res = `{VDR}${expr.decl.name}`;
+        } else if (expr instanceof ForVariableReference) {
+            res = `{FVR}${expr.decl.name}`;
+        } else if (expr instanceof ForeachVariableReference) {
+            res = `{FEVR}${expr.decl.name}`;
+        } else if (expr instanceof SuperReference) {
+            res = `{SUPER}super`;
         } else debugger;
         return res;
     }

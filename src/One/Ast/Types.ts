@@ -2,6 +2,7 @@ import { Statement } from "./Statements";
 import { Type } from "./AstTypes";
 import { Expression } from "./Expressions";
 import { ErrorManager } from "../ErrorManager";
+import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference } from "./References";
 
 export enum Visibility { Public, Protected, Private }
 
@@ -156,6 +157,7 @@ export class Enum implements IHasAttributesAndTrivia, IImportable, ISourceFileMe
     parentFile: SourceFile;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };
+    selfReference = new EnumReference(this);
 }
 
 export class EnumMember {
@@ -218,6 +220,9 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, 
     parentFile: SourceFile;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };
+    selfReference = new ClassReference(this);
+    thisReference = new ThisReference(this);
+    superReference = new SuperReference(this);
 }
 
 export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia {
@@ -262,6 +267,7 @@ export class MethodParameter implements IVariableWithInitializer {
 
     /** @creator FillParent */
     parentMethod: Method;
+    selfReference = new MethodParameterReference(this);
 }
 
 export interface IMethodBase extends IHasAttributesAndTrivia {
