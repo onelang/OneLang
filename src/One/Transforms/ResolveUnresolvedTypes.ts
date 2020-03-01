@@ -5,10 +5,9 @@ import { Linq } from "../../Utils/Underscore";
 import { ErrorManager } from "../ErrorManager";
 
 export class ResolveUnresolvedTypes extends AstTransformer<void> {
-    sourceFile: SourceFile;
-    importables: { [name: string]: IImportable };
+    file: SourceFile;
 
-    constructor(public native: ExportedScope, public errorMan = new ErrorManager()) { super(); }
+    constructor(public errorMan = new ErrorManager()) { super(); }
 
     error(msg: string) {
         return this.errorMan.throw(msg, "ResolveUnresolvedTypes");
@@ -18,9 +17,9 @@ export class ResolveUnresolvedTypes extends AstTransformer<void> {
         super.visitType(type);
         if (!(type instanceof UnresolvedType)) return null;
         
-        const imported = this.importables[type.typeName];
+        const imported = this.file.availableSymbols[type.typeName];
         if (!imported)
-            return this.error(`Imported type '${type.typeName}' was not found from file '${this.sourceFile.sourcePath}'`);
+            return this.error(`Imported type '${type.typeName}' was not found from file '${this.file.sourcePath}'`);
 
         if (imported instanceof Class)
             return new ClassType(imported, type.typeArguments);
@@ -33,11 +32,7 @@ export class ResolveUnresolvedTypes extends AstTransformer<void> {
     }
 
     public visitSourceFile(sourceFile: SourceFile) {
-        this.sourceFile = sourceFile;
-        const fileScope = Package.collectExportsFromFile(sourceFile, true);
-        this.importables = new Linq(this.sourceFile.imports).selectMany(x => x.imports)
-            .concat(this.native.getAllExports())
-            .concat(fileScope.getAllExports()).toObject(x => x.name);
+        this.file = sourceFile;
         return super.visitSourceFile(sourceFile);
     }
 }

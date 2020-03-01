@@ -91,7 +91,7 @@ initCompiler().then(() => {
         }
 
         saveState();
-        ResolveImports.processWorkspace(workspace);
+        ResolveImports.processWorkspace(workspace, nativeExports);
 
         saveState();
         for (const file of Object.values(projectPkg.files))
@@ -99,7 +99,7 @@ initCompiler().then(() => {
 
         saveState();
         for (const file of Object.values(projectPkg.files))
-            new ResolveUnresolvedTypes(nativeExports, workspace.errorManager).visitSourceFile(file);
+            new ResolveUnresolvedTypes(workspace.errorManager).visitSourceFile(file);
 
         saveState();
         if (workspace.errorManager.errors.length > 0)

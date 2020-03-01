@@ -111,6 +111,9 @@ export class SourceFile {
         public mainBlock: Block,
         public sourcePath: SourcePath,
         public exportScope: ExportScopeRef) { }
+
+    /** @creator ResolveImports */
+    availableSymbols: { [name: string]: IImportable };
 }
 
 export class ExportScopeRef {
