@@ -1,6 +1,6 @@
 import { NewExpression, Identifier, Literal, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression } from "@one/One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement } from "@one/One/Ast/Statements";
-import { Method, Block, Class, SourceFile, IMethodBase, MethodParameter, Constructor, IVariable, Lambda } from "@one/One/Ast/Types";
+import { Method, Block, Class, SourceFile, IMethodBase, MethodParameter, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum } from "@one/One/Ast/Types";
 import { Type, VoidType, AnyType, NullType, EnumType, GenericsType, MethodType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments, IType, LambdaType } from "@one/One/Ast/AstTypes";
 
 export class TSOverviewGenerator {
@@ -181,11 +181,14 @@ export class TSOverviewGenerator {
         return this.pad([fields.join("\n"), props.join("\n"), constr, methods.join("\n\n")].filter(x => x !== "").join("\n\n"));
     }
 
-    static pad(str: string){ return str.split("\n").map(x => `    ${x}`).join('\n'); }
+    static pad(str: string) { return str.split("\n").map(x => `    ${x}`).join('\n'); }
+    static imp(imp: IImportable) { return "" + 
+        (imp instanceof UnresolvedImport ? "X" : imp instanceof Class ? "C" : imp instanceof Interface ? "I" : imp instanceof Enum ? "E" : "???") +
+        `:${imp.name}`; }
 
     static generate(sourceFile: SourceFile) {
         const imps = this.array(sourceFile.imports, imp => 
-            (imp.importAll ? `import * as ${imp.importAs}` : `import { ${imp.importedTypes.map(x => this.type(x)).join(", ")} }`) +
+            (imp.importAll ? `import * as ${imp.importAs}` : `import { ${imp.imports.map(x => this.imp(x)).join(", ")} }`) +
             ` from "${imp.exportScope.packageName}${this.pre("/", imp.exportScope.scopeName)}";`);
         const enums = this.map(sourceFile.enums, enum_ => `enum ${enum_.name} { ${enum_.values.map(x => x.name).join(", ")} }`);
         const intfs = this.map(sourceFile.interfaces, intf => `interface ${this.name_(intf)}`+

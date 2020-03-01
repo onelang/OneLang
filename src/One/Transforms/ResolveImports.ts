@@ -1,4 +1,4 @@
-import { Workspace } from "../Ast/Types";
+import { Workspace, UnresolvedImport } from "../Ast/Types";
 import { Linq } from "../../Utils/Underscore";
 import { UnresolvedType } from "../Ast/AstTypes";
 
@@ -8,8 +8,8 @@ export class ResolveImports {
             for (const imp of file.imports) {
                 const pkg = ws.getPackage(imp.exportScope.packageName);
                 const scope = pkg.getExportedScope(imp.exportScope.scopeName);
-                imp.importedTypes = imp.importAll ? scope.getAllTypes() : 
-                    imp.importedTypes.map(x => x instanceof UnresolvedType ? scope.getType(x.typeName) : x);
+                imp.imports = imp.importAll ? scope.getAllExports() : 
+                    imp.imports.map(x => x instanceof UnresolvedImport ? scope.getExport(x.name) : x);
             }
         }
     }

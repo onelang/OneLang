@@ -1,5 +1,5 @@
 import { Statement } from "./Statements";
-import { Type, ClassType, InterfaceType, EnumType, IType, IImportedType } from "./AstTypes";
+import { Type } from "./AstTypes";
 import { Expression } from "./Expressions";
 
 export enum Visibility { Public, Protected, Private }
@@ -23,16 +23,16 @@ export interface ISourceFileMember {
 }
 
 class ExportedScope {
-    types: { [name: string]: IImportedType } = {};
+    exports: { [name: string]: IImportable } = {};
 
-    getType(name: string) {
-        const type = this.types[name];
-        if (!type)
-            throw new Error(`Type ${name} was not found in exported symbols.`);
-        return type;
+    getExport(name: string) {
+        const exp = this.exports[name];
+        if (!exp)
+            throw new Error(`Export ${name} was not found in exported symbols.`);
+        return exp;
     }
 
-    getAllTypes() { return Object.values(this.types); }
+    getAllExports() { return Object.values(this.exports); }
 }
 
 export class Package {
@@ -58,13 +58,13 @@ export class Package {
             (this.exportedScopes[file.exportScope.scopeName] = new ExportedScope());
 
         for (const cls of Object.values(file.classes).filter(x => x.isExported))
-            scope.types[cls.name] = new ClassType(cls);
+            scope.exports[cls.name] = cls;
 
         for (const intf of Object.values(file.interfaces).filter(x => x.isExported))
-            scope.types[intf.name] = new InterfaceType(intf);
+            scope.exports[intf.name] = intf;
 
         for (const enum_ of Object.values(file.enums).filter(x => x.isExported))
-            scope.types[enum_.name] = new EnumType(enum_);
+            scope.exports[enum_.name] = enum_;
     }
 
     getExportedScope(name: string) {
@@ -123,7 +123,7 @@ export class Import implements IHasAttributesAndTrivia, ISourceFileMember {
         /** module and filename in TS, namespace in C#, package name in Go, etc */
         public exportScope: ExportScopeRef,
         public importAll: boolean,
-        public importedTypes: IType[],
+        public imports: IImportable[],
         public importAs: string,
         public leadingTrivia: string) {
             if (importAs && !importAll)
@@ -136,7 +136,7 @@ export class Import implements IHasAttributesAndTrivia, ISourceFileMember {
     attributes: { [name: string]: string };
 }
 
-export class Enum implements IHasAttributesAndTrivia, IExportable, ISourceFileMember {
+export class Enum implements IHasAttributesAndTrivia, IImportable, ISourceFileMember {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -166,11 +166,17 @@ export interface IInterface {
     leadingTrivia: string;
 }
 
-export interface IExportable {
+export interface IImportable {
+    name: string;
     isExported: boolean;
 }
 
-export class Interface implements IHasAttributesAndTrivia, IInterface, IExportable, ISourceFileMember {
+export class UnresolvedImport implements IImportable {
+    constructor(public name: string) { }
+    isExported = true;
+}
+
+export class Interface implements IHasAttributesAndTrivia, IInterface, IImportable, ISourceFileMember {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -186,7 +192,7 @@ export class Interface implements IHasAttributesAndTrivia, IInterface, IExportab
     attributes: { [name: string]: string };
 }
 
-export class Class implements IHasAttributesAndTrivia, IInterface, IExportable, ISourceFileMember {
+export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, ISourceFileMember {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,

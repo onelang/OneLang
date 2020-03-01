@@ -3,9 +3,9 @@ import { ExpressionParser } from "./Common/ExpressionParser";
 import { NodeManager } from "./Common/NodeManager";
 import { IParser } from "./Common/IParser";
 import { Type, AnyType, VoidType, UnresolvedType, LambdaType } from "../One/Ast/AstTypes";
-import { Expression, Literal, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, BinaryExpression, UnaryExpression, UnresolvedCallExpression, PropertyAccessExpression, InstanceOfExpression, RegexLiteral, AwaitExpression } from "../One/Ast/Expressions";
+import { Expression, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, BinaryExpression, UnaryExpression, UnresolvedCallExpression, PropertyAccessExpression, InstanceOfExpression, RegexLiteral, AwaitExpression } from "../One/Ast/Expressions";
 import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileStatement, ForeachStatement, ForStatement, ReturnStatement, ThrowStatement, BreakStatement, ExpressionStatement, ForeachVariable, ForVariable, DoStatement, ContinueStatement } from "../One/Ast/Statements";
-import { Block, Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package, Lambda } from "../One/Ast/Types";
+import { Block, Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package, Lambda, UnresolvedImport } from "../One/Ast/Types";
 
 class TypeAndInit {
     constructor(
@@ -682,7 +682,7 @@ export class TypeScriptParser2 implements IParser {
         
         const imports = [];
         for (const name of Object.keys(nameAliases))
-            imports.push(new Import(importScope, false, [new UnresolvedType(name)], nameAliases[name], leadingTrivia));
+            imports.push(new Import(importScope, false, [new UnresolvedImport(name)], nameAliases[name], leadingTrivia));
 
         if (importAllAlias !== null)
             imports.push(new Import(importScope, true, null, importAllAlias, leadingTrivia));
