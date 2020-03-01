@@ -1,7 +1,6 @@
 import { AstTransformer } from "../AstTransformer";
 import { Type, UnresolvedType, ClassType, InterfaceType, EnumType } from "../Ast/AstTypes";
-import { SourceFile, ExportedScope, IImportable, Class, Interface, Enum, Package } from "../Ast/Types";
-import { Linq } from "../../Utils/Underscore";
+import { SourceFile, Class, Interface, Enum } from "../Ast/Types";
 import { ErrorManager } from "../ErrorManager";
 
 export class ResolveUnresolvedTypes extends AstTransformer<void> {
@@ -9,30 +8,31 @@ export class ResolveUnresolvedTypes extends AstTransformer<void> {
 
     constructor(public errorMan = new ErrorManager()) { super(); }
 
-    error(msg: string) {
-        return this.errorMan.throw(msg, "ResolveUnresolvedTypes");
-    }
-
     protected visitType(type: Type) {
         super.visitType(type);
         if (!(type instanceof UnresolvedType)) return null;
         
-        const imported = this.file.availableSymbols[type.typeName];
-        if (!imported)
-            return this.error(`Imported type '${type.typeName}' was not found from file '${this.file.sourcePath}'`);
+        const symbol = this.file.availableSymbols[type.typeName];
+        if (!symbol)
+            return this.errorMan.throw(`Unresolved type '${type.typeName}' was not found in available symbols`);
 
-        if (imported instanceof Class)
-            return new ClassType(imported, type.typeArguments);
-        else if (imported instanceof Interface)
-            return new InterfaceType(imported, type.typeArguments);
-        else if (imported instanceof Enum)
-            return new EnumType(imported);
+        if (symbol instanceof Class)
+            return new ClassType(symbol, type.typeArguments);
+        else if (symbol instanceof Interface)
+            return new InterfaceType(symbol, type.typeArguments);
+        else if (symbol instanceof Enum)
+            return new EnumType(symbol);
         else
-            return this.error(`Unknown imported type ${imported}`);
+            return this.errorMan.throw(`Unknown symbol type: ${symbol}`);
     }
 
     public visitSourceFile(sourceFile: SourceFile) {
         this.file = sourceFile;
-        return super.visitSourceFile(sourceFile);
+
+        this.errorMan.resetContext("ResolveUnresolvedTypes", this.file);
+        super.visitSourceFile(sourceFile);
+        this.errorMan.resetContext();
+
+        return null;
     }
 }
