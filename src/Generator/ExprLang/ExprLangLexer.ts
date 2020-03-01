@@ -59,7 +59,7 @@ export class ExprLangLexer {
 
     tryToReadOperator() {
         this.skipWhitespace();
-        const op = this.operators.find(op => this.expression.startsWith(op, this.offset));
+        const op = this.operators.find(x => this.expression.startsWith(x, this.offset));
         return this.addIf(TokenKind.Operator, op);
     }
 

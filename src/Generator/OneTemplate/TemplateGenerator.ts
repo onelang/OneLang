@@ -171,8 +171,8 @@ export class TemplateGenerator implements IModelHandler {
                             result.push(new GeneratedNode(parts[0]));
                             result.push(new GeneratedNode("\n"));
                             const nodes = TemplateGenerator.joinLines(parts.slice(1).map(x => [indent, new GeneratedNode(x)]), "\n");
-                            for (const node of nodes)
-                                result.push(node);
+                            for (const nodeItem of nodes)
+                                result.push(nodeItem);
                         }
                     }
                 } else {

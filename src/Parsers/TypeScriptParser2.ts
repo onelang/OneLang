@@ -443,7 +443,7 @@ export class TypeScriptParser2 implements IParser {
 
         this.reader.expectToken("{");
         while(!this.reader.readToken("}")) {
-            const leadingTrivia = this.reader.readLeadingTrivia();
+            const memberLeadingTrivia = this.reader.readLeadingTrivia();
 
             const memberStart = this.reader.offset;
             const memberName = this.parseIdentifierOrString();
@@ -453,7 +453,7 @@ export class TypeScriptParser2 implements IParser {
                 const fieldType = this.parseType();
                 this.reader.expectToken(";");
 
-                const field = new Field(memberName, fieldType, null, Visibility.Public, false, leadingTrivia);
+                const field = new Field(memberName, fieldType, null, Visibility.Public, false, memberLeadingTrivia);
                 fields[field.name] = field;
 
                 this.nodeManager.addNode(field, memberStart);
@@ -465,7 +465,7 @@ export class TypeScriptParser2 implements IParser {
     
                 const sig = this.parseMethodSignature(/* isConstructor = */ false, /* declarationOnly = */ true);
     
-                const method = new Method(memberName, methodTypeArgs, sig.params, sig.body, Visibility.Public, false, sig.returns, leadingTrivia);
+                const method = new Method(memberName, methodTypeArgs, sig.params, sig.body, Visibility.Public, false, sig.returns, memberLeadingTrivia);
                 methods[method.name] = method;
                 this.nodeManager.addNode(method, memberStart);
                 this.context.pop();

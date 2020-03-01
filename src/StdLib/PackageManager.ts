@@ -124,12 +124,12 @@ export class PackageManager {
     getLangNativeImpls(langName: string): PackageNativeImpl[] {
         let result = [];
         for (const pkg of this.implementationPkgs) {
-            for (const impl of pkg.implementations.filter(x => x.language === langName)) {
+            for (const pkgImpl of pkg.implementations.filter(x => x.language === langName)) {
                 const fileNamePaths: { [name: string]: string } = {};
-                for (const fileName of impl["native-includes"] || [])
+                for (const fileName of pkgImpl["native-includes"] || [])
                     fileNamePaths[fileName] = `native/${fileName}`;
 
-                let incDir = impl["native-include-dir"];
+                let incDir = pkgImpl["native-include-dir"];
                 if (incDir) {
                     if (!incDir.endsWith("/")) incDir += "/";
                     const prefix = `native/${incDir}`;
