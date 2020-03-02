@@ -114,21 +114,21 @@ export class TSOverviewGenerator {
         } else if (expr instanceof AwaitExpression) {
             res = `await ${this.expr(expr.expr)}`;
         } else if (expr instanceof ThisReference) {
-            res = `{THIS}this`;
+            res = `{R}this`;
         } else if (expr instanceof EnumReference) {
-            res = `{ER}${expr.decl.name}`;
+            res = `{Enum}${expr.decl.name}`;
         } else if (expr instanceof ClassReference) {
-            res = `{CR}${expr.decl.name}`;
+            res = `{Cls}${expr.decl.name}`;
         } else if (expr instanceof MethodParameterReference) {
-            res = `{MPR}${expr.decl.name}`;
+            res = `{MetP}${expr.decl.name}`;
         } else if (expr instanceof VariableDeclarationReference) {
-            res = `{VDR}${expr.decl.name}`;
+            res = `{V}${expr.decl.name}`;
         } else if (expr instanceof ForVariableReference) {
             res = `{FVR}${expr.decl.name}`;
         } else if (expr instanceof ForeachVariableReference) {
             res = `{FEVR}${expr.decl.name}`;
         } else if (expr instanceof SuperReference) {
-            res = `{SUPER}super`;
+            res = `{R}super`;
         } else debugger;
         return res;
     }

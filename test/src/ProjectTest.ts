@@ -107,16 +107,18 @@ initCompiler().then(() => {
             new ResolveIdentifiers(workspace.errorManager).visitSourceFile(file);
 
         saveState();
-        if (workspace.errorManager.errors.length > 0)
-            debugger;
+        //if (workspace.errorManager.errors.length > 0)
+        //    debugger;
 
         //head("SUMMARY");
         //_(pkgStates).last().diff(pkgStates[pkgStates.length - 2]).printChangedFiles("summary");
         head("FULL");
-        const allChanges = new Linq(pkgStates).last().diff(pkgStates[0]).getChanges("full");
+        const lastState = new Linq(pkgStates).last();
+        const allChanges = lastState.diff(pkgStates[0]).getChanges("full");
         console.log(allChanges);
 
         writeFile(`test/artifacts/ProjectTest/${test.projName}/allChanges.txt`, allChanges);
+        writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, lastState.getSummary());
 
         debugger;
 
