@@ -1,5 +1,5 @@
 import { AstTransformer } from "../AstTransformer";
-import { SourceFile, Class, Interface, Enum, Method, Block, Lambda } from "../Ast/Types";
+import { SourceFile, Class, Interface, Enum, Method, Block, Lambda, GlobalFunction } from "../Ast/Types";
 import { ErrorManager } from "../ErrorManager";
 import { Identifier } from "../Ast/Expressions";
 import { ClassReference, EnumReference, ThisReference, IReference, VariableDeclarationReference, ForVariableReference } from "../Ast/References";
@@ -121,7 +121,7 @@ export class ResolveIdentifiers extends AstTransformer<void> {
 
         const refs: IReference[] = [];
         for (const symbol of Object.values(sourceFile.availableSymbols))
-            if (symbol instanceof Class || symbol instanceof Enum)
+            if (symbol instanceof Class || symbol instanceof Enum || symbol instanceof GlobalFunction)
                 refs.push(symbol.selfReference);
 
         this.errorMan.resetContext("ResolveIdentifiers", sourceFile);

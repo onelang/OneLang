@@ -2,7 +2,7 @@ import { NewExpression, Identifier, Literal, TemplateString, ArrayLiteral, CastE
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable } from "@one/One/Ast/Statements";
 import { Method, Block, Class, SourceFile, IMethodBase, MethodParameter, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum } from "@one/One/Ast/Types";
 import { Type, VoidType, AnyType, NullType, EnumType, GenericsType, MethodType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments, IType, LambdaType } from "@one/One/Ast/AstTypes";
-import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference } from "@one/One/Ast/References";
+import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, GlobalFunctionReference } from "@one/One/Ast/References";
 
 export class TSOverviewGenerator {
     static leading(item: any, isStmt: boolean) {
@@ -127,6 +127,8 @@ export class TSOverviewGenerator {
             res = `{FVR}${expr.decl.name}`;
         } else if (expr instanceof ForeachVariableReference) {
             res = `{FEVR}${expr.decl.name}`;
+        } else if (expr instanceof GlobalFunctionReference) {
+            res = `{GFR}${expr.decl.name}`;
         } else if (expr instanceof SuperReference) {
             res = `{R}super`;
         } else debugger;
@@ -214,9 +216,10 @@ export class TSOverviewGenerator {
             this.pre(" extends ", cls.baseClass ? this.type(cls.baseClass) : null) + 
             this.pre(" implements ", cls.baseInterfaces.map(x => this.type(x))) + 
             ` {\n${this.classLike(cls)}\n}`);
+        const funcs = this.map(sourceFile.funcs, func => `function ${this.name_(func)}${this.methodBase(func, func.returns)}`);
         const main = this.block(sourceFile.mainBlock);
         const result = `// export scope: ${sourceFile.exportScope.packageName}/${sourceFile.exportScope.scopeName}\n`+
-            [imps.join("\n"), enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), main].filter(x => x !== "").join("\n\n");
+            [imps.join("\n"), enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), funcs.join("\n\n"), main].filter(x => x !== "").join("\n\n");
         return result;
     }
 }

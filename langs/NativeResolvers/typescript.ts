@@ -121,7 +121,5 @@ class Array { }
 class Math { }
 class YAML { }
 
-class Global {
-    parseInt() { }
-    import() { }
-}
+function parseInt() { }
+function import_() { }

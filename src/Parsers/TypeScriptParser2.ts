@@ -5,7 +5,7 @@ import { IParser } from "./Common/IParser";
 import { Type, AnyType, VoidType, UnresolvedType, LambdaType } from "../One/Ast/AstTypes";
 import { Expression, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, BinaryExpression, UnaryExpression, UnresolvedCallExpression, PropertyAccessExpression, InstanceOfExpression, RegexLiteral, AwaitExpression } from "../One/Ast/Expressions";
 import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileStatement, ForeachStatement, ForStatement, ReturnStatement, ThrowStatement, BreakStatement, ExpressionStatement, ForeachVariable, ForVariable, DoStatement, ContinueStatement } from "../One/Ast/Statements";
-import { Block, Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package, Lambda, UnresolvedImport } from "../One/Ast/Types";
+import { Block, Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package, Lambda, UnresolvedImport, GlobalFunction } from "../One/Ast/Types";
 
 class TypeAndInit {
     constructor(
@@ -651,6 +651,11 @@ export class TypeScriptParser2 implements IParser {
         }
     }
 
+    readIdentifier() {
+        const rawId = this.reader.readIdentifier();
+        return rawId.replace(/_+$/, "");
+    }
+
     parseImport(leadingTrivia: string) {
         if (!this.reader.readToken("import")) return null;
         const importStart = this.reader.prevTokenOffset;
@@ -695,6 +700,7 @@ export class TypeScriptParser2 implements IParser {
         const enums: { [name: string]: Enum } = {};
         const intfs: { [name: string]: Interface } = {};
         const classes: { [name: string]: Class } = {};
+        const funcs: { [name: string]: GlobalFunction } = {};
         while (true) {
             const leadingTrivia = this.reader.readLeadingTrivia();
             if (this.reader.eof) break;
@@ -727,6 +733,14 @@ export class TypeScriptParser2 implements IParser {
                 continue;
             }
 
+            if (this.reader.readToken("function")) {
+                const funcName = this.readIdentifier();
+                this.reader.expectToken("(");
+                const sig = this.parseMethodSignature(false, false);
+                funcs[funcName] = new GlobalFunction(funcName, sig.params, sig.body, sig.returns, isExported, leadingTrivia);
+                continue;
+            }
+
             break;
         }
 
@@ -745,7 +759,7 @@ export class TypeScriptParser2 implements IParser {
             stmts.push(stmt);
         }
         
-        return new SourceFile(imports, intfs, classes, enums, new Block(stmts), this.path, this.exportScope);
+        return new SourceFile(imports, intfs, classes, enums, funcs, new Block(stmts), this.path, this.exportScope);
     }
 
     parse() {

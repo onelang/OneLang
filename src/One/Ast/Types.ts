@@ -2,7 +2,7 @@ import { Statement } from "./Statements";
 import { Type } from "./AstTypes";
 import { Expression } from "./Expressions";
 import { ErrorManager } from "../ErrorManager";
-import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference } from "./References";
+import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, GlobalFunctionReference } from "./References";
 
 export enum Visibility { Public, Protected, Private }
 
@@ -58,6 +58,9 @@ export class Package {
         for (const enum_ of Object.values(file.enums).filter(x => x.isExported || exportAll))
             scope.exports[enum_.name] = enum_;
         
+        for (const func of Object.values(file.funcs).filter(x => x.isExported || exportAll))
+            scope.exports[func.name] = func;
+        
         return scope;
     }
 
@@ -109,6 +112,7 @@ export class SourceFile {
         public interfaces: { [name: string]: Interface },
         public classes: { [name: string]: Class },
         public enums: { [name: string]: Enum },
+        public funcs: { [name: string]: GlobalFunction },
         public mainBlock: Block,
         public sourcePath: SourcePath,
         public exportScope: ExportScopeRef) { }
@@ -308,6 +312,22 @@ export class Method implements IMethodBase, IHasAttributesAndTrivia {
     attributes: { [name: string]: string };
     throws: boolean;
     mutates: boolean;
+}
+
+export class GlobalFunction implements IMethodBase, IImportable, IHasAttributesAndTrivia {
+    /** @creator TypeScriptParser2 */
+    constructor(
+        public name: string,
+        public parameters: MethodParameter[],
+        public body: Block,
+        public returns: Type,
+        public isExported: boolean,
+        public leadingTrivia: string) { }
+    
+    /** @creator FillAttributesFromTrivia */
+    attributes: { [name: string]: string };
+    throws: boolean;
+    selfReference = new GlobalFunctionReference(this);
 }
 
 export class Block {

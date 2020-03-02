@@ -1,4 +1,4 @@
-import { Class, Enum, MethodParameter } from "./Types";
+import { Class, Enum, MethodParameter, GlobalFunction } from "./Types";
 import { VariableDeclaration, ForVariable, ForeachVariable } from "./Statements";
 
 export interface IReference {
@@ -7,6 +7,11 @@ export interface IReference {
 
 export class ClassReference implements IReference {
     constructor(public decl: Class) { }
+    getName() { return this.decl.name; }
+}
+
+export class GlobalFunctionReference implements IReference {
+    constructor(public decl: GlobalFunction) { }
     getName() { return this.decl.name; }
 }
 

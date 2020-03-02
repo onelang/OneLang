@@ -75,7 +75,7 @@ initCompiler().then(() => {
         workspace.addPackage(projectPkg);
 
         const jsYamlPkg = new Package("js-yaml");
-        jsYamlPkg.addFile(new SourceFile([], {}, {}, {}, null, new SourcePath(jsYamlPkg, "index"), new ExportScopeRef("js-yaml", "index")));
+        jsYamlPkg.addFile(new SourceFile([], {}, {}, {}, {}, null, new SourcePath(jsYamlPkg, "index"), new ExportScopeRef("js-yaml", "index")));
         workspace.addPackage(jsYamlPkg);
 
         const files = glob(test.projDir);
@@ -107,8 +107,8 @@ initCompiler().then(() => {
             new ResolveIdentifiers(workspace.errorManager).visitSourceFile(file);
 
         saveState();
-        //if (workspace.errorManager.errors.length > 0)
-        //    debugger;
+        if (workspace.errorManager.errors.length > 0)
+            debugger;
 
         //head("SUMMARY");
         //_(pkgStates).last().diff(pkgStates[pkgStates.length - 2]).printChangedFiles("summary");
