@@ -58,6 +58,10 @@ export class PackageStateCapture {
         }
         return new WorkspaceStateChanges(result);
     }
+
+    getSummary() {
+        return Object.entries(this.overviews).map(x => `=== ${x[0]} ===\n\n${x[1]}`).join('\n\n');
+    }    
 }
 
 enum ChangeType { Added = "Added", Removed = "Removed", SameText = "SameText", SameBlock = "SameBlock" }
@@ -69,45 +73,21 @@ class Change {
 function cleverDiff(str1: string, str2: string) {
     const result: Change[] = [];
 
-    const jsChanges = jsdiff.diffChars(str1, str2);
+    const jsChanges = jsdiff.diffLines(str1, str2);
     for (let i = 0; i < jsChanges.length; i++) {
         const jsCh = jsChanges[i];
-        const value = jsCh.value;
-        const firstChange = i === 0;
-        const lastChange = i === jsChanges.length - 1;
-        if (jsCh.added) {
-            result.push(new Change(ChangeType.Added, value));
+        const jsChNext = jsChanges[i + 1] || <jsdiff.Change>{};
+        if (jsCh.removed && jsChNext.added) {
+            const lineDiff = jsdiff.diffWords(jsCh.value, jsChNext.value);
+            for (const part of lineDiff)
+                result.push(new Change(part.added ? ChangeType.Added : part.removed ? ChangeType.Removed : ChangeType.SameText, part.value));
+            i++;
         } else if (jsCh.removed) {
-            result.push(new Change(ChangeType.Removed, value));
-        } else if (firstChange && lastChange) {
-            result.push(new Change(ChangeType.SameBlock, value));
-        } else if (firstChange) {
-            const lastNl = value.lastIndexOf("\n");
-            if (lastNl === -1) {
-                result.push(new Change(ChangeType.SameText, value));
-            } else {
-                result.push(new Change(ChangeType.SameBlock, value.substring(0, lastNl + 1)));
-                result.push(new Change(ChangeType.SameText, value.substr(lastNl + 1)));
-            }
-        } else if (lastChange) {
-            const firstNl = value.indexOf("\n");
-            if (firstNl === -1) {
-                result.push(new Change(ChangeType.SameText, value));
-            } else {
-                result.push(new Change(ChangeType.SameText, value.substr(0, firstNl + 1)));
-                result.push(new Change(ChangeType.SameBlock, value.substring(firstNl + 1)));
-            }
+            result.push(new Change(ChangeType.Removed, jsCh.value));
+        } else if (jsCh.added) {
+            result.push(new Change(ChangeType.Added, jsCh.value));
         } else {
-            const firstNl = value.indexOf("\n");
-            if (firstNl === -1) {
-                result.push(new Change(ChangeType.SameText, value));
-            } else {
-                result.push(new Change(ChangeType.SameText, value.substr(0, firstNl + 1)));
-                const lastNl = value.lastIndexOf("\n");
-                if (lastNl !== firstNl)
-                    result.push(new Change(ChangeType.SameBlock, value.substring(firstNl + 1, lastNl + 1)));
-                result.push(new Change(ChangeType.SameText, value.substr(lastNl + 1)));
-            }
+            result.push(new Change(ChangeType.SameBlock, jsCh.value));
         }
     }
 
