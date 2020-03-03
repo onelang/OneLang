@@ -3,7 +3,7 @@ import { ExpressionParser } from "./Common/ExpressionParser";
 import { NodeManager } from "./Common/NodeManager";
 import { IParser } from "./Common/IParser";
 import { Type, AnyType, VoidType, UnresolvedType, LambdaType } from "../One/Ast/AstTypes";
-import { Expression, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, BinaryExpression, UnaryExpression, UnresolvedCallExpression, PropertyAccessExpression, InstanceOfExpression, RegexLiteral, AwaitExpression } from "../One/Ast/Expressions";
+import { Expression, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, BinaryExpression, UnaryExpression, UnresolvedCallExpression, PropertyAccessExpression, InstanceOfExpression, RegexLiteral, AwaitExpression, ParenthesizedExpression } from "../One/Ast/Expressions";
 import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileStatement, ForeachStatement, ForStatement, ReturnStatement, ThrowStatement, BreakStatement, ExpressionStatement, ForeachVariable, ForVariable, DoStatement, ContinueStatement } from "../One/Ast/Statements";
 import { Block, Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package, Lambda, UnresolvedImport, GlobalFunction } from "../One/Ast/Types";
 
@@ -27,6 +27,7 @@ export class TypeScriptParser2 implements IParser {
     expressionParser: ExpressionParser;
     nodeManager: NodeManager;
     exportScope: ExportScopeRef;
+    missingReturnTypeIsVoid = false;
 
     constructor(source: string, public path: SourcePath = null) {
         this.reader = new Reader(source);
@@ -56,7 +57,7 @@ export class TypeScriptParser2 implements IParser {
             return new InstanceOfExpression(left, type);
         } else if (left instanceof Identifier && this.reader.readToken("=>")) {
             const block = this.parseLambdaBlock();
-            return new Lambda([new MethodParameter(left.text, new AnyType(), null)], block);
+            return new Lambda([new MethodParameter(left.text, null, null)], block);
         }
         return null;
     }
@@ -206,7 +207,9 @@ export class TypeScriptParser2 implements IParser {
         const block = this.parseBlock();
         if (block !== null) return block;
         
-        const returnExpr = this.parseExpression();
+        let returnExpr = this.parseExpression();
+        if (returnExpr instanceof ParenthesizedExpression)
+            returnExpr = returnExpr.expression;
         return new Block([new ReturnStatement(returnExpr)]);
     }
 
@@ -402,7 +405,7 @@ export class TypeScriptParser2 implements IParser {
 
         let returns: Type = null;
         if (!isConstructor) // in case of constructor, "returns" won't be used
-            returns = this.reader.readToken(":") ? this.parseType() : new VoidType();
+            returns = this.reader.readToken(":") ? this.parseType() : this.missingReturnTypeIsVoid ? new VoidType() : null;
 
         let body: Block = null;
         if (declarationOnly) {
