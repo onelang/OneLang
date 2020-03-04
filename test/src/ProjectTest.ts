@@ -9,6 +9,7 @@ import { FillAttributesFromTrivia } from "@one/One/Transforms/FillAttributesFrom
 import { ResolveGenericTypeIdentifiers } from "@one/One/Transforms/ResolveGenericTypeIdentifiers";
 import { ResolveUnresolvedTypes } from "@one/One/Transforms/ResolveUnresolvedTypes";
 import { ResolveIdentifiers } from "@one/One/Transforms/ResolveIdentifiers";
+import { InferTypes } from "@one/One/Transforms/InferTypes";
 import { FillParent } from "@one/One/Transforms/FillParent";
 import { Linq } from '@one/Utils/Underscore';
 import { PackageStateCapture } from './DiffUtils';
@@ -61,6 +62,9 @@ function head(text: string) {
 initCompiler().then(() => {
     const nativeFile = TypeScriptParser2.parseFile(readFile(`langs/NativeResolvers/typescript.ts`));
     const nativeExports = Package.collectExportsFromFile(nativeFile, true);
+    new FillParent().visitSourceFile(nativeFile);
+    FillAttributesFromTrivia.processFile(nativeFile);
+    new ResolveGenericTypeIdentifiers().visitSourceFile(nativeFile);
 
     const testsDir = "test/testSuites/ProjectTest";
     const tests = readDir(testsDir).map(projName => ({ projName, projDir: `${testsDir}/${projName}/src` }));
@@ -75,7 +79,7 @@ initCompiler().then(() => {
         workspace.addPackage(projectPkg);
 
         const jsYamlPkg = new Package("js-yaml");
-        jsYamlPkg.addFile(new SourceFile([], {}, {}, {}, {}, null, new SourcePath(jsYamlPkg, "index"), new ExportScopeRef("js-yaml", "index")));
+        jsYamlPkg.addFile(new SourceFile([], new Map(), new Map(), new Map(), new Map(), null, new SourcePath(jsYamlPkg, "index"), new ExportScopeRef("js-yaml", "index")));
         workspace.addPackage(jsYamlPkg);
 
         const files = glob(test.projDir);
@@ -87,7 +91,7 @@ initCompiler().then(() => {
         saveState();
 
         for (const file of Object.values(projectPkg.files)) {
-            FillParent.processFile(file);
+            new FillParent().visitSourceFile(file);
             FillAttributesFromTrivia.processFile(file);
         }
 
@@ -107,13 +111,18 @@ initCompiler().then(() => {
             new ResolveIdentifiers(workspace.errorManager).visitSourceFile(file);
 
         saveState();
+        for (const file of Object.values(projectPkg.files))
+            new InferTypes(workspace.errorManager).visitSourceFile(file);
+
+        saveState();
+        
+        const lastState = new Linq(pkgStates).last();
         if (workspace.errorManager.errors.length > 0)
             debugger;
 
         //head("SUMMARY");
         //_(pkgStates).last().diff(pkgStates[pkgStates.length - 2]).printChangedFiles("summary");
         head("FULL");
-        const lastState = new Linq(pkgStates).last();
         const allChanges = lastState.diff(pkgStates[0]).getChanges("full");
         console.log(allChanges);
 
