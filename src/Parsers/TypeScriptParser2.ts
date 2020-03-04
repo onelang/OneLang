@@ -441,8 +441,8 @@ export class TypeScriptParser2 implements IParser {
             } while (this.reader.readToken(","))
         }
 
-        const methods: { [name: string]: Method } = {};
-        const fields: { [name: string]: Field } = {};
+        const methods = new Map<string, Method>();
+        const fields = new Map<string, Field>();
 
         this.reader.expectToken("{");
         while(!this.reader.readToken("}")) {
@@ -457,7 +457,7 @@ export class TypeScriptParser2 implements IParser {
                 this.reader.expectToken(";");
 
                 const field = new Field(memberName, fieldType, null, Visibility.Public, false, memberLeadingTrivia);
-                fields[field.name] = field;
+                fields.set(field.name, field);
 
                 this.nodeManager.addNode(field, memberStart);
                 this.context.pop();
@@ -469,7 +469,7 @@ export class TypeScriptParser2 implements IParser {
                 const sig = this.parseMethodSignature(/* isConstructor = */ false, /* declarationOnly = */ true);
     
                 const method = new Method(memberName, methodTypeArgs, sig.params, sig.body, Visibility.Public, false, sig.returns, memberLeadingTrivia);
-                methods[method.name] = method;
+                methods.set(method.name, method);
                 this.nodeManager.addNode(method, memberStart);
                 this.context.pop();
             }
@@ -493,8 +493,8 @@ export class TypeScriptParser2 implements IParser {
         if (!this.reader.readToken("class")) return null;
         const clsStart = this.reader.prevTokenOffset;
         
-        const name = this.reader.expectIdentifier("expected identifier after 'class' keyword");
-        this.context.push(`C:${name}`);
+        const clsName = this.reader.expectIdentifier("expected identifier after 'class' keyword");
+        this.context.push(`C:${clsName}`);
 
         const typeArgs = this.parseGenericsArgs();
         const baseClass = this.reader.readToken("extends") ? this.parseSpecifiedType() : null;
@@ -507,9 +507,9 @@ export class TypeScriptParser2 implements IParser {
         }
 
         let constructor: Constructor = null;
-        const fields: { [name: string]: Field } = {};
-        const methods: { [name: string]: Method } = {};
-        const properties: { [name: string]: Property } = {};
+        const fields = new Map<string, Field>();
+        const methods = new Map<string, Method>();
+        const properties = new Map<string, Property>();
 
         this.reader.expectToken("{");
         while(!this.reader.readToken("}")) {
@@ -531,10 +531,11 @@ export class TypeScriptParser2 implements IParser {
                 if (isConstructor) {
                     member = constructor = new Constructor(sig.params, sig.body, memberLeadingTrivia);
                     for (const field of sig.fields)
-                        fields[field.name] = field;
+                        fields.set(field.name, field);
                 } else {
                     const method = new Method(memberName, methodTypeArgs, sig.params, sig.body, visibility, isStatic, sig.returns, memberLeadingTrivia);
-                    member = methods[method.name] = method;
+                    methods.set(method.name, method);
+                    member = method;
                 }
 
                 this.nodeManager.addNode(member, memberStart);
@@ -567,9 +568,9 @@ export class TypeScriptParser2 implements IParser {
                         prop.setter = setter;
                 }
 
-                if (prop === null) {
+                if (!prop) {
                     prop = new Property(propName, propType, getter, setter, visibility, isStatic, memberLeadingTrivia);
-                    properties[prop.name] = prop;
+                    properties.set(prop.name, prop);
                     this.nodeManager.addNode(prop, memberStart);
                 }
 
@@ -581,14 +582,14 @@ export class TypeScriptParser2 implements IParser {
                 this.reader.expectToken(";");
 
                 const field = new Field(memberName, typeAndInit.type, typeAndInit.init, visibility, isStatic, memberLeadingTrivia);
-                fields[field.name] = field;
+                fields.set(field.name, field);
 
                 this.nodeManager.addNode(field, memberStart);
                 this.context.pop();
             }
         }
 
-        const cls = new Class(name, typeArgs, baseClass, baseInterfaces, fields, properties, constructor, methods, isExported, leadingTrivia);
+        const cls = new Class(clsName, typeArgs, baseClass, baseInterfaces, fields, properties, constructor, methods, isExported, leadingTrivia);
         this.nodeManager.addNode(cls, clsStart);
         this.context.pop();
         return cls;
@@ -601,7 +602,7 @@ export class TypeScriptParser2 implements IParser {
         const name = this.reader.expectIdentifier("expected identifier after 'enum' keyword");
         this.context.push(`E:${name}`);
 
-        const members: EnumMember[] = [];
+        const members = new Map<string, EnumMember>();
 
         this.reader.expectToken("{");
         if (!this.reader.readToken("}")) {
@@ -609,7 +610,7 @@ export class TypeScriptParser2 implements IParser {
                 if (this.reader.peekToken("}")) break; // eg. "enum { A, B, }" (but multiline)
 
                 const enumMember = new EnumMember(this.reader.expectIdentifier());
-                members.push(enumMember);
+                members.set(enumMember.name, enumMember);
                 this.nodeManager.addNode(enumMember, this.reader.prevTokenOffset);
 
                 // TODO: generated code compatibility
@@ -700,10 +701,10 @@ export class TypeScriptParser2 implements IParser {
 
     parseSourceFile() {
         const imports: Import[] = [];
-        const enums: { [name: string]: Enum } = {};
-        const intfs: { [name: string]: Interface } = {};
-        const classes: { [name: string]: Class } = {};
-        const funcs: { [name: string]: GlobalFunction } = {};
+        const enums = new Map<string, Enum>();
+        const intfs = new Map<string, Interface>();
+        const classes = new Map<string, Class>();
+        const funcs = new Map<string, GlobalFunction>();
         while (true) {
             const leadingTrivia = this.reader.readLeadingTrivia();
             if (this.reader.eof) break;
@@ -720,19 +721,19 @@ export class TypeScriptParser2 implements IParser {
 
             const cls = this.parseClass(leadingTrivia, isExported);
             if (cls !== null) {
-                classes[cls.name] = cls;
+                classes.set(cls.name, cls);
                 continue;
             }
 
             const enumObj = this.parseEnum(leadingTrivia, isExported);
             if (enumObj !== null) {
-                enums[enumObj.name] = enumObj;
+                enums.set(enumObj.name, enumObj);
                 continue;
             }
 
             const intf = this.parseInterface(leadingTrivia, isExported);
             if (intf !== null) {
-                intfs[intf.name] = intf;
+                intfs.set(intf.name, intf);
                 continue;
             }
 
@@ -740,7 +741,7 @@ export class TypeScriptParser2 implements IParser {
                 const funcName = this.readIdentifier();
                 this.reader.expectToken("(");
                 const sig = this.parseMethodSignature(false, false);
-                funcs[funcName] = new GlobalFunction(funcName, sig.params, sig.body, sig.returns, isExported, leadingTrivia);
+                funcs.set(funcName, new GlobalFunction(funcName, sig.params, sig.body, sig.returns, isExported, leadingTrivia));
                 continue;
             }
 

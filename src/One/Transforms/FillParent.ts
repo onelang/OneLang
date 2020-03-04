@@ -1,42 +1,49 @@
 import { SourceFile, Method, IInterface } from "../Ast/Types";
 
-export class FillParent {
-    private static processMethod(method: Method, parent: IInterface) {
+    protected processMethod(method: Method, parent: IInterface) {
         method.parentInterface = parent;
         for (const param of method.parameters)
             param.parentMethod = method;
+        super.visitMethod(method, null);
     }
 
-    static processFile(file: SourceFile) {
+    public visitSourceFile(file: SourceFile) {
         for (const imp of file.imports)
             imp.parentFile = file;
 
-        for (const enum_ of Object.values(file.enums)) {
+        for (const enum_ of file.enums.values()) {
             enum_.parentFile = file;
-            for (const value of enum_.values)
+            for (const value of enum_.values.values())
                 value.parentEnum = enum_;
         }
 
-        for (const intf of Object.values(file.interfaces)) {
+        for (const intf of file.interfaces.values()) {
             intf.parentFile = file;
-            for (const method of Object.values(intf.methods))
+            for (const method of intf.methods.values())
                 this.processMethod(method, intf);
         }
 
-         for (const cls of Object.values(file.classes)) {
+         for (const cls of file.classes.values()) {
             cls.parentFile = file;
             
-            if (cls.constructor_)
+            if (cls.constructor_) {
                 cls.constructor_.parentClass = cls;
+                super.visitConstructor(cls.constructor_, null);
+            }
 
-            for (const method of Object.values(cls.methods))
+            for (const method of cls.methods.values())
                 this.processMethod(method, cls);
 
-            for (const field of Object.values(cls.fields))
+            for (const field of cls.fields.values())
                 field.parentClass = cls;
 
-            for (const prop of Object.values(cls.properties))
+            for (const prop of cls.properties.values()) {
                 prop.parentClass = cls;
+                if (prop.getter)
+                    this.visitBlock(prop.getter, null);
+                if (prop.setter)
+                    this.visitBlock(prop.setter, null);
+            }
          }
    }
 }

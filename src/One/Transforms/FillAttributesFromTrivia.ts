@@ -18,6 +18,10 @@ export class FillAttributesFromTrivia {
             item.attributes = this.processTrivia(item.leadingTrivia);
     }
 
+    private static processMap(items: IterableIterator<IHasAttributesAndTrivia>) {
+        this.process(Array.from(items));
+    }
+
     private static processMethod(method: IMethodBase) {
         if (method === null) return;
         this.process([method]);
@@ -41,24 +45,24 @@ export class FillAttributesFromTrivia {
 
     static processFile(file: SourceFile) {
         this.process(file.imports);
-        this.process(Object.values(file.enums));
-        this.process(Object.values(file.interfaces));
-        this.process(Object.values(file.classes));
+        this.processMap(file.enums.values());
+        this.processMap(file.interfaces.values());
+        this.processMap(file.classes.values());
         this.processBlock(file.mainBlock);
 
-        for (const intf of Object.values(file.interfaces))
-            for (const method of Object.values(intf.methods))
+        for (const intf of file.interfaces.values())
+            for (const method of intf.methods.values())
                 this.processMethod(method);
 
-        for (const cls of Object.values(file.classes)) {
+        for (const cls of file.classes.values()) {
             this.processMethod(cls.constructor_);
-            this.process(Object.values(cls.fields));
-            this.process(Object.values(cls.properties));
-            for (const prop of Object.values(cls.properties)) {
+            this.processMap(cls.fields.values());
+            this.processMap(cls.properties.values());
+            for (const prop of cls.properties.values()) {
                 this.processBlock(prop.getter);
                 this.processBlock(prop.setter);
             }
-            for (const method of Object.values(cls.methods))
+            for (const method of cls.methods.values())
                 this.processMethod(method);
         }
     }

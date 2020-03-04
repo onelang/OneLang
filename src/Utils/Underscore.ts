@@ -22,6 +22,13 @@ export class Linq<T> {
         return result;
     }
 
+    toMap(keySelector: (item: T) => string) { 
+        const result = new Map<string, T>();
+        for (const item of this.items)
+            result.set(keySelector(item), item);
+        return result;
+    }
+
     get() { return this.items; }
     last() { return this.items[this.items.length - 1]; }
 }

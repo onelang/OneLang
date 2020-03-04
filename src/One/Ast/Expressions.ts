@@ -50,7 +50,7 @@ export class ArrayLiteral extends Expression {
 }
 
 export class MapLiteral extends Expression {
-    constructor(public properties: { [name: string]: Expression }) { super(); }
+    constructor(public properties: Map<string, Expression>) { super(); }
 }
 
 export class NewExpression extends Expression {

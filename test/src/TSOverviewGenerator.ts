@@ -18,8 +18,8 @@ export class TSOverviewGenerator {
         return items.map(item => this.leading(item, false) + callback(item));
     }
 
-    static map<T>(items: { [name: string]: T }, callback: (item: T) => string) {
-        return Object.entries(items).map(([name, item]) => this.leading(item, false) + 
+    static map<T>(items: Map<string, T>, callback: (item: T) => string) {
+        return Array.from(items.entries()).map(([name, item]) => this.leading(item, false) + 
             (name !== (<any>item).name ? `/* name on object "${(<any>item).name}" is different from "${name}" */` : "") + callback(item));
     }
 
@@ -210,7 +210,7 @@ export class TSOverviewGenerator {
         const imps = this.array(sourceFile.imports, imp => 
             (imp.importAll ? `import * as ${imp.importAs}` : `import { ${imp.imports.map(x => this.imp(x)).join(", ")} }`) +
             ` from "${imp.exportScope.packageName}${this.pre("/", imp.exportScope.scopeName)}";`);
-        const enums = this.map(sourceFile.enums, enum_ => `enum ${enum_.name} { ${enum_.values.map(x => x.name).join(", ")} }`);
+        const enums = this.map(sourceFile.enums, enum_ => `enum ${enum_.name} { ${Array.from(enum_.values.values()).map(x => x.name).join(", ")} }`);
         const intfs = this.map(sourceFile.interfaces, intf => `interface ${this.name_(intf)}`+
             `${this.pre(" extends ", intf.baseInterfaces.map(x => this.type(x)))} {\n${this.classLike(intf)}\n}`);
         const classes = this.map(sourceFile.classes, cls => `class ${this.name_(cls)}`+

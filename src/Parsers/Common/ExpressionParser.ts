@@ -86,7 +86,7 @@ export class ExpressionParser {
     parseMapLiteral(keySeparator = ":", startToken = "{", endToken = "}") {
         if (!this.reader.readToken(startToken)) return null;
 
-        const items: { [name: string]: Expression } = {};
+        const items = new Map<string, Expression>();
         do {
             if (this.reader.peekToken(endToken)) break;
 
@@ -96,7 +96,7 @@ export class ExpressionParser {
 
             this.reader.expectToken(keySeparator);
             const initializer = this.parse();
-            items[name] = initializer;
+            items.set(name, initializer);
         } while(this.reader.readToken(","));
 
         this.reader.expectToken(endToken);

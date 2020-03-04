@@ -15,7 +15,7 @@ export class ResolveImports {
             const fileScope = Package.collectExportsFromFile(file, true);
             file.availableSymbols = new Linq(file.imports).selectMany(x => x.imports) // all imported symbols
                 .concat(native.getAllExports()) // all symbols from native resolver
-                .concat(fileScope.getAllExports()).toObject(x => x.name); // all symbols in the file
+                .concat(fileScope.getAllExports()).toMap(x => x.name); // all symbols in the file
     
         }
     }

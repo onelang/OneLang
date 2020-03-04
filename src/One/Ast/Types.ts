@@ -25,16 +25,20 @@ export interface ISourceFileMember {
 }
 
 export class ExportedScope {
-    exports: { [name: string]: IImportable } = {};
+    exports = new Map<string, IImportable>();
 
     getExport(name: string) {
-        const exp = this.exports[name];
+        const exp = this.exports.get(name);
         if (!exp)
             throw new Error(`Export ${name} was not found in exported symbols.`);
         return exp;
     }
 
-    getAllExports() { return Object.values(this.exports); }
+    addExport(name: string, value: IImportable) {
+        this.exports.set(name, value);
+    }
+
+    getAllExports() { return Array.from(this.exports.values()); }
 }
 
 export class Package {
@@ -49,17 +53,17 @@ export class Package {
         if (scope === null)
             scope = new ExportedScope();
 
-        for (const cls of Object.values(file.classes).filter(x => x.isExported || exportAll))
-            scope.exports[cls.name] = cls;
+        for (const cls of Array.from(file.classes.values()).filter(x => x.isExported || exportAll))
+            scope.addExport(cls.name, cls);
 
-        for (const intf of Object.values(file.interfaces).filter(x => x.isExported || exportAll))
-            scope.exports[intf.name] = intf;
+        for (const intf of Array.from(file.interfaces.values()).filter(x => x.isExported || exportAll))
+            scope.addExport(intf.name, intf);
 
-        for (const enum_ of Object.values(file.enums).filter(x => x.isExported || exportAll))
-            scope.exports[enum_.name] = enum_;
+        for (const enum_ of Array.from(file.enums.values()).filter(x => x.isExported || exportAll))
+            scope.addExport(enum_.name, enum_);
         
-        for (const func of Object.values(file.funcs).filter(x => x.isExported || exportAll))
-            scope.exports[func.name] = func;
+        for (const func of Array.from(file.funcs.values()).filter(x => x.isExported || exportAll))
+            scope.addExport(func.name, func);
         
         return scope;
     }
@@ -109,16 +113,16 @@ export class SourceFile {
     /** @creator TypeScriptParser2 */
     constructor(
         public imports: Import[],
-        public interfaces: { [name: string]: Interface },
-        public classes: { [name: string]: Class },
-        public enums: { [name: string]: Enum },
-        public funcs: { [name: string]: GlobalFunction },
+        public interfaces: Map<string, Interface>,
+        public classes: Map<string, Class>,
+        public enums: Map<string, Enum>,
+        public funcs: Map<string, GlobalFunction>,
         public mainBlock: Block,
         public sourcePath: SourcePath,
         public exportScope: ExportScopeRef) { }
 
     /** @creator ResolveImports */
-    availableSymbols: { [name: string]: IImportable };
+    availableSymbols: Map<string, IImportable>;
 }
 
 export class ExportScopeRef {
@@ -153,7 +157,7 @@ export class Enum implements IHasAttributesAndTrivia, IImportable, ISourceFileMe
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
-        public values: EnumMember[],
+        public values: Map<string, EnumMember>,
         public isExported: boolean,
         public leadingTrivia: string) { }
 
@@ -176,7 +180,7 @@ export interface IInterface {
     name: string;
     typeArguments: string[];
     baseInterfaces: Type[];
-    methods: { [name: string]: Method };
+    methods: Map<string, Method>;
     leadingTrivia: string;
 }
 
@@ -196,7 +200,7 @@ export class Interface implements IHasAttributesAndTrivia, IInterface, IImportab
         public name: string,
         public typeArguments: string[],
         public baseInterfaces: Type[],
-        public methods: { [name: string]: Method },
+        public methods: Map<string, Method>,
         public isExported: boolean,
         public leadingTrivia: string) { }
 
@@ -213,10 +217,10 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, 
         public typeArguments: string[],
         public baseClass: Type,
         public baseInterfaces: Type[],
-        public fields: { [name: string]: Field },
-        public properties: { [name: string]: Property },
+        public fields: Map<string, Field>,
+        public properties: Map<string, Property>,
         public constructor_: Constructor,
-        public methods: { [name: string]: Method },
+        public methods: Map<string, Method>,
         public isExported: boolean,
         public leadingTrivia: string) { }
 

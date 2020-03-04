@@ -303,80 +303,72 @@ export abstract class AstTransformer<TContext> {
         }
     }
 
-    protected visitMethodParameter(methodParameter: MethodParameter, context: TContext): MethodParameter {
+    protected visitMethodParameter(methodParameter: MethodParameter, context: TContext) {
         this.visitVariableWithInitializer(methodParameter, context);
         return null;
     }
 
     protected visitMethodBase(method: IMethodBase, context: TContext) {
-        method.parameters = method.parameters.map(x => this.visitMethodParameter(x, context) || x);
+        for (const item of method.parameters)
+            this.visitMethodParameter(item, context);
 
         if (method.body)
             method.body = this.visitBlock(method.body, context) || method.body;
     }
 
-    protected visitMethod(method: Method, context: TContext): Method {
+    protected visitMethod(method: Method, context: TContext) {
         this.visitMethodBase(method, context);
         method.returns = this.visitType(method.returns, context) || method.returns;
-        return null;
     }
  
-    protected visitConstructor(constructor: Constructor, context: TContext): Constructor {
+    protected visitConstructor(constructor: Constructor, context: TContext) {
         this.visitMethodBase(constructor, context);
-        return null;
     }
  
-    protected visitField(field: Field, context: TContext): Field {
+    protected visitField(field: Field, context: TContext) {
         this.visitVariableWithInitializer(field, context);
-        return null;
     }
  
-    protected visitProperty(prop: Property, context: TContext): Property {
+    protected visitProperty(prop: Property, context: TContext) {
         this.visitVariable(prop, context);
-        prop.getter = this.visitBlock(prop.getter, context) || prop.getter;
-        prop.setter = this.visitBlock(prop.setter, context) || prop.setter;
-        return null;
+        if (prop.getter)
+            prop.getter = this.visitBlock(prop.getter, context) || prop.getter;
+        if (prop.setter)
+            prop.setter = this.visitBlock(prop.setter, context) || prop.setter;
     }
 
-    protected convertObjectMap<T>(obj: { [name: string]: T }, converter: (T) => T) {
-        for (const name of Object.keys(obj)) {
-            const newValue = converter(obj[name]);
-            if (newValue)
-                obj[name] = newValue;
-        }
+    protected visitObjectMap<T>(obj: Map<string, T>, visitor: (T) => void) {
+        for (const item of obj.values())
+            visitor(item);
     }
 
-    protected visitInterface(intf: Interface, context: TContext): Interface {
+    protected visitInterface(intf: Interface, context: TContext) {
         intf.baseInterfaces = intf.baseInterfaces.map(x => this.visitType(x, context) || x);
-        this.convertObjectMap(intf.methods, x => this.visitMethod(x, context));
-        return null;
+        this.visitObjectMap(intf.methods, x => this.visitMethod(x, context));
     }
 
-    protected visitClass(cls: Class, context: TContext): Class {
+    protected visitClass(cls: Class, context: TContext) {
         if (cls.constructor_)
-            cls.constructor_ = this.visitConstructor(cls.constructor_, context) || cls.constructor_;
+            this.visitConstructor(cls.constructor_, context);
 
         cls.baseClass = this.visitType(cls.baseClass, context) || cls.baseClass;
         cls.baseInterfaces = cls.baseInterfaces.map(x => this.visitType(x, context) || x);
-        this.convertObjectMap(cls.methods, x => this.visitMethod(x, context));
-        this.convertObjectMap(cls.properties, x => this.visitProperty(x, context));
-        this.convertObjectMap(cls.fields, x => this.visitField(x, context));
-        return null;
+        this.visitObjectMap(cls.methods, x => this.visitMethod(x, context));
+        this.visitObjectMap(cls.properties, x => this.visitProperty(x, context));
+        this.visitObjectMap(cls.fields, x => this.visitField(x, context));
     }
  
-    protected visitEnum(enum_: Enum, context: TContext): Enum {
-        enum_.values = enum_.values.map(x => this.visitEnumMember(x, context) || x);
-        return null;
+    protected visitEnum(enum_: Enum, context: TContext) {
+        this.visitObjectMap(enum_.values, x => this.visitEnumMember(x, context));
     }
 
-    protected visitEnumMember(enumMember: EnumMember, context: TContext): EnumMember {
-        return null;
+    protected visitEnumMember(enumMember: EnumMember, context: TContext) {
     }
 
-    public visitSourceFile(sourceFile: SourceFile, context: TContext): SourceFile {
-        this.convertObjectMap(sourceFile.enums, x => this.visitEnum(x, context));
-        this.convertObjectMap(sourceFile.interfaces, x => this.visitInterface(x, context));
-        this.convertObjectMap(sourceFile.classes, x => this.visitClass(x, context));
+    public visitSourceFile(sourceFile: SourceFile, context: TContext) {
+        this.visitObjectMap(sourceFile.enums, x => this.visitEnum(x, context));
+        this.visitObjectMap(sourceFile.interfaces, x => this.visitInterface(x, context));
+        this.visitObjectMap(sourceFile.classes, x => this.visitClass(x, context));
         sourceFile.mainBlock = this.visitBlock(sourceFile.mainBlock, context) || sourceFile.mainBlock;
         return null;
     }

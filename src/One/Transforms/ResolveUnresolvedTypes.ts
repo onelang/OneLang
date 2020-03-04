@@ -12,7 +12,7 @@ export class ResolveUnresolvedTypes extends AstTransformer<void> {
         super.visitType(type);
         if (!(type instanceof UnresolvedType)) return null;
         
-        const symbol = this.file.availableSymbols[type.typeName];
+        const symbol = this.file.availableSymbols.get(type.typeName);
         if (!symbol)
             return this.errorMan.throw(`Unresolved type '${type.typeName}' was not found in available symbols`);
 

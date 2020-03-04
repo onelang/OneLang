@@ -17,12 +17,12 @@ export class ResolveGenericTypeIdentifiers extends AstTransformer<void> {
 
     protected visitClass(cls: Class) {
         this.currentClass = cls;
-        return super.visitClass(cls);
+        super.visitClass(cls);
     }
 
     protected visitMethod(method: Method) {
         this.currentMethod = method;
-        return super.visitMethod(method);
+        super.visitMethod(method);
     }
 
     protected visitType(type: Type) {
