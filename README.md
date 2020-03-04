@@ -28,3 +28,12 @@ So in the end, we can say OneLang came into this world **without explicit purpos
 # Maturity of OneLang
 
 OneLang is six months old at the time of writing and it already speaks, but don't expect any comfortable conversation with it yet. It cannot grow without a loving family, and as a single dad I cannot take care of it alone. It needs more mommies and daddies who can help raise it up.
+
+# Similar projects
+
+* Haxe: https://haxe.org/
+* progsbase: https://www.progsbase.com/
+* Universal-transpiler: https://jarble.github.io/transpiler/
+* pseudo: https://github.com/pseudo-lang/pseudo
+
+Comparison: https://github.com/onelang/OneLang/wiki/OneLang-vs.-Haxe-vs.-Progsbase-comparison
