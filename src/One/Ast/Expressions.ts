@@ -3,33 +3,49 @@ import { Statement } from "./Statements";
 import { MethodParameter } from "./Types";
 
 export class Expression {
-    //parentRef?: Expression|Statement;
-    //inferedType?: Type;
+    /** @creator FillParent */
+    parentExpr: Expression;
+    /** @creator InferTypes */
+    exprType: Type;
+}
+
+export class ExpressionRoot extends Expression {
+    constructor(public root: Expression) {
+        super();
+        if (root.parentExpr !== null)
+            throw new Error("Expected parentExpr to be null!");
+        root.parentExpr = this;
+    }
 }
 
 export class Identifier extends Expression {
     constructor(public text: string) { super(); }
 }
 
-export class Literal extends Expression { }
-
-export class NumericLiteral extends Literal {
+export class NumericLiteral extends Expression {
     constructor(public valueAsText: string) { super(); }
 }
 
-export class BooleanLiteral extends Literal {
+export class BooleanLiteral extends Expression {
     constructor(public boolValue: boolean) { super(); }
 }
 
-export class CharacterLiteral extends Literal {
+export class CharacterLiteral extends Expression {
     constructor(public charValue: string) { super(); }
 }
 
-export class StringLiteral extends Literal {
+export class StringLiteral extends Expression {
     constructor(public stringValue: string) { super(); }
 }
 
-export class NullLiteral extends Literal { }
+export class NullLiteral extends Expression { }
+
+export class RegexLiteral extends Expression {
+    constructor(
+        public pattern: string,
+        public caseInsensitive: boolean,
+        public global: boolean) { super(); }
+}
 
 export class TemplateStringPart {
     constructor(
@@ -115,13 +131,6 @@ export class InstanceOfExpression extends Expression {
     constructor(
         public expr: Expression,
         public type: Type) { super(); }
-}
-
-export class RegexLiteral extends Literal {
-    constructor(
-        public pattern: string,
-        public caseInsensitive: boolean,
-        public global: boolean) { super(); }
 }
 
 export class AwaitExpression extends Expression {

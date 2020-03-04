@@ -1,4 +1,14 @@
-import { SourceFile, Method, IInterface } from "../Ast/Types";
+import { SourceFile, Method, IInterface, Block } from "../Ast/Types";
+import { Statement } from "../Ast/Statements";
+import { Expression } from "../Ast/Expressions";
+import { AstTransformer } from "../AstTransformer";
+
+export class FillParent extends AstTransformer<Expression> {
+    protected visitExpression(expr: Expression, parent: Expression) {
+        expr.parentExpr = parent;
+        super.visitExpression(expr, expr);
+        return null;
+    }
 
     protected processMethod(method: Method, parent: IInterface) {
         method.parentInterface = parent;
