@@ -39,6 +39,9 @@ class TsArray<T> {
     set(index: number, value: T): void {
         return this._one.set(index, value);
     }
+
+    concat(arr2: T[]): T[] { return null; }
+    join(separator: string): string { return ""; }
 }
 
 class TsMap<K,V> {
@@ -87,6 +90,8 @@ class TsString {
     startsWith(str: string, position: number = 0): OneBoolean {
         return this._one.substrMatch(str, position);
     }
+
+    endsWith(str: string): boolean { return false; }
 }
 
 class TsNumber {
@@ -120,6 +125,8 @@ class Function { } // TODO: ???
 class Array { }
 class Math { }
 class YAML { }
+class Set<T> { }
+class IterableIterator { }
 
 function parseInt() { }
 function import_() { }

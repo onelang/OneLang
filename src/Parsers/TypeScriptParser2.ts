@@ -235,6 +235,8 @@ export class TypeScriptParser2 implements IParser {
     }
 
     parseStatement() {
+        this.reader.readToken("debugger;"); // skip this token
+
         let statement: Statement = null;
 
         const leadingTrivia = this.reader.readLeadingTrivia();
