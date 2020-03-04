@@ -18,10 +18,6 @@ export class EnumType extends Type {
     constructor(public decl: Enum) { super(); }
 }
 
-export class MethodType extends Type {
-    constructor(public decl: Method) { super(); }
-}
-
 export interface IHasTypeArguments {
     typeArguments: Type[];
 }

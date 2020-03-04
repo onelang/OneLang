@@ -1,7 +1,7 @@
 import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression } from "@one/One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable } from "@one/One/Ast/Statements";
-import { Method, Block, Class, SourceFile, IMethodBase, MethodParameter, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface } from "@one/One/Ast/Types";
-import { Type, VoidType, AnyType, NullType, EnumType, GenericsType, MethodType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments, IType, LambdaType } from "@one/One/Ast/AstTypes";
+import { Method, Block, Class, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface } from "@one/One/Ast/Types";
+import { Type, VoidType, AnyType, NullType, EnumType, GenericsType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments, IType, LambdaType } from "@one/One/Ast/AstTypes";
 import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, GlobalFunctionReference, StaticFieldReference, StaticMethodReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, EnumMemberReference } from "@one/One/Ast/References";
 
 export class TSOverviewGenerator {
@@ -43,7 +43,6 @@ export class TSOverviewGenerator {
             t instanceof NullType ? "null" :
             t instanceof EnumType ? `E:${t.decl.name}` :
             t instanceof GenericsType ? `G:${t.typeVarName}` :
-            t instanceof MethodType ? `M:${t.decl.parentInterface.name}::${t.decl.name}` :
             t instanceof ClassType ? `C:${t.decl.name}` :
             t instanceof InterfaceType ? `I:${t.decl.name}` :
             t instanceof UnresolvedType ? `X:${t.typeName}` :
