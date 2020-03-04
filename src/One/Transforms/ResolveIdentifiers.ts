@@ -1,16 +1,16 @@
 import { AstTransformer } from "../AstTransformer";
-import { SourceFile, Class, Interface, Enum, Method, Block, Lambda, GlobalFunction } from "../Ast/Types";
+import { SourceFile, Class, Enum, Method, Block, Lambda, GlobalFunction } from "../Ast/Types";
 import { ErrorManager } from "../ErrorManager";
 import { Identifier } from "../Ast/Expressions";
-import { ClassReference, EnumReference, ThisReference, IReference, VariableDeclarationReference, ForVariableReference } from "../Ast/References";
-import { VariableDeclaration, ForStatement, ForeachStatement } from "../Ast/Statements";
+import { IReferencable, VariableDeclarationReference, ForeachVariableReference, ForVariableReference, MethodParameterReference, ThisReference, SuperReference, Reference } from "../Ast/References";
+import { VariableDeclaration, ForStatement, ForeachStatement, Statement } from "../Ast/Statements";
 import { ClassType } from "../Ast/AstTypes";
 
 class SymbolLookup {
     levelSymbols: string[][] = [];
     levelNames: string[] = [];
     currLevel: string[];
-    symbols = new Map<string, IReference>();
+    symbols = new Map<string, IReferencable>();
 
     constructor(public errorMan: ErrorManager) { }
 
@@ -18,17 +18,13 @@ class SymbolLookup {
         this.errorMan.throw(`${msg} (context: ${this.levelNames.join(" > ")})`);
     }
 
-    pushContext(name: string, references: IReference[]) {
+    pushContext(name: string) {
         this.levelNames.push(name);
         this.currLevel = [];
         this.levelSymbols.push(this.currLevel);
-
-        for (const ref of references)
-            this.addReference(ref);
     }
 
-    addReference(ref: IReference) {
-        const name = ref.getName();
+    addReference(name: string, ref: IReferencable) {
         if (this.symbols.get(name))
             this.throw(`Symbol shadowing: ${name}`);
         this.symbols.set(name, ref);
@@ -43,7 +39,7 @@ class SymbolLookup {
         this.currLevel = this.levelSymbols[this.levelSymbols.length - 1];
     }
 
-    getSymbol(name: string): IReference {
+    getSymbol(name: string): IReferencable {
         return this.symbols.get(name) || null;
     }
 }
@@ -57,49 +53,59 @@ export class ResolveIdentifiers extends AstTransformer<void> {
         this.symbolLookup = new SymbolLookup(errorMan);
     }
 
-    protected visitIdentifier(id: Identifier) {
+    protected visitIdentifier(id: Identifier): Reference {
         super.visitIdentifier(id);
-        const ref = this.symbolLookup.getSymbol(id.text);
-        if (ref === null)
+        const symbol = this.symbolLookup.getSymbol(id.text);
+        if (symbol === null)
             return this.errorMan.throw(`Identifier '${id.text}' was not found in available symbols`);
+        const ref = symbol.createReference(id.text);
+        ref.parentExpr = id.parentExpr;
         return ref;
     }
 
-    protected visitForStatement(stmt: ForStatement): ForStatement {
-        this.symbolLookup.pushContext(`For`, stmt.itemVar ? [stmt.itemVar.selfReference] : []);
-        super.visitForStatement(stmt);
-        this.symbolLookup.popContext();
-        return null;
-    }
-
-    protected visitForeachStatement(stmt: ForeachStatement): ForeachStatement {
-        this.symbolLookup.pushContext(`Foreach`, [stmt.itemVar.selfReference]);
-        super.visitForeachStatement(stmt);
-        this.symbolLookup.popContext();
-        return null;
+    protected visitStatement(stmt: Statement): Statement { 
+        if (stmt instanceof ForStatement) {
+            this.symbolLookup.pushContext(`For`);
+            if (stmt.itemVar)
+                this.symbolLookup.addReference(stmt.itemVar.name, stmt.itemVar);
+            super.visitStatement(stmt);
+            this.symbolLookup.popContext();
+        } else if (stmt instanceof ForeachStatement) {
+            this.symbolLookup.pushContext(`Foreach`);
+            this.symbolLookup.addReference(stmt.itemVar.name, stmt.itemVar);
+            super.visitStatement(stmt);
+            this.symbolLookup.popContext();
+            return null;
+        } else {
+            return super.visitStatement(stmt);
+        }
     }
 
     protected visitLambda(lambda: Lambda) {
-        this.symbolLookup.pushContext(`Lambda`, lambda.parameters.map(x => x.selfReference));
+        this.symbolLookup.pushContext(`Lambda`);
+        for (const param of lambda.parameters)
+            this.symbolLookup.addReference(param.name, param);
         super.visitBlock(lambda.body); // directly process method's body without opening a new scope again
         this.symbolLookup.popContext();
         return null;
     }
 
     protected visitBlock(block: Block) {
-        this.symbolLookup.pushContext("block", []);
+        this.symbolLookup.pushContext("block");
         super.visitBlock(block);
         this.symbolLookup.popContext();
         return null;
     }
 
     protected visitVariableDeclaration(stmt: VariableDeclaration): VariableDeclaration {
-        this.symbolLookup.addReference(new VariableDeclarationReference(stmt));
+        this.symbolLookup.addReference(stmt.name, stmt);
         return super.visitVariableDeclaration(stmt);
     }
     
     public visitMethodBase(method: Method) {
-        this.symbolLookup.pushContext(`Method: ${method.name}`, method.parameters.map(x => x.selfReference));
+        this.symbolLookup.pushContext(`Method: ${method.name}`);
+        for (const param of method.parameters)
+            this.symbolLookup.addReference(param.name, param);
         if (method.body)
             super.visitBlock(method.body); // directly process method's body without opening a new scope again
         this.symbolLookup.popContext();
@@ -107,10 +113,10 @@ export class ResolveIdentifiers extends AstTransformer<void> {
     }
 
     public visitClass(cls: Class) {
-        const refs: IReference[] = [cls.thisReference];
+        this.symbolLookup.pushContext(`Class: ${cls.name}`);
+        this.symbolLookup.addReference("this", cls);
         if (cls.baseClass instanceof ClassType)
-            refs.push(cls.baseClass.decl.superReference);
-        this.symbolLookup.pushContext(`Class: ${cls.name}`, refs);
+            this.symbolLookup.addReference("super", cls.baseClass.decl);
         super.visitClass(cls);
         this.symbolLookup.popContext();
         return null;
@@ -119,13 +125,17 @@ export class ResolveIdentifiers extends AstTransformer<void> {
     public visitSourceFile(sourceFile: SourceFile) {
         this.file = sourceFile;
 
-        const refs: IReference[] = [];
-        for (const symbol of Object.values(sourceFile.availableSymbols))
-            if (symbol instanceof Class || symbol instanceof Enum || symbol instanceof GlobalFunction)
-                refs.push(symbol.selfReference);
-
         this.errorMan.resetContext("ResolveIdentifiers", sourceFile);
-        this.symbolLookup.pushContext(`File: ${sourceFile.sourcePath}`, refs);
+        this.symbolLookup.pushContext(`File: ${sourceFile.sourcePath}`);
+
+        for (const symbol of sourceFile.availableSymbols.values()) {
+            if (symbol instanceof Class)
+                this.symbolLookup.addReference(symbol.name, symbol);
+            else if (symbol instanceof Enum)
+                this.symbolLookup.addReference(symbol.name, symbol);
+            else if (symbol instanceof GlobalFunction)
+                this.symbolLookup.addReference(symbol.name, symbol);
+        }
 
         super.visitSourceFile(sourceFile);
 

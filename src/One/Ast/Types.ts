@@ -1,8 +1,8 @@
 import { Statement } from "./Statements";
 import { Type } from "./AstTypes";
-import { Expression } from "./Expressions";
+import { Expression, ExpressionRoot } from "./Expressions";
 import { ErrorManager } from "../ErrorManager";
-import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, GlobalFunctionReference } from "./References";
+import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, GlobalFunctionReference, StaticFieldReference, EnumMemberReference, InstanceFieldReference, StaticMethodReference, InstanceMethodReference, StaticPropertyReference, InstancePropertyReference, IReferencable, Reference } from "./References";
 
 export enum Visibility { Public, Protected, Private }
 
@@ -153,7 +153,7 @@ export class Import implements IHasAttributesAndTrivia, ISourceFileMember {
     attributes: { [name: string]: string };
 }
 
-export class Enum implements IHasAttributesAndTrivia, IImportable, ISourceFileMember {
+export class Enum implements IHasAttributesAndTrivia, IImportable, ISourceFileMember, IReferencable {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -165,7 +165,11 @@ export class Enum implements IHasAttributesAndTrivia, IImportable, ISourceFileMe
     parentFile: SourceFile;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };
-    selfReference = new EnumReference(this);
+
+    /** @creator ResolveIdentifiers */
+    references: EnumReference[] = [];
+    createReference(): Reference { return new EnumReference(this); }
+
 }
 
 export class EnumMember {
@@ -174,6 +178,7 @@ export class EnumMember {
 
     /** @creator FillParent */
     parentEnum: Enum;
+    references: EnumMemberReference[] = [];
 }
 
 export interface IInterface {
@@ -210,7 +215,7 @@ export class Interface implements IHasAttributesAndTrivia, IInterface, IImportab
     attributes: { [name: string]: string };
 }
 
-export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, ISourceFileMember {
+export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, ISourceFileMember, IReferencable {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -228,9 +233,20 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, 
     parentFile: SourceFile;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };
-    selfReference = new ClassReference(this);
-    thisReference = new ThisReference(this);
-    superReference = new SuperReference(this);
+
+    /** @creator ResolveIdentifiers */
+    classReferences: ClassReference[] = [];
+    /** @creator ResolveIdentifiers */
+    thisReferences: ThisReference[] = [];
+    /** @creator ResolveIdentifiers */
+    superReferences: SuperReference[] = [];
+
+    createReference(name: string): Reference {
+        // TODO: hack
+        return name === "this" ? new ThisReference(this) : 
+            name === "super" ? new SuperReference(this) : 
+            new ClassReference(this);
+        }
 }
 
 export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia {
@@ -247,6 +263,8 @@ export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia 
     parentClass: Class;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };
+    staticReferences: StaticFieldReference[] = [];
+    instanceReferences: InstanceFieldReference[] = [];
 }
 
 export class Property implements IVariable, IHasAttributesAndTrivia {
@@ -264,9 +282,11 @@ export class Property implements IVariable, IHasAttributesAndTrivia {
     parentClass: Class;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };
+    staticReferences: StaticPropertyReference[] = [];
+    instanceReferences: InstancePropertyReference[] = [];
 }
 
-export class MethodParameter implements IVariableWithInitializer {
+export class MethodParameter implements IVariableWithInitializer, IReferencable {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -275,7 +295,10 @@ export class MethodParameter implements IVariableWithInitializer {
 
     /** @creator FillParent */
     parentMethod: Method;
-    selfReference = new MethodParameterReference(this);
+
+    /** @creator ResolveIdentifiers */
+    references: MethodParameterReference[] = [];
+    createReference(): Reference { return new MethodParameterReference(this); }
 }
 
 export interface IMethodBase extends IHasAttributesAndTrivia {
@@ -316,9 +339,11 @@ export class Method implements IMethodBase, IHasAttributesAndTrivia {
     attributes: { [name: string]: string };
     throws: boolean;
     mutates: boolean;
+    staticReferences: StaticMethodReference[] = [];
+    instanceReferences: InstanceMethodReference[] = [];
 }
 
-export class GlobalFunction implements IMethodBase, IImportable, IHasAttributesAndTrivia {
+export class GlobalFunction implements IMethodBase, IImportable, IHasAttributesAndTrivia, IReferencable {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -331,7 +356,10 @@ export class GlobalFunction implements IMethodBase, IImportable, IHasAttributesA
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };
     throws: boolean;
-    selfReference = new GlobalFunctionReference(this);
+
+    /** @creator ResolveIdentifiers */
+    references: GlobalFunctionReference[] = [];
+    createReference(): Reference { return new GlobalFunctionReference(this); }
 }
 
 export class Block {

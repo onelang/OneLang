@@ -1,7 +1,7 @@
 import { Block, IVariableWithInitializer, IVariable, IHasAttributesAndTrivia } from "./Types";
 import { Expression } from "./Expressions";
 import { Type } from "./AstTypes";
-import { ForVariableReference, ForeachVariableReference } from "./References";
+import { ForVariableReference, ForeachVariableReference, VariableDeclarationReference, IReferencable, Reference } from "./References";
 
 export class Statement implements IHasAttributesAndTrivia {
     leadingTrivia: string;
@@ -42,12 +42,16 @@ export class UnsetStatement extends Statement {
     constructor(public expression: Expression) { super(); }
 }
 
-export class VariableDeclaration extends Statement implements IVariableWithInitializer {
+export class VariableDeclaration extends Statement implements IVariableWithInitializer, IReferencable {
     constructor(
         public name: string,
         public type: Type,
         public initializer: Expression) { super(); }
     isMutable: boolean;
+
+    /** @creator ResolveIdentifiers */
+    references: VariableDeclarationReference[] = [];
+    createReference(): Reference { return new VariableDeclarationReference(this); }
 }
 
 export class WhileStatement extends Statement {
@@ -62,10 +66,13 @@ export class DoStatement extends Statement {
         public body: Block) { super(); }
 }
 
-export class ForeachVariable implements IVariable {
+export class ForeachVariable implements IVariable, IReferencable {
     constructor(public name: string) { }
     type: Type;
-    selfReference = new ForeachVariableReference(this);
+
+    /** @creator ResolveIdentifiers */
+    references: ForeachVariableReference[] = [];
+    createReference(): Reference { return new ForeachVariableReference(this); }
 }
 
 export class ForeachStatement extends Statement {
@@ -75,12 +82,15 @@ export class ForeachStatement extends Statement {
         public body: Block) { super(); }
 }
 
-export class ForVariable implements IVariableWithInitializer {
+export class ForVariable implements IVariableWithInitializer, IReferencable {
     constructor(
         public name: string,
         public type: Type,
         public initializer: Expression) { }
-    selfReference = new ForVariableReference(this);
+
+    /** @creator ResolveIdentifiers */
+    references: ForVariableReference[] = [];
+    createReference(): Reference { return new ForVariableReference(this); }
 }
 
 export class ForStatement extends Statement {

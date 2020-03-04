@@ -1,8 +1,8 @@
-import { NewExpression, Identifier, Literal, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression } from "@one/One/Ast/Expressions";
+import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression } from "@one/One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable } from "@one/One/Ast/Statements";
 import { Method, Block, Class, SourceFile, IMethodBase, MethodParameter, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface } from "@one/One/Ast/Types";
 import { Type, VoidType, AnyType, NullType, EnumType, GenericsType, MethodType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments, IType, LambdaType } from "@one/One/Ast/AstTypes";
-import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, GlobalFunctionReference } from "@one/One/Ast/References";
+import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, GlobalFunctionReference, StaticFieldReference, StaticMethodReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, EnumMemberReference } from "@one/One/Ast/References";
 
 export class TSOverviewGenerator {
     static leading(item: any, isStmt: boolean) {
@@ -132,6 +132,20 @@ export class TSOverviewGenerator {
             res = `{GFR}${expr.decl.name}`;
         } else if (expr instanceof SuperReference) {
             res = `{R}super`;
+        } else if (expr instanceof StaticFieldReference) {
+            res = `{SF}${expr.decl.parentClass.name}::${expr.decl.name}`;
+        } else if (expr instanceof StaticPropertyReference) {
+            res = `{SP}${expr.decl.parentClass.name}::${expr.decl.name}`;
+        } else if (expr instanceof StaticMethodReference) {
+            res = `{SM}${expr.decl.parentInterface.name}::${expr.decl.name}`;
+        } else if (expr instanceof InstanceFieldReference) {
+            res = `${this.expr(expr.object)}.{F}${expr.field.name}`;
+        } else if (expr instanceof InstancePropertyReference) {
+            res = `${this.expr(expr.object)}.{P}${expr.property.name}`;
+        } else if (expr instanceof InstanceMethodReference) {
+            res = `${this.expr(expr.object)}.{M}${expr.method.name}`;
+        } else if (expr instanceof EnumMemberReference) {
+            res = `{E}${expr.decl.parentEnum.name}::${expr.decl.name}`;
         } else debugger;
         return res;
     }
