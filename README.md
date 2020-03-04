@@ -34,5 +34,6 @@ OneLang is six months old at the time of writing and it already speaks, but don'
 * Haxe: https://haxe.org/
 * progsbase: https://www.progsbase.com/
 * Universal-transpiler: https://jarble.github.io/transpiler/
+* pseudo: https://github.com/pseudo-lang/pseudo
 
 Comparison: https://github.com/onelang/OneLang/wiki/OneLang-vs.-Haxe-vs.-Progsbase-comparison
