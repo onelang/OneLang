@@ -230,15 +230,10 @@ export class TypeScriptParser2 implements IParser {
         if (block !== null) return block;
 
         const stmt = this.parseStatement();
-        if (stmt === null)
-            this.reader.fail("expected block or statement");
-
-        return new Block([stmt]);
+        return new Block(stmt === null ? [] : [stmt]);
     }
 
     parseStatement() {
-        this.reader.readToken("debugger;"); // skip this token
-
         let statement: Statement = null;
 
         const leadingTrivia = this.reader.readLeadingTrivia();
@@ -309,6 +304,8 @@ export class TypeScriptParser2 implements IParser {
             statement = new BreakStatement();
         } else if (this.reader.readToken("continue")) {
             statement = new ContinueStatement();
+        } else if (this.reader.readToken("debugger;")) {
+            return null;
         } else {
             const expr = this.parseExpression();
             statement = new ExpressionStatement(expr);
@@ -339,7 +336,8 @@ export class TypeScriptParser2 implements IParser {
         if (!this.reader.readToken("}")) {
             do {
                 const statement = this.parseStatement();
-                statements.push(statement);
+                if (statement !== null)
+                    statements.push(statement);
             } while(!this.reader.readToken("}"));
         }
 
@@ -760,8 +758,7 @@ export class TypeScriptParser2 implements IParser {
             if (this.reader.eof) break;
 
             const stmt = this.parseStatement();
-            if (stmt === null)
-                this.reader.fail("expected a statement here");
+            if (stmt === null) continue;
 
             stmt.leadingTrivia = leadingTrivia;
             stmts.push(stmt);
