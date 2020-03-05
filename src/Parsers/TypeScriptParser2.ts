@@ -41,6 +41,8 @@ export class TypeScriptParser2 implements IParser {
 
     createExpressionParser(reader: Reader, nodeManager: NodeManager = null) {
         const expressionParser = new ExpressionParser(reader, nodeManager);
+        expressionParser.stringLiteralType = new UnresolvedType("TsString");
+        expressionParser.numericLiteralType = new UnresolvedType("TsNumber");
         expressionParser.unaryPrehook = () => this.parseExpressionToken();
         expressionParser.infixPrehook = left => this.parseInfix(left);
         return expressionParser;

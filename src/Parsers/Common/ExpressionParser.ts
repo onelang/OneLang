@@ -1,6 +1,6 @@
 import { Reader } from "./Reader";
 import { NodeManager } from "./NodeManager";
-import { UnresolvedType } from "../../One/Ast/AstTypes";
+import { UnresolvedType, Type } from "../../One/Ast/AstTypes";
 import { Expression, MapLiteral, ArrayLiteral, UnaryType, Identifier, NumericLiteral, StringLiteral, UnresolvedCallExpression, CastExpression, BinaryExpression, UnaryExpression, ParenthesizedExpression, ConditionalExpression, ElementAccessExpression, PropertyAccessExpression } from "../../One/Ast/Expressions";
 
 class Operator {
@@ -54,6 +54,8 @@ export class ExpressionParser {
 
     unaryPrehook: () => Expression = null;
     infixPrehook: (left: Expression) => Expression = null;
+    stringLiteralType: Type = null;
+    numericLiteralType: Type = null;
 
     constructor(public reader: Reader, public nodeManager: NodeManager = null, public config: ExpressionParserConfig = ExpressionParser.defaultConfig()) {
         this.reconfigure();
@@ -133,12 +135,18 @@ export class ExpressionParser {
             return new Identifier(id);
 
         const num = this.reader.readNumber();
-        if (num !== null)
-            return new NumericLiteral(num);
+        if (num !== null) {
+            const lit = new NumericLiteral(num);
+            lit.setType(this.numericLiteralType, true);
+            return lit;
+        }
 
         const str = this.reader.readString();
-        if (str !== null)
-            return new StringLiteral(str);
+        if (str !== null) {
+            const lit = new StringLiteral(str);
+            lit.setType(this.stringLiteralType, true);
+            return lit;
+        }
 
         if (this.reader.readToken("(")) {
             const expr = this.parse();
