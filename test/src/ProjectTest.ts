@@ -65,6 +65,7 @@ initCompiler().then(() => {
     new FillParent().visitSourceFile(nativeFile);
     FillAttributesFromTrivia.processFile(nativeFile);
     new ResolveGenericTypeIdentifiers().visitSourceFile(nativeFile);
+    new ResolveUnresolvedTypes().visitSourceFile(nativeFile);
 
     const testsDir = "test/testSuites/ProjectTest";
     const tests = readDir(testsDir).map(projName => ({ projName, projDir: `${testsDir}/${projName}/src` }));

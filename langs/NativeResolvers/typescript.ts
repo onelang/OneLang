@@ -14,19 +14,17 @@ class console {
 }
 
 class Object {
-    static keys<K,V>(map: OneMap<K,V>): OneArray<K> {
+    static keys<T>(map: { [name: string]: T }): string[] {
         return map.keys();
     }
 
-    static values<K,V>(map: OneMap<K,V>): OneArray<V> {
+    static values<T>(map: { [name: string]: T }): T[] {
         return map.values();
     }
 }
 
 class TsArray<T> {
-    _one: OneArray<T>;
-
-    get length(): OneNumber { return this._one.length; }
+    get length(): number { return this._one.length; }
 
     push(item: T): void {
         this._one.add(item);
@@ -45,8 +43,6 @@ class TsArray<T> {
 }
 
 class TsMap<K,V> {
-    _one: OneMap<K,V>;
-
     get(key: K): V {
         return this._one.get(key);
     }
@@ -65,29 +61,29 @@ class Map<K,V> {
 }
 
 class TsString {
-    _one: OneString;
+    _one: string;
     
-    get length(): OneNumber {
+    get length(): number {
         return this._one.length;
     }
 
-    get(idx: number): OneCharacter {
+    get(idx: number): string {
         return this._one.get(idx);
     }
     
-    substring(start: number, end: number): OneString {
+    substring(start: number, end: number): string {
         return this._one.substring(start, end);
     }
 
-    substr(start: number, length: number): OneString {
+    substr(start: number, length: number): string {
         return this._one.substring(start, start + length);
     }
 
-    split(separator: string): OneArray<OneString> {
+    split(separator: string): string[] {
         return this._one.split(separator);
     }
 
-    startsWith(str: string, position: number = 0): OneBoolean {
+    startsWith(str: string, position: number = 0): boolean {
         return this._one.substrMatch(str, position);
     }
 
@@ -95,15 +91,9 @@ class TsString {
 }
 
 class TsNumber {
-    _one: OneNumber;
-}
-
-class TsCharacter {
-    _one: OneCharacter;
 }
 
 class TsBoolean {
-    _one: OneBoolean;
 }
 
 class Error {
