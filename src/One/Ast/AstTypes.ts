@@ -18,7 +18,6 @@ export class PrimitiveType extends Type { }
 
 export class VoidType extends PrimitiveType { }
 export class AnyType extends PrimitiveType { }
-export class NullType extends PrimitiveType { }
 
 export class GenericsType extends Type {
     constructor(public typeVarName: string) { super(); }
