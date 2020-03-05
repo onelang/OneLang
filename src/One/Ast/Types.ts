@@ -119,10 +119,18 @@ export class SourceFile {
         public funcs: Map<string, GlobalFunction>,
         public mainBlock: Block,
         public sourcePath: SourcePath,
-        public exportScope: ExportScopeRef) { }
+        public exportScope: ExportScopeRef) {
+            const fileScope = Package.collectExportsFromFile(this, true);
+            this.addAvailableSymbols(fileScope.getAllExports());
+        }
 
     /** @creator ResolveImports */
-    availableSymbols: Map<string, IImportable>;
+    availableSymbols = new Map<string, IImportable>();
+
+    addAvailableSymbols(items: IImportable[]) {
+        for (const item of items)
+            this.availableSymbols.set(item.name, item);
+    }
 }
 
 export class ExportScopeRef {

@@ -83,8 +83,11 @@ initCompiler().then(() => {
         workspace.addPackage(jsYamlPkg);
 
         const files = glob(test.projDir);
-        for (const file of files)
-            projectPkg.addFile(TypeScriptParser2.parseFile(readFile(`${test.projDir}/${file}`), new SourcePath(projectPkg, file)));
+        for (const fn of files) {
+            const file = TypeScriptParser2.parseFile(readFile(`${test.projDir}/${fn}`), new SourcePath(projectPkg, fn));
+            file.addAvailableSymbols(nativeExports.getAllExports());
+            projectPkg.addFile(file);
+        }
 
         const pkgStates: PackageStateCapture[] = [];
         const saveState = () => pkgStates.push(new PackageStateCapture(projectPkg));
@@ -96,7 +99,7 @@ initCompiler().then(() => {
         }
 
         saveState();
-        ResolveImports.processWorkspace(workspace, nativeExports);
+        ResolveImports.processWorkspace(workspace);
 
         saveState();
         for (const file of Object.values(projectPkg.files))
