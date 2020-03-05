@@ -1,12 +1,24 @@
-import { Type, ICreatableType } from "./AstTypes";
+import { Type, ICreatableType, VoidType, NullType, UnresolvedType } from "./AstTypes";
 import { Statement } from "./Statements";
 import { MethodParameter } from "./Types";
+
+export enum TypeRestriction { NoRestriction, ShouldNotHaveType, MustBeGeneric, ShouldNotBeGeneric }
 
 export class Expression {
     /** @creator FillParent */
     parentExpr: Expression;
     /** @creator InferTypes */
-    exprType: Type;
+    exprType: Type = null;
+
+    setType(type: Type) {
+        if (this.exprType !== null) throw new Error("Expression already has type!");
+        
+        if (type instanceof VoidType) throw new Error("Expression's type cannot be VoidType!");
+        if (type instanceof NullType) throw new Error("Expression's type cannot be NullType!");
+        if (type instanceof UnresolvedType) throw new Error("Expression's type cannot be UnresolvedType!");
+
+        this.exprType = type;
+    }
 }
 
 export class ExpressionRoot extends Expression {

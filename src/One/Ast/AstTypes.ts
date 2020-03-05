@@ -2,7 +2,17 @@ import { Enum, Method, Interface, Class, IImportable, MethodParameter } from "./
 
 export interface IType { }
 export interface ICreatableType extends IType { }
-export class Type implements IType { }
+
+export class Type implements IType {
+    static isGeneric(type: Type) {
+        if (type instanceof GenericsType)
+            return true;
+        else if (type instanceof ClassType)
+            return type.typeArguments.some(x => Type.isGeneric(x));
+        else if (type instanceof InterfaceType)
+            return type.typeArguments.some(x => Type.isGeneric(x));
+    }
+}
 
 export class PrimitiveType extends Type { }
 
