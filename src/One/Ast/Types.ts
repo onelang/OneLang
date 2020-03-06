@@ -1,5 +1,5 @@
 import { Statement } from "./Statements";
-import { Type } from "./AstTypes";
+import { Type, ClassType, GenericsType } from "./AstTypes";
 import { Expression, ExpressionRoot } from "./Expressions";
 import { ErrorManager } from "../ErrorManager";
 import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, GlobalFunctionReference, StaticFieldReference, EnumMemberReference, InstanceFieldReference, StaticMethodReference, InstanceMethodReference, StaticPropertyReference, InstancePropertyReference, IReferencable, Reference } from "./References";
@@ -255,6 +255,8 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, 
             name === "super" ? new SuperReference(this) : 
             new ClassReference(this);
         }
+
+    type = new ClassType(this, this.typeArguments.map(x => new GenericsType(x)));
 }
 
 export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia {

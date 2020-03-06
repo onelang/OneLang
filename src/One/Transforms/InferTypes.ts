@@ -1,9 +1,9 @@
 import { AstTransformer } from "../AstTransformer";
 import { ErrorManager } from "../ErrorManager";
-import { PropertyAccessExpression, Expression, CastExpression } from "../Ast/Expressions";
-import { ClassReference, StaticFieldReference, StaticPropertyReference, StaticMethodReference, SuperReference, ThisReference, ForeachVariableReference, ForVariableReference, VariableDeclarationReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, MethodParameterReference, EnumReference, EnumMemberReference } from "../Ast/References";
+import { PropertyAccessExpression, Expression, CastExpression, ParenthesizedExpression, BinaryExpression, StringLiteral, UnresolvedCallExpression, StaticMethodCallExpression, InstanceMethodCallExpression } from "../Ast/Expressions";
+import { ClassReference, StaticFieldReference, StaticPropertyReference, StaticMethodReference, SuperReference, ThisReference, ForeachVariableReference, ForVariableReference, VariableDeclarationReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, MethodParameterReference, EnumReference, EnumMemberReference, Reference } from "../Ast/References";
 import { SourceFile, Class, Method } from "../Ast/Types";
-import { ClassType, InterfaceType, AnyType } from "../Ast/AstTypes";
+import { ClassType, InterfaceType, AnyType, Type } from "../Ast/AstTypes";
 
 export class InferTypes extends AstTransformer<void> {
     currentMethod: Method;
@@ -11,7 +11,7 @@ export class InferTypes extends AstTransformer<void> {
 
     constructor(public errorMan = new ErrorManager()) { super(); }
 
-    protected getStaticRef(cls: Class, memberName: string) {
+    protected getStaticRef(cls: Class, memberName: string): Reference {
         const field = cls.fields.get(memberName);
         if (field && field.isStatic)
             return new StaticFieldReference(field);
@@ -27,7 +27,7 @@ export class InferTypes extends AstTransformer<void> {
         return this.errorMan.throw(`Could not resolve static member access of a class: ${cls.name}::${memberName}`);
     }
 
-    protected getInstanceRef(cls: Class, memberName: string, obj: Expression) {
+    protected getInstanceRef(cls: Class, memberName: string, obj: Expression): Reference {
         const field = cls.fields.get(memberName);
         if (field && !field.isStatic)
             return new InstanceFieldReference(obj, field);
@@ -60,39 +60,74 @@ export class InferTypes extends AstTransformer<void> {
         if (expr.object instanceof SuperReference ||
             expr.object instanceof ThisReference) {
                 return this.getInstanceRef(expr.object.cls, expr.propertyName, expr.object);
-        } else if (
-            expr.object instanceof ForeachVariableReference ||
-            expr.object instanceof ForVariableReference ||
-            expr.object instanceof MethodParameterReference ||
-            expr.object instanceof VariableDeclarationReference) {
-                const type = expr.object.decl.type;
-                if (type instanceof ClassType) {
-                    return this.getInstanceRef(type.decl, expr.propertyName, expr.object);
-                } else if (type instanceof InterfaceType) {
-                    // TODO: implement "if (interfaceVarName instanceof SpecificClass) { ...interfaceVarName is now type of SpecificClass... }"
-                    return null;
-                } else if (!type) {
-                    return this.errorMan.throw(`Var type was not inferred yet (var="${expr.object.decl.name}", prop="${expr.propertyName}")`);
-                } else if (type instanceof AnyType) {
-                    return this.errorMan.throw(`Var has any type (var="${expr.object.decl.name}", prop="${expr.propertyName}")`);
-                } else {
-                    return this.errorMan.throw(`Expected class as variable type, but got: ${type.constructor.name} (prop="${expr.propertyName}")`);
-                }
         }
 
-        return this.errorMan.throw(`Could not resolve property access: obj=${expr.object.constructor.name}, prop="${expr.propertyName}"`);
+        const type = expr.object.exprType;
+        if (type instanceof ClassType) {
+            return this.getInstanceRef(type.decl, expr.propertyName, expr.object);
+        } else if (type instanceof InterfaceType) {
+            // TODO: implement "if (interfaceVarName instanceof SpecificClass) { ...interfaceVarName is now type of SpecificClass... }"
+            return null;
+        } else if (!type) {
+            return this.errorMan.throw(`Type was not inferred yet (prop="${expr.propertyName}")`);
+        } else if (type instanceof AnyType) {
+            return this.errorMan.throw(`Object has any type (prop="${expr.propertyName}")`);
+        } else {
+            return this.errorMan.throw(`Expected class as variable type, but got: ${type.constructor.name} (prop="${expr.propertyName}")`);
+        }
     }
 
     protected visitExpression(expr: Expression): Expression {
         super.visitExpression(expr);
 
         if (expr instanceof PropertyAccessExpression)
-            return this.inferPropertyAccess(expr);
-        else if (expr instanceof CastExpression) {
-
+            expr = this.inferPropertyAccess(expr);
+        
+        if (expr instanceof UnresolvedCallExpression) {
+            if (expr.method instanceof StaticMethodReference)
+                expr = new StaticMethodCallExpression(expr.method.decl, expr.typeArgs, expr.args);
+            else if (expr.method instanceof InstanceMethodReference)
+                expr = new InstanceMethodCallExpression(expr.method.object, expr.method.method, expr.typeArgs, expr.args);
+            else
+                throw new Error("Invalid method call!");
         }
 
-        return null;
+        if (expr.exprType) {
+        } else if (expr instanceof CastExpression) {
+            expr.setType(expr.newType);
+        } else if (expr instanceof ParenthesizedExpression) {
+            expr.setType(expr.expression.exprType);
+        } else if (expr instanceof ThisReference) {
+            expr.setType(expr.cls.type);
+        } else if (expr instanceof MethodParameterReference) {
+            expr.setType(expr.decl.type);
+        } else if (expr instanceof InstanceFieldReference) {
+            expr.setType(expr.field.type);
+        } else if (expr instanceof StringLiteral) {
+        } else if (expr instanceof InstanceMethodCallExpression) {
+            expr.setType(expr.method.returns);
+        } else if (expr instanceof BinaryExpression) {
+            const leftType = expr.left.exprType;
+            const rightType = expr.right.exprType;
+            if (expr.operator === "=") {
+                if (Type.equals(leftType, rightType))
+                    expr.setType(leftType);
+                else
+                    throw new Error("Different types on the left and right-side of the assignment.");
+            } else if (leftType instanceof ClassType && rightType instanceof ClassType) {
+                const opId = `${leftType.decl.name} ${expr.operator} ${rightType.decl.name}`;
+
+                if (opId === "TsBoolean && TsBoolean")
+                    expr.setType(leftType);
+                else {
+                    debugger;
+                }
+            }
+        } else {
+            debugger;
+        }
+
+        return expr;
     }
 
     protected visitMethod(method: Method) {

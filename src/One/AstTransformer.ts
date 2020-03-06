@@ -2,7 +2,7 @@ import { Type, IHasTypeArguments, ClassType, InterfaceType, UnresolvedType, ITyp
 import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression, InstanceOfExpression, AwaitExpression, StringLiteral, NumericLiteral, NullLiteral, RegexLiteral, BooleanLiteral } from "./Ast/Expressions";
 import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement, ContinueStatement, DoStatement } from "./Ast/Statements";
 import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda, IMethodBase } from "./Ast/Types";
-import { ClassReference, EnumReference, ThisReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, GlobalFunctionReference, StaticMethodReference, SuperReference } from "./Ast/References";
+import { ClassReference, EnumReference, ThisReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, GlobalFunctionReference, StaticMethodReference, SuperReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, StaticPropertyReference, StaticFieldReference } from "./Ast/References";
 
 export abstract class AstTransformer<TContext> {
     protected log(data: any) {
@@ -166,13 +166,18 @@ export abstract class AstTransformer<TContext> {
         } else if (expr instanceof ClassReference) {
         } else if (expr instanceof EnumReference) {
         } else if (expr instanceof ThisReference) {
-        } else if (expr instanceof StaticMethodReference) {
         } else if (expr instanceof MethodParameterReference) {
         } else if (expr instanceof VariableDeclarationReference) {
         } else if (expr instanceof ForVariableReference) {
         } else if (expr instanceof ForeachVariableReference) {
         } else if (expr instanceof GlobalFunctionReference) {
         } else if (expr instanceof SuperReference) {
+        } else if (expr instanceof InstanceFieldReference) {
+        } else if (expr instanceof InstancePropertyReference) {
+        } else if (expr instanceof InstanceMethodReference) {
+        } else if (expr instanceof StaticFieldReference) {
+        } else if (expr instanceof StaticPropertyReference) {
+        } else if (expr instanceof StaticMethodReference) {
         } else {
             return this.visitUnknownExpression(expr, context);
         }

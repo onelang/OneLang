@@ -1,6 +1,7 @@
-import { Type, ICreatableType, VoidType, NullType, UnresolvedType } from "./AstTypes";
+import { Type, ICreatableType, VoidType, UnresolvedType } from "./AstTypes";
 import { Statement } from "./Statements";
-import { MethodParameter } from "./Types";
+import { MethodParameter, Method } from "./Types";
+import { StaticMethodReference } from "./References";
 
 export enum TypeRestriction { NoRestriction, ShouldNotHaveType, MustBeGeneric, ShouldNotBeGeneric }
 
@@ -10,12 +11,12 @@ export class Expression {
     /** @creator InferTypes */
     exprType: Type = null;
 
-    setType(type: Type) {
+    setType(type: Type, allowUnresolved = false) {
         if (this.exprType !== null) throw new Error("Expression already has type!");
-        
+        if (type === null) throw new Error("New type cannot be null!");
+
         if (type instanceof VoidType) throw new Error("Expression's type cannot be VoidType!");
-        if (type instanceof NullType) throw new Error("Expression's type cannot be NullType!");
-        if (type instanceof UnresolvedType) throw new Error("Expression's type cannot be UnresolvedType!");
+        if (type instanceof UnresolvedType && !allowUnresolved) throw new Error("Expression's type cannot be UnresolvedType!");
 
         this.exprType = type;
     }
@@ -135,6 +136,21 @@ export class ElementAccessExpression extends Expression {
 export class UnresolvedCallExpression extends Expression {
     constructor(
         public method: Expression,
+        public typeArgs: Type[],
+        public args: Expression[]) { super(); }
+}
+
+export class StaticMethodCallExpression extends Expression {
+    constructor(
+        public method: Method,
+        public typeArgs: Type[],
+        public args: Expression[]) { super(); }
+}
+
+export class InstanceMethodCallExpression extends Expression {
+    constructor(
+        public object: Expression,
+        public method: Method,
         public typeArgs: Type[],
         public args: Expression[]) { super(); }
 }
