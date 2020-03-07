@@ -125,6 +125,8 @@ initCompiler().then(() => {
         for (const file of Object.values(projectPkg.files))
             new InstanceOfImplicitCast(workspace.errorManager).visitSourceFile(file);
 
+        writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
+        
         saveState();
         for (const file of Object.values(projectPkg.files))
             new InferTypes(workspace.errorManager).visitSourceFile(file);
@@ -142,7 +144,7 @@ initCompiler().then(() => {
         console.log(allChanges);
 
         writeFile(`test/artifacts/ProjectTest/${test.projName}/allChanges.txt`, allChanges);
-        writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, lastState.getSummary());
+        writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
 
         debugger;
 
