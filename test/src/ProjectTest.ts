@@ -3,12 +3,13 @@ import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser2";
 import { readFile, glob, readDir, baseDir, getLangFiles, writeFile } from "./TestUtils";
 import { PackageManager } from '@one/StdLib/PackageManager';
 import { PackagesFolderSource } from '@one/StdLib/PackagesFolderSource';
-import { SourcePath, Package, Workspace, SourceFile, ExportScopeRef } from '@one/One/Ast/Types';
+import { SourcePath, Package, Workspace, SourceFile, ExportScopeRef, LiteralTypes, Class } from '@one/One/Ast/Types';
 import { ResolveImports } from "@one/One/Transforms/ResolveImports";
 import { FillAttributesFromTrivia } from "@one/One/Transforms/FillAttributesFromTrivia";
 import { ResolveGenericTypeIdentifiers } from "@one/One/Transforms/ResolveGenericTypeIdentifiers";
 import { ResolveUnresolvedTypes } from "@one/One/Transforms/ResolveUnresolvedTypes";
 import { ResolveIdentifiers } from "@one/One/Transforms/ResolveIdentifiers";
+import { InstanceOfImplicitCast } from "@one/One/Transforms/InstanceOfImplicitCast";
 import { InferTypes } from "@one/One/Transforms/InferTypes";
 import { FillParent } from "@one/One/Transforms/FillParent";
 import { Linq } from '@one/Utils/Underscore';
@@ -118,6 +119,10 @@ initCompiler().then(() => {
         saveState();
         for (const file of Object.values(projectPkg.files))
             new ResolveIdentifiers(workspace.errorManager).visitSourceFile(file);
+
+        saveState();
+        for (const file of Object.values(projectPkg.files))
+            new InstanceOfImplicitCast(workspace.errorManager).visitSourceFile(file);
 
         saveState();
         for (const file of Object.values(projectPkg.files))
