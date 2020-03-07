@@ -135,18 +135,12 @@ export class ExpressionParser {
             return new Identifier(id);
 
         const num = this.reader.readNumber();
-        if (num !== null) {
-            const lit = new NumericLiteral(num);
-            lit.setType(this.numericLiteralType, true);
-            return lit;
-        }
+        if (num !== null)
+            return new NumericLiteral(num);
 
         const str = this.reader.readString();
-        if (str !== null) {
-            const lit = new StringLiteral(str);
-            lit.setType(this.stringLiteralType, true);
-            return lit;
-        }
+        if (str !== null)
+            return new StringLiteral(str);
 
         if (this.reader.readToken("(")) {
             const expr = this.parse();

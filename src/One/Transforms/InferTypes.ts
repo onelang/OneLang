@@ -108,8 +108,12 @@ export class InferTypes extends AstTransformer<void> {
             expr.setType(expr.property.type);
         } else if (expr instanceof StringLiteral) {
         } else if (expr instanceof InstanceMethodReference) {
+        } else if (expr instanceof StringLiteral || expr instanceof TemplateString) {
+            expr.setType(this.file.literalTypes.string);
         } else if (expr instanceof RegexLiteral) {
             expr.setType(this.file.literalTypes.regex);
+        } else if (expr instanceof NumericLiteral) {
+            expr.setType(this.file.literalTypes.numeric);
         } else if (expr instanceof InstanceOfExpression) {
             expr.setType(this.file.literalTypes.boolean);
         } else if (expr instanceof InstanceMethodCallExpression) {
