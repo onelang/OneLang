@@ -109,6 +109,13 @@ export class SourcePath {
     toString() { return `${this.pkg.name}/${this.path}`; }
 }
 
+export class LiteralTypes {
+    constructor(
+        public boolean: ClassType,
+        public numeric: ClassType,
+        public string: ClassType) { }
+}
+
 export class SourceFile {
     /** @creator TypeScriptParser2 */
     constructor(
@@ -131,6 +138,8 @@ export class SourceFile {
         for (const item of items)
             this.availableSymbols.set(item.name, item);
     }
+
+    literalTypes: LiteralTypes;
 }
 
 export class ExportScopeRef {

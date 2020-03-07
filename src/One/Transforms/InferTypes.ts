@@ -118,7 +118,7 @@ export class InferTypes extends AstTransformer<void> {
                 const opId = `${leftType.decl.name} ${expr.operator} ${rightType.decl.name}`;
 
                 if (opId === "TsBoolean && TsBoolean")
-                    expr.setType(leftType);
+                    expr.setType(this.file.literalTypes.boolean);
                 else {
                     debugger;
                 }

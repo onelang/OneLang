@@ -178,6 +178,8 @@ export class TypeScriptParser2 implements IParser {
             let tsType = null;
             if (check === "string")
                 tsType = "TsString";
+            else if (check === "boolean")
+                tsType = "TsBoolean";
             else if (check === "object")
                 tsType = "Object";
             else if (check === "function") // TODO: ???

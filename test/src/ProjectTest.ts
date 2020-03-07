@@ -14,6 +14,7 @@ import { FillParent } from "@one/One/Transforms/FillParent";
 import { Linq } from '@one/Utils/Underscore';
 import { PackageStateCapture } from './DiffUtils';
 import * as color from "ansi-colors";
+import { ClassType } from '@one/One/Ast/AstTypes';
 
 const pacMan = new PackageManager(new PackagesFolderSource(`${baseDir}/packages`));
 const langs = getLangFiles();
@@ -87,6 +88,10 @@ initCompiler().then(() => {
         for (const fn of files) {
             const file = TypeScriptParser2.parseFile(readFile(`${test.projDir}/${fn}`), new SourcePath(projectPkg, fn));
             file.addAvailableSymbols(nativeExports.getAllExports());
+            file.literalTypes = new LiteralTypes(
+                new ClassType(<Class>file.availableSymbols.get("TsBoolean")),
+                new ClassType(<Class>file.availableSymbols.get("TsNumber")),
+                new ClassType(<Class>file.availableSymbols.get("TsString")));
             projectPkg.addFile(file);
         }
 
