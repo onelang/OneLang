@@ -1,6 +1,6 @@
 import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression } from "../One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable } from "../One/Ast/Statements";
-import { Method, Block, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer } from "../One/Ast/Types";
+import { Method, Block, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility } from "../One/Ast/Types";
 import { Type, VoidType, AnyType, EnumType, GenericsType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments, IType, LambdaType } from "../One/Ast/AstTypes";
 import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, GlobalFunctionReference, StaticFieldReference, StaticMethodReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, EnumMemberReference } from "../One/Ast/References";
 
@@ -54,8 +54,15 @@ export class TSOverviewGenerator {
 
     static var(v: IVariable) {
         let result = "";
-        if (v instanceof Field || v instanceof Property)
-            result += this.pre("static ", (<IClassMember>v).isStatic) + (<IClassMember>v).visibility;
+        if (v instanceof Field || v instanceof Property) {
+            const m = <IClassMember>v;
+            result += this.pre("static ", m.isStatic);
+            result += 
+                m.visibility === Visibility.Private ? "private " : 
+                m.visibility === Visibility.Protected ? "protected " :
+                m.visibility === Visibility.Public ? "public " :
+                "VISIBILITY-NOT-SET";
+        }
         result += `${v.name}: ${this.type(v.type)}`;
         if (v instanceof VariableDeclaration || v instanceof ForVariable || v instanceof Field || v instanceof MethodParameter)
             result += this.pre(" = ", this.expr((<IVariableWithInitializer>v).initializer));
