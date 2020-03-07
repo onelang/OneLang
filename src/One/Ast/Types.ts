@@ -6,11 +6,19 @@ import { ClassReference, EnumReference, ThisReference, MethodParameterReference,
 
 export enum Visibility { Public, Protected, Private }
 
+/// types: ForeachVariable, Property
+///   IVariableWithInitializer: VariableDeclaration, ForVariable, Field, MethodParameter
 export interface IVariable {
     name: string;
     type: Type;
 }
 
+export interface IClassMember {
+    visibility: Visibility;
+    isStatic: boolean;
+}
+
+/// types: VariableDeclaration, ForVariable, Field, MethodParameter
 export interface IVariableWithInitializer extends IVariable {
     initializer: Expression;
 }
@@ -268,7 +276,7 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, 
     type = new ClassType(this, this.typeArguments.map(x => new GenericsType(x)));
 }
 
-export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia {
+export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia, IClassMember {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -286,7 +294,7 @@ export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia 
     instanceReferences: InstanceFieldReference[] = [];
 }
 
-export class Property implements IVariable, IHasAttributesAndTrivia {
+export class Property implements IVariable, IHasAttributesAndTrivia, IClassMember {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -340,7 +348,7 @@ export class Constructor implements IMethodBase, IHasAttributesAndTrivia {
     throws: boolean;
 }
 
-export class Method implements IMethodBase, IHasAttributesAndTrivia {
+export class Method implements IMethodBase, IHasAttributesAndTrivia, IClassMember {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
