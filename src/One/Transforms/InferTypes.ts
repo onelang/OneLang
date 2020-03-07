@@ -1,14 +1,15 @@
 import { AstTransformer } from "../AstTransformer";
 import { ErrorManager } from "../ErrorManager";
-import { PropertyAccessExpression, Expression, CastExpression, ParenthesizedExpression, BinaryExpression, StringLiteral, UnresolvedCallExpression, StaticMethodCallExpression, InstanceMethodCallExpression, ConditionalExpression, InstanceOfExpression } from "../Ast/Expressions";
+import { PropertyAccessExpression, Expression, CastExpression, ParenthesizedExpression, BinaryExpression, StringLiteral, UnresolvedCallExpression, StaticMethodCallExpression, InstanceMethodCallExpression, ConditionalExpression, InstanceOfExpression, RegexLiteral, TemplateString, NumericLiteral } from "../Ast/Expressions";
 import { ClassReference, StaticFieldReference, StaticPropertyReference, StaticMethodReference, SuperReference, ThisReference, ForeachVariableReference, ForVariableReference, VariableDeclarationReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, MethodParameterReference, EnumReference, EnumMemberReference, Reference } from "../Ast/References";
 import { SourceFile, Class, Method } from "../Ast/Types";
-import { ClassType, InterfaceType, AnyType, Type } from "../Ast/AstTypes";
+import { ClassType, InterfaceType, AnyType, Type, VoidType } from "../Ast/AstTypes";
+import { Statement, VariableDeclaration, ReturnStatement } from "../Ast/Statements";
 
 export class InferTypes extends AstTransformer<void> {
-    currentMethod: Method;
-    processedNodes = new Set<any>();
     file: SourceFile;
+    currentMethod: Method;
+    methodReturnTypes: Type[];
 
     constructor(public errorMan = new ErrorManager()) { super(); }
 
@@ -78,11 +79,23 @@ export class InferTypes extends AstTransformer<void> {
         }
     }
 
+    protected visitStatement(stmt: Statement): Statement { 
+        super.visitStatement(stmt);
+        if (stmt instanceof VariableDeclaration) {
+            if (!stmt.type)
+                stmt.type = stmt.initializer.exprType;
+        } else if (stmt instanceof ReturnStatement) {
+            if (stmt.expression)
+                this.methodReturnTypes.push(stmt.expression.exprType);
+        }
+        return null;
+    }
+
     protected visitExpression(expr: Expression): Expression {
         super.visitExpression(expr);
 
         if (expr instanceof PropertyAccessExpression)
-            expr = this.inferPropertyAccess(expr);
+            expr = this.inferPropertyAccess(expr) || expr;
         
         if (expr instanceof UnresolvedCallExpression) {
             if (expr.method instanceof StaticMethodReference)
@@ -93,8 +106,7 @@ export class InferTypes extends AstTransformer<void> {
                 throw new Error("Invalid method call!");
         }
 
-        if (expr.exprType) {
-        } else if (expr instanceof CastExpression) {
+        if (expr instanceof CastExpression) {
             expr.setType(expr.newType);
         } else if (expr instanceof ParenthesizedExpression) {
             expr.setType(expr.expression.exprType);
@@ -116,10 +128,16 @@ export class InferTypes extends AstTransformer<void> {
             expr.setType(this.file.literalTypes.regex);
         } else if (expr instanceof NumericLiteral) {
             expr.setType(this.file.literalTypes.numeric);
+        } else if (expr instanceof InstanceMethodReference || expr instanceof StaticMethodReference) {
+            // it does not have type, it will be called
         } else if (expr instanceof InstanceOfExpression) {
             expr.setType(this.file.literalTypes.boolean);
         } else if (expr instanceof InstanceMethodCallExpression) {
             expr.setType(expr.method.returns);
+        } else if (expr instanceof StaticMethodCallExpression) {
+            expr.setType(expr.method.returns);
+        } else if (expr instanceof VariableDeclarationReference) {
+            expr.setType(expr.decl.type);
         } else if (expr instanceof BinaryExpression) {
             const leftType = expr.left.exprType;
             const rightType = expr.right.exprType;
@@ -133,6 +151,8 @@ export class InferTypes extends AstTransformer<void> {
 
                 if (opId === "TsBoolean && TsBoolean")
                     expr.setType(this.file.literalTypes.boolean);
+                else if (opId === "TsNumber - TsNumber")
+                    expr.setType(this.file.literalTypes.numeric);
                 else {
                     debugger;
                 }
@@ -142,6 +162,10 @@ export class InferTypes extends AstTransformer<void> {
                 expr.setType(expr.whenTrue.exprType);
             else
                 throw new Error("Different types in the whenTrue and whenFalse expressions of a conditional expression");
+        } else if (expr instanceof PropertyAccessExpression) {
+            // PropertyAccess resolution failed, we don't know the type...
+            this.errorMan.warn("Could not determine PropertyAccess' type, using AnyType");
+            expr.setType(new AnyType());
         } else {
             debugger;
         }
@@ -151,7 +175,20 @@ export class InferTypes extends AstTransformer<void> {
 
     protected visitMethod(method: Method) {
         this.currentMethod = method;
+        this.methodReturnTypes = [];
         super.visitMethod(method);
+
+        if (method.returns === null && method.body !== null) {
+            if (this.methodReturnTypes.length == 0) {
+                method.returns = new VoidType();
+            } else if (this.methodReturnTypes.length == 1) {
+                method.returns = this.methodReturnTypes[0];
+            } else {
+                this.errorMan.throw(`Method "${method.name}" returns different types: ${this.methodReturnTypes}`);
+                method.returns = new AnyType();
+            }
+        }
+        
         this.currentMethod = null;
     }
 
