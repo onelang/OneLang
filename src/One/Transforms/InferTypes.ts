@@ -1,6 +1,6 @@
 import { AstTransformer } from "../AstTransformer";
 import { ErrorManager } from "../ErrorManager";
-import { PropertyAccessExpression, Expression, CastExpression, ParenthesizedExpression, BinaryExpression, StringLiteral, UnresolvedCallExpression, StaticMethodCallExpression, InstanceMethodCallExpression } from "../Ast/Expressions";
+import { PropertyAccessExpression, Expression, CastExpression, ParenthesizedExpression, BinaryExpression, StringLiteral, UnresolvedCallExpression, StaticMethodCallExpression, InstanceMethodCallExpression, ConditionalExpression, InstanceOfExpression } from "../Ast/Expressions";
 import { ClassReference, StaticFieldReference, StaticPropertyReference, StaticMethodReference, SuperReference, ThisReference, ForeachVariableReference, ForVariableReference, VariableDeclarationReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, MethodParameterReference, EnumReference, EnumMemberReference, Reference } from "../Ast/References";
 import { SourceFile, Class, Method } from "../Ast/Types";
 import { ClassType, InterfaceType, AnyType, Type } from "../Ast/AstTypes";
@@ -8,6 +8,7 @@ import { ClassType, InterfaceType, AnyType, Type } from "../Ast/AstTypes";
 export class InferTypes extends AstTransformer<void> {
     currentMethod: Method;
     processedNodes = new Set<any>();
+    file: SourceFile;
 
     constructor(public errorMan = new ErrorManager()) { super(); }
 
@@ -67,7 +68,7 @@ export class InferTypes extends AstTransformer<void> {
             return this.getInstanceRef(type.decl, expr.propertyName, expr.object);
         } else if (type instanceof InterfaceType) {
             // TODO: implement "if (interfaceVarName instanceof SpecificClass) { ...interfaceVarName is now type of SpecificClass... }"
-            return null;
+            return this.errorMan.throw(`InterfaceType is not implemented yet`);
         } else if (!type) {
             return this.errorMan.throw(`Type was not inferred yet (prop="${expr.propertyName}")`);
         } else if (type instanceof AnyType) {
@@ -103,7 +104,12 @@ export class InferTypes extends AstTransformer<void> {
             expr.setType(expr.decl.type);
         } else if (expr instanceof InstanceFieldReference) {
             expr.setType(expr.field.type);
+        } else if (expr instanceof InstancePropertyReference) {
+            expr.setType(expr.property.type);
         } else if (expr instanceof StringLiteral) {
+        } else if (expr instanceof InstanceMethodReference) {
+        } else if (expr instanceof InstanceOfExpression) {
+            expr.setType(this.file.literalTypes.boolean);
         } else if (expr instanceof InstanceMethodCallExpression) {
             expr.setType(expr.method.returns);
         } else if (expr instanceof BinaryExpression) {
@@ -123,6 +129,11 @@ export class InferTypes extends AstTransformer<void> {
                     debugger;
                 }
             }
+        } else if (expr instanceof ConditionalExpression) {
+            if (Type.equals(expr.whenTrue.exprType, expr.whenFalse.exprType))
+                expr.setType(expr.whenTrue.exprType);
+            else
+                throw new Error("Different types in the whenTrue and whenFalse expressions of a conditional expression");
         } else {
             debugger;
         }
@@ -138,6 +149,7 @@ export class InferTypes extends AstTransformer<void> {
 
 
     public visitSourceFile(sourceFile: SourceFile) {
+        this.file = sourceFile;
         this.errorMan.resetContext("ResolveUnresolvedTypes", sourceFile);
         super.visitSourceFile(sourceFile);
         this.errorMan.resetContext();
