@@ -121,7 +121,8 @@ export class LiteralTypes {
     constructor(
         public boolean: ClassType,
         public numeric: ClassType,
-        public string: ClassType) { }
+        public string: ClassType,
+        public regex: ClassType) { }
 }
 
 export class SourceFile {

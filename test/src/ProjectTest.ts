@@ -92,7 +92,8 @@ initCompiler().then(() => {
             file.literalTypes = new LiteralTypes(
                 new ClassType(<Class>file.availableSymbols.get("TsBoolean")),
                 new ClassType(<Class>file.availableSymbols.get("TsNumber")),
-                new ClassType(<Class>file.availableSymbols.get("TsString")));
+                new ClassType(<Class>file.availableSymbols.get("TsString")),
+                new ClassType(<Class>file.availableSymbols.get("RegExp")));
             projectPkg.addFile(file);
         }
 
