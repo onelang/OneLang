@@ -158,7 +158,7 @@ export class InstanceMethodCallExpression extends Expression {
 export class InstanceOfExpression extends Expression { 
     constructor(
         public expr: Expression,
-        public type: Type) { super(); }
+        public checkType: Type) { super(); }
 }
 
 export class AwaitExpression extends Expression {

@@ -11,15 +11,10 @@ export class Statement implements IHasAttributesAndTrivia {
 }
 
 export class IfStatement extends Statement {
-    public else: Block;
-
     constructor(
         public condition: Expression, 
         public then: Block,
-        else_: Block) {
-            super();
-            this.else = else_; // "else" is a reserved word in parameter list
-        }
+        public else_: Block) { super(); }
 }
 
 export class ReturnStatement extends Statement {

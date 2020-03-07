@@ -38,7 +38,7 @@ export class FillAttributesFromTrivia {
                 this.processBlock(stmt.body);
             else if (stmt instanceof IfStatement) {
                 this.processBlock(stmt.then);
-                this.processBlock(stmt.else);
+                this.processBlock(stmt.else_);
             }
         }
     }

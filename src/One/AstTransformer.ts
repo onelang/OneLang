@@ -56,8 +56,8 @@ export abstract class AstTransformer<TContext> {
         } else if (stmt instanceof IfStatement) {
             stmt.condition = this.visitExpression(stmt.condition, context) || stmt.condition;
             stmt.then = this.visitBlock(stmt.then, context) || stmt.then;
-            if (stmt.else)
-                stmt.else = this.visitBlock(stmt.else, context) || stmt.else;
+            if (stmt.else_)
+                stmt.else_ = this.visitBlock(stmt.else_, context) || stmt.else_;
         } else if (stmt instanceof ThrowStatement) {
             stmt.expression = this.visitExpression(stmt.expression, context) || stmt.expression;
         } else if (stmt instanceof VariableDeclaration) {
@@ -158,7 +158,7 @@ export abstract class AstTransformer<TContext> {
             expr.expression = this.visitExpression(expr.expression, context) || expr.expression;
         } else if (expr instanceof InstanceOfExpression) {
             expr.expr = this.visitExpression(expr.expr, context) || expr.expr;
-            expr.type = this.visitType(expr.type, context) || expr.type;
+            expr.checkType = this.visitType(expr.checkType, context) || expr.checkType;
         } else if (expr instanceof AwaitExpression) {
             expr.expr = this.visitExpression(expr.expr, context) || expr.expr;
         } else if (expr instanceof Lambda) {
