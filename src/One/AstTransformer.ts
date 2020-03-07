@@ -3,12 +3,13 @@ import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, Tem
 import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement, ContinueStatement, DoStatement } from "./Ast/Statements";
 import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda, IMethodBase } from "./Ast/Types";
 import { ClassReference, EnumReference, ThisReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, GlobalFunctionReference, StaticMethodReference, SuperReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, StaticPropertyReference, StaticFieldReference } from "./Ast/References";
+import { ErrorManager } from "./ErrorManager";
 
 export abstract class AstTransformer<TContext> {
-    protected log(data: any) {
-        const thisClassName = (<any>this).constructor.name;
-        console.log(`[${thisClassName}]`, data);
-    }
+    constructor(public errorMan: ErrorManager = null) {
+        if (this.errorMan === null)
+            this.errorMan = new ErrorManager();
+     }
 
     protected visitType(type: IType, context: TContext): Type {
         if (type instanceof ClassType || type instanceof InterfaceType || type instanceof UnresolvedType)
@@ -43,8 +44,7 @@ export abstract class AstTransformer<TContext> {
     }
 
     protected visitUnknownStatement(stmt: Statement, context: TContext): Statement {
-        this.log(`Unknown statement type: ${stmt.constructor.name}`);
-        return null;
+        return this.errorMan.throw(`Unknown statement type: ${stmt.constructor.name}`);
     }
 
     protected visitStatement(stmt: Statement, context: TContext): Statement {
@@ -105,8 +105,7 @@ export abstract class AstTransformer<TContext> {
     }
     
     protected visitUnknownExpression(expr: Expression, context: TContext): Expression {
-        this.log(`Unknown expression type: ${expr.constructor.name}`);
-        return null;
+        return this.errorMan.throw(`Unknown expression type: ${expr.constructor.name}`);
     }
 
     protected visitLambda(lambda: Lambda, context: TContext): Lambda {
