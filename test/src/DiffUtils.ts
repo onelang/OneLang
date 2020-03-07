@@ -1,7 +1,7 @@
 import * as jsdiff from "diff";
 import * as color from "ansi-colors";
 import { Package } from "@one/One/Ast/Types";
-import { TSOverviewGenerator } from "./TSOverviewGenerator";
+import { TSOverviewGenerator } from "@one/Utils/TSOverviewGenerator";
 
 class FileStateChanges {
     constructor(public pkgName: string, public fileName: string, public diff: Change[]) { }

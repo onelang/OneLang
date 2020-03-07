@@ -1,8 +1,8 @@
-import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression } from "@one/One/Ast/Expressions";
-import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable } from "@one/One/Ast/Statements";
-import { Method, Block, Class, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface } from "@one/One/Ast/Types";
-import { Type, VoidType, AnyType, EnumType, GenericsType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments, IType, LambdaType } from "@one/One/Ast/AstTypes";
-import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, GlobalFunctionReference, StaticFieldReference, StaticMethodReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, EnumMemberReference } from "@one/One/Ast/References";
+import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression } from "../One/Ast/Expressions";
+import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable } from "../One/Ast/Statements";
+import { Method, Block, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer } from "../One/Ast/Types";
+import { Type, VoidType, AnyType, EnumType, GenericsType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments, IType, LambdaType } from "../One/Ast/AstTypes";
+import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, GlobalFunctionReference, StaticFieldReference, StaticMethodReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, EnumMemberReference } from "../One/Ast/References";
 
 export class TSOverviewGenerator {
     static leading(item: any, isStmt: boolean) {
@@ -10,7 +10,7 @@ export class TSOverviewGenerator {
         if (item.leadingTrivia && (isStmt ? item.leadingTrivia.length > 0 : item.leadingTrivia.trim().length > 0))
             result += item.leadingTrivia;
         if (item.attributes)
-            result += Object.entries(item.attributes).map(([name, data]) => `/// {ATTR} name="${name}", value=${JSON.stringify(data)}\n`).join("");
+            result += Object.entries(item.attributes).map(x => `/// {ATTR} name="${x[0]}", value=${JSON.stringify(x[1])}\n`).join("");
         return result;
     }
 
@@ -19,8 +19,8 @@ export class TSOverviewGenerator {
     }
 
     static map<T>(items: Map<string, T>, callback: (item: T) => string) {
-        return Array.from(items.entries()).map(([name, item]) => this.leading(item, false) + 
-            (name !== (<any>item).name ? `/* name on object "${(<any>item).name}" is different from "${name}" */` : "") + callback(item));
+        return Array.from(items.entries()).map(x => this.leading(x[1], false) + 
+            (x[0] !== (<any>x[1]).name ? `/* name on object "${(<any>x[1]).name}" is different from "${x[0]}" */` : "") + callback(x[1]));
     }
 
     static pre(prefix: string, value: any, separator = ", ") {
@@ -28,7 +28,7 @@ export class TSOverviewGenerator {
             return value.length > 0 ? `${prefix}${value.join(separator)}` : "";
         else if (typeof value === "boolean")
             return value ? prefix : "";
-        else if (value !== null && typeof value !== "undefined")
+        else if (value)
             return `${prefix}${value}`;
         return "";
     }
@@ -52,12 +52,14 @@ export class TSOverviewGenerator {
         return (raw ? "" : "{T}") + repr + (typeArgs && typeArgs.length > 0 ? `<${typeArgs.map(x => this.type(x, true)).join(", ")}>` : "");
     }
 
-    static var(v: IVariable) { return `` + 
-        this.pre("static ", (<any>v).static) + 
-        ((<any>v).visibility ? `${(<any>v).visibility} ` : "") +
-        this.pre("/* unused */", (<any>v).isUnused) + 
-        this.pre("/* mutable */", (<any>v).isMutable) + 
-        `${v.name}: ${this.type(v.type)}${this.pre(" = ", this.expr((<any>v).initializer))}`;
+    static var(v: IVariable) {
+        let result = "";
+        if (v instanceof Field || v instanceof Property)
+            result += this.pre("static ", (<IClassMember>v).isStatic) + (<IClassMember>v).visibility;
+        result += `${v.name}: ${this.type(v.type)}`;
+        if (v instanceof VariableDeclaration || v instanceof ForVariable || v instanceof Field || v instanceof MethodParameter)
+            result += this.pre(" = ", this.expr((<IVariableWithInitializer>v).initializer));
+        return result;
     }
 
     static expr(expr: Expression) {
@@ -84,17 +86,17 @@ export class TSOverviewGenerator {
         } else if (expr instanceof ElementAccessExpression) {
             res = `${this.expr(expr.object)}[${this.expr(expr.elementExpr)}]`;
         } else if (expr instanceof TemplateString) {
-            res = "`" + expr.parts.map(x => x.isLiteral ? x.literalText : "${" + this.expr(x.expression) + "}").join('') + "`"
+            res = "`" + expr.parts.map(x => x.isLiteral ? x.literalText : "${" + this.expr(x.expression) + "}").join('') + "`";
         } else if (expr instanceof BinaryExpression) {
             res = `${this.expr(expr.left)} ${expr.operator} ${this.expr(expr.right)}`;
         } else if (expr instanceof ArrayLiteral) {
             res = `[${expr.items.map(x => this.expr(x)).join(', ')}]`;
         } else if (expr instanceof CastExpression) {
-            res = `<${this.type(expr.newType)}>${this.expr(expr.expression)}`;
+            res = `<${this.type(expr.newType)}>(${this.expr(expr.expression)})`;
         } else if (expr instanceof ConditionalExpression) {
             res = `${this.expr(expr.condition)} ? ${this.expr(expr.whenTrue)} : ${this.expr(expr.whenFalse)}`;
         } else if (expr instanceof InstanceOfExpression) {
-            res = `${this.expr(expr.expr)} instanceof ${this.type(expr.type)}`;
+            res = `${this.expr(expr.expr)} instanceof ${this.type(expr.checkType)}`;
         } else if (expr instanceof ParenthesizedExpression) {
             res = `(${this.expr(expr.expression)})`;
         } else if (expr instanceof RegexLiteral) {
@@ -106,7 +108,7 @@ export class TSOverviewGenerator {
         } else if (expr instanceof UnaryExpression && expr.unaryType === UnaryType.Postfix) {
             res = `${this.expr(expr.operand)}${expr.operator}`;
         } else if (expr instanceof MapLiteral) {
-            const repr = Object.entries(expr.properties).map(([key, value]) => `${key}: ${this.expr(value)}`).join(",\n");
+            const repr = Object.entries(expr.properties).map(keyValue => `${keyValue[0]}: ${this.expr(keyValue[1])}`).join(",\n");
             res = repr === "" ? "{}" : repr.includes("\n") ? `{\n${this.pad(repr)}\n}` : `{ ${repr} }`;
         } else if (expr instanceof NullLiteral) {
             res = `null`;
@@ -170,11 +172,11 @@ export class TSOverviewGenerator {
         } else if (stmt instanceof ForeachStatement) {
             res = `for (const ${stmt.itemVar.name} of ${this.expr(stmt.items)})` + this.blockOrStmt(stmt.body);
         } else if (stmt instanceof IfStatement) {
-            const elseIf = stmt.else && stmt.else.statements.length === 1 && stmt.else.statements[0] instanceof IfStatement;
+            const elseIf = stmt.else_ && stmt.else_.statements.length === 1 && stmt.else_.statements[0] instanceof IfStatement;
             res = `if (${this.expr(stmt.condition)})` + 
                 this.blockOrStmt(stmt.then) + 
-                (elseIf ? `\nelse ${this.stmt(stmt.else.statements[0])}` : "") +
-                (!elseIf && stmt.else ? `\nelse` + this.blockOrStmt(stmt.else) : "");
+                (elseIf ? `\nelse ${this.stmt(stmt.else_.statements[0])}` : "") +
+                (!elseIf && stmt.else_ ? `\nelse` + this.blockOrStmt(stmt.else_) : "");
         } else if (stmt instanceof WhileStatement) {
             res = `while (${this.expr(stmt.condition)})` + this.blockOrStmt(stmt.body);
         } else if (stmt instanceof ForStatement) {

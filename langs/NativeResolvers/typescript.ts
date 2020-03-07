@@ -120,3 +120,7 @@ class IterableIterator { }
 
 function parseInt() { }
 function import_() { }
+
+class JSON {
+    stringify(obj: any): string { return null; }
+}
