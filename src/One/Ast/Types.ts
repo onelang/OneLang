@@ -1,5 +1,5 @@
 import { Statement } from "./Statements";
-import { Type, ClassType, GenericsType } from "./AstTypes";
+import { Type, ClassType, GenericsType, EnumType } from "./AstTypes";
 import { Expression, ExpressionRoot } from "./Expressions";
 import { ErrorManager } from "../ErrorManager";
 import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, GlobalFunctionReference, StaticFieldReference, EnumMemberReference, InstanceFieldReference, StaticMethodReference, InstanceMethodReference, StaticPropertyReference, InstancePropertyReference, IReferencable, Reference } from "./References";
@@ -196,6 +196,7 @@ export class Enum implements IHasAttributesAndTrivia, IImportable, ISourceFileMe
     references: EnumReference[] = [];
     createReference(): Reference { return new EnumReference(this); }
 
+    type = new EnumType(this);
 }
 
 export class EnumMember {

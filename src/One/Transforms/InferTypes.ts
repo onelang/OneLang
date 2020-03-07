@@ -106,8 +106,10 @@ export class InferTypes extends AstTransformer<void> {
             expr.setType(expr.field.type);
         } else if (expr instanceof InstancePropertyReference) {
             expr.setType(expr.property.type);
-        } else if (expr instanceof StringLiteral) {
-        } else if (expr instanceof InstanceMethodReference) {
+        } else if (expr instanceof EnumReference) {
+            // EnumReference does not have type (only its members)
+        } else if (expr instanceof EnumMemberReference) {
+            expr.setType(expr.decl.parentEnum.type);
         } else if (expr instanceof StringLiteral || expr instanceof TemplateString) {
             expr.setType(this.file.literalTypes.string);
         } else if (expr instanceof RegexLiteral) {
