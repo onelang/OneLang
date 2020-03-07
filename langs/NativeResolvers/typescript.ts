@@ -40,6 +40,7 @@ class TsArray<T> {
 
     concat(arr2: T[]): T[] { return null; }
     join(separator: string): string { return ""; }
+    map<T2>(selector: (item: T) => T2) { return null; }
 }
 
 class TsMap<K,V> {
@@ -88,6 +89,7 @@ class TsString {
     }
 
     endsWith(str: string): boolean { return false; }
+    replace(from: string, to: string): string { return ""; }
 }
 
 class TsNumber {
