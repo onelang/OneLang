@@ -37,7 +37,7 @@ export class ExprLangAstPrinter {
             const elementRepr = this.print(expr.elementExpr);
             return `(${objectRepr}[${elementRepr}])`;
         } else {
-            throw new Error(`[AstPrinter] Unknown expression kind: '${expr.constructor.name}'`);
+            throw new Error(`[AstPrinter] Unknown expression kind: '${expr}'`);
         }
     }
 }

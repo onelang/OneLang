@@ -40,7 +40,7 @@ class TsArray<T> {
 
     concat(arr2: T[]): T[] { return null; }
     join(separator: string): string { return ""; }
-    map<T2>(selector: (item: T) => T2) { return null; }
+    map<T2>(selector: (item: T) => T2): T2[] { return null; }
 }
 
 class TsMap<K,V> {
