@@ -2,6 +2,7 @@ import { AstTransformer } from "../AstTransformer";
 import { Type, UnresolvedType, ClassType, InterfaceType, EnumType } from "../Ast/AstTypes";
 import { SourceFile, Class, Interface, Enum } from "../Ast/Types";
 import { ErrorManager } from "../ErrorManager";
+import { Expression, UnresolvedNewExpression, NewExpression } from "../Ast/Expressions";
 
 export class ResolveUnresolvedTypes extends AstTransformer<void> {
     file: SourceFile;
@@ -25,6 +26,20 @@ export class ResolveUnresolvedTypes extends AstTransformer<void> {
         else
             return this.errorMan.throw(`Unknown symbol type: ${symbol}`);
     }
+
+    protected visitExpression(expr: Expression): Expression {
+        if (expr instanceof UnresolvedNewExpression) {
+            const classType = this.visitType(expr.cls);
+            if (!(classType instanceof ClassType))
+                this.errorMan.throw(`Excepted ClassType, but got ${classType}`);
+            const newExpr = new NewExpression(classType, expr.args);
+            super.visitExpression(newExpr);
+            return newExpr;
+        } else {
+            return super.visitExpression(expr);
+        }
+    }
+
 
     public visitSourceFile(sourceFile: SourceFile) {
         this.file = sourceFile;

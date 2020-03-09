@@ -3,7 +3,7 @@ import { ExpressionParser } from "./Common/ExpressionParser";
 import { NodeManager } from "./Common/NodeManager";
 import { IParser } from "./Common/IParser";
 import { Type, AnyType, VoidType, UnresolvedType, LambdaType } from "../One/Ast/AstTypes";
-import { Expression, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, BinaryExpression, UnaryExpression, UnresolvedCallExpression, PropertyAccessExpression, InstanceOfExpression, RegexLiteral, AwaitExpression, ParenthesizedExpression } from "../One/Ast/Expressions";
+import { Expression, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, BinaryExpression, UnaryExpression, UnresolvedCallExpression, PropertyAccessExpression, InstanceOfExpression, RegexLiteral, AwaitExpression, ParenthesizedExpression, UnresolvedNewExpression } from "../One/Ast/Expressions";
 import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileStatement, ForeachStatement, ForStatement, ReturnStatement, ThrowStatement, BreakStatement, ExpressionStatement, ForeachVariable, ForVariable, DoStatement, ContinueStatement } from "../One/Ast/Statements";
 import { Block, Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package, Lambda, UnresolvedImport, GlobalFunction } from "../One/Ast/Types";
 
@@ -157,9 +157,11 @@ export class TypeScriptParser2 implements IParser {
             return new TemplateString(parts);
         } else if (this.reader.readToken("new")) {
             const type = this.parseType();
+            if (!(type instanceof UnresolvedType))
+                throw new Error(`[TypeScriptParser2] Expected UnresolvedType here!`);
             this.reader.expectToken("(");
             const args = this.expressionParser.parseCallArguments();
-            return new NewExpression(type, args);
+            return new UnresolvedNewExpression(type, args);
         } else if (this.reader.readToken("<")) {
             const newType = this.parseType();
             this.reader.expectToken(">");

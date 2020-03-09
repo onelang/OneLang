@@ -82,9 +82,15 @@ export class MapLiteral extends Expression {
     constructor(public properties: Map<string, Expression>) { super(); }
 }
 
+export class UnresolvedNewExpression extends Expression {
+    constructor(
+        public cls: UnresolvedType,
+        public args: Expression[]) { super(); }
+}
+
 export class NewExpression extends Expression {
     constructor(
-        public cls: ICreatableType,
+        public cls: ClassType,
         public args: Expression[]) { super(); }
 }
 

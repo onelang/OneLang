@@ -128,8 +128,11 @@ export abstract class AstTransformer<TContext> {
             expr.whenFalse = this.visitExpression(expr.whenFalse, context) || expr.whenFalse;
         } else if (expr instanceof Identifier) {
             return this.visitIdentifier(expr, context);
+        } else if (expr instanceof UnresolvedNewExpression) {
+            this.visitType(expr.cls, context);
+            expr.args = expr.args.map(x => this.visitExpression(x, context) || x);
         } else if (expr instanceof NewExpression) {
-            expr.cls = this.visitType(expr.cls, context) || expr.cls;
+            this.visitType(expr.cls, context);
             expr.args = expr.args.map(x => this.visitExpression(x, context) || x);
         } else if (expr instanceof TemplateString) {
             return this.visitTemplateString(expr, context);
