@@ -33,9 +33,9 @@ export class FillParent extends AstTransformer<Expression> {
                 this.processMethod(method, intf);
         }
 
-         for (const cls of file.classes.values()) {
+        for (const cls of file.classes.values()) {
             cls.parentFile = file;
-            
+
             if (cls.constructor_) {
                 cls.constructor_.parentClass = cls;
                 super.visitConstructor(cls.constructor_, null);
@@ -54,6 +54,6 @@ export class FillParent extends AstTransformer<Expression> {
                 if (prop.setter)
                     this.visitBlock(prop.setter, null);
             }
-         }
-   }
+        }
+    }
 }
