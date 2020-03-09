@@ -93,7 +93,9 @@ initCompiler().then(() => {
                 new ClassType(<Class>file.availableSymbols.get("TsBoolean")),
                 new ClassType(<Class>file.availableSymbols.get("TsNumber")),
                 new ClassType(<Class>file.availableSymbols.get("TsString")),
-                new ClassType(<Class>file.availableSymbols.get("RegExp")));
+                new ClassType(<Class>file.availableSymbols.get("RegExp")),
+                new ClassType(<Class>file.availableSymbols.get("TsArray")),
+                new ClassType(<Class>file.availableSymbols.get("TsMap")));
             projectPkg.addFile(file);
         }
 

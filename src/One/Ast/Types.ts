@@ -122,7 +122,9 @@ export class LiteralTypes {
         public boolean: ClassType,
         public numeric: ClassType,
         public string: ClassType,
-        public regex: ClassType) { }
+        public regex: ClassType,
+        public array: ClassType,
+        public map: ClassType) { }
 }
 
 export class SourceFile {
