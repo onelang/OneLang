@@ -192,11 +192,30 @@ export class InferTypes extends AstTransformer<void> {
         this.currentMethod = null;
     }
 
-
     public visitSourceFile(sourceFile: SourceFile) {
         this.file = sourceFile;
         this.errorMan.resetContext("ResolveUnresolvedTypes", sourceFile);
         super.visitSourceFile(sourceFile);
         this.errorMan.resetContext();
+    }
+
+    public visitPackage(pkg: Package) {
+        this.doNotVisitFieldsAndProps = false;
+        for (const file of Object.values(pkg.files)) {
+            this.file = file;
+            for (const cls of file.classes.values())
+                for (const field of cls.fields.values())
+                    this.visitField(field);
+        }
+
+        for (const file of Object.values(pkg.files)) {
+            this.file = file;
+            for (const cls of file.classes.values())
+                for (const prop of cls.properties.values())
+                    this.visitProperty(prop);
+        }
+
+        this.doNotVisitFieldsAndProps = true;
+        super.visitPackage(pkg);
     }
 }

@@ -101,35 +101,28 @@ initCompiler().then(() => {
         const saveState = () => pkgStates.push(new PackageStateCapture(projectPkg));
         saveState();
 
-        for (const file of Object.values(projectPkg.files)) {
-            new FillParent().visitSourceFile(file);
-            FillAttributesFromTrivia.processFile(file);
-        }
+        new FillParent().visitPackage(projectPkg, null);
+        FillAttributesFromTrivia.processPackage(projectPkg);
 
         saveState();
         ResolveImports.processWorkspace(workspace);
 
         saveState();
-        for (const file of Object.values(projectPkg.files))
-            new ResolveGenericTypeIdentifiers().visitSourceFile(file);
+        new ResolveGenericTypeIdentifiers().visitPackage(projectPkg);
 
         saveState();
-        for (const file of Object.values(projectPkg.files))
-            new ResolveUnresolvedTypes(workspace.errorManager).visitSourceFile(file);
+        new ResolveUnresolvedTypes(workspace.errorManager).visitPackage(projectPkg);
 
         saveState();
-        for (const file of Object.values(projectPkg.files))
-            new ResolveIdentifiers(workspace.errorManager).visitSourceFile(file);
+        new ResolveIdentifiers(workspace.errorManager).visitPackage(projectPkg);
 
         saveState();
-        for (const file of Object.values(projectPkg.files))
-            new InstanceOfImplicitCast(workspace.errorManager).visitSourceFile(file);
+        new InstanceOfImplicitCast(workspace.errorManager).visitPackage(projectPkg);
 
         writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
-        
+
         saveState();
-        for (const file of Object.values(projectPkg.files))
-            new InferTypes(workspace.errorManager).visitSourceFile(file);
+        new InferTypes(workspace.errorManager).visitPackage(projectPkg);
 
         saveState();
         

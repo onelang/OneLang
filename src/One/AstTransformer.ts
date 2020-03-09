@@ -251,4 +251,9 @@ export abstract class AstTransformer<TContext> {
         sourceFile.mainBlock = this.visitBlock(sourceFile.mainBlock, context) || sourceFile.mainBlock;
         return null;
     }
+
+    public visitPackage(pkg: Package, context: TContext) {
+        for (const file of Object.values(pkg.files))
+            this.visitSourceFile(file, context);
+    }
 }

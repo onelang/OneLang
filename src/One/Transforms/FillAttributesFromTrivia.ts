@@ -1,5 +1,5 @@
 import { RegexHelpers } from "../../Utils/RegexHelpers";
-import { SourceFile, IMethodBase, Block, IHasAttributesAndTrivia } from "../Ast/Types";
+import { SourceFile, IMethodBase, Block, IHasAttributesAndTrivia, Package } from "../Ast/Types";
 import { ForeachStatement, ForStatement, IfStatement } from "../Ast/Statements";
 
 export class FillAttributesFromTrivia {
@@ -65,5 +65,10 @@ export class FillAttributesFromTrivia {
             for (const method of cls.methods.values())
                 this.processMethod(method);
         }
+    }
+
+    static processPackage(pkg: Package) {
+        for (const file of Object.values(pkg.files))
+            this.processFile(file);
     }
 }
