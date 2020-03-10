@@ -10,6 +10,7 @@ import { ResolveGenericTypeIdentifiers } from "@one/One/Transforms/ResolveGeneri
 import { ResolveUnresolvedTypes } from "@one/One/Transforms/ResolveUnresolvedTypes";
 import { ResolveIdentifiers } from "@one/One/Transforms/ResolveIdentifiers";
 import { InstanceOfImplicitCast } from "@one/One/Transforms/InstanceOfImplicitCast";
+import { ConvertToMethodCall } from "@one/One/Transforms/ConvertToMethodCall";
 import { InferTypes } from "@one/One/Transforms/InferTypes";
 import { FillParent } from "@one/One/Transforms/FillParent";
 import { Linq } from '@one/Utils/Underscore';
@@ -100,34 +101,44 @@ initCompiler().then(() => {
         }
 
         const pkgStates: PackageStateCapture[] = [];
-        const saveState = () => pkgStates.push(new PackageStateCapture(projectPkg));
+        const saveState = () => { 
+            const state = new PackageStateCapture(projectPkg);
+            pkgStates.push(state);
+            return state;
+        }
+
+        const printState = () => {
+            console.log(pkgStates[pkgStates.length - 1].diff(pkgStates[pkgStates.length - 2]).getChanges("summary"));
+            writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
+        }
+
         saveState();
 
         new FillParent().visitPackage(projectPkg, null);
         FillAttributesFromTrivia.processPackage(projectPkg);
-
         saveState();
+
         ResolveImports.processWorkspace(workspace);
-
         saveState();
+
         new ResolveGenericTypeIdentifiers().visitPackage(projectPkg);
-
         saveState();
+
+        new ConvertToMethodCall().visitPackage(projectPkg);
+        saveState();
+
         new ResolveUnresolvedTypes(workspace.errorManager).visitPackage(projectPkg);
-
         saveState();
+
         new ResolveIdentifiers(workspace.errorManager).visitPackage(projectPkg);
-
         saveState();
+
         new InstanceOfImplicitCast(workspace.errorManager).visitPackage(projectPkg);
-
-        writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
-
         saveState();
+
         new InferTypes(workspace.errorManager).visitPackage(projectPkg);
-
         saveState();
-        
+
         const lastState = new Linq(pkgStates).last();
         if (workspace.errorManager.errors.length > 0)
             debugger;
@@ -138,8 +149,8 @@ initCompiler().then(() => {
         const allChanges = lastState.diff(pkgStates[0]).getChanges("full");
         console.log(allChanges);
 
-        writeFile(`test/artifacts/ProjectTest/${test.projName}/allChanges.txt`, allChanges);
-        writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
+        //writeFile(`test/artifacts/ProjectTest/${test.projName}/allChanges.txt`, allChanges);
+        //writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
 
         debugger;
 
