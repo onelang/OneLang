@@ -556,22 +556,34 @@ export class TypeScriptParser2 implements IParser {
                     this.context.push(`P[G]:${propName}`);
                     this.reader.expectToken("()", "expected '()' after property getter name");
                     propType = this.reader.readToken(":") ? this.parseType() : null;
-                    getter = this.parseBlock();
-                    if (!getter)
-                        this.reader.fail("property getter body is missing");
-                    if (prop)
-                        prop.getter = getter;
+                    if (declarationOnly) {
+                        if (propType === null)
+                            this.reader.fail("Type is missing for property in declare class");
+                        this.reader.expectToken(";");
+                    } else {
+                        getter = this.parseBlock();
+                        if (!getter)
+                            this.reader.fail("property getter body is missing");
+                        if (prop)
+                            prop.getter = getter;
+                    }
                 } else if (memberName === "set") { // set propName(value: propType) { ... }
                     this.context.push(`P[S]:${propName}`);
                     this.reader.expectToken("(", "expected '(' after property setter name");
                     this.reader.expectIdentifier();
                     propType = this.reader.readToken(":") ? this.parseType() : null;
                     this.reader.expectToken(")");
-                    setter = this.parseBlock();
-                    if (!setter)
-                        this.reader.fail("property setter body is missing");
-                    if (prop)
-                        prop.setter = setter;
+                    if (declarationOnly) {
+                        if (propType === null)
+                            this.reader.fail("Type is missing for property in declare class");
+                        this.reader.expectToken(";");
+                    } else {
+                        setter = this.parseBlock();
+                        if (!setter)
+                            this.reader.fail("property setter body is missing");
+                        if (prop)
+                            prop.setter = setter;
+                    }
                 }
 
                 if (!prop) {
