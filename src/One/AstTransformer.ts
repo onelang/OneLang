@@ -219,7 +219,7 @@ export abstract class AstTransformer<TContext> {
             prop.setter = this.visitBlock(prop.setter, context) || prop.setter;
     }
 
-    protected visitObjectMap<T>(obj: Map<string, T>, visitor: (T) => void) {
+    protected visitObjectMap<T>(obj: Map<string, T>, visitor: (item: T) => void) {
         for (const item of obj.values())
             visitor(item);
     }

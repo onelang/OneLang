@@ -145,16 +145,16 @@ class LineInfo {
     }
 
     match(type: TemplatePartType) {
-        return this.controlPart && this.controlPart.type === type;
+        return this.controlPart !== null && this.controlPart.type === type;
     }
 
     fail(msg: string) {
         throw new Error(`${msg} (lineIdx: ${this.lineIdx}, line: '${this.line}'`);
     }
 
-    get inline() { return this.controlPart && this.controlPart.params["inline"] === "true"; }
+    get inline() { return this.controlPart !== null && this.controlPart.params["inline"] === "true"; }
     get sep() {
-        return !this.controlPart ? null :
+        return this.controlPart === null ? null :
             "sep" in this.controlPart.params ? this.controlPart.params["sep"] :
             (this.inline ? "" : "\n");
     }

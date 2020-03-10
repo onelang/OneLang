@@ -275,7 +275,7 @@ class CursorPositionSearch {
         return low - 1;
     }
 
-    getCursorForOffset(offset: number) {
+    getCursorForOffset(offset: number): Cursor {
         const lineIdx = this.getLineIdxForOffset(offset);
         const lineStart = this.lineOffsets[lineIdx];
         const lineEnd = this.lineOffsets[lineIdx + 1];

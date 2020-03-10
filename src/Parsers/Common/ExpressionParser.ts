@@ -20,7 +20,7 @@ export class ExpressionParserConfig {
 }
 
 export class ExpressionParser {
-    static defaultConfig() {
+    static defaultConfig(): ExpressionParserConfig {
         const config = new ExpressionParserConfig();
         config.unary = ['!', 'not', '+', '-', '~'];
         config.precedenceLevels = [
