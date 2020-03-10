@@ -1,4 +1,4 @@
-import { Type, IHasTypeArguments, ClassType, InterfaceType, UnresolvedType, IType, LambdaType } from "./Ast/AstTypes";
+import { Type, IHasTypeArguments, ClassType, InterfaceType, UnresolvedType, LambdaType } from "./Ast/AstTypes";
 import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression, InstanceOfExpression, AwaitExpression, StringLiteral, NumericLiteral, NullLiteral, RegexLiteral, BooleanLiteral } from "./Ast/Expressions";
 import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement, ContinueStatement, DoStatement } from "./Ast/Statements";
 import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda, IMethodBase } from "./Ast/Types";
@@ -11,7 +11,7 @@ export abstract class AstTransformer<TContext> {
             this.errorMan = new ErrorManager();
      }
 
-    protected visitType(type: IType, context: TContext): Type {
+    protected visitType(type: Type, context: TContext): Type {
         if (type instanceof ClassType || type instanceof InterfaceType || type instanceof UnresolvedType)
             type.typeArguments = type.typeArguments.map(x => this.visitType(x, context) || x);
         else if (type instanceof LambdaType) {

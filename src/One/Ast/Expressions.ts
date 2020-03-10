@@ -1,4 +1,4 @@
-import { Type, ICreatableType, VoidType, UnresolvedType } from "./AstTypes";
+import { Type, VoidType, UnresolvedType, ClassType } from "./AstTypes";
 import { Statement } from "./Statements";
 import { MethodParameter, Method } from "./Types";
 import { StaticMethodReference } from "./References";

@@ -36,7 +36,7 @@ export class TSOverviewGenerator {
     static name_(obj: any) { return `${obj instanceof Constructor ? "constructor" : obj.name}${this.typeArgs(obj.typeArguments)}`; }
     static typeArgs(args: string[]) { return args && args.length > 0 ? `<${args.join(", ")}>` : ""; }
     
-    static type(t: IType, raw = false) {
+    static type(t: Type, raw = false) {
         const repr = !t ? "???" :
             t instanceof VoidType ? "void" :
             t instanceof AnyType ? "any" :

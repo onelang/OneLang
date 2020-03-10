@@ -1,9 +1,6 @@
 import { Enum, Method, Interface, Class, IImportable, MethodParameter } from "./Types";
 
-export interface IType { }
-export interface ICreatableType extends IType { }
-
-export class Type implements IType {
+export class Type {
     static isGeneric(type: Type) {
         if (type instanceof GenericsType)
             return true;
@@ -52,11 +49,11 @@ export class InterfaceType extends Type implements IHasTypeArguments {
     constructor(public decl: Interface, public typeArguments: Type[] = []) { super(); }
 }
 
-export class ClassType extends Type implements IHasTypeArguments, ICreatableType {
+export class ClassType extends Type implements IHasTypeArguments {
     constructor(public decl: Class, public typeArguments: Type[] = []) { super(); }
 }
 
-export class UnresolvedType extends Type implements IHasTypeArguments, ICreatableType {
+export class UnresolvedType extends Type implements IHasTypeArguments {
     constructor(public typeName: string, public typeArguments: Type[] = []) { super(); }
 }
 
