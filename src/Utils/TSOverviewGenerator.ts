@@ -1,7 +1,7 @@
 import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression } from "../One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable } from "../One/Ast/Statements";
 import { Method, Block, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility } from "../One/Ast/Types";
-import { Type, VoidType, AnyType, EnumType, GenericsType, ClassType, InterfaceType, UnresolvedType, IHasTypeArguments, IType, LambdaType } from "../One/Ast/AstTypes";
+import { Type, VoidType } from "../One/Ast/AstTypes";
 import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, GlobalFunctionReference, StaticFieldReference, StaticMethodReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, EnumMemberReference } from "../One/Ast/References";
 
 export class TSOverviewGenerator {
@@ -37,23 +37,14 @@ export class TSOverviewGenerator {
     static typeArgs(args: string[]) { return args && args.length > 0 ? `<${args.join(", ")}>` : ""; }
     
     static type(t: Type, raw = false) {
-        const repr = !t ? "???" :
-            t instanceof VoidType ? "void" :
-            t instanceof AnyType ? "any" :
-            t instanceof EnumType ? `E:${t.decl.name}` :
-            t instanceof GenericsType ? `G:${t.typeVarName}` :
-            t instanceof ClassType ? `C:${t.decl.name}` :
-            t instanceof InterfaceType ? `I:${t.decl.name}` :
-            t instanceof UnresolvedType ? `X:${t.typeName}` :
-            t instanceof LambdaType ? `L:(${t.parameters.map(x => this.type(x.type, true)).join(", ")})=>${this.type(t.returnType, true)}` :
-            "NOTIMPL";
-        if (repr === "NOTIMPL") debugger;
-        const typeArgs = t && (<IHasTypeArguments><any>t).typeArguments;
-        return (raw ? "" : "{T}") + repr + (typeArgs && typeArgs.length > 0 ? `<${typeArgs.map(x => this.type(x, true)).join(", ")}>` : "");
+        const repr = !t ? "???" : t.repr();
+        if (repr === "U:UNKNOWN") debugger;
+        return (raw ? "" : "{T}") + repr;
     }
 
     static var(v: IVariable) {
         let result = "";
+        const isProp = v instanceof Property;
         if (v instanceof Field || v instanceof Property) {
             const m = <IClassMember>v;
             result += this.pre("static ", m.isStatic);
@@ -63,7 +54,7 @@ export class TSOverviewGenerator {
                 m.visibility === Visibility.Public ? "public " :
                 "VISIBILITY-NOT-SET";
         }
-        result += `${v.name}: ${this.type(v.type)}`;
+        result += `${isProp ? "get " : ""}${v.name}${isProp ? "()" : ""}: ${this.type(v.type)}`;
         if (v instanceof VariableDeclaration || v instanceof ForVariable || v instanceof Field || v instanceof MethodParameter)
             result += this.pre(" = ", this.expr((<IVariableWithInitializer>v).initializer));
         return result;

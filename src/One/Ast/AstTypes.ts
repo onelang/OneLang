@@ -26,19 +26,35 @@ export class Type {
                 type1.typeArguments.every((t, i) => Type.equals(t, type2.typeArguments[i]));
         return false;
     }
+    repr(): string { return "U:UNKNOWN"; }
+}
+
+class TypeHelper {
+    static argsRepr(args: Type[]) {
+        return args.length === 0 ? "" : `<${args.map(x => x.repr()).join(", ")}>`;
+    }
 }
 
 export class PrimitiveType extends Type { }
 
-export class VoidType extends PrimitiveType { }
-export class AnyType extends PrimitiveType { }
+export class VoidType extends PrimitiveType {
+    static instance = new VoidType();
+    repr() { return "Void"; }
+}
+
+export class AnyType extends PrimitiveType {
+    static instance = new AnyType();
+    repr() { return "Any"; }
+}
 
 export class GenericsType extends Type {
     constructor(public typeVarName: string) { super(); }
+    repr() { return `G:${this.typeVarName}`; }
 }
 
 export class EnumType extends Type {
     constructor(public decl: Enum) { super(); }
+    repr() { return `E:${this.decl.name}`; }
 }
 
 export interface IHasTypeArguments {
@@ -47,16 +63,20 @@ export interface IHasTypeArguments {
 
 export class InterfaceType extends Type implements IHasTypeArguments {
     constructor(public decl: Interface, public typeArguments: Type[] = []) { super(); }
+    repr() { return `I:${this.decl.name}${TypeHelper.argsRepr(this.typeArguments)}`; }
 }
 
 export class ClassType extends Type implements IHasTypeArguments {
     constructor(public decl: Class, public typeArguments: Type[] = []) { super(); }
+    repr() { return `C:${this.decl.name}${TypeHelper.argsRepr(this.typeArguments)}`; }
 }
 
 export class UnresolvedType extends Type implements IHasTypeArguments {
     constructor(public typeName: string, public typeArguments: Type[] = []) { super(); }
+    repr() { return `X:${this.typeName}${TypeHelper.argsRepr(this.typeArguments)}`; }
 }
 
 export class LambdaType extends Type {
     constructor(public parameters: MethodParameter[], public returnType: Type) { super(); }
+    repr() { return `L:(${this.parameters.map(x => x.type.repr()).join(", ")})=>${this.returnType.repr()}`; }
 }
