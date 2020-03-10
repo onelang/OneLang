@@ -90,7 +90,7 @@ export class TypeScriptParser2 implements IParser {
             const mapValueType = this.parseType();
             this.reader.readToken(";");
             this.reader.expectToken("}");
-            return new UnresolvedType("TsMap", [new UnresolvedType("TsString"), mapValueType]);
+            return new UnresolvedType("TsMap", [mapValueType]);
         }
 
         if (this.reader.peekToken("(")) {

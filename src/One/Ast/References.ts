@@ -13,14 +13,14 @@ export class Reference extends Expression { }
 export class ClassReference extends Reference {
     constructor(public decl: Class) { super(); decl.classReferences.push(this); }
 
-    setType(type: Type) { throw new Error("ClassReference cannot have a type!"); }
+    setActualType(type: Type) { throw new Error("ClassReference cannot have a type!"); }
 }
 
 // has type: no (requires call, passing functions is not supported yet)
 export class GlobalFunctionReference extends Reference {
     constructor(public decl: GlobalFunction) { super(); decl.references.push(this); }
 
-    setType(type: Type) { throw new Error("GlobalFunctionReference cannot have a type!"); }
+    setActualType(type: Type) { throw new Error("GlobalFunctionReference cannot have a type!"); }
 }
 
 // has type: yes (it's a variable)
@@ -33,7 +33,7 @@ export class MethodParameterReference extends Reference {
 export class EnumReference extends Reference {
     constructor(public decl: Enum) { super(); decl.references.push(this); }
 
-    setType(type: Type) { throw new Error("EnumReference cannot have a type!"); }
+    setActualType(type: Type) { throw new Error("EnumReference cannot have a type!"); }
 }
 
 // has type: yes
@@ -41,9 +41,9 @@ export class EnumReference extends Reference {
 export class EnumMemberReference extends Expression {
     constructor(public decl: EnumMember) { super(); decl.references.push(this); }
     
-    setType(type: Type) { 
+    setActualType(type: Type) { 
         if (!(type instanceof EnumType)) throw new Error("Expected EnumType!");
-        super.setType(type);
+        super.setActualType(type);
     }
 }
 
@@ -52,9 +52,9 @@ export class EnumMemberReference extends Expression {
 export class ThisReference extends Reference {
     constructor(public cls: Class) { super(); cls.thisReferences.push(this); }
 
-    setType(type: Type) { 
+    setActualType(type: Type) { 
         if (!(type instanceof ClassType)) throw new Error("Expected ClassType!");
-        super.setType(type);
+        super.setActualType(type);
     }
 }
 
@@ -62,7 +62,7 @@ export class ThisReference extends Reference {
 export class SuperReference extends Reference {
     constructor(public cls: Class) { super(); cls.superReferences.push(this); }
 
-    setType(type: Type) { throw new Error("EnumReference cannot have a type!"); }
+    setActualType(type: Type) { throw new Error("EnumReference cannot have a type!"); }
 }
 
 // has type: yes
@@ -88,9 +88,9 @@ export class ForeachVariableReference extends Reference {
 export class StaticFieldReference extends Reference {
     constructor(public decl: Field) { super(); decl.staticReferences.push(this); }
 
-    setType(type: Type) {
+    setActualType(type: Type) {
         if (Type.isGeneric(type)) throw new Error("StaticField's type cannot be Generic");
-        super.setType(type);
+        super.setActualType(type);
     }
 }
 
@@ -99,9 +99,9 @@ export class StaticFieldReference extends Reference {
 export class StaticPropertyReference extends Reference {
     constructor(public decl: Property) { super(); decl.staticReferences.push(this); }
 
-    setType(type: Type) {
+    setActualType(type: Type) {
         if (Type.isGeneric(type)) throw new Error("StaticProperty's type cannot be Generic");
-        super.setType(type);
+        super.setActualType(type);
     }
 }
 
@@ -109,7 +109,7 @@ export class StaticPropertyReference extends Reference {
 export class StaticMethodReference extends Reference {
     constructor(public decl: Method) { super(); decl.staticReferences.push(this); }
 
-    setType(type: Type) { throw new Error("StaticMethodReference cannot have a type!"); }
+    setActualType(type: Type) { throw new Error("StaticMethodReference cannot have a type!"); }
 }
 
 // has type: yes
@@ -128,5 +128,5 @@ export class InstancePropertyReference extends Reference {
 export class InstanceMethodReference extends Reference {
     constructor(public object: Expression, public method: Method) { super(); method.instanceReferences.push(this); }
 
-    setType(type: Type) { throw new Error("InstanceMethodReference cannot have a type!"); }
+    setActualType(type: Type) { throw new Error("InstanceMethodReference cannot have a type!"); }
 }

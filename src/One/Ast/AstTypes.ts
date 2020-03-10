@@ -16,6 +16,10 @@ export class Type {
         if (type1 instanceof AnyType && type2 instanceof AnyType) return true;
         if (type1 instanceof GenericsType && type2 instanceof GenericsType) return type1.typeVarName === type2.typeVarName;
         if (type1 instanceof EnumType && type2 instanceof EnumType) return type1.decl === type2.decl;
+        if (type1 instanceof LambdaType && type2 instanceof LambdaType)
+            return this.equals(type1.returnType, type2.returnType) &&
+                type1.parameters.length === type2.parameters.length &&
+                type1.parameters.every((t, i) => Type.equals(t.type, type2.parameters[i].type));
         if (type1 instanceof ClassType && type2 instanceof ClassType)
             return type1.decl === type2.decl && 
                 type1.typeArguments.length === type2.typeArguments.length &&
@@ -26,6 +30,18 @@ export class Type {
                 type1.typeArguments.every((t, i) => Type.equals(t, type2.typeArguments[i]));
         return false;
     }
+
+    static isAssignableTo(toBeAssigned: Type, whereTo: Type) {
+        if (this.equals(toBeAssigned, whereTo)) return true;
+        if (toBeAssigned instanceof ClassType && whereTo instanceof ClassType)
+            return toBeAssigned.decl.baseClass !== null && this.isAssignableTo(toBeAssigned.decl.baseClass, whereTo);
+        if (toBeAssigned instanceof ClassType && whereTo instanceof InterfaceType)
+            return toBeAssigned.decl.baseInterfaces.some(x => this.isAssignableTo(x, whereTo));
+        if (toBeAssigned instanceof InterfaceType && whereTo instanceof InterfaceType)
+            return toBeAssigned.decl.baseInterfaces.some(x => this.isAssignableTo(x, whereTo));
+        return false;
+    }
+
     repr(): string { return "U:UNKNOWN"; }
 }
 

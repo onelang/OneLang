@@ -1,7 +1,5 @@
 import { Type, VoidType, UnresolvedType, ClassType } from "./AstTypes";
-import { Statement } from "./Statements";
-import { MethodParameter, Method } from "./Types";
-import { StaticMethodReference } from "./References";
+import { Method } from "./Types";
 
 export enum TypeRestriction { NoRestriction, ShouldNotHaveType, MustBeGeneric, ShouldNotBeGeneric }
 
@@ -9,17 +7,45 @@ export class Expression {
     /** @creator FillParent */
     parentExpr: Expression;
     /** @creator InferTypes */
-    exprType: Type = null;
+    declaredType: Type = null;
+    /** @creator InferTypes */
+    actualType: Type = null;
 
-    setType(type: Type, allowUnresolved = false) {
-        if (this.exprType !== null) throw new Error("Expression already has type!");
-        if (type === null) throw new Error("New type cannot be null!");
+    protected typeCheck(type: Type) {
+        if (type === null)
+            throw new Error("New type cannot be null!");
 
-        if (type instanceof VoidType) throw new Error("Expression's type cannot be VoidType!");
-        if (type instanceof UnresolvedType && !allowUnresolved) throw new Error("Expression's type cannot be UnresolvedType!");
+        if (type instanceof VoidType)
+            throw new Error("Expression's type cannot be VoidType!");
 
-        this.exprType = type;
+        if (type instanceof UnresolvedType)
+            throw new Error("Expression's type cannot be UnresolvedType!");
     }
+
+    setActualType(actualType: Type) {
+        if (this.actualType !== null)
+            throw new Error("Expression already has an actual type!");
+
+        this.typeCheck(actualType);
+        if (this.declaredType !== null && !Type.isAssignableTo(actualType, this.declaredType))
+            throw new Error(`Actual type (${actualType}) is not assignable to the declared type (${this.declaredType})!`);
+
+        this.actualType = actualType;
+    }
+
+    setDeclaredType(type: Type) {
+        if (this.actualType !== null)
+            throw new Error("Cannot set declared type after actual type was already set!");
+
+        if (this.declaredType !== null)
+            throw new Error("Expression already has a declared type!");
+
+        this.typeCheck(type);
+
+        this.declaredType = type;
+    }
+
+    getType() { return this.actualType || this.declaredType; }
 }
 
 export class ExpressionRoot extends Expression {
