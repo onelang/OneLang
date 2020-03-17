@@ -2,6 +2,8 @@ import { Expression, ElementAccessExpression, UnresolvedCallExpression, Property
 import { AstTransformer } from "../AstTransformer";
 
 export class ConvertToMethodCall extends AstTransformer {
+    name = "ConvertToMethodCall";
+    
     protected visitExpression(expr: Expression) {
         super.visitExpression(expr);
         if (expr instanceof ElementAccessExpression)

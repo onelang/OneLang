@@ -5,7 +5,7 @@ import { ErrorManager } from "../ErrorManager";
 import { Expression, UnresolvedNewExpression, NewExpression } from "../Ast/Expressions";
 
 export class ResolveUnresolvedTypes extends AstTransformer {
-    file: SourceFile;
+    name = "ResolveUnresolvedTypes";
 
     constructor(public errorMan = new ErrorManager()) { super(); }
 
@@ -13,7 +13,7 @@ export class ResolveUnresolvedTypes extends AstTransformer {
         super.visitType(type);
         if (!(type instanceof UnresolvedType)) return null;
         
-        const symbol = this.file.availableSymbols.get(type.typeName) || null;
+        const symbol = this.currentFile.availableSymbols.get(type.typeName) || null;
         if (symbol === null) {
             this.errorMan.throw(`Unresolved type '${type.typeName}' was not found in available symbols`);
             return null;
@@ -44,16 +44,5 @@ export class ResolveUnresolvedTypes extends AstTransformer {
         } else {
             return super.visitExpression(expr);
         }
-    }
-
-
-    public visitSourceFile(sourceFile: SourceFile) {
-        this.file = sourceFile;
-
-        this.errorMan.resetContext("ResolveUnresolvedTypes", this.file);
-        super.visitSourceFile(sourceFile);
-        this.errorMan.resetContext();
-
-        return null;
     }
 }

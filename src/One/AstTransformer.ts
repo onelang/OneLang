@@ -1,11 +1,17 @@
 import { Type, IHasTypeArguments, ClassType, InterfaceType, UnresolvedType, LambdaType } from "./Ast/AstTypes";
 import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression, InstanceOfExpression, AwaitExpression, StringLiteral, NumericLiteral, NullLiteral, RegexLiteral, BooleanLiteral, StaticMethodCallExpression, InstanceMethodCallExpression, UnresolvedNewExpression, NullCoalesceExpression } from "./Ast/Expressions";
 import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement, ContinueStatement, DoStatement } from "./Ast/Statements";
-import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda, IMethodBase, Package, GlobalFunction } from "./Ast/Types";
+import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda, IMethodBase, Package, GlobalFunction, IInterface } from "./Ast/Types";
 import { ClassReference, EnumReference, ThisReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, GlobalFunctionReference, StaticMethodReference, SuperReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, StaticPropertyReference, StaticFieldReference } from "./Ast/References";
 import { ErrorManager } from "./ErrorManager";
 
 export abstract class AstTransformer {
+    name: string = "AstTransformer";
+    currentFile: SourceFile;
+    currentInterface: IInterface;
+    currentMethod: IMethodBase;
+    currentStatement: Statement;
+
     constructor(public errorMan: ErrorManager = null) {
         if (this.errorMan === null)
             this.errorMan = new ErrorManager();
@@ -51,6 +57,7 @@ export abstract class AstTransformer {
     }
 
     protected visitStatement(stmt: Statement): Statement {
+        this.currentStatement = stmt;
         if (stmt instanceof ReturnStatement) {
             if (stmt.expression)
                 stmt.expression = this.visitExpression(stmt.expression) || stmt.expression;
@@ -213,8 +220,10 @@ export abstract class AstTransformer {
     }
 
     protected visitMethod(method: Method) {
+        this.currentMethod = method;
         this.visitMethodBase(method);
         method.returns = this.visitType(method.returns) || method.returns;
+        this.currentMethod = null;
     }
  
     protected visitGlobalFunction(func: GlobalFunction) {
@@ -223,7 +232,9 @@ export abstract class AstTransformer {
     }
  
     protected visitConstructor(constructor: Constructor) {
+        this.currentMethod = constructor;
         this.visitMethodBase(constructor);
+        this.currentMethod = null;
     }
  
     protected visitField(field: Field) {
@@ -244,12 +255,15 @@ export abstract class AstTransformer {
     }
 
     protected visitInterface(intf: Interface) {
+        this.currentInterface = intf;
         intf.baseInterfaces = intf.baseInterfaces.map(x => this.visitType(x) || x);
         this.visitObjectMap(intf.fields, x => this.visitField(x));
         this.visitObjectMap(intf.methods, x => this.visitMethod(x));
+        this.currentInterface = null;
     }
 
     protected visitClass(cls: Class) {
+        this.currentInterface = cls;
         if (cls.constructor_)
             this.visitConstructor(cls.constructor_);
 
@@ -258,6 +272,7 @@ export abstract class AstTransformer {
         this.visitObjectMap(cls.methods, x => this.visitMethod(x));
         this.visitObjectMap(cls.properties, x => this.visitProperty(x));
         this.visitObjectMap(cls.fields, x => this.visitField(x));
+        this.currentInterface = null;
     }
  
     protected visitEnum(enum_: Enum) {
@@ -268,11 +283,13 @@ export abstract class AstTransformer {
     }
 
     public visitSourceFile(sourceFile: SourceFile) {
+        this.currentFile = sourceFile;
         this.visitObjectMap(sourceFile.enums, x => this.visitEnum(x));
         this.visitObjectMap(sourceFile.interfaces, x => this.visitInterface(x));
         this.visitObjectMap(sourceFile.classes, x => this.visitClass(x));
         this.visitObjectMap(sourceFile.funcs, x => this.visitGlobalFunction(x));
         sourceFile.mainBlock = this.visitBlock(sourceFile.mainBlock) || sourceFile.mainBlock;
+        this.currentFile = null;
         return null;
     }
 

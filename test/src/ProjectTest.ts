@@ -138,7 +138,14 @@ initCompiler().then(() => {
 
         printState();
 
-        new InferTypes(workspace.errorManager).visitPackage(projectPkg);
+        try {
+            new InferTypes(workspace.errorManager).visitPackage(projectPkg);
+        } catch (e) {
+            if (e instanceof Error)
+                workspace.errorManager.throw(e.message);
+            else
+                debugger;
+        }
         saveState();
 
         const lastState = new Linq(pkgStates).last();

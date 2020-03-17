@@ -1,16 +1,11 @@
 import { AstTransformer } from "../AstTransformer";
 import { ErrorManager } from "../ErrorManager";
-import { InstanceOfExpression, BinaryExpression, Expression, CastExpression, ExpressionRoot, ConditionalExpression, PropertyAccessExpression } from "../Ast/Expressions";
+import { InstanceOfExpression, BinaryExpression, Expression, CastExpression, ConditionalExpression, PropertyAccessExpression } from "../Ast/Expressions";
 import { Statement, IfStatement, VariableDeclaration } from "../Ast/Statements";
-import { TSOverviewGenerator } from "../../Utils/TSOverviewGenerator";
-import { Linq } from "../../Utils/Underscore";
 import { ForeachVariableReference, VariableDeclarationReference, MethodParameterReference } from "../Ast/References";
 
-export class ImplicitCastContext {
-
-}
-
 export class InstanceOfImplicitCast extends AstTransformer {
+    name = "InstanceOfImplicitCast";
     constructor(errorMan: ErrorManager = null) { super(errorMan); }
 
     casts: InstanceOfExpression[] = [];

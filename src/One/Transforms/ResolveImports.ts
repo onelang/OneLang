@@ -2,6 +2,8 @@ import { Workspace, UnresolvedImport, Package, ExportedScope } from "../Ast/Type
 import { Linq } from "../../Utils/Underscore";
 
 export class ResolveImports {
+    name = "ResolveImports";
+    
     static processWorkspace(ws: Workspace) {
         for (const file of new Linq(Object.values(ws.packages)).selectMany(x => Object.values(x.files)).get()) {
             for (const imp of file.imports) {

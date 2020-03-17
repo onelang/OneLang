@@ -45,7 +45,7 @@ class SymbolLookup {
 }
 
 export class ResolveIdentifiers extends AstTransformer {
-    file: SourceFile;
+    name = "ResolveIdentifiers";
     symbolLookup: SymbolLookup;
 
     constructor(public errorMan = new ErrorManager()) {
@@ -125,9 +125,7 @@ export class ResolveIdentifiers extends AstTransformer {
     }
 
     public visitSourceFile(sourceFile: SourceFile) {
-        this.file = sourceFile;
-
-        this.errorMan.resetContext("ResolveIdentifiers", sourceFile);
+        this.errorMan.resetContext(this);
         this.symbolLookup.pushContext(`File: ${sourceFile.sourcePath}`);
 
         for (const symbol of sourceFile.availableSymbols.values()) {

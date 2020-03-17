@@ -7,8 +7,7 @@ import { ClassType, InterfaceType, AnyType, Type, VoidType, GenericsType, EnumTy
 import { Statement, VariableDeclaration, ReturnStatement, ForeachStatement } from "../Ast/Statements";
 
 export class InferTypes extends AstTransformer {
-    file: SourceFile;
-    currentMethod: Method = null;
+    name = "InferTypes";
     methodReturnTypesStack: Type[][] = [];
     lambdaLevel = 0;
     protected doNotVisitFieldsAndProps = false;
@@ -86,7 +85,7 @@ export class InferTypes extends AstTransformer {
         if (expr.object instanceof ClassReference)
             return this.getStaticRef(expr.object.decl, expr.propertyName);
 
-        if (expr.object instanceof ThisReference && this.currentMethod && this.currentMethod.isStatic)
+        if (expr.object instanceof ThisReference && this.currentMethod instanceof Method && this.currentMethod.isStatic)
             return this.getStaticRef(expr.object.cls, expr.propertyName);
 
         if (expr.object instanceof SuperReference ||
@@ -153,7 +152,7 @@ export class InferTypes extends AstTransformer {
 
     protected visitStatement(stmt: Statement): Statement {
         if (stmt instanceof ReturnStatement && stmt.expression !== null) {
-            if (this.lambdaLevel === 0 && this.currentMethod !== null && this.currentMethod.returns !== null)
+            if (this.lambdaLevel === 0 && this.currentMethod instanceof Method && this.currentMethod.returns !== null)
                 stmt.expression.setDeclaredType(this.currentMethod.returns);
 
             super.visitStatement(stmt);
@@ -167,7 +166,7 @@ export class InferTypes extends AstTransformer {
         } else if (stmt instanceof ForeachStatement) {
             stmt.items = this.visitExpression(stmt.items) || stmt.items;
             const arrayType = stmt.items.getType();
-            if (arrayType instanceof ClassType && arrayType.decl === this.file.literalTypes.array.decl) {
+            if (arrayType instanceof ClassType && arrayType.decl === this.currentFile.literalTypes.array.decl) {
                 stmt.itemVar.type = arrayType.typeArguments[0];
             } else
                 this.errorMan.throw("Expected array as Foreach items variable");
@@ -182,7 +181,7 @@ export class InferTypes extends AstTransformer {
             if (!itemTypes.some(t => Type.equals(t, item.getType())))
                 itemTypes.push(item.getType());
 
-        const literalType = isMap ? this.file.literalTypes.map : this.file.literalTypes.array;
+        const literalType = isMap ? this.currentFile.literalTypes.map : this.currentFile.literalTypes.array;
 
         let itemType: Type = null;
         if (itemTypes.length === 0) {
@@ -381,7 +380,7 @@ export class InferTypes extends AstTransformer {
             const rightType = expr.right.getType();
             if (expr.right instanceof NullLiteral) { // something-which-can-be-undefined || null
                 return expr.left;
-            } else if (Type.isAssignableTo(rightType, leftType) && !Type.equals(rightType, this.file.literalTypes.boolean))
+            } else if (Type.isAssignableTo(rightType, leftType) && !Type.equals(rightType, this.currentFile.literalTypes.boolean))
                 expr = new NullCoalesceExpression(expr.left, expr.right);
         }
 
@@ -406,23 +405,23 @@ export class InferTypes extends AstTransformer {
         } else if (expr instanceof EnumMemberReference) {
             expr.setActualType(expr.decl.parentEnum.type);
         } else if (expr instanceof BooleanLiteral) {
-            expr.setActualType(this.file.literalTypes.boolean);
+            expr.setActualType(this.currentFile.literalTypes.boolean);
         } else if (expr instanceof NumericLiteral) {
-            expr.setActualType(this.file.literalTypes.numeric);
+            expr.setActualType(this.currentFile.literalTypes.numeric);
         } else if (expr instanceof StringLiteral || expr instanceof TemplateString) {
-            expr.setActualType(this.file.literalTypes.string);
+            expr.setActualType(this.currentFile.literalTypes.string);
         } else if (expr instanceof RegexLiteral) {
-            expr.setActualType(this.file.literalTypes.regex);
+            expr.setActualType(this.currentFile.literalTypes.regex);
         } else if (expr instanceof ArrayLiteral) {
             const itemType = this.inferArrayOrMapItemType(expr.items, expr.declaredType, false);
-            expr.setActualType(new ClassType(this.file.literalTypes.array.decl, [itemType]));
+            expr.setActualType(new ClassType(this.currentFile.literalTypes.array.decl, [itemType]));
         } else if (expr instanceof MapLiteral) {
             const itemType = this.inferArrayOrMapItemType(Array.from(expr.properties.values()), expr.declaredType, true);
-            expr.setActualType(new ClassType(this.file.literalTypes.map.decl, [itemType]));
+            expr.setActualType(new ClassType(this.currentFile.literalTypes.map.decl, [itemType]));
         } else if (expr instanceof InstanceMethodReference || expr instanceof StaticMethodReference || expr instanceof GlobalFunctionReference) {
             // it does not have type, it will be called
         } else if (expr instanceof InstanceOfExpression) {
-            expr.setActualType(this.file.literalTypes.boolean);
+            expr.setActualType(this.currentFile.literalTypes.boolean);
         } else if (expr instanceof InstanceMethodCallExpression) {
             const objType = expr.object.getType();
             if (!(objType instanceof ClassType || objType instanceof InterfaceType))
@@ -466,13 +465,13 @@ export class InferTypes extends AstTransformer {
                 const opId = `${expr.operator}${operandType.decl.name}`;
 
                 if (opId === "-TsNumber") {
-                    expr.setActualType(this.file.literalTypes.numeric);
+                    expr.setActualType(this.currentFile.literalTypes.numeric);
                 } else if (opId === "!TsBoolean") {
-                    expr.setActualType(this.file.literalTypes.boolean);
+                    expr.setActualType(this.currentFile.literalTypes.boolean);
                 } else if (opId === "++TsNumber") {
-                    expr.setActualType(this.file.literalTypes.numeric);
+                    expr.setActualType(this.currentFile.literalTypes.numeric);
                 } else if (opId === "--TsNumber") {
-                    expr.setActualType(this.file.literalTypes.numeric);
+                    expr.setActualType(this.currentFile.literalTypes.numeric);
                 } else {
                     debugger;
                 }
@@ -491,30 +490,30 @@ export class InferTypes extends AstTransformer {
                 else
                     throw new Error(`Right-side expression (${rightType.repr()}) is not assignable to left-side (${leftType.repr()}).`);
             } else if (isEqOrNeq && (leftType instanceof AnyType || rightType instanceof AnyType)) {
-                expr.setActualType(this.file.literalTypes.boolean);
+                expr.setActualType(this.currentFile.literalTypes.boolean);
             } else if (leftType instanceof ClassType && rightType instanceof ClassType) {
                 const opId = `${leftType.decl.name} ${expr.operator} ${rightType.decl.name}`;
 
-                const l = this.file.literalTypes;
+                const l = this.currentFile.literalTypes;
 
                 if (leftType.decl === l.numeric.decl && rightType.decl === l.numeric.decl && ["-", "+", "-=", "+=", "%"].includes(expr.operator))
-                    expr.setActualType(this.file.literalTypes.numeric);
+                    expr.setActualType(this.currentFile.literalTypes.numeric);
                 else if (leftType.decl === l.numeric.decl && rightType.decl === l.numeric.decl && ["<", "<=", ">", ">="].includes(expr.operator))
-                    expr.setActualType(this.file.literalTypes.boolean);
+                    expr.setActualType(this.currentFile.literalTypes.boolean);
                 else if (leftType.decl === l.string.decl && rightType.decl === l.string.decl && ["+", "+="].includes(expr.operator))
-                    expr.setActualType(this.file.literalTypes.string);
+                    expr.setActualType(this.currentFile.literalTypes.string);
                 else if (leftType.decl === l.boolean.decl && rightType.decl === l.boolean.decl && ["||", "&&"].includes(expr.operator))
-                    expr.setActualType(this.file.literalTypes.boolean);
+                    expr.setActualType(this.currentFile.literalTypes.boolean);
                 else if (leftType.decl === rightType.decl && isEqOrNeq)
-                    expr.setActualType(this.file.literalTypes.boolean);
+                    expr.setActualType(this.currentFile.literalTypes.boolean);
                 else {
                     debugger;
                 }
             } else if ((leftType instanceof ClassType || leftType instanceof InterfaceType) && expr.right instanceof NullLiteral && isEqOrNeq) {
-                expr.setActualType(this.file.literalTypes.boolean);
+                expr.setActualType(this.currentFile.literalTypes.boolean);
             } else if (leftType instanceof EnumType && rightType instanceof EnumType) {
                 if (leftType.decl === rightType.decl && isEqOrNeq)
-                    expr.setActualType(this.file.literalTypes.boolean);
+                    expr.setActualType(this.currentFile.literalTypes.boolean);
                 else
                     debugger;
             } else {
@@ -623,7 +622,6 @@ export class InferTypes extends AstTransformer {
 
     protected visitMethod(method: Method) {
         console.log(`processing method: ${method.parentInterface.name}::${method.name}`);
-        this.currentMethod = method;
         if (method.body) {
             this.startReturnTypeInfering();
             super.visitMethod(method);
@@ -631,20 +629,13 @@ export class InferTypes extends AstTransformer {
         } else {
             super.visitMethod(method);
         }
-        this.currentMethod = null;
-    }
-
-    public visitSourceFile(sourceFile: SourceFile) {
-        this.file = sourceFile;
-        this.errorMan.resetContext("InferTypes", sourceFile);
-        super.visitSourceFile(sourceFile);
-        this.errorMan.resetContext();
     }
 
     public visitPackage(pkg: Package) {
         this.doNotVisitFieldsAndProps = false;
         for (const file of Object.values(pkg.files)) {
-            this.file = file;
+            this.currentFile = file;
+            this.errorMan.resetContext(this);
             console.log(`processing fields: ${file.sourcePath.path}`);
             for (const cls of file.classes.values())
                 for (const field of cls.fields.values())
@@ -652,7 +643,8 @@ export class InferTypes extends AstTransformer {
         }
 
         for (const file of Object.values(pkg.files)) {
-            this.file = file;
+            this.currentFile = file;
+            this.errorMan.resetContext(this);
             console.log(`processing properties: ${file.sourcePath.path}`);
             for (const cls of file.classes.values())
                 for (const prop of cls.properties.values())

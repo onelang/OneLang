@@ -4,6 +4,7 @@ import { Expression } from "../Ast/Expressions";
 import { AstTransformer } from "../AstTransformer";
 
 export class FillParent extends AstTransformer {
+    name = "FillAttributesFromTrivia";
     parentExpr: Expression = null;
 
     protected visitExpression(expr: Expression) {
