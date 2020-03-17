@@ -398,7 +398,8 @@ export class TypeScriptParser2 implements IParser {
                 params.push(param);
 
                 if (isPublic) {
-                    fields.push(new Field(paramName, typeAndInit.type, typeAndInit.init, Visibility.Public, false, null));
+                    // init should be used as ony the constructor's method parameter, but not again as a field initializer too
+                    fields.push(new Field(paramName, typeAndInit.type, null, Visibility.Public, false, null));
                     bodyPrefixStatements.push(this.parseExprStmtFromString(`this.${paramName} = ${paramName}`));
                 }
 

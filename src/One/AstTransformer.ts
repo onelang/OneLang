@@ -1,7 +1,7 @@
 import { Type, IHasTypeArguments, ClassType, InterfaceType, UnresolvedType, LambdaType } from "./Ast/AstTypes";
-import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression, InstanceOfExpression, AwaitExpression, StringLiteral, NumericLiteral, NullLiteral, RegexLiteral, BooleanLiteral, StaticMethodCallExpression, InstanceMethodCallExpression, UnresolvedNewExpression } from "./Ast/Expressions";
+import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression, InstanceOfExpression, AwaitExpression, StringLiteral, NumericLiteral, NullLiteral, RegexLiteral, BooleanLiteral, StaticMethodCallExpression, InstanceMethodCallExpression, UnresolvedNewExpression, NullCoalesceExpression } from "./Ast/Expressions";
 import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement, ContinueStatement, DoStatement } from "./Ast/Statements";
-import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda, IMethodBase, Package } from "./Ast/Types";
+import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda, IMethodBase, Package, GlobalFunction } from "./Ast/Types";
 import { ClassReference, EnumReference, ThisReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, GlobalFunctionReference, StaticMethodReference, SuperReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, StaticPropertyReference, StaticFieldReference } from "./Ast/References";
 import { ErrorManager } from "./ErrorManager";
 
@@ -123,6 +123,9 @@ export abstract class AstTransformer<TContext> {
         if (expr instanceof BinaryExpression) {
             expr.left = this.visitExpression(expr.left, context) || expr.left;
             expr.right = this.visitExpression(expr.right, context) || expr.right;
+        } else if (expr instanceof NullCoalesceExpression) {
+            expr.defaultExpr = this.visitExpression(expr.defaultExpr, context) || expr.defaultExpr;
+            expr.exprIfNull = this.visitExpression(expr.exprIfNull, context) || expr.exprIfNull;
         } else if (expr instanceof UnresolvedCallExpression) {
             expr.method = this.visitExpression(expr.method, context) || expr.method;
             expr.typeArgs = expr.typeArgs.map(x => this.visitType(x, context) || x);
@@ -214,6 +217,11 @@ export abstract class AstTransformer<TContext> {
         method.returns = this.visitType(method.returns, context) || method.returns;
     }
  
+    protected visitGlobalFunction(func: GlobalFunction, context: TContext) {
+        this.visitMethodBase(func, context);
+        func.returns = this.visitType(func.returns, context) || func.returns;
+    }
+ 
     protected visitConstructor(constructor: Constructor, context: TContext) {
         this.visitMethodBase(constructor, context);
     }
@@ -263,6 +271,7 @@ export abstract class AstTransformer<TContext> {
         this.visitObjectMap(sourceFile.enums, x => this.visitEnum(x, context));
         this.visitObjectMap(sourceFile.interfaces, x => this.visitInterface(x, context));
         this.visitObjectMap(sourceFile.classes, x => this.visitClass(x, context));
+        this.visitObjectMap(sourceFile.funcs, x => this.visitGlobalFunction(x, context));
         sourceFile.mainBlock = this.visitBlock(sourceFile.mainBlock, context) || sourceFile.mainBlock;
         return null;
     }

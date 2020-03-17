@@ -63,7 +63,7 @@ export class DoStatement extends Statement {
 
 export class ForeachVariable implements IVariable, IReferencable {
     constructor(public name: string) { }
-    type: Type;
+    type: Type = null;
 
     /** @creator ResolveIdentifiers */
     references: ForeachVariableReference[] = [];

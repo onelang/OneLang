@@ -1,10 +1,14 @@
-import { Class, Enum, MethodParameter, GlobalFunction, Field, Property, Method, EnumMember } from "./Types";
+import { Class, Enum, MethodParameter, GlobalFunction, Field, Property, Method, EnumMember, IMethodBase } from "./Types";
 import { VariableDeclaration, ForVariable, ForeachVariable } from "./Statements";
 import { Expression, TypeRestriction } from "./Expressions";
 import { Type, EnumType, ClassType } from "./AstTypes";
 
 export interface IReferencable {
     createReference(name: string): Reference;
+}
+
+export interface IGetMethodBase {
+    getMethodBase(): IMethodBase;
 }
 
 export class Reference extends Expression { }
@@ -17,16 +21,21 @@ export class ClassReference extends Reference {
 }
 
 // has type: no (requires call, passing functions is not supported yet)
-export class GlobalFunctionReference extends Reference {
+export class GlobalFunctionReference extends Reference implements IGetMethodBase {
     constructor(public decl: GlobalFunction) { super(); decl.references.push(this); }
 
     setActualType(type: Type) { throw new Error("GlobalFunctionReference cannot have a type!"); }
+    getMethodBase() { return this.decl; }
 }
 
 // has type: yes (it's a variable)
 // is generic: should be (if the class is `List<T>` then method param should be `T`, and not `string` - but we cannot check this)
 export class MethodParameterReference extends Reference {
     constructor(public decl: MethodParameter) { super(); decl.references.push(this); }
+
+    setActualType(type: Type) { 
+        super.setActualType(type, false, this.decl.parentMethod !== null && this.decl.parentMethod.parentInterface.typeArguments.length > 0);
+    }
 }
 
 // has type: no (only it's values has a value)
@@ -54,7 +63,7 @@ export class ThisReference extends Reference {
 
     setActualType(type: Type) { 
         if (!(type instanceof ClassType)) throw new Error("Expected ClassType!");
-        super.setActualType(type);
+        super.setActualType(type, false, this.cls.typeArguments.length > 0);
     }
 }
 
@@ -62,7 +71,7 @@ export class ThisReference extends Reference {
 export class SuperReference extends Reference {
     constructor(public cls: Class) { super(); cls.superReferences.push(this); }
 
-    setActualType(type: Type) { throw new Error("EnumReference cannot have a type!"); }
+    setActualType(type: Type) { throw new Error("SuperReference cannot have a type!"); }
 }
 
 // has type: yes
@@ -106,10 +115,11 @@ export class StaticPropertyReference extends Reference {
 }
 
 // has type: no (requires call, passing static methods is not supported yet)
-export class StaticMethodReference extends Reference {
+export class StaticMethodReference extends Reference implements IGetMethodBase {
     constructor(public decl: Method) { super(); decl.staticReferences.push(this); }
 
     setActualType(type: Type) { throw new Error("StaticMethodReference cannot have a type!"); }
+    getMethodBase() { return this.decl; }
 }
 
 // has type: yes
@@ -125,8 +135,9 @@ export class InstancePropertyReference extends Reference {
 }
 
 // has type: no (requires call, passing instance methods is not supported yet)
-export class InstanceMethodReference extends Reference {
+export class InstanceMethodReference extends Reference implements IGetMethodBase {
     constructor(public object: Expression, public method: Method) { super(); method.instanceReferences.push(this); }
 
     setActualType(type: Type) { throw new Error("InstanceMethodReference cannot have a type!"); }
+    getMethodBase() { return this.method; }
 }

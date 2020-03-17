@@ -1,5 +1,5 @@
 import { Type, VoidType, UnresolvedType, ClassType } from "./AstTypes";
-import { Method } from "./Types";
+import { Method, GlobalFunction } from "./Types";
 
 export enum TypeRestriction { NoRestriction, ShouldNotHaveType, MustBeGeneric, ShouldNotBeGeneric }
 
@@ -11,36 +11,40 @@ export class Expression {
     /** @creator InferTypes */
     actualType: Type = null;
 
-    protected typeCheck(type: Type) {
+    protected typeCheck(type: Type, allowVoid: boolean) {
         if (type === null)
             throw new Error("New type cannot be null!");
 
-        if (type instanceof VoidType)
+        if (type instanceof VoidType && !allowVoid)
             throw new Error("Expression's type cannot be VoidType!");
 
         if (type instanceof UnresolvedType)
             throw new Error("Expression's type cannot be UnresolvedType!");
     }
 
-    setActualType(actualType: Type) {
+    setActualType(actualType: Type, allowVoid = false, allowGeneric = false) {
         if (this.actualType !== null)
             throw new Error("Expression already has an actual type!");
 
-        this.typeCheck(actualType);
+        this.typeCheck(actualType, allowVoid);
+
         if (this.declaredType !== null && !Type.isAssignableTo(actualType, this.declaredType))
-            throw new Error(`Actual type (${actualType}) is not assignable to the declared type (${this.declaredType})!`);
+            throw new Error(`Actual type (${actualType.repr()}) is not assignable to the declared type (${this.declaredType.repr()})!`);
+
+        if (!allowGeneric && Type.isGeneric(actualType))
+            throw new Error(`Actual type cannot be generic!`);
 
         this.actualType = actualType;
     }
 
-    setDeclaredType(type: Type) {
+    setDeclaredType(type: Type, allowVoid = false) {
         if (this.actualType !== null)
             throw new Error("Cannot set declared type after actual type was already set!");
 
         if (this.declaredType !== null)
             throw new Error("Expression already has a declared type!");
 
-        this.typeCheck(type);
+        this.typeCheck(type, allowVoid);
 
         this.declaredType = type;
     }
@@ -127,6 +131,12 @@ export class BinaryExpression extends Expression {
         public right: Expression) { super(); }
 }
 
+export class NullCoalesceExpression extends Expression {
+    constructor(
+        public defaultExpr: Expression,
+        public exprIfNull: Expression) { super(); }
+}
+
 export enum UnaryType { Postfix, Prefix }
 
 export class UnaryExpression extends Expression {
@@ -186,6 +196,23 @@ export class InstanceMethodCallExpression extends Expression {
         public method: Method,
         public typeArgs: Type[],
         public args: Expression[]) { super(); }
+}
+
+export class GlobalFunctionCallExpression extends Expression {
+    constructor(
+        public method: GlobalFunction,
+        public args: Expression[]) { super(); }
+}
+
+export class LambdaCallExpression extends Expression {
+    constructor(
+        public method: Expression,
+        public args: Expression[]) { super(); }
+}
+
+export class TodoExpression extends Expression {
+    constructor(
+        public expr: Expression) { super(); }
 }
 
 export class InstanceOfExpression extends Expression { 

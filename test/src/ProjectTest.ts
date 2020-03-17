@@ -136,6 +136,8 @@ initCompiler().then(() => {
         new InstanceOfImplicitCast(workspace.errorManager).visitPackage(projectPkg);
         saveState();
 
+        printState();
+
         new InferTypes(workspace.errorManager).visitPackage(projectPkg);
         saveState();
 

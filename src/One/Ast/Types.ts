@@ -234,6 +234,7 @@ export class Interface implements IHasAttributesAndTrivia, IInterface, IImportab
         public name: string,
         public typeArguments: string[],
         public baseInterfaces: Type[],
+        public fields: Map<string, Field>,
         public methods: Map<string, Method>,
         public isExported: boolean,
         public leadingTrivia: string) { }
@@ -325,7 +326,7 @@ export class MethodParameter implements IVariableWithInitializer, IReferencable 
         public initializer: Expression) { }
 
     /** @creator FillParent */
-    parentMethod: Method;
+    parentMethod: Method = null;
 
     /** @creator ResolveIdentifiers */
     references: MethodParameterReference[] = [];
@@ -402,4 +403,5 @@ export class Lambda extends Expression {
     constructor(
         public parameters: MethodParameter[],
         public body: Block) { super(); }
+    returns: Type = null;
 }
