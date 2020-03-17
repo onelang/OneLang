@@ -3,10 +3,14 @@ import { Statement } from "../Ast/Statements";
 import { Expression } from "../Ast/Expressions";
 import { AstTransformer } from "../AstTransformer";
 
-export class FillParent extends AstTransformer<Expression> {
-    protected visitExpression(expr: Expression, parent: Expression) {
-        expr.parentExpr = parent;
-        super.visitExpression(expr, expr);
+export class FillParent extends AstTransformer {
+    parentExpr: Expression = null;
+
+    protected visitExpression(expr: Expression) {
+        expr.parentExpr = this.parentExpr;
+        this.parentExpr = expr;
+        super.visitExpression(expr);
+        this.parentExpr = null;
         return null;
     }
 
@@ -14,7 +18,7 @@ export class FillParent extends AstTransformer<Expression> {
         method.parentInterface = parent;
         for (const param of method.parameters)
             param.parentMethod = method;
-        super.visitMethod(method, null);
+        super.visitMethod(method);
     }
 
     public visitSourceFile(file: SourceFile) {
@@ -38,7 +42,7 @@ export class FillParent extends AstTransformer<Expression> {
 
             if (cls.constructor_) {
                 cls.constructor_.parentClass = cls;
-                super.visitConstructor(cls.constructor_, null);
+                super.visitConstructor(cls.constructor_);
             }
 
             for (const method of cls.methods.values())
@@ -50,9 +54,9 @@ export class FillParent extends AstTransformer<Expression> {
             for (const prop of cls.properties.values()) {
                 prop.parentClass = cls;
                 if (prop.getter)
-                    this.visitBlock(prop.getter, null);
+                    this.visitBlock(prop.getter);
                 if (prop.setter)
-                    this.visitBlock(prop.setter, null);
+                    this.visitBlock(prop.setter);
             }
         }
     }

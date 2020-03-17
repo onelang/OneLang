@@ -5,174 +5,174 @@ import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, En
 import { ClassReference, EnumReference, ThisReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, GlobalFunctionReference, StaticMethodReference, SuperReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, StaticPropertyReference, StaticFieldReference } from "./Ast/References";
 import { ErrorManager } from "./ErrorManager";
 
-export abstract class AstTransformer<TContext> {
+export abstract class AstTransformer {
     constructor(public errorMan: ErrorManager = null) {
         if (this.errorMan === null)
             this.errorMan = new ErrorManager();
      }
 
-    protected visitType(type: Type, context: TContext): Type {
+    protected visitType(type: Type): Type {
         if (type instanceof ClassType || type instanceof InterfaceType || type instanceof UnresolvedType) {
             const type2 = <IHasTypeArguments> type;
-            type2.typeArguments = type2.typeArguments.map(x => this.visitType(x, context) || x);
+            type2.typeArguments = type2.typeArguments.map(x => this.visitType(x) || x);
         } else if (type instanceof LambdaType) {
             for (const mp of type.parameters)
-                this.visitMethodParameter(mp, context);
-            type.returnType = this.visitType(type.returnType, context) || type.returnType;
+                this.visitMethodParameter(mp);
+            type.returnType = this.visitType(type.returnType) || type.returnType;
         }
         return null;
     }
  
-    protected visitIdentifier(id: Identifier, context: TContext): Expression { 
+    protected visitIdentifier(id: Identifier): Expression { 
         return null;
     }
 
-    protected visitVariable(variable: IVariable, context: TContext): IVariable {
+    protected visitVariable(variable: IVariable): IVariable {
         if (variable.type)
-            variable.type = this.visitType(variable.type, context) || variable.type;
+            variable.type = this.visitType(variable.type) || variable.type;
         return null;
     }
 
-    protected visitVariableWithInitializer(variable: IVariableWithInitializer, context: TContext): IVariableWithInitializer {
-        this.visitVariable(variable, context);
+    protected visitVariableWithInitializer(variable: IVariableWithInitializer): IVariableWithInitializer {
+        this.visitVariable(variable);
         if (variable.initializer)
-            variable.initializer = this.visitExpression(variable.initializer, context) || variable.initializer;
+            variable.initializer = this.visitExpression(variable.initializer) || variable.initializer;
         return null;
     }
 
-    protected visitVariableDeclaration(stmt: VariableDeclaration, context: TContext): VariableDeclaration {
-        this.visitVariableWithInitializer(stmt, context);
+    protected visitVariableDeclaration(stmt: VariableDeclaration): VariableDeclaration {
+        this.visitVariableWithInitializer(stmt);
         return null;
     }
 
-    protected visitUnknownStatement(stmt: Statement, context: TContext): Statement {
+    protected visitUnknownStatement(stmt: Statement): Statement {
         this.errorMan.throw(`Unknown statement type: ${stmt}`);
         return null;
     }
 
-    protected visitStatement(stmt: Statement, context: TContext): Statement {
+    protected visitStatement(stmt: Statement): Statement {
         if (stmt instanceof ReturnStatement) {
             if (stmt.expression)
-                stmt.expression = this.visitExpression(stmt.expression, context) || stmt.expression;
+                stmt.expression = this.visitExpression(stmt.expression) || stmt.expression;
         } else if (stmt instanceof ExpressionStatement) {
-            stmt.expression = this.visitExpression(stmt.expression, context) || stmt.expression;
+            stmt.expression = this.visitExpression(stmt.expression) || stmt.expression;
         } else if (stmt instanceof IfStatement) {
-            stmt.condition = this.visitExpression(stmt.condition, context) || stmt.condition;
-            stmt.then = this.visitBlock(stmt.then, context) || stmt.then;
+            stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
+            stmt.then = this.visitBlock(stmt.then) || stmt.then;
             if (stmt.else_)
-                stmt.else_ = this.visitBlock(stmt.else_, context) || stmt.else_;
+                stmt.else_ = this.visitBlock(stmt.else_) || stmt.else_;
         } else if (stmt instanceof ThrowStatement) {
-            stmt.expression = this.visitExpression(stmt.expression, context) || stmt.expression;
+            stmt.expression = this.visitExpression(stmt.expression) || stmt.expression;
         } else if (stmt instanceof VariableDeclaration) {
-            return this.visitVariableDeclaration(stmt, context);
+            return this.visitVariableDeclaration(stmt);
         } else if (stmt instanceof WhileStatement) {
-            stmt.condition = this.visitExpression(stmt.condition, context) || stmt.condition;
-            stmt.body = this.visitBlock(stmt.body, context) || stmt.body;    
+            stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
+            stmt.body = this.visitBlock(stmt.body) || stmt.body;    
         } else if (stmt instanceof DoStatement) {
-            stmt.condition = this.visitExpression(stmt.condition, context) || stmt.condition;
-            stmt.body = this.visitBlock(stmt.body, context) || stmt.body;    
+            stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
+            stmt.body = this.visitBlock(stmt.body) || stmt.body;    
         } else if (stmt instanceof ForStatement) {
             if (stmt.itemVar)
-                this.visitVariableWithInitializer(stmt.itemVar, context);
-            stmt.condition = this.visitExpression(stmt.condition, context) || stmt.condition;
-            stmt.incrementor = this.visitExpression(stmt.incrementor, context) || stmt.incrementor;
-            stmt.body = this.visitBlock(stmt.body, context) || stmt.body;
+                this.visitVariableWithInitializer(stmt.itemVar);
+            stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
+            stmt.incrementor = this.visitExpression(stmt.incrementor) || stmt.incrementor;
+            stmt.body = this.visitBlock(stmt.body) || stmt.body;
         } else if (stmt instanceof ForeachStatement) {
-            this.visitVariable(stmt.itemVar, context);
-            stmt.items = this.visitExpression(stmt.items, context) || stmt.items;
-            stmt.body = this.visitBlock(stmt.body, context) || stmt.body;
+            this.visitVariable(stmt.itemVar);
+            stmt.items = this.visitExpression(stmt.items) || stmt.items;
+            stmt.body = this.visitBlock(stmt.body) || stmt.body;
         } else if (stmt instanceof BreakStatement) {
             // ...
         } else if (stmt instanceof UnsetStatement) {
-            stmt.expression = this.visitExpression(stmt.expression, context) || stmt.expression;
+            stmt.expression = this.visitExpression(stmt.expression) || stmt.expression;
         } else if (stmt instanceof ContinueStatement) {
             // ...
         } else {
-            return this.visitUnknownStatement(stmt, context);
+            return this.visitUnknownStatement(stmt);
         }
         return null;
     }
 
-    protected visitBlock(block: Block, context: TContext): Block {
-        block.statements = block.statements.map(x => this.visitStatement(x, context) || x);
+    protected visitBlock(block: Block): Block {
+        block.statements = block.statements.map(x => this.visitStatement(x) || x);
         return null;
     }
 
-    protected visitTemplateString(expr: TemplateString, context: TContext): TemplateString {
+    protected visitTemplateString(expr: TemplateString): TemplateString {
         for (let i = 0; i < expr.parts.length; i++) {
             const part = expr.parts[i];
             if(!part.isLiteral)
-                part.expression = this.visitExpression(part.expression, context) || part.expression;
+                part.expression = this.visitExpression(part.expression) || part.expression;
         }
         return null;
     }
     
-    protected visitUnknownExpression(expr: Expression, context: TContext): Expression {
+    protected visitUnknownExpression(expr: Expression): Expression {
         this.errorMan.throw(`Unknown expression type: ${expr}`);
         return null;
     }
 
-    protected visitLambda(lambda: Lambda, context: TContext): Lambda {
+    protected visitLambda(lambda: Lambda): Lambda {
         for (const mp of lambda.parameters)
-            this.visitMethodParameter(mp, context);
-        lambda.body = this.visitBlock(lambda.body, context) || lambda.body;
+            this.visitMethodParameter(mp);
+        lambda.body = this.visitBlock(lambda.body) || lambda.body;
         return null;
     }
 
-    protected visitExpression(expr: Expression, context: TContext): Expression {
+    protected visitExpression(expr: Expression): Expression {
         if (expr instanceof BinaryExpression) {
-            expr.left = this.visitExpression(expr.left, context) || expr.left;
-            expr.right = this.visitExpression(expr.right, context) || expr.right;
+            expr.left = this.visitExpression(expr.left) || expr.left;
+            expr.right = this.visitExpression(expr.right) || expr.right;
         } else if (expr instanceof NullCoalesceExpression) {
-            expr.defaultExpr = this.visitExpression(expr.defaultExpr, context) || expr.defaultExpr;
-            expr.exprIfNull = this.visitExpression(expr.exprIfNull, context) || expr.exprIfNull;
+            expr.defaultExpr = this.visitExpression(expr.defaultExpr) || expr.defaultExpr;
+            expr.exprIfNull = this.visitExpression(expr.exprIfNull) || expr.exprIfNull;
         } else if (expr instanceof UnresolvedCallExpression) {
-            expr.method = this.visitExpression(expr.method, context) || expr.method;
-            expr.typeArgs = expr.typeArgs.map(x => this.visitType(x, context) || x);
-            expr.args = expr.args.map(x => this.visitExpression(x, context) || x);
+            expr.method = this.visitExpression(expr.method) || expr.method;
+            expr.typeArgs = expr.typeArgs.map(x => this.visitType(x) || x);
+            expr.args = expr.args.map(x => this.visitExpression(x) || x);
         } else if (expr instanceof ConditionalExpression) {
-            expr.condition = this.visitExpression(expr.condition, context) || expr.condition;
-            expr.whenTrue = this.visitExpression(expr.whenTrue, context) || expr.whenTrue;
-            expr.whenFalse = this.visitExpression(expr.whenFalse, context) || expr.whenFalse;
+            expr.condition = this.visitExpression(expr.condition) || expr.condition;
+            expr.whenTrue = this.visitExpression(expr.whenTrue) || expr.whenTrue;
+            expr.whenFalse = this.visitExpression(expr.whenFalse) || expr.whenFalse;
         } else if (expr instanceof Identifier) {
-            return this.visitIdentifier(expr, context);
+            return this.visitIdentifier(expr);
         } else if (expr instanceof UnresolvedNewExpression) {
-            this.visitType(expr.cls, context);
-            expr.args = expr.args.map(x => this.visitExpression(x, context) || x);
+            this.visitType(expr.cls);
+            expr.args = expr.args.map(x => this.visitExpression(x) || x);
         } else if (expr instanceof NewExpression) {
-            this.visitType(expr.cls, context);
-            expr.args = expr.args.map(x => this.visitExpression(x, context) || x);
+            this.visitType(expr.cls);
+            expr.args = expr.args.map(x => this.visitExpression(x) || x);
         } else if (expr instanceof TemplateString) {
-            return this.visitTemplateString(expr, context);
+            return this.visitTemplateString(expr);
         } else if (expr instanceof ParenthesizedExpression) {
-            expr.expression = this.visitExpression(expr.expression, context) || expr.expression;
+            expr.expression = this.visitExpression(expr.expression) || expr.expression;
         } else if (expr instanceof UnaryExpression) {
-            expr.operand = this.visitExpression(expr.operand, context) || expr.operand;
+            expr.operand = this.visitExpression(expr.operand) || expr.operand;
         } else if (expr instanceof PropertyAccessExpression) {
-            expr.object = this.visitExpression(expr.object, context) || expr.object;
+            expr.object = this.visitExpression(expr.object) || expr.object;
         } else if (expr instanceof ElementAccessExpression) {
-            expr.object = this.visitExpression(expr.object, context) || expr.object;
-            expr.elementExpr = this.visitExpression(expr.elementExpr, context) || expr.elementExpr;
+            expr.object = this.visitExpression(expr.object) || expr.object;
+            expr.elementExpr = this.visitExpression(expr.elementExpr) || expr.elementExpr;
         } else if (expr instanceof ArrayLiteral) {
-            expr.items = expr.items.map(x => this.visitExpression(x, context) || x);
+            expr.items = expr.items.map(x => this.visitExpression(x) || x);
         } else if (expr instanceof MapLiteral) {
             for (const key of Array.from(expr.properties.keys()))
-                expr.properties.set(key, this.visitExpression(expr.properties.get(key), context) || expr.properties.get(key));
+                expr.properties.set(key, this.visitExpression(expr.properties.get(key)) || expr.properties.get(key));
         } else if (expr instanceof StringLiteral) {
         } else if (expr instanceof BooleanLiteral) {
         } else if (expr instanceof NumericLiteral) {
         } else if (expr instanceof NullLiteral) {
         } else if (expr instanceof RegexLiteral) {
         } else if (expr instanceof CastExpression) {
-            expr.newType = this.visitType(expr.newType, context) || expr.newType;
-            expr.expression = this.visitExpression(expr.expression, context) || expr.expression;
+            expr.newType = this.visitType(expr.newType) || expr.newType;
+            expr.expression = this.visitExpression(expr.expression) || expr.expression;
         } else if (expr instanceof InstanceOfExpression) {
-            expr.expr = this.visitExpression(expr.expr, context) || expr.expr;
-            expr.checkType = this.visitType(expr.checkType, context) || expr.checkType;
+            expr.expr = this.visitExpression(expr.expr) || expr.expr;
+            expr.checkType = this.visitType(expr.checkType) || expr.checkType;
         } else if (expr instanceof AwaitExpression) {
-            expr.expr = this.visitExpression(expr.expr, context) || expr.expr;
+            expr.expr = this.visitExpression(expr.expr) || expr.expr;
         } else if (expr instanceof Lambda) {
-            return this.visitLambda(expr, context);
+            return this.visitLambda(expr);
         } else if (expr instanceof ClassReference) {
         } else if (expr instanceof EnumReference) {
         } else if (expr instanceof ThisReference) {
@@ -189,53 +189,53 @@ export abstract class AstTransformer<TContext> {
         } else if (expr instanceof StaticPropertyReference) {
         } else if (expr instanceof StaticMethodReference) {
         } else if (expr instanceof StaticMethodCallExpression) {
-            expr.typeArgs = expr.typeArgs.map(x => this.visitType(x, context) || x);
-            expr.args = expr.args.map(x => this.visitExpression(x, context) || x);
+            expr.typeArgs = expr.typeArgs.map(x => this.visitType(x) || x);
+            expr.args = expr.args.map(x => this.visitExpression(x) || x);
         } else if (expr instanceof InstanceMethodCallExpression) {
-            expr.object = this.visitExpression(expr.object, context) || expr.object;
-            expr.typeArgs = expr.typeArgs.map(x => this.visitType(x, context) || x);
-            expr.args = expr.args.map(x => this.visitExpression(x, context) || x);
+            expr.object = this.visitExpression(expr.object) || expr.object;
+            expr.typeArgs = expr.typeArgs.map(x => this.visitType(x) || x);
+            expr.args = expr.args.map(x => this.visitExpression(x) || x);
         } else {
-            return this.visitUnknownExpression(expr, context);
+            return this.visitUnknownExpression(expr);
         }
     }
 
-    protected visitMethodParameter(methodParameter: MethodParameter, context: TContext): void {
-        this.visitVariableWithInitializer(methodParameter, context);
+    protected visitMethodParameter(methodParameter: MethodParameter): void {
+        this.visitVariableWithInitializer(methodParameter);
     }
 
-    protected visitMethodBase(method: IMethodBase, context: TContext) {
+    protected visitMethodBase(method: IMethodBase) {
         for (const item of method.parameters)
-            this.visitMethodParameter(item, context);
+            this.visitMethodParameter(item);
 
         if (method.body)
-            method.body = this.visitBlock(method.body, context) || method.body;
+            method.body = this.visitBlock(method.body) || method.body;
     }
 
-    protected visitMethod(method: Method, context: TContext) {
-        this.visitMethodBase(method, context);
-        method.returns = this.visitType(method.returns, context) || method.returns;
+    protected visitMethod(method: Method) {
+        this.visitMethodBase(method);
+        method.returns = this.visitType(method.returns) || method.returns;
     }
  
-    protected visitGlobalFunction(func: GlobalFunction, context: TContext) {
-        this.visitMethodBase(func, context);
-        func.returns = this.visitType(func.returns, context) || func.returns;
+    protected visitGlobalFunction(func: GlobalFunction) {
+        this.visitMethodBase(func);
+        func.returns = this.visitType(func.returns) || func.returns;
     }
  
-    protected visitConstructor(constructor: Constructor, context: TContext) {
-        this.visitMethodBase(constructor, context);
+    protected visitConstructor(constructor: Constructor) {
+        this.visitMethodBase(constructor);
     }
  
-    protected visitField(field: Field, context: TContext) {
-        this.visitVariableWithInitializer(field, context);
+    protected visitField(field: Field) {
+        this.visitVariableWithInitializer(field);
     }
  
-    protected visitProperty(prop: Property, context: TContext) {
-        this.visitVariable(prop, context);
+    protected visitProperty(prop: Property) {
+        this.visitVariable(prop);
         if (prop.getter)
-            prop.getter = this.visitBlock(prop.getter, context) || prop.getter;
+            prop.getter = this.visitBlock(prop.getter) || prop.getter;
         if (prop.setter)
-            prop.setter = this.visitBlock(prop.setter, context) || prop.setter;
+            prop.setter = this.visitBlock(prop.setter) || prop.setter;
     }
 
     protected visitObjectMap<T>(obj: Map<string, T>, visitor: (item: T) => void) {
@@ -243,41 +243,41 @@ export abstract class AstTransformer<TContext> {
             visitor(item);
     }
 
-    protected visitInterface(intf: Interface, context: TContext) {
-        intf.baseInterfaces = intf.baseInterfaces.map(x => this.visitType(x, context) || x);
-        this.visitObjectMap(intf.fields, x => this.visitField(x, context));
-        this.visitObjectMap(intf.methods, x => this.visitMethod(x, context));
+    protected visitInterface(intf: Interface) {
+        intf.baseInterfaces = intf.baseInterfaces.map(x => this.visitType(x) || x);
+        this.visitObjectMap(intf.fields, x => this.visitField(x));
+        this.visitObjectMap(intf.methods, x => this.visitMethod(x));
     }
 
-    protected visitClass(cls: Class, context: TContext) {
+    protected visitClass(cls: Class) {
         if (cls.constructor_)
-            this.visitConstructor(cls.constructor_, context);
+            this.visitConstructor(cls.constructor_);
 
-        cls.baseClass = this.visitType(cls.baseClass, context) || cls.baseClass;
-        cls.baseInterfaces = cls.baseInterfaces.map(x => this.visitType(x, context) || x);
-        this.visitObjectMap(cls.methods, x => this.visitMethod(x, context));
-        this.visitObjectMap(cls.properties, x => this.visitProperty(x, context));
-        this.visitObjectMap(cls.fields, x => this.visitField(x, context));
+        cls.baseClass = this.visitType(cls.baseClass) || cls.baseClass;
+        cls.baseInterfaces = cls.baseInterfaces.map(x => this.visitType(x) || x);
+        this.visitObjectMap(cls.methods, x => this.visitMethod(x));
+        this.visitObjectMap(cls.properties, x => this.visitProperty(x));
+        this.visitObjectMap(cls.fields, x => this.visitField(x));
     }
  
-    protected visitEnum(enum_: Enum, context: TContext) {
-        this.visitObjectMap(enum_.values, x => this.visitEnumMember(x, context));
+    protected visitEnum(enum_: Enum) {
+        this.visitObjectMap(enum_.values, x => this.visitEnumMember(x));
     }
 
-    protected visitEnumMember(enumMember: EnumMember, context: TContext) {
+    protected visitEnumMember(enumMember: EnumMember) {
     }
 
-    public visitSourceFile(sourceFile: SourceFile, context: TContext) {
-        this.visitObjectMap(sourceFile.enums, x => this.visitEnum(x, context));
-        this.visitObjectMap(sourceFile.interfaces, x => this.visitInterface(x, context));
-        this.visitObjectMap(sourceFile.classes, x => this.visitClass(x, context));
-        this.visitObjectMap(sourceFile.funcs, x => this.visitGlobalFunction(x, context));
-        sourceFile.mainBlock = this.visitBlock(sourceFile.mainBlock, context) || sourceFile.mainBlock;
+    public visitSourceFile(sourceFile: SourceFile) {
+        this.visitObjectMap(sourceFile.enums, x => this.visitEnum(x));
+        this.visitObjectMap(sourceFile.interfaces, x => this.visitInterface(x));
+        this.visitObjectMap(sourceFile.classes, x => this.visitClass(x));
+        this.visitObjectMap(sourceFile.funcs, x => this.visitGlobalFunction(x));
+        sourceFile.mainBlock = this.visitBlock(sourceFile.mainBlock) || sourceFile.mainBlock;
         return null;
     }
 
-    public visitPackage(pkg: Package, context: TContext) {
+    public visitPackage(pkg: Package) {
         for (const file of Object.values(pkg.files))
-            this.visitSourceFile(file, context);
+            this.visitSourceFile(file);
     }
 }

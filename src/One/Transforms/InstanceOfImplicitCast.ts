@@ -10,7 +10,7 @@ export class ImplicitCastContext {
 
 }
 
-export class InstanceOfImplicitCast extends AstTransformer<void> {
+export class InstanceOfImplicitCast extends AstTransformer {
     constructor(errorMan: ErrorManager = null) { super(errorMan); }
 
     casts: InstanceOfExpression[] = [];

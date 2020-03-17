@@ -4,7 +4,7 @@ import { SourceFile, Class, Interface, Enum } from "../Ast/Types";
 import { ErrorManager } from "../ErrorManager";
 import { Expression, UnresolvedNewExpression, NewExpression } from "../Ast/Expressions";
 
-export class ResolveUnresolvedTypes extends AstTransformer<void> {
+export class ResolveUnresolvedTypes extends AstTransformer {
     file: SourceFile;
 
     constructor(public errorMan = new ErrorManager()) { super(); }

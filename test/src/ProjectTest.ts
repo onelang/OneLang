@@ -114,7 +114,7 @@ initCompiler().then(() => {
 
         saveState();
 
-        new FillParent().visitPackage(projectPkg, null);
+        new FillParent().visitPackage(projectPkg);
         FillAttributesFromTrivia.processPackage(projectPkg);
         saveState();
 

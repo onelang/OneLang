@@ -11,7 +11,7 @@ import { Class, Method } from "../Ast/Types";
  *   in classes "ExampleClass<T> { ... T ... }" 
  *   and methods "ExampleMethod<T>(...) { ... T ... }"
  */
-export class ResolveGenericTypeIdentifiers extends AstTransformer<void> {
+export class ResolveGenericTypeIdentifiers extends AstTransformer {
     currentClass: Class;
     currentMethod: Method;
 

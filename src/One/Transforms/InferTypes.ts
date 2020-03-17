@@ -6,7 +6,7 @@ import { SourceFile, Class, Method, IVariableWithInitializer, Workspace, Package
 import { ClassType, InterfaceType, AnyType, Type, VoidType, GenericsType, EnumType, LambdaType, IInterfaceType } from "../Ast/AstTypes";
 import { Statement, VariableDeclaration, ReturnStatement, ForeachStatement } from "../Ast/Statements";
 
-export class InferTypes extends AstTransformer<void> {
+export class InferTypes extends AstTransformer {
     file: SourceFile;
     currentMethod: Method = null;
     methodReturnTypesStack: Type[][] = [];

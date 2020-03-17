@@ -44,7 +44,7 @@ class SymbolLookup {
     }
 }
 
-export class ResolveIdentifiers extends AstTransformer<void> {
+export class ResolveIdentifiers extends AstTransformer {
     file: SourceFile;
     symbolLookup: SymbolLookup;
 
