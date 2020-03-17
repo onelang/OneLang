@@ -215,7 +215,7 @@ export class TSOverviewGenerator {
         return this.pad([fields.join("\n"), props.join("\n"), constr, methods.join("\n\n")].filter(x => x !== "").join("\n\n"));
     }
 
-    static pad(str: string) { return str.split("\n").map(x => `    ${x}`).join('\n'); }
+    static pad(str: string) { return str.split(/\n/g).map(x => `    ${x}`).join('\n'); }
     static imp(imp: IImportable) { return "" + 
         (imp instanceof UnresolvedImport ? "X" : imp instanceof Class ? "C" : imp instanceof Interface ? "I" : imp instanceof Enum ? "E" : "???") +
         `:${imp.name}`; }

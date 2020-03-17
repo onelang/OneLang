@@ -1,21 +1,23 @@
 import { LiteralExpression, IdentifierExpression, UnaryExpression, BinaryExpression, ParenthesizedExpression, ConditionalExpression, CallExpression, PropertyAccessExpression, ElementAccessExpression, IExpression } from "./ExprLangAst";
 
-class ExprLangError extends Error { }
+class ExprLangError extends Error {
+    constructor(msg: string) { super(msg); }
+}
 
 export interface IModelHandler {
-    methodCall(method: any, args: any[], thisObj: Object, model: Object);
+    methodCall(method: Function, args: any[], thisObj: Object, model: Object);
     memberAccess(obj: Object, memberName: any, isProperty: boolean);
 }
 
 export class JSModelHandler implements IModelHandler {
-    static methodCall(method: any, args: any[], thisObj: Object, model: Object) {
+    static methodCallG(method: Function, args: any[], thisObj: Object, model: Object): any {
         if (!(typeof method === "function"))
             throw new ExprLangError(`Tried to call a non-method value: '${method}'`); //  (${typeof method})
         const result = method.apply(thisObj, args);
         return result;
     }
 
-    static memberAccess(obj: Object, memberName: any, isProperty: boolean) {
+    static memberAccessG(obj: Object, memberName: any, isProperty: boolean): any {
         if (!(typeof obj === "object"))
             throw new ExprLangError(`Expected object for accessing member: (${obj})`);
 
@@ -27,11 +29,11 @@ export class JSModelHandler implements IModelHandler {
     }
 
     methodCall(method: any, args: any[], thisObj: Object, model: Object) {
-        return JSModelHandler.methodCall(method, args, thisObj, model);
+        return JSModelHandler.methodCallG(method, args, thisObj, model);
     }
 
     memberAccess(obj: Object, memberName: any, isProperty: boolean) {
-        return JSModelHandler.memberAccess(obj, memberName, isProperty);
+        return JSModelHandler.memberAccessG(obj, memberName, isProperty);
     }
 }
 
@@ -42,7 +44,7 @@ export class VariableSource {
     constructor(public name: string) { }
 
     checkUnique(varName: string, allowOverwrite = false) {
-        if (!varName)
+        if (varName === null)
             throw new ExprLangError("Variable name is missing!");
 
         if (!(typeof varName === "string"))
@@ -55,18 +57,18 @@ export class VariableSource {
             throw new ExprLangError(`Variable '${varName}' was already set`);
     }
 
-    addCallback(varName: string, callback: () => any) {
+    addCallback(varName: string, callback: () => any): void {
         this.checkUnique(varName);
         this.callbacks[varName] = callback;
     }
 
-    setVariable(varName: string, value: any, allowOverwrite = false) {
+    setVariable(varName: string, value: any, allowOverwrite: boolean = false): void {
         this.checkUnique(varName, allowOverwrite);
         this.vars[varName] = value;
     }
     
     getVariable(varName: string) {
-        let result = null;
+        let result: any = null;
 
         if (varName in this.vars) {
             result = this.vars[varName];
@@ -101,7 +103,7 @@ export class VariableSource {
 export class VariableContext {
     constructor(public sources: VariableSource[] = []) { }
 
-    inherit(newSource: VariableSource) {
+    inherit(newSource: VariableSource): VariableContext {
         return new VariableContext([newSource].concat(this.sources));
     }
 
@@ -129,7 +131,7 @@ export class ExprLangVM {
         this.modelHandler = modelHandler || new JSModelHandler();
     }
 
-    evaluate(expr: IExpression, vars: VariableContext = null) {
+    evaluate(expr: IExpression, vars: VariableContext = null): any {
         if (expr instanceof LiteralExpression) {
             return expr.value;
         } else if (expr instanceof IdentifierExpression) {
@@ -140,7 +142,7 @@ export class ExprLangVM {
             } else if (expr.text === "null") {
                 return null;
             } else {
-                if (!vars)
+                if (vars === null)
                     throw new ExprLangError(`Variable context was not set!`);
 
                 const result = vars.getVariable(expr.text);

@@ -13,7 +13,7 @@ export class Block implements ItemContainer {
 }
 
 export class Line implements BlockItem, ItemContainer {
-    isInline() { return false; }
+    isInline(): boolean { return false; }
     indentLen = 0;
     items: LineItem[] = [];
 }
@@ -30,8 +30,8 @@ export class ForNode implements BlockItem {
     body: ItemContainer;
     else: ItemContainer;
 
-    constructor(public itemName: string, public arrayExpr: IExpression, public inline: boolean, public separator = "") { }
-    isInline() { return this.inline; }
+    constructor(public itemName: string, public arrayExpr: IExpression, public inline: boolean, public separator: string = "") { }
+    isInline(): boolean { return this.inline; }
 }
 
 export class IfItem {
@@ -42,5 +42,5 @@ export class IfNode implements LineItem, BlockItem {
     items: IfItem[] = [];
     else: ItemContainer;
     inline: boolean;
-    isInline() { return this.inline; }
+    isInline(): boolean { return this.inline; }
 }

@@ -13,9 +13,11 @@ export class ResolveUnresolvedTypes extends AstTransformer<void> {
         super.visitType(type);
         if (!(type instanceof UnresolvedType)) return null;
         
-        const symbol = this.file.availableSymbols.get(type.typeName);
-        if (!symbol)
-            return this.errorMan.throw(`Unresolved type '${type.typeName}' was not found in available symbols`);
+        const symbol = this.file.availableSymbols.get(type.typeName) || null;
+        if (symbol === null) {
+            this.errorMan.throw(`Unresolved type '${type.typeName}' was not found in available symbols`);
+            return null;
+        }
 
         if (symbol instanceof Class)
             return new ClassType(symbol, type.typeArguments);
@@ -23,15 +25,19 @@ export class ResolveUnresolvedTypes extends AstTransformer<void> {
             return new InterfaceType(symbol, type.typeArguments);
         else if (symbol instanceof Enum)
             return new EnumType(symbol);
-        else
-            return this.errorMan.throw(`Unknown symbol type: ${symbol}`);
+        else {
+            this.errorMan.throw(`Unknown symbol type: ${symbol}`);
+            return null;
+        }
     }
 
     protected visitExpression(expr: Expression): Expression {
         if (expr instanceof UnresolvedNewExpression) {
             const classType = this.visitType(expr.cls);
-            if (!(classType instanceof ClassType))
+            if (!(classType instanceof ClassType)) {
                 this.errorMan.throw(`Excepted ClassType, but got ${classType}`);
+                return null;
+            }
             const newExpr = new NewExpression(classType, expr.args);
             super.visitExpression(newExpr);
             return newExpr;

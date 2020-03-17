@@ -647,9 +647,9 @@ export class TypeScriptParser2 implements IParser {
         if (!relPath.startsWith("."))
             throw new Error(`relPath must start with '.', but got '${relPath}'`);
 
-        const curr = currFile.split('/');
+        const curr = currFile.split(/\//g);
         curr.pop(); // filename does not matter
-        for (const part of relPath.split('/')) {
+        for (const part of relPath.split(/\//g)) {
             if (part === "") throw new Error(`relPath should not contain multiple '/' next to each other (relPath='${relPath}')`);
             if (part === ".") { // "./" == stay in current directory
                 continue;
@@ -667,7 +667,7 @@ export class TypeScriptParser2 implements IParser {
         if (importFile.startsWith(".")) // relative
             return new ExportScopeRef(currScope.packageName, this.calculateRelativePath(currScope.scopeName, importFile));
         else {
-            const path = importFile.split('/');
+            const path = importFile.split(/\//g);
             const pkgName = path.shift();
             return new ExportScopeRef(pkgName, path.length === 0 ? Package.INDEX : path.join('/'));
         }

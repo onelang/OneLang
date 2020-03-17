@@ -12,10 +12,12 @@ export abstract class AstTransformer<TContext> {
      }
 
     protected visitType(type: Type, context: TContext): Type {
-        if (type instanceof ClassType || type instanceof InterfaceType || type instanceof UnresolvedType)
-            type.typeArguments = type.typeArguments.map(x => this.visitType(x, context) || x);
-        else if (type instanceof LambdaType) {
-            type.parameters = type.parameters.map(x => this.visitMethodParameter(x, context) || x);
+        if (type instanceof ClassType || type instanceof InterfaceType || type instanceof UnresolvedType) {
+            const type2 = <IHasTypeArguments> type;
+            type2.typeArguments = type2.typeArguments.map(x => this.visitType(x, context) || x);
+        } else if (type instanceof LambdaType) {
+            for (const mp of type.parameters)
+                this.visitMethodParameter(mp, context);
             type.returnType = this.visitType(type.returnType, context) || type.returnType;
         }
         return null;
@@ -44,7 +46,8 @@ export abstract class AstTransformer<TContext> {
     }
 
     protected visitUnknownStatement(stmt: Statement, context: TContext): Statement {
-        return this.errorMan.throw(`Unknown statement type: ${stmt.constructor.name}`);
+        this.errorMan.throw(`Unknown statement type: ${stmt}`);
+        return null;
     }
 
     protected visitStatement(stmt: Statement, context: TContext): Statement {
@@ -105,11 +108,13 @@ export abstract class AstTransformer<TContext> {
     }
     
     protected visitUnknownExpression(expr: Expression, context: TContext): Expression {
-        return this.errorMan.throw(`Unknown expression type: ${expr.constructor.name}`);
+        this.errorMan.throw(`Unknown expression type: ${expr}`);
+        return null;
     }
 
     protected visitLambda(lambda: Lambda, context: TContext): Lambda {
-        lambda.parameters = lambda.parameters.map(x => this.visitMethodParameter(x, context) || x);
+        for (const mp of lambda.parameters)
+            this.visitMethodParameter(mp, context);
         lambda.body = this.visitBlock(lambda.body, context) || lambda.body;
         return null;
     }
@@ -148,8 +153,8 @@ export abstract class AstTransformer<TContext> {
         } else if (expr instanceof ArrayLiteral) {
             expr.items = expr.items.map(x => this.visitExpression(x, context) || x);
         } else if (expr instanceof MapLiteral) {
-            for (const prop of expr.properties.values())
-                this.visitExpression(prop, context);
+            for (const key of Array.from(expr.properties.keys()))
+                expr.properties.set(key, this.visitExpression(expr.properties.get(key), context) || expr.properties.get(key));
         } else if (expr instanceof StringLiteral) {
         } else if (expr instanceof BooleanLiteral) {
         } else if (expr instanceof NumericLiteral) {
@@ -192,9 +197,8 @@ export abstract class AstTransformer<TContext> {
         }
     }
 
-    protected visitMethodParameter(methodParameter: MethodParameter, context: TContext) {
+    protected visitMethodParameter(methodParameter: MethodParameter, context: TContext): void {
         this.visitVariableWithInitializer(methodParameter, context);
-        return null;
     }
 
     protected visitMethodBase(method: IMethodBase, context: TContext) {
@@ -227,12 +231,13 @@ export abstract class AstTransformer<TContext> {
     }
 
     protected visitObjectMap<T>(obj: Map<string, T>, visitor: (item: T) => void) {
-        for (const item of obj.values())
+        for (const item of Array.from(obj.values()))
             visitor(item);
     }
 
     protected visitInterface(intf: Interface, context: TContext) {
         intf.baseInterfaces = intf.baseInterfaces.map(x => this.visitType(x, context) || x);
+        this.visitObjectMap(intf.fields, x => this.visitField(x, context));
         this.visitObjectMap(intf.methods, x => this.visitMethod(x, context));
     }
 

@@ -18,16 +18,15 @@ import { Line, IfNode, IfItem, LineItem, TextNode, TemplateNode, Block, ForNode,
 enum TemplatePartType { Text, Template, For, If, Elif, Else, EndIf, EndFor }
 
 class ForData { 
-    itemName: string;
-    array: IExpression;
+    constructor(public itemName: string, public array: IExpression) { }
 }
 
 class IfData {
-    condition: IExpression;
+    constructor(public condition: IExpression) { }
 }
 
 class TemplateData {
-    expr: IExpression;
+    constructor(public expr: IExpression) { }
 }
 
 class TemplatePart {
@@ -43,32 +42,32 @@ class TemplatePart {
     isWhitespace = false;
 
     constructor(public value: string, isText: boolean) {
-        let match = null;
+        let match: RegExpExecArray = null;
         if (isText) {
             this.type = TemplatePartType.Text;
             this.textValue = value;
             this.isWhitespace = !!value.match(/^\s*$/);
         } else {
             const paramsOffs = value.lastIndexOf("|");
-            const valueWoParams = paramsOffs === -1 || value[paramsOffs - 1] === "|" ? value : value.substr(0, paramsOffs).trim();
-            this.params = paramsOffs === -1 ? {} : new ParamParser(value.substr(paramsOffs + 1).trim()).parse();
+            const valueWoParams = paramsOffs === -1 || value.charAt(paramsOffs - 1) === "|" ? value : value.substr(0, paramsOffs).trim();
+            this.params = paramsOffs === -1 ? <{ [name: string]: string }> {} : new ParamParser(value.substr(paramsOffs + 1).trim()).parse();
 
             if (match = /^for ([a-zA-Z]+) in (.*)/.exec(valueWoParams)) {
                 this.type = TemplatePartType.For;
-                this.for = { itemName: match[1], array: ExprLangParser.parse(match[2]) };
+                this.for = new ForData(match[1], ExprLangParser.parse(match[2]));
             } else if (match = /^if (.*)/.exec(valueWoParams)) {
                 this.type = TemplatePartType.If;
-                this.if = { condition: ExprLangParser.parse(match[1]) };
+                this.if = new IfData(ExprLangParser.parse(match[1]));
             } else if (match = /^elif (.*)/.exec(valueWoParams)) {
                 this.type = TemplatePartType.Elif;
-                this.elif = { condition: ExprLangParser.parse(match[1]) };
+                this.elif = new IfData(ExprLangParser.parse(match[1]));
             } else if (match = /^\/(for|if)$/.exec(valueWoParams)) {
                 this.type = match[1] === "if" ? TemplatePartType.EndIf : TemplatePartType.EndFor;
             } else if (match = /^else$/.exec(valueWoParams)) {
                 this.type = TemplatePartType.Else;
             } else {
                 this.type = TemplatePartType.Template;
-                this.template = { expr: ExprLangParser.parse(valueWoParams) };
+                this.template = new TemplateData(ExprLangParser.parse(valueWoParams));
             }
         }
     }
@@ -88,7 +87,7 @@ class ParamParser {
 
     constructor(public str: string) { }
 
-    readToken(tokens: string[]) {
+    readToken(tokens: string[]): string {
         for (const token of tokens)
             if (this.str.startsWith(token, this.pos)) {
                 this.pos += token.length;
@@ -99,7 +98,7 @@ class ParamParser {
 
     readUntil(tokens: string[]) {
         const startPos = this.pos;
-        let token = null;
+        let token: string = null;
         for (; this.pos < this.str.length; this.pos++)
             if (token = this.readToken(tokens))
                 break;
@@ -108,7 +107,7 @@ class ParamParser {
         return new ReadUntilResult(value, token);
     }
 
-    parse() {
+    parse(): { [name: string]: string } {
         while (this.pos < this.str.length) {
             const key = this.readUntil(["=", " "]);
             if(key.token !== "=")
@@ -125,20 +124,24 @@ class ParamParser {
 }
 
 class LineInfo {
-    parts: TemplatePart[];
+    parts: TemplatePart[] = [];
     controlPart: TemplatePart;
     indentLen = 0;
 
     constructor(public line: string, public lineIdx: number) {
-        this.parts = this.line.split(/\{\{([^{}]*?)\}\}/).map((x,i) => new TemplatePart(x, i % 2 === 0))
-            .filter(x => !(x.type === TemplatePartType.Text && x.textValue.length === 0));
+        const lineParts = this.line.split(/\{\{([^{}]*?)\}\}/);
+        for (let i = 0; i < lineParts.length; i++) {
+            const part = new TemplatePart(lineParts[i], i % 2 === 0);
+            if (!(part.type === TemplatePartType.Text && part.textValue.length === 0))
+                this.parts.push(part);
+        }
 
         const nonWs = this.parts.filter(x => !x.isWhitespace);
         this.controlPart = nonWs.length === 1 && (nonWs[0].type !== TemplatePartType.Text 
             && nonWs[0].type !== TemplatePartType.Template) ? nonWs[0] : null;
 
-        for (const c of line)
-            if (c === " ")
+        for (let i = 0; i < line.length; i++)
+            if (line[i] === " ")
                 this.indentLen++;
             else
                 break;
@@ -176,8 +179,7 @@ class TemplateLineParser {
         const ifNode = new IfNode();
         ifNode.inline = this.currPart.params["inline"] === "true";
 
-        const ifItem = new IfItem(this.currPart.if.condition);
-        ifItem.body = this.readBlock();
+        const ifItem = new IfItem(this.currPart.if.condition, this.readBlock());
         ifNode.items.push(ifItem);
 
         while(true) {
@@ -198,7 +200,7 @@ class TemplateLineParser {
         return ifNode;
     }
 
-    readBlock() {
+    readBlock(): Line {
         this.partIdx++;
         const line = new Line();
 
@@ -226,13 +228,15 @@ class TemplateLineParser {
 export class TemplateParser {
     levelIndent = 2;
 
-    lines: LineInfo[];
+    lines: LineInfo[] = [];
     lineIdx = -1;
     root: Block;
     indentLen = -this.levelIndent;
 
     constructor(public template: string) {
-        this.lines = template.split("\n").map((line, lineIdx) => new LineInfo(line, lineIdx));
+        const lines = template.split(/\n/g);
+        for (let i = 0; i < lines.length; i++)
+            this.lines.push(new LineInfo(lines[i], i));
         this.root = this.readBlock(true);
     }
 
@@ -240,7 +244,7 @@ export class TemplateParser {
 
     match(types: TemplatePartType[]) {
         const line = this.lines[this.lineIdx];
-        return line.controlPart && types.includes(line.controlPart.type);
+        return line.controlPart !== null && types.includes(line.controlPart.type);
     }
 
     readIf() {
@@ -283,8 +287,8 @@ export class TemplateParser {
 
     getIndentLen(str: string) {
         let len = 0;
-        for (const c of str)
-            if (c === " ")
+        for (let i = 0; i < str.length; i++)
+            if (str[i] === " ")
                 len++;
             else
                 break;
@@ -301,11 +305,11 @@ export class TemplateParser {
         part0.textValue = part0.textValue.substr(this.indentLen);
     }
 
-    readBlock(rootBlock = false) {
+    readBlock(rootBlock: boolean = false): Block {
         // whitespace DOES NOT matter before *inline* "if"s / "for"s
         // but whitespace DOES matter before non-inline "if"s / "for"s
         const prevIndent = this.indentLen;
-        this.indentLen = (this.currLine && this.currLine.inline ? this.currLine.indentLen : this.indentLen) + this.levelIndent;
+        this.indentLen = (this.currLine !== null && this.currLine.inline ? this.currLine.indentLen : this.indentLen) + this.levelIndent;
 
         const lineNodes: BlockItem[] = [];
         this.lineIdx++;
@@ -319,7 +323,7 @@ export class TemplateParser {
                 blockItem = this.readIf();
             } else if (line.match(TemplatePartType.For)) {
                 blockItem = this.readFor();
-            } else if (!line.controlPart) {
+            } else if (line.controlPart === null) {
                 this.deindentLine();
                 const lineNode = new TemplateLineParser(this.currLine).root;
                 const part0 = lineNode.items[0];
@@ -343,7 +347,11 @@ export class TemplateParser {
         let prevLine: Line = null;
         for (let i = 0; i < lineNodes.length; i++) {
             const lineNode = lineNodes[i];
-            const canInline = prevLine !== null && (!(lineNode instanceof Line) || lineNode.indentLen >= prevLine.indentLen);
+
+            let canInline = prevLine !== null;
+            if (lineNode instanceof Line)
+                canInline = canInline && lineNode.indentLen >= prevLine.indentLen;
+
             if (canInline && (lineNode.isInline() || lineNodes[i - 1].isInline())) {
                 if (lineNode instanceof Line) {
                     if (prevLine.indentLen > 0) {
@@ -353,8 +361,11 @@ export class TemplateParser {
                     
                     for (const item of lineNode.items)
                         prevLine.items.push(item);
-                } else
-                    prevLine.items.push(lineNode);
+                } else {
+                    debugger;
+                    // prevLine.items should contain LineItem, but lineNode is BlockItem
+                    //prevLine.items.push(lineNode);
+                }
             } else {
                 block.lines.push(lineNode);
                 if (lineNode instanceof Line) {
@@ -385,7 +396,7 @@ export class TemplateParser {
         return block;
     }
 
-    static parse(template: string) {
+    static parse(template: string): Block {
         return new TemplateParser(template).root;
     }
 }

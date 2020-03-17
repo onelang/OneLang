@@ -1,7 +1,11 @@
-import { Enum, Method, Interface, Class, IImportable, MethodParameter } from "./Types";
+import { Enum, Method, Interface, Class, IImportable, MethodParameter, IInterface } from "./Types";
 
-export class Type {
-    static isGeneric(type: Type) {
+export interface IType {
+    repr(): string;
+}
+
+export class Type implements IType {
+    static isGeneric(type: Type): boolean {
         if (type instanceof GenericsType)
             return true;
         else if (type instanceof ClassType)
@@ -11,7 +15,7 @@ export class Type {
     }
 
     static equals(type1: Type, type2: Type): boolean {
-        if (!type1 || !type2) throw new Error("Type is missing!");
+        if (type1 === null || type2 === null) throw new Error("Type is missing!");
         if (type1 instanceof VoidType && type2 instanceof VoidType) return true;
         if (type1 instanceof AnyType && type2 instanceof AnyType) return true;
         if (type1 instanceof GenericsType && type2 instanceof GenericsType) return type1.typeVarName === type2.typeVarName;
@@ -31,7 +35,8 @@ export class Type {
         return false;
     }
 
-    static isAssignableTo(toBeAssigned: Type, whereTo: Type) {
+    static isAssignableTo(toBeAssigned: Type, whereTo: Type): boolean {
+        if (toBeAssigned instanceof AnyType || whereTo instanceof AnyType) return true;
         if (this.equals(toBeAssigned, whereTo)) return true;
         if (toBeAssigned instanceof ClassType && whereTo instanceof ClassType)
             return toBeAssigned.decl.baseClass !== null && this.isAssignableTo(toBeAssigned.decl.baseClass, whereTo);
@@ -39,6 +44,11 @@ export class Type {
             return toBeAssigned.decl.baseInterfaces.some(x => this.isAssignableTo(x, whereTo));
         if (toBeAssigned instanceof InterfaceType && whereTo instanceof InterfaceType)
             return toBeAssigned.decl.baseInterfaces.some(x => this.isAssignableTo(x, whereTo));
+        if (toBeAssigned instanceof LambdaType && whereTo instanceof LambdaType) {
+            return toBeAssigned.parameters.length === whereTo.parameters.length &&
+                toBeAssigned.parameters.every((p, i) => Type.isAssignableTo(p.type, whereTo.parameters[i].type)) &&
+                (Type.isAssignableTo(toBeAssigned.returnType, whereTo.returnType) || whereTo.returnType instanceof GenericsType);
+        }
         return false;
     }
 
@@ -77,12 +87,17 @@ export interface IHasTypeArguments {
     typeArguments: Type[];
 }
 
-export class InterfaceType extends Type implements IHasTypeArguments {
+export interface IInterfaceType extends IType {
+    decl: IInterface;
+    typeArguments: Type[];
+}
+
+export class InterfaceType extends Type implements IHasTypeArguments, IInterfaceType {
     constructor(public decl: Interface, public typeArguments: Type[] = []) { super(); }
     repr() { return `I:${this.decl.name}${TypeHelper.argsRepr(this.typeArguments)}`; }
 }
 
-export class ClassType extends Type implements IHasTypeArguments {
+export class ClassType extends Type implements IHasTypeArguments, IInterfaceType {
     constructor(public decl: Class, public typeArguments: Type[] = []) { super(); }
     repr() { return `C:${this.decl.name}${TypeHelper.argsRepr(this.typeArguments)}`; }
 }
@@ -93,6 +108,8 @@ export class UnresolvedType extends Type implements IHasTypeArguments {
 }
 
 export class LambdaType extends Type {
-    constructor(public parameters: MethodParameter[], public returnType: Type) { super(); }
+    constructor(public parameters: MethodParameter[], public returnType: Type) { super();
+        if (returnType === null) debugger;
+    }
     repr() { return `L:(${this.parameters.map(x => x.type.repr()).join(", ")})=>${this.returnType.repr()}`; }
 }

@@ -14,7 +14,7 @@ export class TemplateAstPrinter {
         this.result += `${"  ".repeat(this.indent)}${line}\n`;
     }
 
-    processNode(node: Node) {
+    processNode(node: Node): void {
         this.indent++;
         if (node instanceof Block) {
             for (let iLine = 0; iLine < node.lines.length; iLine++) {
@@ -27,7 +27,7 @@ export class TemplateAstPrinter {
             for (let iItem = 0; iItem < node.items.length; iItem++) {
                 const item = node.items[iItem];
                 
-                let inlineValue = null;
+                let inlineValue: string = null;
                 if (item instanceof TextNode) {
                     inlineValue = `"${item.value.replace(/\n/g, "\\n")}"`;
                 } else if (item instanceof TemplateNode) {
@@ -36,7 +36,7 @@ export class TemplateAstPrinter {
                 }
 
                 this.addLine(`Item #${iItem + 1}: ${inlineValue||""}`);
-                if (!inlineValue)
+                if (inlineValue === null)
                     this.processNode(item);
             }
         } else if (node instanceof ForNode) {

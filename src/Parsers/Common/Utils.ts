@@ -7,7 +7,7 @@ export class Utils {
     }
 
     static deindent(str: string) {
-        const lines = str.split("\n");
+        const lines = str.split(/\n/g);
         if (lines.length === 1) return str;
     
         if (this.getPadLen(lines[0]) === -1)

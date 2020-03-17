@@ -3,12 +3,12 @@ import { SourceFile } from "../One/Ast/Types";
 import { LangFile, TemplateObj } from "./LangFileSchema";
 
 export class LangFilePreprocessor {
-    static preprocess(schema: LangFile, stdlib: SourceFile) {
+    static preprocess(schema: LangFile, stdlib: SourceFile): void {
         this.stabilizeStructure(schema);
         this.compileTemplates(schema, stdlib);
     }
 
-    static stabilizeStructure(lang: LangFile) {
+    static stabilizeStructure(lang: LangFile): void {
         if (!lang.operators) lang.operators = {};
         if (!lang.classes) lang.classes = {};
         if (!lang.includeSources) lang.includeSources = {};
@@ -41,7 +41,7 @@ export class LangFilePreprocessor {
             if (!op.includes) op.includes = [];
     }
 
-    static objectifyTemplateMap(map: { [name: string]: TemplateObj }) {
+    static objectifyTemplateMap(map: { [name: string]: TemplateObj }): void {
         for (const name of Object.keys(map)) {
             if (typeof map[name] === "string")
                 map[name] = <any>{ template: <string><any>map[name], args: [], includes: [] };
@@ -56,7 +56,7 @@ export class LangFilePreprocessor {
         }
     }
 
-    static compileTemplates(lang: LangFile, stdlib: SourceFile) {
+    static compileTemplates(lang: LangFile, stdlib: SourceFile): void {
         for (const name of Object.keys(lang.expressions))
             lang.expressions[name].generator = new TemplateMethod(name, ["expr"], lang.expressions[name].template);
 

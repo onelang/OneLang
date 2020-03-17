@@ -140,7 +140,7 @@ export class CastExpression extends Expression {
     constructor(
         public newType: Type,
         public expression: Expression,
-        public implicit = false) { super(); }
+        public implicit: boolean = false) { super(); }
 }
 
 export class ParenthesizedExpression extends Expression {

@@ -36,8 +36,8 @@ export class ExportedScope {
     exports = new Map<string, IImportable>();
 
     getExport(name: string) {
-        const exp = this.exports.get(name);
-        if (!exp)
+        const exp = this.exports.get(name) || null;
+        if (exp === null)
             throw new Error(`Export ${name} was not found in exported symbols.`);
         return exp;
     }
@@ -86,8 +86,8 @@ export class Package {
     }
 
     getExportedScope(name: string) {
-        const scope = this.exportedScopes[name];
-        if (!scope)
+        const scope = this.exportedScopes[name] || null;
+        if (scope === null)
             throw new Error(`Scope "${name}" was not found in package "${this.name}"`);
         return scope;
     }
@@ -102,8 +102,8 @@ export class Workspace {
     }
 
     getPackage(name: string) {
-        const pkg = this.packages[name];
-        if (!pkg)
+        const pkg = this.packages[name] || null;
+        if (pkg === null)
             throw new Error(`Package was not found: "${name}"`);
         return pkg;
     }
@@ -145,7 +145,7 @@ export class SourceFile {
     /** @creator ResolveImports */
     availableSymbols = new Map<string, IImportable>();
 
-    addAvailableSymbols(items: IImportable[]) {
+    addAvailableSymbols(items: IImportable[]): void {
         for (const item of items)
             this.availableSymbols.set(item.name, item);
     }
@@ -171,7 +171,7 @@ export class Import implements IHasAttributesAndTrivia, ISourceFileMember {
         public imports: IImportable[],
         public importAs: string,
         public leadingTrivia: string) {
-            if (importAs && !importAll)
+            if (importAs !== null && !importAll)
                 throw new Error("importAs only supported with importAll!");
         }
     
@@ -272,9 +272,9 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, 
 
     createReference(name: string): Reference {
         // TODO: hack
-        return name === "this" ? new ThisReference(this) : 
-            name === "super" ? new SuperReference(this) : 
-            new ClassReference(this);
+        return name === "this" ? <Reference>new ThisReference(this) : 
+            name === "super" ? <Reference>new SuperReference(this) : 
+            <Reference>new ClassReference(this);
         }
 
     type = new ClassType(this, this.typeArguments.map(x => new GenericsType(x)));

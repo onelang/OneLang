@@ -44,7 +44,7 @@ export class ExprLangParser {
         throw new Error(`[ExprLangParser] ${message}`);
     }
 
-    setupPrecedenceMap() {
+    setupPrecedenceMap(): void {
         for (let i = 0; i < this.precedenceLevels.length; i++) {
             const level = this.precedenceLevels[i];
             level.precedence = i + 1;
@@ -68,15 +68,17 @@ export class ExprLangParser {
     }
 
     consumeOpIf(op: string) {
+        if (this.tokens.length === 0) return false;
+        
         const token = this.tokens[0];
-        if (token && token.kind === TokenKind.Operator && token.value === op) {
+        if (token.kind === TokenKind.Operator && token.value === op) {
             this.consume();
             return true;
         }
         return false;
     }
 
-    process(precedence = 0) {
+    process(precedence = 0): IExpression {
         const token = this.consume();
 
         let left: IExpression = null;
@@ -99,7 +101,7 @@ export class ExprLangParser {
             }
         }
 
-        if (!left)
+        if (left === null)
             this.fail(`Could not parse token: '${token.value}' (${token.kind})`);
 
         while(this.tokens.length > 0) {
@@ -121,7 +123,7 @@ export class ExprLangParser {
                 const whenFalse = this.process(infixPrecedence - 1);
                 left = new ConditionalExpression(left, whenTrue, whenFalse);
             } else if (op === "(") {
-                const args = [];
+                const args: IExpression[] = [];
 
                 if (!this.consumeOpIf(")")) {
                     do {
@@ -152,15 +154,12 @@ export class ExprLangParser {
         return left;
     }
 
-    parse() {
-        const result = this.process();
-        if (this.tokens.length > 0)
-            this.fail("Not all tokens were consumed!");
-        return result;
-    }
-
     static parse(expression: string) {
-        return new ExprLangParser(expression).process();
+        const parser = new ExprLangParser(expression);
+        const result = parser.process();
+        if (parser.tokens.length > 0)
+            parser.fail("Not all tokens were consumed!");
+        return result;
     }
 }
 

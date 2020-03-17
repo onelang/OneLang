@@ -49,12 +49,16 @@ export class GeneratedNode {
     constructor(public text: string) { }
 }
 
+export interface ITemplateGeneratorHooks {
+    objectHook(obj: Object): GeneratedNode[];
+}
+
 export class TemplateGenerator implements IModelHandler {
     vm = new ExprLangVM(this);
     rootVars: VariableContext;
     methods = new VariableSource("TemplateGenerator methods");
     callStack: CallStackItem[] = [];
-    objectHook: (obj: Object) => GeneratedNode[] = null;
+    hooks: ITemplateGeneratorHooks = null;
 
     constructor(variables: VariableContext) {
         this.rootVars = variables.inherit(this.methods);
@@ -88,11 +92,11 @@ export class TemplateGenerator implements IModelHandler {
     }
 
     memberAccess(obj: Object, memberName: any, isProperty: boolean) {
-        return JSModelHandler.memberAccess(obj, memberName, isProperty);
+        return JSModelHandler.memberAccessG(obj, memberName, isProperty);
     }
 
     isSimpleTextNode(node: BlockItem) {
-        return node instanceof Line && node.items[0] instanceof TextNode;
+        return node instanceof Line && (<Line>node).items[0] instanceof TextNode;
     }
 
     static join(items: GeneratedNode[], separator: string) {
@@ -125,7 +129,7 @@ export class TemplateGenerator implements IModelHandler {
             if (line === null) continue;
 
             const origLine = node.lines[iLine];
-            const origLineWs = origLine instanceof Line && origLine.items.length === 0;
+            const origLineWs = origLine instanceof Line && (<Line>origLine).items.length === 0;
 
             if (origLineWs) {
                 if (removeWs[iLine - 1]) {
@@ -164,7 +168,7 @@ export class TemplateGenerator implements IModelHandler {
             for (const line of nonNullLines) {
                 if (hasIndent) {
                     for (const item of line) {
-                        const parts = item.text.toString().split(/\n/g);
+                        const parts = item.text.split(/\n/g);
                         if (parts.length === 1) {
                             result.push(item);
                         } else {
@@ -232,10 +236,10 @@ export class TemplateGenerator implements IModelHandler {
             return null;
         } else if (Array.isArray(result)) {
             return <GeneratedNode[]> result;
-        } else if (typeof result === "object" && this.objectHook) {
-            return this.objectHook(result);
+        } else if (typeof result === "object" && this.hooks !== null) {
+            return this.hooks.objectHook(result);
         } else {
-            return [new GeneratedNode(result.toString())];
+            return [new GeneratedNode((<Object>result).toString())];
         }
     }
 

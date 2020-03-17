@@ -35,12 +35,12 @@ export class ExprLangLexer {
         }
     }
 
-    hasMoreToken() {
+    hasMoreToken(): boolean {
         this.skipWhitespace();
         return !this.eof;
     }
 
-    addIf(kind: TokenKind, value: string) {
+    addIf(kind: TokenKind, value: string): boolean {
         if (value) {
             this.tokens.push(new Token(kind, value));
             this.offset += value.length;
@@ -54,20 +54,20 @@ export class ExprLangLexer {
         const regex = new RegExp(pattern, "gy");
         regex.lastIndex = this.offset;
         const matches = regex.exec(this.expression);
-        return matches && matches[0];
+        return matches !== null ? matches[0] : null;
     }
 
-    tryToReadOperator() {
+    tryToReadOperator(): boolean {
         this.skipWhitespace();
         const op = this.operators.find(x => this.expression.startsWith(x, this.offset));
         return this.addIf(TokenKind.Operator, op);
     }
 
-    tryToReadNumber() {
+    tryToReadNumber(): boolean {
         this.skipWhitespace();
         const number = this.tryToMatch("[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)");
         const success = this.addIf(TokenKind.Number, number);
-        if (success && this.tryToMatch("[0-9a-zA-Z]"))
+        if (success && this.tryToMatch("[0-9a-zA-Z]") !== null)
             this.fail("invalid character in number");
         return success;
     }
@@ -81,10 +81,10 @@ export class ExprLangLexer {
     tryToReadString() {
         this.skipWhitespace();
         const match = this.tryToMatch("'(\\\\'|[^'])*'") || this.tryToMatch('"(\\\\"|[^"])*"');
-        if (!match) return false;
+        if (match === null) return false;
 
         let str = match.substr(1, match.length - 2);
-        str = match[0] === "'" ? str.replace("\\'", "'") : str.replace('\\"', '"');
+        str = match[0] === "'" ? str.replace(/\\'/g, "'") : str.replace(/\\"/g, '"');
         this.tokens.push(new Token(TokenKind.String, str));
         this.offset += match.length;
         return true;
@@ -92,7 +92,7 @@ export class ExprLangLexer {
 
     get eof() { return this.offset >= this.expression.length; }
 
-    skipWhitespace() {
+    skipWhitespace(): void {
         while(!this.eof) {
             const c = this.expression[this.offset];
             if (c == ' ' || c == '\n' || c == '\t' || c == '\r')
@@ -102,12 +102,12 @@ export class ExprLangLexer {
         }
     }
 
-    tryToReadLiteral() {
+    tryToReadLiteral(): boolean {
         const success = this.tryToReadIdentifier() || this.tryToReadNumber() || this.tryToReadString();
         return success;
     }
 
-    fail(message: string) {
+    fail(message: string): void {
         throw new ExprLangLexerException(this, message);
     }
 }

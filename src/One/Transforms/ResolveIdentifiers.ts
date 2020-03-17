@@ -56,8 +56,10 @@ export class ResolveIdentifiers extends AstTransformer<void> {
     protected visitIdentifier(id: Identifier): Reference {
         super.visitIdentifier(id);
         const symbol = this.symbolLookup.getSymbol(id.text);
-        if (symbol === null)
-            return this.errorMan.throw(`Identifier '${id.text}' was not found in available symbols`);
+        if (symbol === null) {
+            this.errorMan.throw(`Identifier '${id.text}' was not found in available symbols`);
+            return null;
+        }
         const ref = symbol.createReference(id.text);
         ref.parentExpr = id.parentExpr;
         return ref;
