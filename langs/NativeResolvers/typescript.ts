@@ -8,6 +8,9 @@ declare class console {
 declare class Object {
     static keys<T>(map: { [name: string]: T }): string[];
     static values<T>(map: { [name: string]: T }): T[];
+    hasKey(name: string): boolean;
+    get(propName: string): any;
+    toString(): string;
 }
 
 declare class TsArray<T> {
@@ -18,6 +21,14 @@ declare class TsArray<T> {
     concat(arr2: T[]): T[];
     join(separator: string): string;
     map<T2>(selector: (item: T) => T2): T2[];
+    find(predicate: (value: T) => boolean): T;
+    shift(): T;
+    includes(item: T): boolean;
+    pop(): T;
+    filter(predicate: (item: T) => boolean): T[];
+    slice(num: number): T[];
+    some(predictate: (item: T) => boolean): boolean;
+    every(predictate: (item: T, index: number) => boolean): boolean;
 }
 
 declare class TsMap<V> {
@@ -27,7 +38,15 @@ declare class TsMap<V> {
     hasKey(key: string): boolean;
 }
 
+declare class IterableIterator<T> {
+
+}
+
 declare class Map<K, V> {
+    get(key: K): V;
+    set(key: K, value: V): void;
+    keys(): IterableIterator<K>;
+    values(): IterableIterator<V>;
 }
 
 declare class TsString {
@@ -35,11 +54,15 @@ declare class TsString {
     get(idx: number): string;
     substring(start: number, end: number): string;
     substr(start: number, length: number): string;
-    split(separator: string): string[];
+    split(separator: RegExp): string[];
     startsWith(str: string, position: number): boolean;
     endsWith(str: string): boolean;
-    replace(from: string, to: string): string;
+    replace(from: RegExp, to: string): string;
     repeat(count: number): string;
+    match(pattern: RegExp): boolean;
+    lastIndexOf(pattern: string): number;
+    trim(): string;
+    charAt(idx: number): string;
 }
 
 class TsNumber {
@@ -58,19 +81,28 @@ class Promise<T> {
 
 }
 
-class RegExp {
-    constructor(pattern: string, modifiers: string) {}
+declare class RegExp {
+    constructor(pattern: string, modifiers: string);
+    lastIndex: number;
+    exec(input: string): RegExpExecArray;
 }
 
-class RegExpExecArray { }
-class Function { } // TODO: ???
-class Array { }
+declare class RegExpExecArray {
+    get(idx: number): string;
+}
+
+declare class Function {
+    apply(thisObj: Object, args: any[]): any;
+}
+declare class Array {
+    static isArray(obj: any): boolean;
+    static from<T>(obj: IterableIterator<T>): T[];
+}
 class Math { }
 class YAML { }
 class Set<T> { }
-class IterableIterator { }
 
-function parseInt() { }
+function parseInt(str: string): number { }
 function import_() { }
 
 declare class JSON {
