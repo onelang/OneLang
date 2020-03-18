@@ -131,10 +131,10 @@ export class SourceFile {
     /** @creator TypeScriptParser2 */
     constructor(
         public imports: Import[],
-        public interfaces: Map<string, Interface>,
-        public classes: Map<string, Class>,
-        public enums: Map<string, Enum>,
-        public funcs: Map<string, GlobalFunction>,
+        public interfaces: Interface[],
+        public classes: Class[],
+        public enums: Enum[],
+        public funcs: GlobalFunction[],
         public mainBlock: Block,
         public sourcePath: SourcePath,
         public exportScope: ExportScopeRef) {
@@ -185,7 +185,7 @@ export class Enum implements IHasAttributesAndTrivia, IImportable, ISourceFileMe
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
-        public values: Map<string, EnumMember>,
+        public values: EnumMember[],
         public isExported: boolean,
         public leadingTrivia: string) { }
 
@@ -214,7 +214,7 @@ export interface IInterface {
     name: string;
     typeArguments: string[];
     baseInterfaces: Type[];
-    methods: Map<string, Method>;
+    methods: Method[];
     leadingTrivia: string;
 }
 
@@ -234,8 +234,8 @@ export class Interface implements IHasAttributesAndTrivia, IInterface, IImportab
         public name: string,
         public typeArguments: string[],
         public baseInterfaces: Type[],
-        public fields: Map<string, Field>,
-        public methods: Map<string, Method>,
+        public fields: Field[],
+        public methods: Method[],
         public isExported: boolean,
         public leadingTrivia: string) { }
 
@@ -252,10 +252,10 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, 
         public typeArguments: string[],
         public baseClass: Type,
         public baseInterfaces: Type[],
-        public fields: Map<string, Field>,
-        public properties: Map<string, Property>,
+        public fields: Field[],
+        public properties: Property[],
         public constructor_: Constructor,
-        public methods: Map<string, Method>,
+        public methods: Method[],
         public isExported: boolean,
         public leadingTrivia: string) { }
 

@@ -163,8 +163,8 @@ export abstract class AstTransformer {
         } else if (expr instanceof ArrayLiteral) {
             expr.items = expr.items.map(x => this.visitExpression(x) || x);
         } else if (expr instanceof MapLiteral) {
-            for (const key of Array.from(expr.properties.keys()))
-                expr.properties.set(key, this.visitExpression(expr.properties.get(key)) || expr.properties.get(key));
+            for (const item of expr.items)
+                item.value = this.visitExpression(item.value) || item.value;
         } else if (expr instanceof StringLiteral) {
         } else if (expr instanceof BooleanLiteral) {
         } else if (expr instanceof NumericLiteral) {
@@ -249,16 +249,13 @@ export abstract class AstTransformer {
             prop.setter = this.visitBlock(prop.setter) || prop.setter;
     }
 
-    protected visitObjectMap<T>(obj: Map<string, T>, visitor: (item: T) => void) {
-        for (const item of Array.from(obj.values()))
-            visitor(item);
-    }
-
     protected visitInterface(intf: Interface) {
         this.currentInterface = intf;
         intf.baseInterfaces = intf.baseInterfaces.map(x => this.visitType(x) || x);
-        this.visitObjectMap(intf.fields, x => this.visitField(x));
-        this.visitObjectMap(intf.methods, x => this.visitMethod(x));
+        for (const field of intf.fields)
+            this.visitField(field);
+        for (const method of intf.methods)
+            this.visitMethod(method);
         this.currentInterface = null;
     }
 
@@ -269,14 +266,18 @@ export abstract class AstTransformer {
 
         cls.baseClass = this.visitType(cls.baseClass) || cls.baseClass;
         cls.baseInterfaces = cls.baseInterfaces.map(x => this.visitType(x) || x);
-        this.visitObjectMap(cls.methods, x => this.visitMethod(x));
-        this.visitObjectMap(cls.properties, x => this.visitProperty(x));
-        this.visitObjectMap(cls.fields, x => this.visitField(x));
+        for (const field of cls.fields)
+            this.visitField(field);
+        for (const prop of cls.properties)
+            this.visitProperty(prop);
+        for (const method of cls.methods)
+            this.visitMethod(method);
         this.currentInterface = null;
     }
  
     protected visitEnum(enum_: Enum) {
-        this.visitObjectMap(enum_.values, x => this.visitEnumMember(x));
+        for (const value of enum_.values)
+            this.visitEnumMember(value);
     }
 
     protected visitEnumMember(enumMember: EnumMember) {
@@ -284,10 +285,14 @@ export abstract class AstTransformer {
 
     public visitSourceFile(sourceFile: SourceFile) {
         this.currentFile = sourceFile;
-        this.visitObjectMap(sourceFile.enums, x => this.visitEnum(x));
-        this.visitObjectMap(sourceFile.interfaces, x => this.visitInterface(x));
-        this.visitObjectMap(sourceFile.classes, x => this.visitClass(x));
-        this.visitObjectMap(sourceFile.funcs, x => this.visitGlobalFunction(x));
+        for (const enum_ of sourceFile.enums)
+            this.visitEnum(enum_);
+        for (const intf of sourceFile.interfaces)
+            this.visitInterface(intf);
+        for (const cls of sourceFile.classes)
+            this.visitClass(cls);
+        for (const func of sourceFile.funcs)
+            this.visitGlobalFunction(func);
         sourceFile.mainBlock = this.visitBlock(sourceFile.mainBlock) || sourceFile.mainBlock;
         this.currentFile = null;
         return null;

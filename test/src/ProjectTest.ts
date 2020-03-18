@@ -83,7 +83,7 @@ initCompiler().then(() => {
         workspace.addPackage(projectPkg);
 
         const jsYamlPkg = new Package("js-yaml");
-        jsYamlPkg.addFile(new SourceFile([], new Map(), new Map(), new Map(), new Map(), null, new SourcePath(jsYamlPkg, "index"), new ExportScopeRef("js-yaml", "index")));
+        jsYamlPkg.addFile(new SourceFile([], [], [], [], [], null, new SourcePath(jsYamlPkg, "index"), new ExportScopeRef("js-yaml", "index")));
         workspace.addPackage(jsYamlPkg);
 
         const files = glob(test.projDir);

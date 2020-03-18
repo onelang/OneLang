@@ -108,8 +108,12 @@ export class ArrayLiteral extends Expression {
     constructor(public items: Expression[]) { super(); }
 }
 
+export class MapLiteralItem {
+    constructor(public key: string, public value: Expression) { }
+}
+
 export class MapLiteral extends Expression {
-    constructor(public properties: Map<string, Expression>) { super(); }
+    constructor(public items: MapLiteralItem[]) { super(); }
 }
 
 export class UnresolvedNewExpression extends Expression {

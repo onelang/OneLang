@@ -18,11 +18,6 @@ export class TSOverviewGenerator {
         return items.map(item => this.leading(item, false) + callback(item));
     }
 
-    static map<T>(items: Map<string, T>, callback: (item: T) => string) {
-        return Array.from(items.entries()).map(x => this.leading(x[1], false) + 
-            (x[0] !== (<any>x[1]).name ? `/* name on object "${(<any>x[1]).name}" is different from "${x[0]}" */` : "") + callback(x[1]));
-    }
-
     static pre(prefix: string, value: any, separator = ", ") {
         if (Array.isArray(value))
             return value.length > 0 ? `${prefix}${value.join(separator)}` : "";
@@ -108,7 +103,7 @@ export class TSOverviewGenerator {
         } else if (expr instanceof UnaryExpression && expr.unaryType === UnaryType.Postfix) {
             res = `${this.expr(expr.operand)}${expr.operator}`;
         } else if (expr instanceof MapLiteral) {
-            const repr = Object.entries(expr.properties).map(keyValue => `${keyValue[0]}: ${this.expr(keyValue[1])}`).join(",\n");
+            const repr = expr.items.map(item => `${item.key}: ${this.expr(item.value)}`).join(",\n");
             res = repr === "" ? "{}" : repr.includes("\n") ? `{\n${this.pad(repr)}\n}` : `{ ${repr} }`;
         } else if (expr instanceof NullLiteral) {
             res = `null`;
@@ -208,11 +203,14 @@ export class TSOverviewGenerator {
     }
 
     static classLike(cls: IInterface) {
-        const fields = cls instanceof Class ? this.map(cls.fields, field => `${this.var(field)};`) : [];
-        const props = cls instanceof Class ? this.map(cls.properties, prop => `${this.var(prop)};`) : [];
-        const constr = cls instanceof Class ? this.methodBase(cls.constructor_) : "";
-        const methods = this.map(cls.methods, method => this.method(method));
-        return this.pad([fields.join("\n"), props.join("\n"), constr, methods.join("\n\n")].filter(x => x !== "").join("\n\n"));
+        const resList: string[] = [];
+        if (cls instanceof Class) {
+            resList.push(cls.fields.map(field => this.var(field) + ';').join("\n"));
+            resList.push(cls.properties.map(prop => this.var(prop) + ';').join("\n"));
+            resList.push(this.methodBase(cls.constructor_));
+        }
+        resList.push(cls.methods.map(method => this.method(method)).join("\n\n"));
+        return this.pad(resList.filter(x => x !== "").join("\n\n"));
     }
 
     static pad(str: string) { return str.split(/\n/g).map(x => `    ${x}`).join('\n'); }
@@ -224,14 +222,14 @@ export class TSOverviewGenerator {
         const imps = this.array(sourceFile.imports, imp => 
             (imp.importAll ? `import * as ${imp.importAs}` : `import { ${imp.imports.map(x => this.imp(x)).join(", ")} }`) +
             ` from "${imp.exportScope.packageName}${this.pre("/", imp.exportScope.scopeName)}";`);
-        const enums = this.map(sourceFile.enums, enum_ => `enum ${enum_.name} { ${Array.from(enum_.values.values()).map(x => x.name).join(", ")} }`);
-        const intfs = this.map(sourceFile.interfaces, intf => `interface ${this.name_(intf)}`+
+        const enums = sourceFile.enums.map(enum_ => `enum ${enum_.name} { ${Array.from(enum_.values.values()).map(x => x.name).join(", ")} }`);
+        const intfs = sourceFile.interfaces.map(intf => `interface ${this.name_(intf)}`+
             `${this.pre(" extends ", intf.baseInterfaces.map(x => this.type(x)))} {\n${this.classLike(intf)}\n}`);
-        const classes = this.map(sourceFile.classes, cls => `class ${this.name_(cls)}`+
+        const classes = sourceFile.classes.map(cls => `class ${this.name_(cls)}`+
             this.pre(" extends ", cls.baseClass ? this.type(cls.baseClass) : null) + 
             this.pre(" implements ", cls.baseInterfaces.map(x => this.type(x))) + 
             ` {\n${this.classLike(cls)}\n}`);
-        const funcs = this.map(sourceFile.funcs, func => `function ${this.name_(func)}${this.methodBase(func, func.returns)}`);
+        const funcs = sourceFile.funcs.map(func => `function ${this.name_(func)}${this.methodBase(func, func.returns)}`);
         const main = this.block(sourceFile.mainBlock);
         const result = `// export scope: ${sourceFile.exportScope.packageName}/${sourceFile.exportScope.scopeName}\n`+
             [imps.join("\n"), enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), funcs.join("\n\n"), main].filter(x => x !== "").join("\n\n");

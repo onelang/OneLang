@@ -1,7 +1,7 @@
 import { Reader } from "./Reader";
 import { NodeManager } from "./NodeManager";
 import { UnresolvedType, Type } from "../../One/Ast/AstTypes";
-import { Expression, MapLiteral, ArrayLiteral, UnaryType, Identifier, NumericLiteral, StringLiteral, UnresolvedCallExpression, CastExpression, BinaryExpression, UnaryExpression, ParenthesizedExpression, ConditionalExpression, ElementAccessExpression, PropertyAccessExpression } from "../../One/Ast/Expressions";
+import { Expression, MapLiteral, ArrayLiteral, UnaryType, Identifier, NumericLiteral, StringLiteral, UnresolvedCallExpression, CastExpression, BinaryExpression, UnaryExpression, ParenthesizedExpression, ConditionalExpression, ElementAccessExpression, PropertyAccessExpression, MapLiteralItem } from "../../One/Ast/Expressions";
 
 class Operator {
     constructor(public text: string, public precedence: number, public isBinary: boolean, public isRightAssoc: boolean, public isPostfix: boolean) { }
@@ -88,7 +88,7 @@ export class ExpressionParser {
     parseMapLiteral(keySeparator = ":", startToken = "{", endToken = "}") {
         if (!this.reader.readToken(startToken)) return null;
 
-        const items = new Map<string, Expression>();
+        const items: MapLiteralItem[] = [];
         do {
             if (this.reader.peekToken(endToken)) break;
 
@@ -98,7 +98,7 @@ export class ExpressionParser {
 
             this.reader.expectToken(keySeparator);
             const initializer = this.parse();
-            items.set(name, initializer);
+            items.push(new MapLiteralItem(name, initializer));
         } while(this.reader.readToken(","));
 
         this.reader.expectToken(endToken);

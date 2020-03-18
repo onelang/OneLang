@@ -448,8 +448,8 @@ export class TypeScriptParser2 implements IParser {
             } while (this.reader.readToken(","))
         }
 
-        const methods = new Map<string, Method>();
-        const fields = new Map<string, Field>();
+        const methods: Method[] = [];
+        const fields: Field[] = [];
 
         this.reader.expectToken("{");
         while(!this.reader.readToken("}")) {
@@ -464,9 +464,7 @@ export class TypeScriptParser2 implements IParser {
                 this.reader.expectToken(";");
 
                 const field = new Field(memberName, fieldType, null, Visibility.Public, false, memberLeadingTrivia);
-                if (fields.has(field.name))
-                    this.reader.fail(`duplicate field`);
-                fields.set(field.name, field);
+                fields.push(field);
 
                 this.nodeManager.addNode(field, memberStart);
                 this.context.pop();
@@ -478,9 +476,7 @@ export class TypeScriptParser2 implements IParser {
                 const sig = this.parseMethodSignature(/* isConstructor = */ false, /* declarationOnly = */ true);
     
                 const method = new Method(memberName, methodTypeArgs, sig.params, sig.body, Visibility.Public, false, sig.returns, memberLeadingTrivia);
-                if (methods.has(method.name))
-                    this.reader.fail(`duplicate method`);
-                methods.set(method.name, method);
+                methods.push(method);
                 this.nodeManager.addNode(method, memberStart);
                 this.context.pop();
             }
@@ -518,9 +514,9 @@ export class TypeScriptParser2 implements IParser {
         }
 
         let constructor: Constructor = null;
-        const fields = new Map<string, Field>();
-        const methods = new Map<string, Method>();
-        const properties = new Map<string, Property>();
+        const fields: Field[] = [];
+        const methods: Method[] = [];
+        const properties: Property[] = [];
 
         this.reader.expectToken("{");
         while(!this.reader.readToken("}")) {
@@ -535,22 +531,17 @@ export class TypeScriptParser2 implements IParser {
             const memberName = this.parseIdentifierOrString();
             const methodTypeArgs = this.parseGenericsArgs();
             if (this.reader.readToken("(")) { // method
-                if (methods.has(memberName))
-                    this.reader.fail(`duplicate method`);
                 const isConstructor = memberName === "constructor";
 
                 let member: IMethodBase;
                 const sig = this.parseMethodSignature(isConstructor, declarationOnly);
                 if (isConstructor) {
                     member = constructor = new Constructor(sig.params, sig.body, memberLeadingTrivia);
-                    for (const field of sig.fields) {
-                        if (fields.has(field.name))
-                            this.reader.fail(`duplicate field`);
-                        fields.set(field.name, field);
-                    }
+                    for (const field of sig.fields)
+                        fields.push(field);
                 } else {
                     const method = new Method(memberName, methodTypeArgs, sig.params, sig.body, visibility, isStatic, sig.returns, memberLeadingTrivia);
-                    methods.set(method.name, method);
+                    methods.push(method);
                     member = method;
                 }
 
@@ -598,9 +589,7 @@ export class TypeScriptParser2 implements IParser {
 
                 if (!prop) {
                     prop = new Property(propName, propType, getter, setter, visibility, isStatic, memberLeadingTrivia);
-                    if (properties.has(prop.name))
-                        this.reader.fail(`duplicate property`);
-                    properties.set(prop.name, prop);
+                    properties.push(prop);
                     this.nodeManager.addNode(prop, memberStart);
                 }
 
@@ -612,9 +601,7 @@ export class TypeScriptParser2 implements IParser {
                 this.reader.expectToken(";");
 
                 const field = new Field(memberName, typeAndInit.type, typeAndInit.init, visibility, isStatic, memberLeadingTrivia);
-                if (fields.has(field.name))
-                    this.reader.fail(`duplicate field`);
-                fields.set(field.name, field);
+                fields.push(field);
 
                 this.nodeManager.addNode(field, memberStart);
                 this.context.pop();
@@ -634,7 +621,7 @@ export class TypeScriptParser2 implements IParser {
         const name = this.reader.expectIdentifier("expected identifier after 'enum' keyword");
         this.context.push(`E:${name}`);
 
-        const members = new Map<string, EnumMember>();
+        const members: EnumMember[] = [];
 
         this.reader.expectToken("{");
         if (!this.reader.readToken("}")) {
@@ -642,9 +629,7 @@ export class TypeScriptParser2 implements IParser {
                 if (this.reader.peekToken("}")) break; // eg. "enum { A, B, }" (but multiline)
 
                 const enumMember = new EnumMember(this.reader.expectIdentifier());
-                if (members.has(enumMember.name))
-                    this.reader.fail(`duplicate enum member`);
-                members.set(enumMember.name, enumMember);
+                members.push(enumMember);
                 this.nodeManager.addNode(enumMember, this.reader.prevTokenOffset);
 
                 // TODO: generated code compatibility
@@ -735,10 +720,10 @@ export class TypeScriptParser2 implements IParser {
 
     parseSourceFile() {
         const imports: Import[] = [];
-        const enums = new Map<string, Enum>();
-        const intfs = new Map<string, Interface>();
-        const classes = new Map<string, Class>();
-        const funcs = new Map<string, GlobalFunction>();
+        const enums: Enum[] = [];
+        const intfs: Interface[] = [];
+        const classes: Class[] = [];
+        const funcs: GlobalFunction[] = [];
         while (true) {
             const leadingTrivia = this.reader.readLeadingTrivia();
             if (this.reader.eof) break;
@@ -755,25 +740,19 @@ export class TypeScriptParser2 implements IParser {
 
             const cls = this.parseClass(leadingTrivia, isExported);
             if (cls !== null) {
-                if (classes.has(cls.name))
-                    this.reader.fail(`duplicate class`);
-                classes.set(cls.name, cls);
+                classes.push(cls);
                 continue;
             }
 
             const enumObj = this.parseEnum(leadingTrivia, isExported);
             if (enumObj !== null) {
-                if (enums.has(enumObj.name))
-                    this.reader.fail(`duplicate enum`);
-                enums.set(enumObj.name, enumObj);
+                enums.push(enumObj);
                 continue;
             }
 
             const intf = this.parseInterface(leadingTrivia, isExported);
             if (intf !== null) {
-                if (intfs.has(intf.name))
-                    this.reader.fail(`duplicate interface`);
-                intfs.set(intf.name, intf);
+                intfs.push(intf);
                 continue;
             }
 
@@ -781,9 +760,7 @@ export class TypeScriptParser2 implements IParser {
                 const funcName = this.readIdentifier();
                 this.reader.expectToken("(");
                 const sig = this.parseMethodSignature(false, false);
-                if (funcs.has(funcName))
-                    this.reader.fail(`duplicate global function`);
-                funcs.set(funcName, new GlobalFunction(funcName, sig.params, sig.body, sig.returns, isExported, leadingTrivia));
+                funcs.push(new GlobalFunction(funcName, sig.params, sig.body, sig.returns, isExported, leadingTrivia));
                 continue;
             }
 
