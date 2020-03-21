@@ -229,15 +229,15 @@ export class TypeScriptParser2 implements IParser {
         return new TypeAndInit(type, init);
     }
 
-    parseBlockOrStatement() {
+    expectBlockOrStatement() {
         const block = this.parseBlock();
         if (block !== null) return block;
 
-        const stmt = this.parseStatement();
+        const stmt = this.expectStatement();
         return new Block(stmt === null ? [] : [stmt]);
     }
 
-    parseStatement() {
+    expectStatement() {
         let statement: Statement = null;
 
         const leadingTrivia = this.reader.readLeadingTrivia();
@@ -256,19 +256,19 @@ export class TypeScriptParser2 implements IParser {
             this.reader.expectToken("(");
             const condition = this.parseExpression();
             this.reader.expectToken(")");
-            const then = this.parseBlockOrStatement();
-            const else_ = this.reader.readToken("else") ? this.parseBlockOrStatement() : null;
+            const then = this.expectBlockOrStatement();
+            const else_ = this.reader.readToken("else") ? this.expectBlockOrStatement() : null;
             statement = new IfStatement(condition, then, else_);
         } else if (this.reader.readToken("while")) {
             requiresClosing = false;
             this.reader.expectToken("(");
             const condition = this.parseExpression();
             this.reader.expectToken(")");
-            const body = this.parseBlockOrStatement();
+            const body = this.expectBlockOrStatement();
             statement = new WhileStatement(condition, body);
         } else if (this.reader.readToken("do")) {
             requiresClosing = false;
-            const body = this.parseBlockOrStatement();
+            const body = this.expectBlockOrStatement();
             this.reader.expectToken("while");
             this.reader.expectToken("(");
             const condition = this.parseExpression();
@@ -282,7 +282,7 @@ export class TypeScriptParser2 implements IParser {
             if (itemVarName !== null && this.reader.readToken("of")) {
                 const items = this.parseExpression();
                 this.reader.expectToken(")");
-                const body = this.parseBlockOrStatement();
+                const body = this.expectBlockOrStatement();
                 statement = new ForeachStatement(new ForeachVariable(itemVarName), items, body);
             } else {
                 let forVar = null;
@@ -295,7 +295,7 @@ export class TypeScriptParser2 implements IParser {
                 this.reader.expectToken(";");
                 const incrementor = this.parseExpression();
                 this.reader.expectToken(")");
-                const body = this.parseBlockOrStatement();
+                const body = this.expectBlockOrStatement();
                 statement = new ForStatement(forVar, condition, incrementor, body);
             }
         } else if (this.reader.readToken("return")) {
@@ -339,7 +339,7 @@ export class TypeScriptParser2 implements IParser {
         const statements: Statement[] = [];
         if (!this.reader.readToken("}")) {
             do {
-                const statement = this.parseStatement();
+                const statement = this.expectStatement();
                 if (statement !== null)
                     statements.push(statement);
             } while(!this.reader.readToken("}"));
@@ -347,6 +347,13 @@ export class TypeScriptParser2 implements IParser {
 
         const block = new Block(statements);
         this.nodeManager.addNode(block, startPos);
+        return block;
+    }
+
+    expectBlock(errorMsg: string = null) {
+        const block = this.parseBlock();
+        if (block === null)
+            this.reader.fail(errorMsg || "expected block here");
         return block;
     }
 
@@ -418,10 +425,7 @@ export class TypeScriptParser2 implements IParser {
         if (declarationOnly) {
             this.reader.expectToken(";");
         } else {
-            body = this.parseBlock();
-            if (body === null)
-                this.reader.fail("method body is missing");
-
+            body = this.expectBlock("method body is missing");
             body.statements = bodyPrefixStatements.concat(body.statements);
         }
 
@@ -562,9 +566,7 @@ export class TypeScriptParser2 implements IParser {
                             this.reader.fail("Type is missing for property in declare class");
                         this.reader.expectToken(";");
                     } else {
-                        getter = this.parseBlock();
-                        if (!getter)
-                            this.reader.fail("property getter body is missing");
+                        getter = this.expectBlock("property getter body is missing");
                         if (prop)
                             prop.getter = getter;
                     }
@@ -579,9 +581,7 @@ export class TypeScriptParser2 implements IParser {
                             this.reader.fail("Type is missing for property in declare class");
                         this.reader.expectToken(";");
                     } else {
-                        setter = this.parseBlock();
-                        if (!setter)
-                            this.reader.fail("property setter body is missing");
+                        setter = this.expectBlock("property setter body is missing");
                         if (prop)
                             prop.setter = setter;
                     }
@@ -774,7 +774,7 @@ export class TypeScriptParser2 implements IParser {
             const leadingTrivia = this.reader.readLeadingTrivia();
             if (this.reader.eof) break;
 
-            const stmt = this.parseStatement();
+            const stmt = this.expectStatement();
             if (stmt === null) continue;
 
             stmt.leadingTrivia = leadingTrivia;
