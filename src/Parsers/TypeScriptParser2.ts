@@ -4,7 +4,7 @@ import { NodeManager } from "./Common/NodeManager";
 import { IParser } from "./Common/IParser";
 import { Type, AnyType, VoidType, UnresolvedType, LambdaType } from "../One/Ast/AstTypes";
 import { Expression, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, BinaryExpression, UnaryExpression, UnresolvedCallExpression, PropertyAccessExpression, InstanceOfExpression, RegexLiteral, AwaitExpression, ParenthesizedExpression, UnresolvedNewExpression } from "../One/Ast/Expressions";
-import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileStatement, ForeachStatement, ForStatement, ReturnStatement, ThrowStatement, BreakStatement, ExpressionStatement, ForeachVariable, ForVariable, DoStatement, ContinueStatement } from "../One/Ast/Statements";
+import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileStatement, ForeachStatement, ForStatement, ReturnStatement, ThrowStatement, BreakStatement, ExpressionStatement, ForeachVariable, ForVariable, DoStatement, ContinueStatement, TryStatement, CatchVariable } from "../One/Ast/Statements";
 import { Block, Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package, Lambda, UnresolvedImport, GlobalFunction } from "../One/Ast/Types";
 
 class TypeAndInit {
@@ -298,6 +298,20 @@ export class TypeScriptParser2 implements IParser {
                 const body = this.expectBlockOrStatement();
                 statement = new ForStatement(forVar, condition, incrementor, body);
             }
+        } else if (this.reader.readToken("try")) {
+            const block = this.expectBlock("try body is missing");
+            
+            let catchVar: CatchVariable = null;
+            let catchBody: Block = null;
+            if (this.reader.readToken("catch")) {
+                this.reader.expectToken("(");
+                catchVar = new CatchVariable(this.reader.expectIdentifier(), null);
+                this.reader.expectToken(")");
+                catchBody = this.expectBlock("catch body is missing");
+            }
+
+            const finallyBody = this.reader.readToken("finally") ? this.expectBlock() : null;
+            return new TryStatement(block, catchVar, catchBody, finallyBody);
         } else if (this.reader.readToken("return")) {
             const expr = this.reader.peekToken(";") ? null : this.parseExpression();
             statement = new ReturnStatement(expr);

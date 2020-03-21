@@ -1,5 +1,5 @@
 import { Class, Enum, MethodParameter, GlobalFunction, Field, Property, Method, EnumMember, IMethodBase } from "./Types";
-import { VariableDeclaration, ForVariable, ForeachVariable } from "./Statements";
+import { VariableDeclaration, ForVariable, ForeachVariable, CatchVariable } from "./Statements";
 import { Expression, TypeRestriction } from "./Expressions";
 import { Type, EnumType, ClassType } from "./AstTypes";
 
@@ -84,6 +84,12 @@ export class VariableDeclarationReference extends Reference {
 // is generic: can be
 export class ForVariableReference extends Reference {
     constructor(public decl: ForVariable) { super(); decl.references.push(this); }
+}
+
+// has type: ???
+// is generic: ???
+export class CatchVariableReference extends Reference {
+    constructor(public decl: CatchVariable) { super(); decl.references.push(this); }
 }
 
 // has type: yes

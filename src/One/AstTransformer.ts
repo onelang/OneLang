@@ -88,6 +88,14 @@ export abstract class AstTransformer {
             this.visitVariable(stmt.itemVar);
             stmt.items = this.visitExpression(stmt.items) || stmt.items;
             stmt.body = this.visitBlock(stmt.body) || stmt.body;
+        } else if (stmt instanceof TryStatement) {
+            stmt.tryBody = this.visitBlock(stmt.tryBody) || stmt.tryBody;
+            if (stmt.catchBody !== null) {
+                this.visitVariable(stmt.catchVar);
+                stmt.catchBody = this.visitBlock(stmt.catchBody) || stmt.catchBody;
+            }
+            if (stmt.finallyBody !== null)
+                stmt.finallyBody = this.visitBlock(stmt.finallyBody) || stmt.finallyBody;
         } else if (stmt instanceof BreakStatement) {
             // ...
         } else if (stmt instanceof UnsetStatement) {
@@ -187,6 +195,7 @@ export abstract class AstTransformer {
         } else if (expr instanceof VariableDeclarationReference) {
         } else if (expr instanceof ForVariableReference) {
         } else if (expr instanceof ForeachVariableReference) {
+        } else if (expr instanceof CatchVariableReference) {
         } else if (expr instanceof GlobalFunctionReference) {
         } else if (expr instanceof SuperReference) {
         } else if (expr instanceof InstanceFieldReference) {

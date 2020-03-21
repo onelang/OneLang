@@ -3,7 +3,7 @@ import { SourceFile, Class, Enum, Method, Block, Lambda, GlobalFunction } from "
 import { ErrorManager } from "../ErrorManager";
 import { Identifier } from "../Ast/Expressions";
 import { IReferencable, Reference } from "../Ast/References";
-import { VariableDeclaration, ForStatement, ForeachStatement, Statement, IfStatement } from "../Ast/Statements";
+import { VariableDeclaration, ForStatement, ForeachStatement, Statement, IfStatement, TryStatement } from "../Ast/Statements";
 import { ClassType } from "../Ast/AstTypes";
 
 class SymbolLookup {
@@ -77,7 +77,16 @@ export class ResolveIdentifiers extends AstTransformer {
             this.symbolLookup.addSymbol(stmt.itemVar.name, stmt.itemVar);
             super.visitStatement(stmt);
             this.symbolLookup.popContext();
-            return null;
+        } else if (stmt instanceof TryStatement) {
+            this.symbolLookup.pushContext(`Try`);
+            this.visitBlock(stmt.tryBody);
+            if (stmt.catchBody !== null) {
+                this.symbolLookup.addSymbol(stmt.catchVar.name, stmt.catchVar);
+                this.visitBlock(stmt.catchBody);
+                this.symbolLookup.popContext();
+            }
+            if (stmt.finallyBody !== null)
+                this.visitBlock(stmt.finallyBody);
         } else {
             return super.visitStatement(stmt);
         }

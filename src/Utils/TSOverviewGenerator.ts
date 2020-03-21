@@ -97,7 +97,7 @@ export class TSOverviewGenerator {
         } else if (expr instanceof RegexLiteral) {
             res = `/${expr.pattern}/${expr.global ? "g" : ""}${expr.caseInsensitive ? "g" : ""}`;
         } else if (expr instanceof Lambda) {
-            res = `(${expr.parameters.map(x => x.name + (x.type ? `: ${this.type(x.type)}` : "")).join(", ")}) => { ${this.block(expr.body)} }`;
+            res = `(${expr.parameters.map(x => x.name + (x.type ? `: ${this.type(x.type)}` : "")).join(", ")}) => { ${this.rawBlock(expr.body)} }`;
         } else if (expr instanceof UnaryExpression && expr.unaryType === UnaryType.Prefix) {
             res = `${expr.operator}${this.expr(expr.operand)}`;
         } else if (expr instanceof UnaryExpression && expr.unaryType === UnaryType.Postfix) {
@@ -123,6 +123,8 @@ export class TSOverviewGenerator {
             res = `{FVR}${expr.decl.name}`;
         } else if (expr instanceof ForeachVariableReference) {
             res = `{FEVR}${expr.decl.name}`;
+        } else if (expr instanceof CatchVariableReference) {
+            res = `{CVR}${expr.decl.name}`;
         } else if (expr instanceof GlobalFunctionReference) {
             res = `{GFR}${expr.decl.name}`;
         } else if (expr instanceof SuperReference) {
@@ -145,17 +147,18 @@ export class TSOverviewGenerator {
         return res;
     }
 
-    static blockOrStmt(block: Block) {
+    static block(block: Block, previewOnly = false, allowOneLiner = true) {
+        if (previewOnly) return " { ... }";
         const stmtLen = block.statements.length;
-        return stmtLen === 0 ? " { }" : stmtLen === 1 ? `\n${this.pad(this.block(block))}` : ` {\n${this.pad(this.block(block))}\n}`;
+        return stmtLen === 0 ? " { }" : allowOneLiner && stmtLen === 1 ? `\n${this.pad(this.rawBlock(block))}` : ` {\n${this.pad(this.rawBlock(block))}\n}`;
     }
 
-    static stmt(stmt: Statement) {
+    static stmt(stmt: Statement, previewOnly = false) {
         let res = "UNKNOWN-STATEMENT";
         if (stmt instanceof BreakStatement) {
             res = "break;";
         } else if (stmt instanceof ReturnStatement) {
-            res = `return ${this.expr(stmt.expression)};`;
+            res = stmt.expression === null ? "return;" : `return ${this.expr(stmt.expression)};`;
         } else if (stmt instanceof UnsetStatement) {
             res = `unset ${this.expr(stmt.expression)};`;
         } else if (stmt instanceof ThrowStatement) {
@@ -165,33 +168,37 @@ export class TSOverviewGenerator {
         } else if (stmt instanceof VariableDeclaration) {
             res = `${stmt.isMutable ? "let" : "const"} ${this.var(stmt)};`;
         } else if (stmt instanceof ForeachStatement) {
-            res = `for (const ${stmt.itemVar.name} of ${this.expr(stmt.items)})` + this.blockOrStmt(stmt.body);
+            res = `for (const ${stmt.itemVar.name} of ${this.expr(stmt.items)})` + this.block(stmt.body, previewOnly);
         } else if (stmt instanceof IfStatement) {
             const elseIf = stmt.else_ && stmt.else_.statements.length === 1 && stmt.else_.statements[0] instanceof IfStatement;
-            res = `if (${this.expr(stmt.condition)})` + 
-                this.blockOrStmt(stmt.then) + 
-                (elseIf ? `\nelse ${this.stmt(stmt.else_.statements[0])}` : "") +
-                (!elseIf && stmt.else_ ? `\nelse` + this.blockOrStmt(stmt.else_) : "");
+            res = `if (${this.expr(stmt.condition)})${this.block(stmt.then, previewOnly)}`;
+            if (!previewOnly)
+                res += (elseIf ? `\nelse ${this.stmt(stmt.else_.statements[0])}` : "") +
+                    (!elseIf && stmt.else_ ? `\nelse` + this.block(stmt.else_) : "");
         } else if (stmt instanceof WhileStatement) {
-            res = `while (${this.expr(stmt.condition)})` + this.blockOrStmt(stmt.body);
+            res = `while (${this.expr(stmt.condition)})` + this.block(stmt.body, previewOnly);
         } else if (stmt instanceof ForStatement) {
-            res = `for (${stmt.itemVar ? this.var(stmt.itemVar) : ""}; ${this.expr(stmt.condition)}; ${this.expr(stmt.incrementor)})` + this.blockOrStmt(stmt.body);
+            res = `for (${stmt.itemVar ? this.var(stmt.itemVar) : ""}; ${this.expr(stmt.condition)}; ${this.expr(stmt.incrementor)})` + this.block(stmt.body, previewOnly);
         } else if (stmt instanceof DoStatement) {
-            res = `do${this.blockOrStmt(stmt.body)} while (${this.expr(stmt.condition)})`;
+            res = `do${this.block(stmt.body, previewOnly)} while (${this.expr(stmt.condition)})`;
+        } else if (stmt instanceof TryStatement) {
+            res = "try" + this.block(stmt.tryBody, previewOnly, false) +
+                (stmt.catchBody !== null ? ` catch (${stmt.catchVar.name})${this.block(stmt.catchBody, previewOnly)}` : "") +
+                (stmt.finallyBody !== null ? "finally" + this.block(stmt.finallyBody, previewOnly) : "");
         } else if (stmt instanceof ContinueStatement) {
             res = `continue;`;
         } else debugger;
         return this.leading(stmt, true) + res;
     }
 
-    static block(block: Block) { return block.statements.map(stmt => this.stmt(stmt)).join("\n"); }
+    static rawBlock(block: Block) { return block.statements.map(stmt => this.stmt(stmt)).join("\n"); }
 
     static methodBase(method: IMethodBase, returns: Type = new VoidType()) {
         if (!method) return "";
         return this.pre("/* throws */ ", method.throws) + 
             `${this.name_(method)}(${method.parameters.map(p => this.var(p)).join(", ")})` +
             (returns instanceof VoidType ? "" : `: ${this.type(returns)}`) +
-            (method.body ? ` {\n${this.pad(this.block(method.body))}\n}` : ";");
+            (method.body ? ` {\n${this.pad(this.rawBlock(method.body))}\n}` : ";");
     }
 
     static method(method: Method) {
@@ -230,7 +237,7 @@ export class TSOverviewGenerator {
             this.pre(" implements ", cls.baseInterfaces.map(x => this.type(x))) + 
             ` {\n${this.classLike(cls)}\n}`);
         const funcs = sourceFile.funcs.map(func => `function ${this.name_(func)}${this.methodBase(func, func.returns)}`);
-        const main = this.block(sourceFile.mainBlock);
+        const main = this.rawBlock(sourceFile.mainBlock);
         const result = `// export scope: ${sourceFile.exportScope.packageName}/${sourceFile.exportScope.scopeName}\n`+
             [imps.join("\n"), enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), funcs.join("\n\n"), main].filter(x => x !== "").join("\n\n");
         return result;

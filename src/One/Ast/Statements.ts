@@ -1,7 +1,7 @@
 import { Block, IVariableWithInitializer, IVariable, IHasAttributesAndTrivia } from "./Types";
 import { Expression } from "./Expressions";
 import { Type } from "./AstTypes";
-import { ForVariableReference, ForeachVariableReference, VariableDeclarationReference, IReferencable, Reference } from "./References";
+import { ForVariableReference, ForeachVariableReference, VariableDeclarationReference, IReferencable, Reference, CatchVariableReference } from "./References";
 
 export class Statement implements IHasAttributesAndTrivia {
     leadingTrivia: string;
@@ -94,4 +94,26 @@ export class ForStatement extends Statement {
         public condition: Expression, 
         public incrementor: Expression, 
         public body: Block) { super(); }
+}
+
+export class CatchVariable implements IVariable, IReferencable {
+    constructor(
+        public name: string,
+        public type: Type) { }
+
+    /** @creator ResolveIdentifiers */
+    references: CatchVariableReference[] = [];
+    createReference(): Reference { return new CatchVariableReference(this); }
+}
+
+export class TryStatement extends Statement {
+    constructor(
+        public tryBody: Block,
+        public catchVar: CatchVariable,
+        public catchBody: Block,
+        public finallyBody: Block) {
+            super();
+            if (this.catchBody === null && this.finallyBody === null)
+                throw new Error("try without catch and finally is not allowed");
+        }
 }
