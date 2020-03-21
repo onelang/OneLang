@@ -1,64 +1,82 @@
-import { SourceFile, Method, IInterface, Block } from "../Ast/Types";
+import { SourceFile, Method, IInterface, Block, Enum, Interface, Class, Field, Property, IAstNode, IMethodBase, Constructor, GlobalFunction } from "../Ast/Types";
 import { Statement } from "../Ast/Statements";
 import { Expression } from "../Ast/Expressions";
 import { AstTransformer } from "../AstTransformer";
 
 export class FillParent extends AstTransformer {
-    name = "FillAttributesFromTrivia";
-    parentExpr: Expression = null;
+    name = "FillParent";
+    parentNodeStack: IAstNode[] = [];
 
     protected visitExpression(expr: Expression) {
-        expr.parentExpr = this.parentExpr;
-        this.parentExpr = expr;
+        if (this.parentNodeStack.length === 0) debugger;
+        expr.parentNode = this.parentNodeStack[this.parentNodeStack.length - 1];
+        this.parentNodeStack.push(expr);
         super.visitExpression(expr);
-        this.parentExpr = null;
+        this.parentNodeStack.pop();
         return null;
     }
 
-    protected processMethod(method: Method, parent: IInterface) {
-        method.parentInterface = parent;
+    protected visitStatement(stmt: Statement) {
+        this.parentNodeStack.push(stmt);
+        super.visitStatement(stmt);
+        this.parentNodeStack.pop();
+        return null;
+    }
+
+    protected visitEnum(enum_: Enum) {
+        enum_.parentFile = this.currentFile;
+        super.visitEnum(enum_);
+        for (const value of enum_.values.values())
+            value.parentEnum = enum_;
+    }
+
+    protected visitInterface(intf: Interface) { 
+        intf.parentFile = this.currentFile;
+        super.visitInterface(intf);
+    }
+
+    protected visitClass(cls: Class) { 
+        cls.parentFile = this.currentFile;
+        super.visitClass(cls);
+    }
+
+    protected visitField(field: Field) {
+        field.parentInterface = this.currentInterface;
+
+        this.parentNodeStack.push(field);
+        super.visitField(field);
+        this.parentNodeStack.pop();
+    }
+
+    protected visitProperty(prop: Property) { 
+        prop.parentClass = <Class> this.currentInterface;
+
+        this.parentNodeStack.push(prop);
+        super.visitProperty(prop);
+        this.parentNodeStack.pop();
+    }
+
+    protected visitMethodBase(method: IMethodBase) { 
+        if (method instanceof Constructor) {
+            method.parentClass = <Class> this.currentInterface;
+        } else if (method instanceof Method) {
+            method.parentInterface = this.currentInterface;
+        } else if (method instanceof GlobalFunction) {
+        } else
+            debugger;
+
         for (const param of method.parameters)
             param.parentMethod = method;
-        super.visitMethod(method);
+
+        this.parentNodeStack.push(method);
+        super.visitMethodBase(method);
+        this.parentNodeStack.pop();
     }
 
     public visitSourceFile(file: SourceFile) {
         for (const imp of file.imports)
             imp.parentFile = file;
 
-        for (const enum_ of file.enums.values()) {
-            enum_.parentFile = file;
-            for (const value of enum_.values.values())
-                value.parentEnum = enum_;
-        }
-
-        for (const intf of file.interfaces.values()) {
-            intf.parentFile = file;
-            for (const method of intf.methods.values())
-                this.processMethod(method, intf);
-        }
-
-        for (const cls of file.classes.values()) {
-            cls.parentFile = file;
-
-            if (cls.constructor_) {
-                cls.constructor_.parentClass = cls;
-                super.visitConstructor(cls.constructor_);
-            }
-
-            for (const method of cls.methods.values())
-                this.processMethod(method, cls);
-
-            for (const field of cls.fields.values())
-                field.parentClass = cls;
-
-            for (const prop of cls.properties.values()) {
-                prop.parentClass = cls;
-                if (prop.getter)
-                    this.visitBlock(prop.getter);
-                if (prop.setter)
-                    this.visitBlock(prop.setter);
-            }
-        }
+        super.visitSourceFile(file);
     }
 }

@@ -7,12 +7,11 @@ import { VariableDeclaration, ForStatement, ForeachStatement, Statement, IfState
 import { ClassType } from "../Ast/AstTypes";
 
 class SymbolLookup {
+    errorMan: ErrorManager = new ErrorManager();
     levelSymbols: string[][] = [];
     levelNames: string[] = [];
     currLevel: string[];
     symbols = new Map<string, IReferencable>();
-
-    constructor(public errorMan: ErrorManager) { }
 
     throw(msg: string) { 
         this.errorMan.throw(`${msg} (context: ${this.levelNames.join(" > ")})`);
@@ -48,9 +47,9 @@ export class ResolveIdentifiers extends AstTransformer {
     name = "ResolveIdentifiers";
     symbolLookup: SymbolLookup;
 
-    constructor(public errorMan = new ErrorManager()) {
+    constructor() {
         super();
-        this.symbolLookup = new SymbolLookup(errorMan);
+        this.symbolLookup = new SymbolLookup();
     }
 
     protected visitIdentifier(id: Identifier): Reference {
@@ -61,7 +60,7 @@ export class ResolveIdentifiers extends AstTransformer {
             return null;
         }
         const ref = symbol.createReference(id.text);
-        ref.parentExpr = id.parentExpr;
+        ref.parentNode = id.parentNode;
         return ref;
     }
 

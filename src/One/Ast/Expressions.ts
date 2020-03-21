@@ -1,11 +1,11 @@
 import { Type, VoidType, UnresolvedType, ClassType } from "./AstTypes";
-import { Method, GlobalFunction } from "./Types";
+import { Method, GlobalFunction, IAstNode } from "./Types";
 
 export enum TypeRestriction { NoRestriction, ShouldNotHaveType, MustBeGeneric, ShouldNotBeGeneric }
 
-export class Expression {
+export class Expression implements IAstNode {
     /** @creator FillParent */
-    parentExpr: Expression;
+    parentNode: IAstNode;
     /** @creator InferTypes */
     declaredType: Type = null;
     /** @creator InferTypes */

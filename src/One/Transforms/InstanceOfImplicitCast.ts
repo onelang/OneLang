@@ -6,8 +6,6 @@ import { ForeachVariableReference, VariableDeclarationReference, MethodParameter
 
 export class InstanceOfImplicitCast extends AstTransformer {
     name = "InstanceOfImplicitCast";
-    constructor(errorMan: ErrorManager = null) { super(errorMan); }
-
     casts: InstanceOfExpression[] = [];
 
     protected addInstanceOfsToContext(condition: Expression): number {

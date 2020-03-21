@@ -1,9 +1,9 @@
-import { Block, IVariableWithInitializer, IVariable, IHasAttributesAndTrivia } from "./Types";
+import { Block, IVariableWithInitializer, IVariable, IHasAttributesAndTrivia, IAstNode } from "./Types";
 import { Expression } from "./Expressions";
 import { Type } from "./AstTypes";
 import { ForVariableReference, ForeachVariableReference, VariableDeclarationReference, IReferencable, Reference, CatchVariableReference } from "./References";
 
-export class Statement implements IHasAttributesAndTrivia {
+export class Statement implements IHasAttributesAndTrivia, IAstNode {
     leadingTrivia: string;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };

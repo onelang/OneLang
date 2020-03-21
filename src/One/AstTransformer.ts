@@ -1,21 +1,17 @@
 import { Type, IHasTypeArguments, ClassType, InterfaceType, UnresolvedType, LambdaType } from "./Ast/AstTypes";
 import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression, InstanceOfExpression, AwaitExpression, StringLiteral, NumericLiteral, NullLiteral, RegexLiteral, BooleanLiteral, StaticMethodCallExpression, InstanceMethodCallExpression, UnresolvedNewExpression, NullCoalesceExpression } from "./Ast/Expressions";
-import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement, ContinueStatement, DoStatement } from "./Ast/Statements";
-import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda, IMethodBase, Package, GlobalFunction, IInterface } from "./Ast/Types";
-import { ClassReference, EnumReference, ThisReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, GlobalFunctionReference, StaticMethodReference, SuperReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, StaticPropertyReference, StaticFieldReference } from "./Ast/References";
+import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement, ContinueStatement, DoStatement, TryStatement } from "./Ast/Statements";
+import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda, IMethodBase, Package, GlobalFunction, IInterface, IAstNode } from "./Ast/Types";
+import { ClassReference, EnumReference, ThisReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, GlobalFunctionReference, StaticMethodReference, SuperReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, StaticPropertyReference, StaticFieldReference, CatchVariableReference } from "./Ast/References";
 import { ErrorManager } from "./ErrorManager";
 
 export abstract class AstTransformer {
     name: string = "AstTransformer";
-    currentFile: SourceFile;
-    currentInterface: IInterface;
-    currentMethod: IMethodBase;
-    currentStatement: Statement;
-
-    constructor(public errorMan: ErrorManager = null) {
-        if (this.errorMan === null)
-            this.errorMan = new ErrorManager();
-     }
+    errorMan: ErrorManager = new ErrorManager();
+    currentFile: SourceFile = null;
+    currentInterface: IInterface = null;
+    currentMethod: IMethodBase = null;
+    currentStatement: Statement = null;
 
     protected visitType(type: Type): Type {
         if (type instanceof ClassType || type instanceof InterfaceType || type instanceof UnresolvedType) {
@@ -52,7 +48,7 @@ export abstract class AstTransformer {
     }
 
     protected visitUnknownStatement(stmt: Statement): Statement {
-        this.errorMan.throw(`Unknown statement type: ${stmt}`);
+        this.errorMan.throw(`Unknown statement type`);
         return null;
     }
 
@@ -123,7 +119,7 @@ export abstract class AstTransformer {
     }
     
     protected visitUnknownExpression(expr: Expression): Expression {
-        this.errorMan.throw(`Unknown expression type: ${expr}`);
+        this.errorMan.throw(`Unknown expression type`);
         return null;
     }
 
@@ -292,7 +288,8 @@ export abstract class AstTransformer {
     protected visitEnumMember(enumMember: EnumMember) {
     }
 
-    public visitSourceFile(sourceFile: SourceFile) {
+    public visitSourceFile(sourceFile: SourceFile): void {
+        this.errorMan.resetContext(this);
         this.currentFile = sourceFile;
         for (const enum_ of sourceFile.enums)
             this.visitEnum(enum_);
@@ -304,7 +301,6 @@ export abstract class AstTransformer {
             this.visitGlobalFunction(func);
         sourceFile.mainBlock = this.visitBlock(sourceFile.mainBlock) || sourceFile.mainBlock;
         this.currentFile = null;
-        return null;
     }
 
     public visitPackage(pkg: Package) {

@@ -7,8 +7,6 @@ import { Expression, UnresolvedNewExpression, NewExpression } from "../Ast/Expre
 export class ResolveUnresolvedTypes extends AstTransformer {
     name = "ResolveUnresolvedTypes";
 
-    constructor(public errorMan = new ErrorManager()) { super(); }
-
     protected visitType(type: Type) {
         super.visitType(type);
         if (!(type instanceof UnresolvedType)) return null;

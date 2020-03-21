@@ -1,8 +1,10 @@
 import { Statement } from "./Statements";
 import { Type, ClassType, GenericsType, EnumType } from "./AstTypes";
-import { Expression, ExpressionRoot } from "./Expressions";
+import { Expression } from "./Expressions";
 import { ErrorManager } from "../ErrorManager";
 import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, GlobalFunctionReference, StaticFieldReference, EnumMemberReference, InstanceFieldReference, StaticMethodReference, InstanceMethodReference, StaticPropertyReference, InstancePropertyReference, IReferencable, Reference } from "./References";
+
+export interface IAstNode { }
 
 export enum Visibility { Public, Protected, Private }
 
@@ -216,6 +218,7 @@ export interface IInterface {
     baseInterfaces: Type[];
     methods: Method[];
     leadingTrivia: string;
+    parentFile: SourceFile;
 }
 
 export interface IImportable {
@@ -281,7 +284,7 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, 
     type = new ClassType(this, this.typeArguments.map(x => new GenericsType(x)));
 }
 
-export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia, IClassMember {
+export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia, IClassMember, IAstNode {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -292,14 +295,14 @@ export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia,
         public leadingTrivia: string) { }
 
     /** @creator FillParent */
-    parentClass: Class;
+    parentInterface: IInterface;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };
     staticReferences: StaticFieldReference[] = [];
     instanceReferences: InstanceFieldReference[] = [];
 }
 
-export class Property implements IVariable, IHasAttributesAndTrivia, IClassMember {
+export class Property implements IVariable, IHasAttributesAndTrivia, IClassMember, IAstNode {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -326,7 +329,7 @@ export class MethodParameter implements IVariableWithInitializer, IReferencable 
         public initializer: Expression) { }
 
     /** @creator FillParent */
-    parentMethod: Method = null;
+    parentMethod: IMethodBase = null;
 
     /** @creator ResolveIdentifiers */
     references: MethodParameterReference[] = [];
