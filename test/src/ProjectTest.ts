@@ -127,30 +127,32 @@ initCompiler().then(() => {
         new ConvertToMethodCall().visitPackage(projectPkg);
         saveState();
 
-        new ResolveUnresolvedTypes(workspace.errorManager).visitPackage(projectPkg);
+        new ResolveUnresolvedTypes().visitPackage(projectPkg);
         saveState();
 
-        new ResolveIdentifiers(workspace.errorManager).visitPackage(projectPkg);
+        new ResolveIdentifiers().visitPackage(projectPkg);
         saveState();
 
-        new InstanceOfImplicitCast(workspace.errorManager).visitPackage(projectPkg);
+        new InstanceOfImplicitCast().visitPackage(projectPkg);
         saveState();
 
-        printState();
-
-        try {
-            new InferTypes(workspace.errorManager).visitPackage(projectPkg);
-        } catch (e) {
+        //try {
+            new InferTypes().visitPackage(projectPkg);
+        /*} catch (e) {
             if (e instanceof Error)
                 workspace.errorManager.throw(e.message);
             else
                 debugger;
-        }
+        }*/
         saveState();
+
+        printState();
 
         const lastState = new Linq(pkgStates).last();
         if (workspace.errorManager.errors.length > 0)
             debugger;
+
+        debugger;
 
         //head("SUMMARY");
         //_(pkgStates).last().diff(pkgStates[pkgStates.length - 2]).printChangedFiles("summary");

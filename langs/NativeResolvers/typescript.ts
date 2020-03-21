@@ -55,6 +55,7 @@ declare class TsString {
     substring(start: number, end: number): string;
     substr(start: number, length: number): string;
     split(separator: RegExp): string[];
+    startsWith(str: string): boolean;
     startsWith(str: string, position: number): boolean;
     endsWith(str: string): boolean;
     replace(from: RegExp, to: string): string;

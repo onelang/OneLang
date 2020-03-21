@@ -1,8 +1,8 @@
 import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression } from "../One/Ast/Expressions";
-import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable } from "../One/Ast/Statements";
+import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable, TryStatement } from "../One/Ast/Statements";
 import { Method, Block, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility, IAstNode } from "../One/Ast/Types";
 import { Type, VoidType } from "../One/Ast/AstTypes";
-import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, GlobalFunctionReference, StaticFieldReference, StaticMethodReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, EnumMemberReference } from "../One/Ast/References";
+import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, GlobalFunctionReference, StaticFieldReference, StaticMethodReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, EnumMemberReference, CatchVariableReference } from "../One/Ast/References";
 
 export class TSOverviewGenerator {
     static leading(item: any, isStmt: boolean) {
@@ -50,14 +50,15 @@ export class TSOverviewGenerator {
                 "VISIBILITY-NOT-SET";
         }
         result += `${isProp ? "get " : ""}${v.name}${isProp ? "()" : ""}: ${this.type(v.type)}`;
-        if (v instanceof VariableDeclaration || v instanceof ForVariable || v instanceof Field || v instanceof MethodParameter)
-            result += this.pre(" = ", this.expr((<IVariableWithInitializer>v).initializer));
+        if (v instanceof VariableDeclaration || v instanceof ForVariable || v instanceof Field || v instanceof MethodParameter) {
+            const init = (<IVariableWithInitializer>v).initializer;
+            if (init !== null)
+                result += this.pre(" = ", this.expr(init));
+        }
         return result;
     }
 
     static expr(expr: Expression) {
-        if (!expr) return null;
-
         let res = "UNKNOWN-EXPR";
         if (expr instanceof NewExpression) {
             res = `new ${this.type(expr.cls)}(${expr.args.map(x => this.expr(x)).join(", ")})`;
@@ -130,7 +131,7 @@ export class TSOverviewGenerator {
         } else if (expr instanceof SuperReference) {
             res = `{R}super`;
         } else if (expr instanceof StaticFieldReference) {
-            res = `{SF}${expr.decl.parentClass.name}::${expr.decl.name}`;
+            res = `{SF}${expr.decl.parentInterface.name}::${expr.decl.name}`;
         } else if (expr instanceof StaticPropertyReference) {
             res = `{SP}${expr.decl.parentClass.name}::${expr.decl.name}`;
         } else if (expr instanceof StaticMethodReference) {

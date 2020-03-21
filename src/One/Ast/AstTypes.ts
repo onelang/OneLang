@@ -68,6 +68,11 @@ export class VoidType extends PrimitiveType {
     repr() { return "Void"; }
 }
 
+export class AmbiguousType extends Type {
+    static instance = new AmbiguousType();
+    rerp() { return "Ambiguous"; }
+} 
+
 export class AnyType extends PrimitiveType {
     static instance = new AnyType();
     repr() { return "Any"; }

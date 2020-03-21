@@ -34,7 +34,7 @@ export class MethodParameterReference extends Reference {
     constructor(public decl: MethodParameter) { super(); decl.references.push(this); }
 
     setActualType(type: Type) { 
-        super.setActualType(type, false, this.decl.parentMethod !== null && this.decl.parentMethod.parentInterface.typeArguments.length > 0);
+        super.setActualType(type, false, this.decl.parentMethod instanceof Method && this.decl.parentMethod.parentInterface.typeArguments.length > 0);
     }
 }
 

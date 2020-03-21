@@ -7,7 +7,7 @@ export class Expression implements IAstNode {
     /** @creator FillParent */
     parentNode: IAstNode;
     /** @creator InferTypes */
-    declaredType: Type = null;
+    expectedType: Type = null;
     /** @creator InferTypes */
     actualType: Type = null;
 
@@ -28,8 +28,8 @@ export class Expression implements IAstNode {
 
         this.typeCheck(actualType, allowVoid);
 
-        if (this.declaredType !== null && !Type.isAssignableTo(actualType, this.declaredType))
-            throw new Error(`Actual type (${actualType.repr()}) is not assignable to the declared type (${this.declaredType.repr()})!`);
+        if (this.expectedType !== null && !Type.isAssignableTo(actualType, this.expectedType))
+            throw new Error(`Actual type (${actualType.repr()}) is not assignable to the declared type (${this.expectedType.repr()})!`);
 
         if (!allowGeneric && Type.isGeneric(actualType))
             throw new Error(`Actual type cannot be generic!`);
@@ -37,28 +37,19 @@ export class Expression implements IAstNode {
         this.actualType = actualType;
     }
 
-    setDeclaredType(type: Type, allowVoid = false) {
+    setExpectedType(type: Type, allowVoid = false) {
         if (this.actualType !== null)
-            throw new Error("Cannot set declared type after actual type was already set!");
+            throw new Error("Cannot set expected type after actual type was already set!");
 
-        if (this.declaredType !== null)
-            throw new Error("Expression already has a declared type!");
+        if (this.expectedType !== null)
+            throw new Error("Expression already has a expected type!");
 
         this.typeCheck(type, allowVoid);
 
-        this.declaredType = type;
+        this.expectedType = type;
     }
 
-    getType() { return this.actualType || this.declaredType; }
-}
-
-export class ExpressionRoot extends Expression {
-    constructor(public root: Expression) {
-        super();
-        if (root.parentExpr !== null)
-            throw new Error("Expected parentExpr to be null!");
-        root.parentExpr = this;
-    }
+    getType() { return this.actualType || this.expectedType; }
 }
 
 export class Identifier extends Expression {
