@@ -16,11 +16,15 @@ export class GenericsResolver {
         if (actualType instanceof ClassType) {
             if (!this.collectResolutionsFromActualType(actualType.decl.type, actualType))
                 debugger; // this should not happen
+        } else if (actualType instanceof InterfaceType) {
+            if (!this.collectResolutionsFromActualType(actualType.decl.type, actualType))
+                debugger; // this should not happen
         } else
-            throw new Error(`Expected ClassType, got ${actualType !== null ? actualType.repr() : "<null>"}`);
+            throw new Error(`Expected ClassType or InterfaceType, got ${actualType !== null ? actualType.repr() : "<null>"}`);
     }
 
     public collectResolutionsFromActualType(genericType: Type, actualType: Type): boolean {
+        if (!Type.isGeneric(genericType)) return true;
         if (genericType instanceof GenericsType) {
             const prevRes = this.resolutionMap.get(genericType.typeVarName) || null;
             if (prevRes !== null && !Type.equals(prevRes, actualType))

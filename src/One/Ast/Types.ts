@@ -1,5 +1,5 @@
 import { Statement } from "./Statements";
-import { Type, ClassType, GenericsType, EnumType } from "./AstTypes";
+import { Type, ClassType, GenericsType, EnumType, InterfaceType } from "./AstTypes";
 import { Expression } from "./Expressions";
 import { ErrorManager } from "../ErrorManager";
 import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, StaticFieldReference, EnumMemberReference, InstanceFieldReference, StaticPropertyReference, InstancePropertyReference, IReferencable, Reference, GlobalFunctionReference } from "./References";
@@ -246,6 +246,8 @@ export class Interface implements IHasAttributesAndTrivia, IInterface, IImportab
     parentFile: SourceFile;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };
+
+    type = new InterfaceType(this, this.typeArguments.map(x => new GenericsType(x)));
 }
 
 export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, ISourceFileMember, IReferencable {

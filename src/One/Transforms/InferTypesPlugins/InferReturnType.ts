@@ -69,7 +69,7 @@ export class InferReturnType extends InferTypesPlugin {
     }
 
     handleMethod(method: IMethodBase): boolean {
-        if (method instanceof Method) {
+        if (method instanceof Method && method.body !== null) {
             this.returnTypeInfer.push(new ReturnTypeInferer());
             this.main.processMethodBase(method);
             method.returns = this.returnTypeInfer.pop().finish(method.returns, `Method "${method.name}"`);

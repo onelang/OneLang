@@ -13,7 +13,8 @@ import { ResolveEnumMemberAccess } from "./InferTypesPlugins/ResolveEnumMemberAc
 import { InferReturnType } from "./InferTypesPlugins/InferReturnType";
 import { TypeScriptNullCoalesce } from "./InferTypesPlugins/TypeScriptNullCoalesce";
 import { InferForeachVarType } from "./InferTypesPlugins/InferForeachVarType";
-import { ResolveGlobalFuncCalls } from "./InferTypesPlugins/ResolveGlobalFuncCalls";
+import { ResolveFuncCalls } from "./InferTypesPlugins/ResolveFuncCalls";
+import { NullabilityCheckWithNot } from "./InferTypesPlugins/NullabilityCheckWithNot";
 
 enum InferTypesStage { Invalid, Fields, Properties, Methods }
 
@@ -34,15 +35,18 @@ export class InferTypes extends AstTransformer {
         this.addPlugin(new ResolveEnumMemberAccess());
         this.addPlugin(new TypeScriptNullCoalesce());
         this.addPlugin(new InferForeachVarType());
-        this.addPlugin(new ResolveGlobalFuncCalls());
+        this.addPlugin(new ResolveFuncCalls());
+        this.addPlugin(new NullabilityCheckWithNot());
     }
 
-    // make them public
+    // allow plugins to run AstTransformer methods without running other plugins
+    // TODO: should refactor to a private interface exposed only to plugins?
     public processLambda(lambda: Lambda) { return super.visitLambda(lambda); }
     public processMethodBase(method: IMethodBase) { return super.visitMethodBase(method); }
     public processBlock(block: Block) { return super.visitBlock(block); }
     public processVariable(variable: IVariable) { return super.visitVariable(variable); }
     public processStatement(stmt: Statement) { return super.visitStatement(stmt); }
+    public processExpression(expr: Expression) { return super.visitExpression(expr); }
 
     addPlugin(plugin: InferTypesPlugin) {
         plugin.main = this;
@@ -75,10 +79,9 @@ export class InferTypes extends AstTransformer {
         try {
             const newExpr = plugin.transform(expr);
             // expression changed, restart the type infering process on the new expression
-            if (newExpr !== null) {
+            if (newExpr !== null)
                 newExpr.parentNode = expr.parentNode;
-                return newExpr;
-            }
+            return newExpr;
         } catch (e) {
             this.errorMan.currentNode = expr;
             this.errorMan.throw(`Error while running type transformation phase: ${e}`);
@@ -118,6 +121,8 @@ export class InferTypes extends AstTransformer {
     }
 
     protected visitStatement(stmt: Statement) {
+        this.currentStatement = stmt;
+
         for (const plugin of this.plugins)
             if (plugin.handleStatement(stmt))
                 return null;

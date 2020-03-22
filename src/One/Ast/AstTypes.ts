@@ -12,6 +12,8 @@ export class Type implements IType {
             return type.typeArguments.some(x => Type.isGeneric(x));
         else if (type instanceof InterfaceType)
             return type.typeArguments.some(x => Type.isGeneric(x));
+        else if (type instanceof LambdaType)
+            return type.parameters.some(x => Type.isGeneric(x.type)) || Type.isGeneric(type.returnType);
     }
 
     static equals(type1: Type, type2: Type): boolean {
@@ -36,19 +38,24 @@ export class Type implements IType {
     }
 
     static isAssignableTo(toBeAssigned: Type, whereTo: Type): boolean {
-        if (toBeAssigned instanceof AnyType || whereTo instanceof AnyType) return true;
+        // AnyType can assigned to any type except to void
+        if (toBeAssigned instanceof AnyType && !(whereTo instanceof VoidType)) return true;
+        // any type can assigned to AnyType except void
+        if (whereTo instanceof AnyType && !(toBeAssigned instanceof VoidType)) return true;
+
         if (this.equals(toBeAssigned, whereTo)) return true;
+
         if (toBeAssigned instanceof ClassType && whereTo instanceof ClassType)
             return toBeAssigned.decl.baseClass !== null && this.isAssignableTo(toBeAssigned.decl.baseClass, whereTo);
         if (toBeAssigned instanceof ClassType && whereTo instanceof InterfaceType)
             return toBeAssigned.decl.baseInterfaces.some(x => this.isAssignableTo(x, whereTo));
         if (toBeAssigned instanceof InterfaceType && whereTo instanceof InterfaceType)
             return toBeAssigned.decl.baseInterfaces.some(x => this.isAssignableTo(x, whereTo));
-        if (toBeAssigned instanceof LambdaType && whereTo instanceof LambdaType) {
+        if (toBeAssigned instanceof LambdaType && whereTo instanceof LambdaType)
             return toBeAssigned.parameters.length === whereTo.parameters.length &&
                 toBeAssigned.parameters.every((p, i) => Type.isAssignableTo(p.type, whereTo.parameters[i].type)) &&
                 (Type.isAssignableTo(toBeAssigned.returnType, whereTo.returnType) || whereTo.returnType instanceof GenericsType);
-        }
+
         return false;
     }
 

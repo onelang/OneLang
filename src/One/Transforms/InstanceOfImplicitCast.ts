@@ -2,7 +2,7 @@ import { AstTransformer } from "../AstTransformer";
 import { ErrorManager } from "../ErrorManager";
 import { InstanceOfExpression, BinaryExpression, Expression, CastExpression, ConditionalExpression, PropertyAccessExpression } from "../Ast/Expressions";
 import { Statement, IfStatement, VariableDeclaration } from "../Ast/Statements";
-import { ForeachVariableReference, VariableDeclarationReference, MethodParameterReference } from "../Ast/References";
+import { ForeachVariableReference, VariableDeclarationReference, MethodParameterReference, InstanceFieldReference } from "../Ast/References";
 
 export class InstanceOfImplicitCast extends AstTransformer {
     name = "InstanceOfImplicitCast";
@@ -32,6 +32,12 @@ export class InstanceOfImplicitCast extends AstTransformer {
     }
 
     protected equals(expr1: Expression, expr2: Expression) {
+        // implicit casts don't matter when checking equality...
+        while (expr1 instanceof CastExpression && expr1.implicit)
+            expr1 = expr1.expression;
+        while (expr2 instanceof CastExpression && expr2.implicit)
+            expr2 = expr2.expression;
+        
         // MetP, V, MethP.PA, V.PA, MethP/V [ {FEVR} ], FEVR
         if (expr1 instanceof PropertyAccessExpression)
             return expr2 instanceof PropertyAccessExpression && expr1.propertyName === expr2.propertyName && this.equals(expr1.object, expr2.object);
@@ -41,6 +47,8 @@ export class InstanceOfImplicitCast extends AstTransformer {
             return expr2 instanceof MethodParameterReference && expr1.decl === expr2.decl;
         else if (expr1 instanceof ForeachVariableReference)
             return expr2 instanceof ForeachVariableReference && expr1.decl === expr2.decl;
+        else if (expr1 instanceof InstanceFieldReference)
+            return expr2 instanceof InstanceFieldReference && expr1.field === expr2.field;
         return false;
     }
     
@@ -64,6 +72,8 @@ export class InstanceOfImplicitCast extends AstTransformer {
     }
 
     protected visitStatement(stmt: Statement): Statement { 
+        this.currentStatement = stmt;
+        
         if (stmt instanceof IfStatement) {
             stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
 

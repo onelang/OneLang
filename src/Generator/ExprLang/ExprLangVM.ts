@@ -5,19 +5,19 @@ class ExprLangError extends Error {
 }
 
 export interface IModelHandler {
-    methodCall(method: Function, args: any[], thisObj: Object, model: Object);
-    memberAccess(obj: Object, memberName: any, isProperty: boolean);
+    methodCall(method: Function, args: any[], thisObj: any, model: any): any;
+    memberAccess(obj: any, memberName: any, isProperty: boolean): any;
 }
 
 export class JSModelHandler implements IModelHandler {
-    static methodCallG(method: Function, args: any[], thisObj: Object, model: Object): any {
+    static methodCallG(method: Function, args: any[], thisObj: any, model: any): any {
         if (!(typeof method === "function"))
             throw new ExprLangError(`Tried to call a non-method value: '${method}'`); //  (${typeof method})
         const result = method.apply(thisObj, args);
         return result;
     }
 
-    static memberAccessG(obj: Object, memberName: any, isProperty: boolean): any {
+    static memberAccessG(obj: any, memberName: any, isProperty: boolean): any {
         if (!(typeof obj === "object"))
             throw new ExprLangError(`Expected object for accessing member: (${obj})`);
 
@@ -28,11 +28,11 @@ export class JSModelHandler implements IModelHandler {
         return obj[memberName];
     }
 
-    methodCall(method: any, args: any[], thisObj: Object, model: Object) {
+    methodCall(method: any, args: any[], thisObj: any, model: any) {
         return JSModelHandler.methodCallG(method, args, thisObj, model);
     }
 
-    memberAccess(obj: Object, memberName: any, isProperty: boolean) {
+    memberAccess(obj: any, memberName: any, isProperty: boolean) {
         return JSModelHandler.memberAccessG(obj, memberName, isProperty);
     }
 }
@@ -107,9 +107,9 @@ export class VariableContext {
         return new VariableContext([newSource].concat(this.sources));
     }
 
-    getVariable(varName: string) {
+    getVariable(varName: string): any {
         for (const source of this.sources) {
-            const result = source.getVariable(varName);
+            const result: any = source.getVariable(varName);
             if (result !== null)
                 return result;
         }
@@ -220,7 +220,7 @@ export class ExprLangVM {
             const result = this.modelHandler.memberAccess(object, memberName, false);
             return result;
         } else {
-            throw new ExprLangError(`Unknown expression kind: '${expr.constructor.name}'`);
+            throw new ExprLangError(`Unknown expression kind: '${expr}'`);
         }
     }
 }

@@ -1,4 +1,4 @@
-import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression } from "../One/Ast/Expressions";
+import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression, StaticMethodCallExpression, LambdaCallExpression } from "../One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable, TryStatement } from "../One/Ast/Statements";
 import { Method, Block, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility, IAstNode } from "../One/Ast/Types";
 import { Type, VoidType } from "../One/Ast/AstTypes";
@@ -77,8 +77,13 @@ export class TSOverviewGenerator {
         } else if (expr instanceof InstanceMethodCallExpression) {
             const typeArgs = expr.typeArgs.length > 0 ? `<${expr.typeArgs.map(x => this.type(x)).join(", ")}>` : "";
             res = `${this.expr(expr.object)}.{M}${expr.method.name}${typeArgs}(${previewOnly ? "..." : expr.args.map(x => this.expr(x)).join(", ")})`;
+        } else if (expr instanceof StaticMethodCallExpression) {
+            const typeArgs = expr.typeArgs.length > 0 ? `<${expr.typeArgs.map(x => this.type(x)).join(", ")}>` : "";
+            res = `${expr.method.parentInterface.name}.{M}${expr.method.name}${typeArgs}(${previewOnly ? "..." : expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof GlobalFunctionCallExpression) {
             res = `${expr.func.name}(${previewOnly ? "..." : expr.args.map(x => this.expr(x)).join(", ")})`;
+        } else if (expr instanceof LambdaCallExpression) {
+            res = `${this.expr(expr.method)}(${previewOnly ? "..." : expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof BooleanLiteral) {
             res = `${expr.boolValue}`;
         } else if (expr instanceof StringLiteral) { 
@@ -195,7 +200,7 @@ export class TSOverviewGenerator {
         } else if (stmt instanceof ContinueStatement) {
             res = `continue;`;
         } else debugger;
-        return this.leading(stmt, true) + res;
+        return previewOnly ? res : this.leading(stmt, true) + res;
     }
 
     static rawBlock(block: Block) { return block.statements.map(stmt => this.stmt(stmt)).join("\n"); }

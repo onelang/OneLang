@@ -90,6 +90,8 @@ export class BasicTypeInfer extends InferTypesPlugin {
                     expr.setActualType(litTypes.boolean);
                 else
                     debugger;
+            } else if (leftType instanceof AnyType && rightType instanceof AnyType) {
+                expr.setActualType(AnyType.instance);
             } else {
                 debugger;
             }
@@ -113,12 +115,6 @@ export class BasicTypeInfer extends InferTypesPlugin {
                 this.errorMan.throw(`Null-coalescing operator tried to assign incompatible type "${ifNullType.repr()}" to "${defaultType.repr()}"`);
             else 
                 expr.setActualType(defaultType);
-        } else if (expr instanceof LambdaCallExpression) {
-            const lambdaType = expr.method.getType();
-            if (lambdaType instanceof LambdaType)
-                expr.setActualType(lambdaType.returnType, true);
-            else
-                this.errorMan.throw("Lambda call's expression should have LambdaType type");
         } else {
             return false;
         }

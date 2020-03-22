@@ -111,9 +111,9 @@ export class TypeScriptParser2 implements IParser {
         } else if (typeName === "number") {
             type = new UnresolvedType("TsNumber");
         } else if (typeName === "any") {
-            type = new AnyType();
+            type = AnyType.instance;
         } else if (typeName === "void") {
-            type = new VoidType();
+            type = VoidType.instance;
         } else {
             const typeArguments = this.parseTypeArgs();
             type = new UnresolvedType(typeName, typeArguments);
@@ -186,6 +186,8 @@ export class TypeScriptParser2 implements IParser {
                 tsType = "Object";
             else if (check === "function") // TODO: ???
                 tsType = "Function";
+            else if (check === "undefined") // TODO: ???
+                tsType = "Object"; // ignore for now
             else
                 this.reader.fail("unexpected typeof comparison");
 
@@ -433,7 +435,7 @@ export class TypeScriptParser2 implements IParser {
 
         let returns: Type = null;
         if (!isConstructor) // in case of constructor, "returns" won't be used
-            returns = this.reader.readToken(":") ? this.parseType() : this.missingReturnTypeIsVoid ? new VoidType() : null;
+            returns = this.reader.readToken(":") ? this.parseType() : this.missingReturnTypeIsVoid ? VoidType.instance : null;
 
         let body: Block = null;
         if (declarationOnly) {
