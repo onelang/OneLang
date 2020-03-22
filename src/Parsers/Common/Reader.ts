@@ -37,8 +37,7 @@ export class Reader {
 
     get cursor() { return this.cursorSearch.getCursorForOffset(this.offset); }
 
-    get linePreview() {
-        const cursor = this.cursor;
+    linePreview(cursor: Cursor) {
         const line = this.input.substring(cursor.lineStart, cursor.lineEnd - 1);
         return `${line}\n${" ".repeat(cursor.column - 1)}^^^`;
     }
@@ -50,14 +49,14 @@ export class Reader {
         return preview;
     }
 
-    fail(message: string) {
-        const error = new ParseError(message, this.cursor, this);
+    fail(message: string, offset = -1) {
+        const error = new ParseError(message, this.cursorSearch.getCursorForOffset(offset === -1 ? this.offset : offset), this);
         this.errors.push(error);
 
         if (this.errorCallback)
             this.errorCallback(error);
         else
-            throw new Error(`${message} at ${error.cursor.line}:${error.cursor.column}\n${this.linePreview}`);
+            throw new Error(`${message} at ${error.cursor.line}:${error.cursor.column}\n${this.linePreview(error.cursor)}`);
     }
 
     skipWhitespace(includeInTrivia = false) {

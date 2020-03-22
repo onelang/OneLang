@@ -5,11 +5,12 @@ export enum TypeRestriction { NoRestriction, ShouldNotHaveType, MustBeGeneric, S
 
 export class Expression implements IAstNode {
     /** @creator FillParent */
-    parentNode: IAstNode;
+    parentNode: IAstNode = null;
     /** @creator InferTypes */
     expectedType: Type = null;
     /** @creator InferTypes */
     actualType: Type = null;
+    actualTypeStack: string = null;
 
     protected typeCheck(type: Type, allowVoid: boolean) {
         if (type === null)
@@ -24,7 +25,7 @@ export class Expression implements IAstNode {
 
     setActualType(actualType: Type, allowVoid = false, allowGeneric = false) {
         if (this.actualType !== null)
-            throw new Error("Expression already has an actual type!");
+            throw new Error(`Expression already has actual type (current type = ${this.actualType.repr()}, new type = ${actualType.repr()})`);
 
         this.typeCheck(actualType, allowVoid);
 
@@ -32,9 +33,12 @@ export class Expression implements IAstNode {
             throw new Error(`Actual type (${actualType.repr()}) is not assignable to the declared type (${this.expectedType.repr()})!`);
 
         if (!allowGeneric && Type.isGeneric(actualType))
-            throw new Error(`Actual type cannot be generic!`);
+            throw new Error(`Actual type cannot be generic (${actualType.repr()})!`);
 
         this.actualType = actualType;
+        // TODO: debug only
+        Error.stackTraceLimit = 999;
+        this.actualTypeStack = (new Error()).stack;
     }
 
     setExpectedType(type: Type, allowVoid = false) {
@@ -173,7 +177,15 @@ export class ElementAccessExpression extends Expression {
 
 export class UnresolvedCallExpression extends Expression {
     constructor(
-        public method: Expression,
+        public func: Expression,
+        public typeArgs: Type[],
+        public args: Expression[]) { super(); }
+}
+
+export class UnresolvedMethodCallExpression extends Expression {
+    constructor(
+        public object: Expression,
+        public methodName: string,
         public typeArgs: Type[],
         public args: Expression[]) { super(); }
 }
@@ -195,7 +207,7 @@ export class InstanceMethodCallExpression extends Expression {
 
 export class GlobalFunctionCallExpression extends Expression {
     constructor(
-        public method: GlobalFunction,
+        public func: GlobalFunction,
         public args: Expression[]) { super(); }
 }
 

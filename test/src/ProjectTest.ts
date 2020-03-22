@@ -13,6 +13,8 @@ import { InstanceOfImplicitCast } from "@one/One/Transforms/InstanceOfImplicitCa
 import { ConvertToMethodCall } from "@one/One/Transforms/ConvertToMethodCall";
 import { InferTypes } from "@one/One/Transforms/InferTypes";
 import { FillParent } from "@one/One/Transforms/FillParent";
+import { DetectMethodCalls } from "@one/One/Transforms/DetectMethodCalls";
+import { ExtractSuperCall } from "@one/One/Transforms/ExtractSuperCall";
 import { Linq } from '@one/Utils/Underscore';
 import { PackageStateCapture } from './DiffUtils';
 import * as color from "ansi-colors";
@@ -134,6 +136,12 @@ initCompiler().then(() => {
         saveState();
 
         new InstanceOfImplicitCast().visitPackage(projectPkg);
+        saveState();
+
+        new DetectMethodCalls().visitPackage(projectPkg);
+        saveState();
+
+        new ExtractSuperCall().visitPackage(projectPkg);
         saveState();
 
         //try {

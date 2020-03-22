@@ -37,6 +37,7 @@ export class ResolveUnresolvedTypes extends AstTransformer {
                 return null;
             }
             const newExpr = new NewExpression(classType, expr.args);
+            newExpr.parentNode = expr.parentNode;
             super.visitExpression(newExpr);
             return newExpr;
         } else {

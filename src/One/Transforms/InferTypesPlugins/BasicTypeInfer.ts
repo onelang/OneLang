@@ -1,12 +1,14 @@
-import { InferTypes } from "../InferTypes";
-import { InferTypesPlugin } from "./InferTypesPlugin";
-import { Expression, CastExpression, ParenthesizedExpression, BooleanLiteral, NumericLiteral, StringLiteral, TemplateString, RegexLiteral, InstanceOfExpression, GlobalFunctionCallExpression, NullLiteral, UnaryExpression, BinaryExpression, ConditionalExpression, NewExpression, NullCoalesceExpression, LambdaCallExpression } from "../../Ast/Expressions";
-import { ThisReference, MethodParameterReference, InstanceFieldReference, InstancePropertyReference, StaticPropertyReference, StaticFieldReference, EnumReference, EnumMemberReference, InstanceMethodReference, StaticMethodReference, GlobalFunctionReference, VariableDeclarationReference, ForeachVariableReference, ForVariableReference } from "../../Ast/References";
+import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
+import { Expression, CastExpression, ParenthesizedExpression, BooleanLiteral, NumericLiteral, StringLiteral, TemplateString, RegexLiteral, InstanceOfExpression, NullLiteral, UnaryExpression, BinaryExpression, ConditionalExpression, NewExpression, NullCoalesceExpression, LambdaCallExpression } from "../../Ast/Expressions";
+import { ThisReference, MethodParameterReference, VariableDeclarationReference, ForeachVariableReference, ForVariableReference } from "../../Ast/References";
 import { ClassType, InterfaceType, Type, AnyType, EnumType, LambdaType, AmbiguousType } from "../../Ast/AstTypes";
-import { IVariableWithInitializer } from "../../Ast/Types";
 
 export class BasicTypeInfer extends InferTypesPlugin {
-    visitExpression(expr: Expression): Expression {
+    name = "BasicTypeInfer";
+
+    canDetectType(expr: Expression) { return true; }
+
+    detectType(expr: Expression): boolean {
         const litTypes = this.main.currentFile.literalTypes;
 
         if (expr instanceof CastExpression) {
@@ -17,18 +19,6 @@ export class BasicTypeInfer extends InferTypesPlugin {
             expr.setActualType(expr.cls.type); // remove type arguments from this
         } else if (expr instanceof MethodParameterReference) {
             expr.setActualType(expr.decl.type);
-        } else if (expr instanceof InstanceFieldReference) {
-            expr.setActualType(expr.field.type);
-        } else if (expr instanceof InstancePropertyReference) {
-            expr.setActualType(expr.property.type);
-        } else if (expr instanceof StaticPropertyReference) {
-            expr.setActualType(expr.decl.type);
-        } else if (expr instanceof StaticFieldReference) {
-            expr.setActualType(expr.decl.type);
-        } else if (expr instanceof EnumReference) {
-            // EnumReference does not have type (only its members)
-        } else if (expr instanceof EnumMemberReference) {
-            expr.setActualType(expr.decl.parentEnum.type);
         } else if (expr instanceof BooleanLiteral) {
             expr.setActualType(litTypes.boolean);
         } else if (expr instanceof NumericLiteral) {
@@ -37,15 +27,8 @@ export class BasicTypeInfer extends InferTypesPlugin {
             expr.setActualType(litTypes.string);
         } else if (expr instanceof RegexLiteral) {
             expr.setActualType(litTypes.regex);
-        } else if (expr instanceof InstanceMethodReference || expr instanceof StaticMethodReference || expr instanceof GlobalFunctionReference) {
-            // it does not have type, it will be called
         } else if (expr instanceof InstanceOfExpression) {
             expr.setActualType(litTypes.boolean);
-        } else if (expr instanceof GlobalFunctionCallExpression) {
-            if (expr.method.returns !== null)
-                expr.setActualType(expr.method.returns, true);
-            else
-                this.errorMan.throw(`Global function's (${expr.method.name}) return type is missing.`);
         } else if (expr instanceof NullLiteral) {
             expr.setActualType(expr.expectedType !== null ? expr.expectedType : AmbiguousType.instance);
         } else if (expr instanceof VariableDeclarationReference) {
@@ -87,7 +70,6 @@ export class BasicTypeInfer extends InferTypesPlugin {
             } else if (isEqOrNeq && (leftType instanceof AnyType || rightType instanceof AnyType)) {
                 expr.setActualType(litTypes.boolean);
             } else if (leftType instanceof ClassType && rightType instanceof ClassType) {
-
                 if (leftType.decl === litTypes.numeric.decl && rightType.decl === litTypes.numeric.decl && ["-", "+", "-=", "+=", "%"].includes(expr.operator))
                     expr.setActualType(litTypes.numeric);
                 else if (leftType.decl === litTypes.numeric.decl && rightType.decl === litTypes.numeric.decl && ["<", "<=", ">", ">="].includes(expr.operator))
@@ -116,6 +98,10 @@ export class BasicTypeInfer extends InferTypesPlugin {
             const falseType = expr.whenFalse.getType();
             if (Type.equals(trueType, falseType))
                 expr.setActualType(trueType);
+            else if (expr.whenTrue instanceof NullLiteral)
+                expr.setActualType(falseType);
+            else if (expr.whenFalse instanceof NullLiteral)
+                expr.setActualType(trueType);
             else
                 throw new Error(`Different types in the whenTrue (${trueType.repr()}) and whenFalse (${falseType.repr()}) expressions of a conditional expression`);
         } else if (expr instanceof NewExpression) {
@@ -133,8 +119,10 @@ export class BasicTypeInfer extends InferTypesPlugin {
                 expr.setActualType(lambdaType.returnType, true);
             else
                 this.errorMan.throw("Lambda call's expression should have LambdaType type");
+        } else {
+            return false;
         }
 
-        return null;
+        return true;
     }
 }

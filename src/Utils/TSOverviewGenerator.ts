@@ -1,8 +1,8 @@
-import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression } from "../One/Ast/Expressions";
+import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression } from "../One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable, TryStatement } from "../One/Ast/Statements";
 import { Method, Block, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility, IAstNode } from "../One/Ast/Types";
 import { Type, VoidType } from "../One/Ast/AstTypes";
-import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, GlobalFunctionReference, StaticFieldReference, StaticMethodReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, EnumMemberReference, CatchVariableReference } from "../One/Ast/References";
+import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference } from "../One/Ast/References";
 
 export class TSOverviewGenerator {
     static leading(item: any, isStmt: boolean) {
@@ -58,19 +58,27 @@ export class TSOverviewGenerator {
         return result;
     }
 
-    static expr(expr: Expression) {
+    static expr(expr: Expression, previewOnly = false) {
         let res = "UNKNOWN-EXPR";
         if (expr instanceof NewExpression) {
-            res = `new ${this.type(expr.cls)}(${expr.args.map(x => this.expr(x)).join(", ")})`;
+            res = `new ${this.type(expr.cls)}(${previewOnly ? "..." : expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof UnresolvedNewExpression) {
-            res = `new ${this.type(expr.cls)}(${expr.args.map(x => this.expr(x)).join(", ")})`;
+            res = `new ${this.type(expr.cls)}(${previewOnly ? "..." : expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof Identifier) {
             res = `{ID}${expr.text}`;
         } else if (expr instanceof PropertyAccessExpression) {
             res = `${this.expr(expr.object)}.{PA}${expr.propertyName}`;
         } else if (expr instanceof UnresolvedCallExpression) {
             const typeArgs = expr.typeArgs.length > 0 ? `<${expr.typeArgs.map(x => this.type(x)).join(", ")}>` : "";
-            res = `${this.expr(expr.method)}${typeArgs}(${expr.args.map(x => this.expr(x)).join(", ")})`;
+            res = `${this.expr(expr.func)}${typeArgs}(${previewOnly ? "..." : expr.args.map(x => this.expr(x)).join(", ")})`;
+        } else if (expr instanceof UnresolvedMethodCallExpression) {
+            const typeArgs = expr.typeArgs.length > 0 ? `<${expr.typeArgs.map(x => this.type(x)).join(", ")}>` : "";
+            res = `${this.expr(expr.object)}.{UM}${expr.methodName}${typeArgs}(${previewOnly ? "..." : expr.args.map(x => this.expr(x)).join(", ")})`;
+        } else if (expr instanceof InstanceMethodCallExpression) {
+            const typeArgs = expr.typeArgs.length > 0 ? `<${expr.typeArgs.map(x => this.type(x)).join(", ")}>` : "";
+            res = `${this.expr(expr.object)}.{M}${expr.method.name}${typeArgs}(${previewOnly ? "..." : expr.args.map(x => this.expr(x)).join(", ")})`;
+        } else if (expr instanceof GlobalFunctionCallExpression) {
+            res = `${expr.func.name}(${previewOnly ? "..." : expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof BooleanLiteral) {
             res = `${expr.boolValue}`;
         } else if (expr instanceof StringLiteral) { 
@@ -113,37 +121,35 @@ export class TSOverviewGenerator {
         } else if (expr instanceof ThisReference) {
             res = `{R}this`;
         } else if (expr instanceof EnumReference) {
-            res = `{Enum}${expr.decl.name}`;
+            res = `{R:Enum}${expr.decl.name}`;
         } else if (expr instanceof ClassReference) {
-            res = `{Cls}${expr.decl.name}`;
+            res = `{R:Cls}${expr.decl.name}`;
         } else if (expr instanceof MethodParameterReference) {
-            res = `{MetP}${expr.decl.name}`;
+            res = `{R:MetP}${expr.decl.name}`;
         } else if (expr instanceof VariableDeclarationReference) {
             res = `{V}${expr.decl.name}`;
         } else if (expr instanceof ForVariableReference) {
-            res = `{FVR}${expr.decl.name}`;
+            res = `{R:ForV}${expr.decl.name}`;
         } else if (expr instanceof ForeachVariableReference) {
-            res = `{FEVR}${expr.decl.name}`;
+            res = `{R:ForEV}${expr.decl.name}`;
         } else if (expr instanceof CatchVariableReference) {
-            res = `{CVR}${expr.decl.name}`;
+            res = `{R:CatchV}${expr.decl.name}`;
         } else if (expr instanceof GlobalFunctionReference) {
-            res = `{GFR}${expr.decl.name}`;
+            res = `{R:GFunc}${expr.decl.name}`;
         } else if (expr instanceof SuperReference) {
             res = `{R}super`;
         } else if (expr instanceof StaticFieldReference) {
-            res = `{SF}${expr.decl.parentInterface.name}::${expr.decl.name}`;
+            res = `{R:StFi}${expr.decl.parentInterface.name}::${expr.decl.name}`;
         } else if (expr instanceof StaticPropertyReference) {
-            res = `{SP}${expr.decl.parentClass.name}::${expr.decl.name}`;
-        } else if (expr instanceof StaticMethodReference) {
-            res = `{SM}${expr.decl.parentInterface.name}::${expr.decl.name}`;
+            res = `{R:StPr}${expr.decl.parentClass.name}::${expr.decl.name}`;
         } else if (expr instanceof InstanceFieldReference) {
             res = `${this.expr(expr.object)}.{F}${expr.field.name}`;
         } else if (expr instanceof InstancePropertyReference) {
             res = `${this.expr(expr.object)}.{P}${expr.property.name}`;
-        } else if (expr instanceof InstanceMethodReference) {
-            res = `${this.expr(expr.object)}.{M}${expr.method.name}`;
         } else if (expr instanceof EnumMemberReference) {
             res = `{E}${expr.decl.parentEnum.name}::${expr.decl.name}`;
+        } else if (expr instanceof NullCoalesceExpression) {
+            res = `${this.expr(expr.defaultExpr)} ?? ${this.expr(expr.exprIfNull)}`;
         } else debugger;
         return res;
     }
@@ -228,9 +234,9 @@ export class TSOverviewGenerator {
 
     static nodeRepr(node: IAstNode) {
         if (node instanceof Statement)
-            return this.stmt(node);
+            return this.stmt(node, true);
         else if (node instanceof Expression)
-            return this.expr(node);
+            return this.expr(node, true);
         else
             debugger;
     }

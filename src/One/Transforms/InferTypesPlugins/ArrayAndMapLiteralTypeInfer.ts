@@ -1,9 +1,10 @@
-import { InferTypesPlugin } from "./InferTypesPlugin";
+import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Expression, ArrayLiteral, MapLiteral } from "../../Ast/Expressions";
 import { Type, ClassType, AnyType, AmbiguousType } from "../../Ast/AstTypes";
-import { InferTypes } from "../InferTypes";
 
 export class ArrayAndMapLiteralTypeInfer extends InferTypesPlugin {
+    name = "ArrayAndMapLiteralTypeInfer";
+
     protected inferArrayOrMapItemType(items: Expression[], expectedType: Type, isMap: boolean) {
         const itemTypes: Type[] = [];
         for (const item of items)
@@ -31,15 +32,18 @@ export class ArrayAndMapLiteralTypeInfer extends InferTypesPlugin {
         return itemType;
     }
 
+    canDetectType(expr: Expression) { return expr instanceof ArrayLiteral || expr instanceof MapLiteral; }
 
-    visitExpression(expr: Expression): Expression {
+    detectType(expr: Expression) {
         if (expr instanceof ArrayLiteral) {
             const itemType = this.inferArrayOrMapItemType(expr.items, expr.expectedType, false);
             expr.setActualType(new ClassType(this.main.currentFile.literalTypes.array.decl, [itemType]));
+            return true;
         } else if (expr instanceof MapLiteral) {
             const itemType = this.inferArrayOrMapItemType(expr.items.map(x => x.value), expr.expectedType, true);
             expr.setActualType(new ClassType(this.main.currentFile.literalTypes.map.decl, [itemType]));
-        }
-        return null;
+            return true;
+        } else
+            return false;
     }
 }

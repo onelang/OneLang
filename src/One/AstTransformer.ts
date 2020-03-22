@@ -1,8 +1,8 @@
 import { Type, IHasTypeArguments, ClassType, InterfaceType, UnresolvedType, LambdaType } from "./Ast/AstTypes";
-import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression, InstanceOfExpression, AwaitExpression, StringLiteral, NumericLiteral, NullLiteral, RegexLiteral, BooleanLiteral, StaticMethodCallExpression, InstanceMethodCallExpression, UnresolvedNewExpression, NullCoalesceExpression } from "./Ast/Expressions";
+import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression, InstanceOfExpression, AwaitExpression, StringLiteral, NumericLiteral, NullLiteral, RegexLiteral, BooleanLiteral, StaticMethodCallExpression, InstanceMethodCallExpression, UnresolvedNewExpression, NullCoalesceExpression, UnresolvedMethodCallExpression } from "./Ast/Expressions";
 import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement, ContinueStatement, DoStatement, TryStatement } from "./Ast/Statements";
 import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda, IMethodBase, Package, GlobalFunction, IInterface, IAstNode } from "./Ast/Types";
-import { ClassReference, EnumReference, ThisReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, GlobalFunctionReference, StaticMethodReference, SuperReference, InstanceFieldReference, InstancePropertyReference, InstanceMethodReference, StaticPropertyReference, StaticFieldReference, CatchVariableReference } from "./Ast/References";
+import { ClassReference, EnumReference, ThisReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, InstanceFieldReference, InstancePropertyReference, StaticPropertyReference, StaticFieldReference, CatchVariableReference, GlobalFunctionReference } from "./Ast/References";
 import { ErrorManager } from "./ErrorManager";
 
 export abstract class AstTransformer {
@@ -138,7 +138,11 @@ export abstract class AstTransformer {
             expr.defaultExpr = this.visitExpression(expr.defaultExpr) || expr.defaultExpr;
             expr.exprIfNull = this.visitExpression(expr.exprIfNull) || expr.exprIfNull;
         } else if (expr instanceof UnresolvedCallExpression) {
-            expr.method = this.visitExpression(expr.method) || expr.method;
+            expr.func = this.visitExpression(expr.func) || expr.func;
+            expr.typeArgs = expr.typeArgs.map(x => this.visitType(x) || x);
+            expr.args = expr.args.map(x => this.visitExpression(x) || x);
+        } else if (expr instanceof UnresolvedMethodCallExpression) {
+            expr.object = this.visitExpression(expr.object) || expr.object;
             expr.typeArgs = expr.typeArgs.map(x => this.visitType(x) || x);
             expr.args = expr.args.map(x => this.visitExpression(x) || x);
         } else if (expr instanceof ConditionalExpression) {
@@ -196,10 +200,8 @@ export abstract class AstTransformer {
         } else if (expr instanceof SuperReference) {
         } else if (expr instanceof InstanceFieldReference) {
         } else if (expr instanceof InstancePropertyReference) {
-        } else if (expr instanceof InstanceMethodReference) {
         } else if (expr instanceof StaticFieldReference) {
         } else if (expr instanceof StaticPropertyReference) {
-        } else if (expr instanceof StaticMethodReference) {
         } else if (expr instanceof StaticMethodCallExpression) {
             expr.typeArgs = expr.typeArgs.map(x => this.visitType(x) || x);
             expr.args = expr.args.map(x => this.visitExpression(x) || x);

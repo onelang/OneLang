@@ -120,14 +120,6 @@ export class StaticPropertyReference extends Reference {
     }
 }
 
-// has type: no (requires call, passing static methods is not supported yet)
-export class StaticMethodReference extends Reference implements IGetMethodBase {
-    constructor(public decl: Method) { super(); decl.staticReferences.push(this); }
-
-    setActualType(type: Type) { throw new Error("StaticMethodReference cannot have a type!"); }
-    getMethodBase() { return this.decl; }
-}
-
 // has type: yes
 // is generic: can be
 export class InstanceFieldReference extends Reference {
@@ -138,12 +130,4 @@ export class InstanceFieldReference extends Reference {
 // is generic: can be
 export class InstancePropertyReference extends Reference {
     constructor(public object: Expression, public property: Property) { super(); property.instanceReferences.push(this); }
-}
-
-// has type: no (requires call, passing instance methods is not supported yet)
-export class InstanceMethodReference extends Reference implements IGetMethodBase {
-    constructor(public object: Expression, public method: Method) { super(); method.instanceReferences.push(this); }
-
-    setActualType(type: Type) { throw new Error("InstanceMethodReference cannot have a type!"); }
-    getMethodBase() { return this.method; }
 }

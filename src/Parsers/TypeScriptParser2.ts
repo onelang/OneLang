@@ -32,7 +32,7 @@ export class TypeScriptParser2 implements IParser {
     constructor(source: string, public path: SourcePath = null) {
         this.reader = new Reader(source);
         this.reader.errorCallback = error => {
-            throw new Error(`[TypeScriptParser] ${error.message} at ${error.cursor.line}:${error.cursor.column} (context: ${this.context.join("/")})\n${this.reader.linePreview}`);
+            throw new Error(`[TypeScriptParser] ${error.message} at ${error.cursor.line}:${error.cursor.column} (context: ${this.context.join("/")})\n${this.reader.linePreview(error.cursor)}`);
         };
         this.nodeManager = new NodeManager(this.reader);
         this.expressionParser = this.createExpressionParser(this.reader, this.nodeManager);
@@ -341,7 +341,7 @@ export class TypeScriptParser2 implements IParser {
 
         const statementLastLine = this.reader.wsLineCounter;
         if (!this.reader.readToken(";") && requiresClosing && this.reader.wsLineCounter === statementLastLine)
-            this.reader.fail("statement is not closed");
+            this.reader.fail("statement is not closed", this.reader.wsOffset);
 
         return statement;
     }

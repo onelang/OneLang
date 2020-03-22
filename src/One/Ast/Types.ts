@@ -2,7 +2,7 @@ import { Statement } from "./Statements";
 import { Type, ClassType, GenericsType, EnumType } from "./AstTypes";
 import { Expression } from "./Expressions";
 import { ErrorManager } from "../ErrorManager";
-import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, GlobalFunctionReference, StaticFieldReference, EnumMemberReference, InstanceFieldReference, StaticMethodReference, InstanceMethodReference, StaticPropertyReference, InstancePropertyReference, IReferencable, Reference } from "./References";
+import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, StaticFieldReference, EnumMemberReference, InstanceFieldReference, StaticPropertyReference, InstancePropertyReference, IReferencable, Reference, GlobalFunctionReference } from "./References";
 
 export interface IAstNode { }
 
@@ -353,6 +353,8 @@ export class Constructor implements IMethodBase, IHasAttributesAndTrivia {
     parentClass: Class;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };
+    /** @creator ExtractSuperCall */
+    superCallArgs: Expression[];
     throws: boolean;
 }
 
@@ -374,11 +376,9 @@ export class Method implements IMethodBase, IHasAttributesAndTrivia, IClassMembe
     attributes: { [name: string]: string };
     throws: boolean;
     mutates: boolean;
-    staticReferences: StaticMethodReference[] = [];
-    instanceReferences: InstanceMethodReference[] = [];
 }
 
-export class GlobalFunction implements IMethodBase, IImportable, IHasAttributesAndTrivia, IReferencable {
+export class GlobalFunction implements IMethodBase, IImportable, IHasAttributesAndTrivia {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,

@@ -1,4 +1,4 @@
-import { SourceFile, IInterface, IMethodBase, Method, IAstNode, Field, Property } from "./Ast/Types";
+import { SourceFile, IInterface, IMethodBase, Method, IAstNode, Field, Property, Constructor } from "./Ast/Types";
 import { AstTransformer } from "./AstTransformer";
 import { Statement } from "./Ast/Statements";
 import { TSOverviewGenerator } from "../Utils/TSOverviewGenerator";
@@ -40,6 +40,7 @@ export class ErrorManager {
         else if (par instanceof Method)
             location = `${par.parentInterface.parentFile.sourcePath} -> ${par.parentInterface.name}::${par.name} (method)`;
         else if (par === null) { }
+        else if (par instanceof Statement) { }
         else
             debugger;
 
@@ -49,20 +50,22 @@ export class ErrorManager {
                 location += ` -> ${t.currentInterface.name}`;
                 if (t.currentMethod instanceof Method)
                     location += `::${t.currentMethod.name}`;
+                else if (t.currentMethod instanceof Constructor)
+                    location += `::constructor`;
                 else if (t.currentMethod === null) { }
                 else
                     debugger;
             }
         }
 
+        if (this.currentNode !== null)
+            text += `\n  Node: ${TSOverviewGenerator.nodeRepr(this.currentNode)}`;
+
         if (location !== null)
             text += `\n  Location: ${location}`;
 
         if (t !== null && t.currentStatement !== null)
             text += `\n  Statement: ${TSOverviewGenerator.stmt(t.currentStatement, true)}`;
-
-        if (this.currentNode !== null)
-            text += `\n  Node: ${TSOverviewGenerator.nodeRepr(this.currentNode)}`;
 
         if (type === LogType.Info)
             console.log(text);
