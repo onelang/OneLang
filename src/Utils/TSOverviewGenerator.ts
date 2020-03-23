@@ -1,4 +1,4 @@
-import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression, StaticMethodCallExpression, LambdaCallExpression } from "../One/Ast/Expressions";
+import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression, StaticMethodCallExpression, LambdaCallExpression, IExpression } from "../One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable, TryStatement } from "../One/Ast/Statements";
 import { Method, Block, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility, IAstNode } from "../One/Ast/Types";
 import { Type, VoidType } from "../One/Ast/AstTypes";
@@ -58,7 +58,7 @@ export class TSOverviewGenerator {
         return result;
     }
 
-    static expr(expr: Expression, previewOnly = false) {
+    static expr(expr: IExpression, previewOnly = false) {
         let res = "UNKNOWN-EXPR";
         if (expr instanceof NewExpression) {
             res = `new ${this.type(expr.cls)}(${previewOnly ? "..." : expr.args.map(x => this.expr(x)).join(", ")})`;
@@ -165,7 +165,7 @@ export class TSOverviewGenerator {
         return stmtLen === 0 ? " { }" : allowOneLiner && stmtLen === 1 ? `\n${this.pad(this.rawBlock(block))}` : ` {\n${this.pad(this.rawBlock(block))}\n}`;
     }
 
-    static stmt(stmt: Statement, previewOnly = false) {
+    static stmt(stmt: Statement, previewOnly = false): string {
         let res = "UNKNOWN-STATEMENT";
         if (stmt instanceof BreakStatement) {
             res = "break;";
@@ -237,7 +237,7 @@ export class TSOverviewGenerator {
         (imp instanceof UnresolvedImport ? "X" : imp instanceof Class ? "C" : imp instanceof Interface ? "I" : imp instanceof Enum ? "E" : "???") +
         `:${imp.name}`; }
 
-    static nodeRepr(node: IAstNode) {
+    static nodeRepr(node: IAstNode): string {
         if (node instanceof Statement)
             return this.stmt(node, true);
         else if (node instanceof Expression)

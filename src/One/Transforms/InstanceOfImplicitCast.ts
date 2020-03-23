@@ -1,7 +1,7 @@
 import { AstTransformer } from "../AstTransformer";
 import { ErrorManager } from "../ErrorManager";
 import { InstanceOfExpression, BinaryExpression, Expression, CastExpression, ConditionalExpression, PropertyAccessExpression } from "../Ast/Expressions";
-import { Statement, IfStatement, VariableDeclaration } from "../Ast/Statements";
+import { Statement, IfStatement, VariableDeclaration, WhileStatement } from "../Ast/Statements";
 import { ForeachVariableReference, VariableDeclarationReference, MethodParameterReference, InstanceFieldReference, ThisReference } from "../Ast/References";
 
 export class InstanceOfImplicitCast extends AstTransformer {
@@ -64,6 +64,8 @@ export class InstanceOfImplicitCast extends AstTransformer {
             this.removeFromContext(castCount);
 
             expr.whenFalse = this.visitExpression(expr.whenFalse) || expr.whenFalse;
+        } else if (expr instanceof VariableDeclarationReference && expr.parentNode instanceof BinaryExpression && expr.parentNode.operator === "=" && expr.parentNode.left === expr) {
+            // we should not cast the left-side of an assignment operator
         } else {
             result = super.visitExpression(expr) || expr;
             const match = this.casts.find(cast => this.equals(result, cast.expr));
@@ -85,6 +87,12 @@ export class InstanceOfImplicitCast extends AstTransformer {
 
             if (stmt.else_)
                 this.visitBlock(stmt.else_);
+        } else if (stmt instanceof WhileStatement) {
+            stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
+
+            const castCount = this.addInstanceOfsToContext(stmt.condition);
+            this.visitBlock(stmt.body);
+            this.removeFromContext(castCount);
         } else {
             return super.visitStatement(stmt);
         }

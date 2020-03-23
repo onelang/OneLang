@@ -1,7 +1,7 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Expression, CastExpression, ParenthesizedExpression, BooleanLiteral, NumericLiteral, StringLiteral, TemplateString, RegexLiteral, InstanceOfExpression, NullLiteral, UnaryExpression, BinaryExpression, ConditionalExpression, NewExpression, NullCoalesceExpression, LambdaCallExpression } from "../../Ast/Expressions";
 import { ThisReference, MethodParameterReference, VariableDeclarationReference, ForeachVariableReference, ForVariableReference, SuperReference } from "../../Ast/References";
-import { ClassType, InterfaceType, Type, AnyType, EnumType, LambdaType, AmbiguousType } from "../../Ast/AstTypes";
+import { ClassType, InterfaceType, Type, AnyType, EnumType, NullType } from "../../Ast/AstTypes";
 
 export class BasicTypeInfer extends InferTypesPlugin {
     name = "BasicTypeInfer";
@@ -32,7 +32,7 @@ export class BasicTypeInfer extends InferTypesPlugin {
         } else if (expr instanceof InstanceOfExpression) {
             expr.setActualType(litTypes.boolean);
         } else if (expr instanceof NullLiteral) {
-            expr.setActualType(expr.expectedType !== null ? expr.expectedType : AmbiguousType.instance);
+            expr.setActualType(expr.expectedType !== null ? expr.expectedType : NullType.instance);
         } else if (expr instanceof VariableDeclarationReference) {
             expr.setActualType(expr.decl.type);
         } else if (expr instanceof ForeachVariableReference) {

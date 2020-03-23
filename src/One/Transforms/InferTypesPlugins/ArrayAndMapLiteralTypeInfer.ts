@@ -1,6 +1,6 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Expression, ArrayLiteral, MapLiteral, CastExpression, BinaryExpression, ConditionalExpression } from "../../Ast/Expressions";
-import { Type, ClassType, AnyType, AmbiguousType } from "../../Ast/AstTypes";
+import { Type, ClassType, AnyType } from "../../Ast/AstTypes";
 
 export class ArrayAndMapLiteralTypeInfer extends InferTypesPlugin {
     name = "ArrayAndMapLiteralTypeInfer";
@@ -16,17 +16,17 @@ export class ArrayAndMapLiteralTypeInfer extends InferTypesPlugin {
         let itemType: Type = null;
         if (itemTypes.length === 0) {
             if (!expectedType) {
-                this.errorMan.warn(`Could not determine the type of an empty ${isMap ? "MapLiteral" : "ArrayLiteral"}! Will use AmbiguousType`);
-                itemType = AmbiguousType.instance;
+                this.errorMan.warn(`Could not determine the type of an empty ${isMap ? "MapLiteral" : "ArrayLiteral"}, using AnyType instead`);
+                itemType = AnyType.instance;
             } else if (expectedType instanceof ClassType && expectedType.decl === literalType.decl) {
                 itemType = expectedType.typeArguments[0];
             } else {
-                itemType = AmbiguousType.instance;
+                itemType = AnyType.instance;
             }
         } else if (itemTypes.length === 1) {
             itemType = itemTypes[0];
         } else if (!(expectedType instanceof AnyType)) {
-            this.errorMan.warn(`Could not determine the type of ${isMap ? "a MapLiteral" : "an ArrayLiteral"}! Multiple types were found: ${itemTypes.map(x => x.repr()).join(", ")}. Will use AnyType instead.`);
+            this.errorMan.warn(`Could not determine the type of ${isMap ? "a MapLiteral" : "an ArrayLiteral"}! Multiple types were found: ${itemTypes.map(x => x.repr()).join(", ")}, using AnyType instead`);
             itemType = AnyType.instance;
         }
         return itemType;

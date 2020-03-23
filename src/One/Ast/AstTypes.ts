@@ -44,6 +44,9 @@ export class Type implements IType {
         if (whereTo instanceof AnyType && !(toBeAssigned instanceof VoidType)) return true;
         // any type can assigned to GenericsType except void
         if (whereTo instanceof GenericsType && !(toBeAssigned instanceof VoidType)) return true;
+        // null can be assigned anywhere
+        // TODO: filter out number and boolean types...
+        if (toBeAssigned instanceof NullType && !(whereTo instanceof VoidType)) return true;
 
         if (this.equals(toBeAssigned, whereTo)) return true;
 
@@ -78,14 +81,14 @@ export class VoidType extends PrimitiveType {
     repr() { return "Void"; }
 }
 
-export class AmbiguousType extends Type {
-    static instance = new AmbiguousType();
-    rerp() { return "Ambiguous"; }
-} 
-
 export class AnyType extends PrimitiveType {
     static instance = new AnyType();
     repr() { return "Any"; }
+}
+
+export class NullType extends PrimitiveType {
+    static instance = new NullType();
+    repr() { return "Null"; }
 }
 
 export class GenericsType extends Type {

@@ -1,6 +1,6 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Property, Lambda, Method, IMethodBase } from "../../Ast/Types";
-import { VoidType, Type, AnyType, LambdaType, AmbiguousType } from "../../Ast/AstTypes";
+import { VoidType, Type, AnyType, LambdaType } from "../../Ast/AstTypes";
 import { Statement, ReturnStatement } from "../../Ast/Statements";
 import { ErrorManager } from "../../ErrorManager";
 import { NullLiteral, Expression } from "../../Ast/Expressions";

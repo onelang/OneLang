@@ -5,6 +5,7 @@ import { GenericsResolver } from "./Helpers/GenericsResolver";
 import { ClassReference, ThisReference, SuperReference } from "../../Ast/References";
 import { Class, IInterface, Method } from "../../Ast/Types";
 import { Linq } from "../../../Utils/Underscore";
+import { TSOverviewGenerator } from "../../../Utils/TSOverviewGenerator";
 
 export class ResolveMethodCalls extends InferTypesPlugin {
     name = "ResolveMethodCalls";
@@ -25,9 +26,15 @@ export class ResolveMethodCalls extends InferTypesPlugin {
         for (let i = 0; i < expr.args.length; i++) {
             // actually doesn't have to resolve, but must check if generic type confirm the previous argument with the same generic type
             const paramType = genericsResolver.resolveType(expr.method.parameters[i].type, false);
-            expr.args[i].setExpectedType(paramType);
+            if (paramType !== null)
+                expr.args[i].setExpectedType(paramType);
             expr.args[i] = this.main.visitExpression(expr.args[i]);
             genericsResolver.collectResolutionsFromActualType(paramType, expr.args[i].actualType);
+        }
+
+        if (expr.method.returns === null) {
+            this.errorMan.throw(`Method (${expr.method.parentInterface.name}::${expr.method.name}) return type was not specified or infered before the call.`);
+            return;
         }
 
         expr.setActualType(genericsResolver.resolveType(expr.method.returns, true), true, false);

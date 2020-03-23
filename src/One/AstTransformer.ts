@@ -287,7 +287,7 @@ export abstract class AstTransformer {
             this.visitEnumMember(value);
     }
 
-    protected visitEnumMember(enumMember: EnumMember) {
+    protected visitEnumMember(enumMember: EnumMember): void {
     }
 
     public visitSourceFile(sourceFile: SourceFile): void {

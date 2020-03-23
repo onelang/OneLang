@@ -22,7 +22,7 @@ export class ErrorManager {
 
     get lastContextInfo() { return this.contextInfo.length > 0 ? this.contextInfo[this.contextInfo.length - 1] : null; }
 
-    resetContext(transformer: AstTransformer = null) {
+    resetContext(transformer: AstTransformer = null): void {
         this.transformer = transformer;
     }
 
@@ -83,7 +83,7 @@ export class ErrorManager {
             debugger;
 
         if (type === LogType.Error || type === LogType.Warning)
-            this.errors.push(new CompilationError(msg, type === LogType.Warning, t && t.name, this.currentNode));
+            this.errors.push(new CompilationError(msg, type === LogType.Warning, t !== null ? t.name : null, this.currentNode));
     }
 
     info(msg: string): void {

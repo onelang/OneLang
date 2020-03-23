@@ -2,7 +2,8 @@
 /// <reference path="../../packages/interfaces/One.Console-v0.1/index.d.ts" />
 
 declare class console {
-    static log(data: any);
+    static log(data: any): void;
+    static error(data: any): void;
 }
 
 declare class Object {
