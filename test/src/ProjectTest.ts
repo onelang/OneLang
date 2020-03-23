@@ -141,8 +141,8 @@ initCompiler().then(() => {
         new DetectMethodCalls().visitPackage(projectPkg);
         saveState();
 
-        new ExtractSuperCall().visitPackage(projectPkg);
-        saveState();
+        //new ExtractSuperCall().visitPackage(projectPkg);
+        //saveState();
 
         //try {
             new InferTypes().visitPackage(projectPkg);

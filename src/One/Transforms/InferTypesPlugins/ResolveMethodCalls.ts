@@ -23,7 +23,16 @@ export class ResolveMethodCalls extends InferTypesPlugin {
             const cls = expr.object.decl;
             const method = this.findMethod(cls, expr.methodName, true, expr.args);
             const result = new StaticMethodCallExpression(method, expr.typeArgs, expr.args);
-            result.setActualType(result.method.returns, true);
+
+            const genericsResolver = new GenericsResolver();
+            for (let i = 0; i < result.args.length; i++) {
+                // actually doesn't have to resolve, but must check if generic type confirm the previous argument with the same generic type
+                const paramType = genericsResolver.resolveType(result.method.parameters[i].type, false);
+                result.args[i] = this.main.visitExpression(result.args[i]);
+                genericsResolver.collectResolutionsFromActualType(paramType, result.args[i].actualType);
+            }
+
+            result.setActualType(genericsResolver.resolveType(result.method.returns, true), true);
             return result;
         } else {
             const resolvedObject = this.main.visitExpression(expr.object) || expr.object;

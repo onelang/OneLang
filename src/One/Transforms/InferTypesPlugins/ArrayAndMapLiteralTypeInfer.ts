@@ -1,5 +1,5 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
-import { Expression, ArrayLiteral, MapLiteral, CastExpression, BinaryExpression } from "../../Ast/Expressions";
+import { Expression, ArrayLiteral, MapLiteral, CastExpression, BinaryExpression, ConditionalExpression } from "../../Ast/Expressions";
 import { Type, ClassType, AnyType, AmbiguousType } from "../../Ast/AstTypes";
 
 export class ArrayAndMapLiteralTypeInfer extends InferTypesPlugin {
@@ -25,7 +25,7 @@ export class ArrayAndMapLiteralTypeInfer extends InferTypesPlugin {
             }
         } else if (itemTypes.length === 1) {
             itemType = itemTypes[0];
-        } else {
+        } else if (!(expectedType instanceof AnyType)) {
             this.errorMan.warn(`Could not determine the type of ${isMap ? "a MapLiteral" : "an ArrayLiteral"}! Multiple types were found: ${itemTypes.map(x => x.repr()).join(", ")}. Will use AnyType instead.`);
             itemType = AnyType.instance;
         }
@@ -41,6 +41,8 @@ export class ArrayAndMapLiteralTypeInfer extends InferTypesPlugin {
         // make this work: `let someMap: { [name: string]: SomeObject } = {};`
         else if (expr.parentNode instanceof BinaryExpression && expr.parentNode.operator === "=" && expr.parentNode.right === expr)
             expr.setExpectedType(expr.parentNode.left.actualType);
+        else if (expr.parentNode instanceof ConditionalExpression && (expr.parentNode.whenTrue === expr || expr.parentNode.whenFalse === expr))
+            expr.setExpectedType(expr.parentNode.whenTrue === expr ? expr.parentNode.whenFalse.actualType : expr.parentNode.whenTrue.actualType);
 
         if (expr instanceof ArrayLiteral) {
             const itemType = this.inferArrayOrMapItemType(expr.items, expr.expectedType, false);

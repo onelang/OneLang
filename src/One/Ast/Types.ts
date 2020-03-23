@@ -349,6 +349,7 @@ export class Constructor implements IMethodBase, IHasAttributesAndTrivia {
     constructor(
         public parameters: MethodParameter[],
         public body: Block,
+        public superCallArgs: Expression[],
         public leadingTrivia: string) { }
 
     /** @creator FillParent */
@@ -356,7 +357,6 @@ export class Constructor implements IMethodBase, IHasAttributesAndTrivia {
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };
     /** @creator ExtractSuperCall */
-    superCallArgs: Expression[];
     throws: boolean;
 }
 

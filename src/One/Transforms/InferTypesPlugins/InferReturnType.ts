@@ -1,17 +1,13 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Property, Lambda, Method, IMethodBase } from "../../Ast/Types";
-import { VoidType, Type, AnyType, LambdaType } from "../../Ast/AstTypes";
+import { VoidType, Type, AnyType, LambdaType, AmbiguousType } from "../../Ast/AstTypes";
 import { Statement, ReturnStatement } from "../../Ast/Statements";
 import { ErrorManager } from "../../ErrorManager";
+import { NullLiteral } from "../../Ast/Expressions";
 
 class ReturnTypeInferer {
     errorMan = new ErrorManager();
     returnTypes: Type[] = [];
-
-    processStatement(stmt: Statement) {
-        if (stmt instanceof ReturnStatement && stmt.expression !== null)
-            this.addReturnType(stmt.expression.actualType);
-    }
 
     addReturnType(returnType: Type) {
         if (returnType === null)
@@ -53,7 +49,8 @@ export class InferReturnType extends InferTypesPlugin {
             this.main.processStatement(stmt);
             if (this.returnTypeInfer.length !== 0) {
                 const inferer = this.returnTypeInfer[this.returnTypeInfer.length - 1];
-                inferer.addReturnType(stmt.expression.actualType);
+                if (!(stmt.expression instanceof NullLiteral))
+                    inferer.addReturnType(stmt.expression.actualType);
             }
             return true;
         } else

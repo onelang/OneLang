@@ -1,7 +1,7 @@
 import { TemplateMethod } from "./OneTemplate/TemplateGenerator";
 
 export class FunctionArgument {
-    name: string;
+    constructor(public name: string) { }
 }
 
 export enum Casing { PascalCase, CamelCase, SnakeCase, UpperCase }

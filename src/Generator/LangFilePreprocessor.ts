@@ -1,6 +1,6 @@
 import { TemplateMethod } from "./OneTemplate/TemplateGenerator";
 import { SourceFile } from "../One/Ast/Types";
-import { LangFile, TemplateObj } from "./LangFileSchema";
+import { LangFile, TemplateObj, FunctionArgument } from "./LangFileSchema";
 
 export class LangFilePreprocessor {
     static preprocess(schema: LangFile, stdlib: SourceFile): void {
@@ -44,15 +44,15 @@ export class LangFilePreprocessor {
     static objectifyTemplateMap(map: { [name: string]: TemplateObj }): void {
         for (const name of Object.keys(map)) {
             if (typeof map[name] === "string")
-                map[name] = <any>{ template: <string><any>map[name], args: [], includes: [] };
+                map[name] = <any>{ template: <string><any>map[name], args: <any>[], includes: <any>[] };
 
             if (!map[name].args)
                 map[name].args = [];
 
-            const args = map[name].args;
-            for (const argName of Object.keys(args))
-                if (typeof args[argName] === "string")
-                    args[argName] = { name: args[argName] };
+            //const args = map[name].args;
+            //for (const argName of Object.keys(args))
+            //    if (typeof args[argName] === "string")
+            //        args[argName] = { name: args[argName] };
         }
     }
 
@@ -65,7 +65,7 @@ export class LangFilePreprocessor {
 
         for (const name of Object.keys(lang.templates)) {
             if (name === "testGenerator") 
-                lang.templates[name].args = ["class", "method", "methodInfo"].map(x => ({ name: x }));
+                lang.templates[name].args = ["class", "method", "methodInfo"].map(x => new FunctionArgument(x));
             
             lang.templates[name].generator = new TemplateMethod(name, lang.templates[name].args.map(x => x.name), lang.templates[name].template);
         }
@@ -76,7 +76,7 @@ export class LangFilePreprocessor {
 
             for (const methodName of Object.keys(cls.methods)) {
                 const method = cls.methods[methodName]; 
-                const stdMethod = stdlib.classes[clsName].methods[methodName]; 
+                const stdMethod = stdlib.classes.find(x => x.name === clsName).methods.find(x => x.name === methodName); 
                 const methodArgs = stdMethod ? stdMethod.parameters.map(x => x.name) : []; 
                 const funcArgs = ["self", "typeArgs"];
                 for (const item of methodArgs)

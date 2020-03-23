@@ -18,7 +18,8 @@ class MethodSignature {
         public params: MethodParameter[],
         public fields: Field[],
         public body: Block,
-        public returns: Type) { }
+        public returns: Type,
+        public superCallArgs: Expression[]) { }
 }
 
 export class TypeScriptParser2 implements IParser {
@@ -438,14 +439,21 @@ export class TypeScriptParser2 implements IParser {
             returns = this.reader.readToken(":") ? this.parseType() : this.missingReturnTypeIsVoid ? VoidType.instance : null;
 
         let body: Block = null;
+        let superCallArgs: Expression[] = null;
         if (declarationOnly) {
             this.reader.expectToken(";");
         } else {
             body = this.expectBlock("method body is missing");
+            const firstStmt = body.statements.length > 0 ? body.statements[0] : null;
+            if (firstStmt instanceof ExpressionStatement && firstStmt.expression instanceof UnresolvedCallExpression && 
+                firstStmt.expression.func instanceof Identifier && firstStmt.expression.func.text === "super") {
+                    superCallArgs = firstStmt.expression.args;
+                    body.statements.shift();
+                }
             body.statements = bodyPrefixStatements.concat(body.statements);
         }
 
-        return new MethodSignature(params, fields, body, returns);
+        return new MethodSignature(params, fields, body, returns, superCallArgs);
     }
 
     parseIdentifierOrString() {
@@ -556,7 +564,7 @@ export class TypeScriptParser2 implements IParser {
                 let member: IMethodBase;
                 const sig = this.parseMethodSignature(isConstructor, declarationOnly);
                 if (isConstructor) {
-                    member = constructor = new Constructor(sig.params, sig.body, memberLeadingTrivia);
+                    member = constructor = new Constructor(sig.params, sig.body, sig.superCallArgs, memberLeadingTrivia);
                     for (const field of sig.fields)
                         fields.push(field);
                 } else {

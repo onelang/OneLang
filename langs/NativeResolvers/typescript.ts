@@ -53,6 +53,7 @@ declare class TsString {
     get length(): number;
     get(idx: number): string;
     substring(start: number, end: number): string;
+    substr(start: number): string;
     substr(start: number, length: number): string;
     split(separator: RegExp): string[];
     startsWith(str: string): boolean;
@@ -73,6 +74,9 @@ class TsBoolean {
 }
 
 class Error {
+    static stackTraceLimit: number;
+    stack: string;
+
     constructor(msg: string) { 
         OneError.raise(msg);
     }

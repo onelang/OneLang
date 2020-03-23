@@ -91,7 +91,7 @@ export class VariableSource {
         return source;
     }
 
-    static fromObject(obj: Object, sourceName: string) {
+    static fromObject(obj: any, sourceName: string) {
         const source = new VariableSource(sourceName || `object`);
         if (obj)
             for (const key of Object.keys(obj))

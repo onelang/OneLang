@@ -77,12 +77,13 @@ export class ResolveFieldAndPropertyAccess extends InferTypesPlugin {
         } else if (!type) {
             this.errorMan.throw(`Type was not inferred yet (prop="${expr.propertyName}")`);
         } else if (type instanceof AnyType) {
-            this.errorMan.throw(`Object has any type (prop="${expr.propertyName}")`);
+            //this.errorMan.throw(`Object has any type (prop="${expr.propertyName}")`);
+            expr.setActualType(AnyType.instance);
         } else {
             this.errorMan.throw(`Expected class as variable type, but got: ${type.constructor.name} (prop="${expr.propertyName}")`);
         }
 
-        return null;
+        return expr;
     }
 
     canTransform(expr: Expression) { return expr instanceof PropertyAccessExpression &&
