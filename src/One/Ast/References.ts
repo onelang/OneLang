@@ -34,7 +34,7 @@ export class MethodParameterReference extends Reference {
     constructor(public decl: MethodParameter) { super(); decl.references.push(this); }
 
     setActualType(type: Type) { 
-        super.setActualType(type, false, this.decl.parentMethod instanceof Method && this.decl.parentMethod.parentInterface.typeArguments.length > 0);
+        super.setActualType(type, false, this.decl.parentMethod instanceof Method ? this.decl.parentMethod.parentInterface.typeArguments.length > 0 : false);
     }
 }
 
@@ -71,7 +71,10 @@ export class ThisReference extends Reference {
 export class SuperReference extends Reference {
     constructor(public cls: Class) { super(); cls.superReferences.push(this); }
 
-    setActualType(type: Type) { throw new Error("SuperReference cannot have a type!"); }
+    setActualType(type: Type) { 
+        if (!(type instanceof ClassType)) throw new Error("Expected ClassType!");
+        super.setActualType(type, false, this.cls.typeArguments.length > 0);
+    }
 }
 
 // has type: yes

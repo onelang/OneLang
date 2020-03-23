@@ -250,7 +250,7 @@ export class TSOverviewGenerator {
         const imps = this.array(sourceFile.imports, imp => 
             (imp.importAll ? `import * as ${imp.importAs}` : `import { ${imp.imports.map(x => this.imp(x)).join(", ")} }`) +
             ` from "${imp.exportScope.packageName}${this.pre("/", imp.exportScope.scopeName)}";`);
-        const enums = sourceFile.enums.map(enum_ => `enum ${enum_.name} { ${Array.from(enum_.values.values()).map(x => x.name).join(", ")} }`);
+        const enums = sourceFile.enums.map(enum_ => `enum ${enum_.name} { ${enum_.values.map(x => x.name).join(", ")} }`);
         const intfs = sourceFile.interfaces.map(intf => `interface ${this.name_(intf)}`+
             `${this.pre(" extends ", intf.baseInterfaces.map(x => this.type(x)))} {\n${this.classLike(intf)}\n}`);
         const classes = sourceFile.classes.map(cls => `class ${this.name_(cls)}`+

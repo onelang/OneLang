@@ -42,11 +42,14 @@ export class Type implements IType {
         if (toBeAssigned instanceof AnyType && !(whereTo instanceof VoidType)) return true;
         // any type can assigned to AnyType except void
         if (whereTo instanceof AnyType && !(toBeAssigned instanceof VoidType)) return true;
+        // any type can assigned to GenericsType except void
+        if (whereTo instanceof GenericsType && !(toBeAssigned instanceof VoidType)) return true;
 
         if (this.equals(toBeAssigned, whereTo)) return true;
 
         if (toBeAssigned instanceof ClassType && whereTo instanceof ClassType)
-            return toBeAssigned.decl.baseClass !== null && this.isAssignableTo(toBeAssigned.decl.baseClass, whereTo);
+            return (toBeAssigned.decl.baseClass !== null && this.isAssignableTo(toBeAssigned.decl.baseClass, whereTo)) ||
+                toBeAssigned.decl === whereTo.decl && toBeAssigned.typeArguments.every((x, i) => this.isAssignableTo(x, whereTo.typeArguments[i]));
         if (toBeAssigned instanceof ClassType && whereTo instanceof InterfaceType)
             return toBeAssigned.decl.baseInterfaces.some(x => this.isAssignableTo(x, whereTo));
         if (toBeAssigned instanceof InterfaceType && whereTo instanceof InterfaceType)

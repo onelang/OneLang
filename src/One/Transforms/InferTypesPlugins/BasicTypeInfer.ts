@@ -1,6 +1,6 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Expression, CastExpression, ParenthesizedExpression, BooleanLiteral, NumericLiteral, StringLiteral, TemplateString, RegexLiteral, InstanceOfExpression, NullLiteral, UnaryExpression, BinaryExpression, ConditionalExpression, NewExpression, NullCoalesceExpression, LambdaCallExpression } from "../../Ast/Expressions";
-import { ThisReference, MethodParameterReference, VariableDeclarationReference, ForeachVariableReference, ForVariableReference } from "../../Ast/References";
+import { ThisReference, MethodParameterReference, VariableDeclarationReference, ForeachVariableReference, ForVariableReference, SuperReference } from "../../Ast/References";
 import { ClassType, InterfaceType, Type, AnyType, EnumType, LambdaType, AmbiguousType } from "../../Ast/AstTypes";
 
 export class BasicTypeInfer extends InferTypesPlugin {
@@ -17,6 +17,8 @@ export class BasicTypeInfer extends InferTypesPlugin {
             expr.setActualType(expr.expression.getType());
         } else if (expr instanceof ThisReference) {
             expr.setActualType(expr.cls.type); // remove type arguments from this
+        } else if (expr instanceof SuperReference) {
+            expr.setActualType(expr.cls.type);
         } else if (expr instanceof MethodParameterReference) {
             expr.setActualType(expr.decl.type);
         } else if (expr instanceof BooleanLiteral) {
@@ -106,8 +108,6 @@ export class BasicTypeInfer extends InferTypesPlugin {
                 expr.setActualType(trueType);
             else
                 throw new Error(`Different types in the whenTrue (${trueType.repr()}) and whenFalse (${falseType.repr()}) expressions of a conditional expression`);
-        } else if (expr instanceof NewExpression) {
-            expr.setActualType(expr.cls);
         } else if (expr instanceof NullCoalesceExpression) {
             const defaultType = expr.defaultExpr.getType();
             const ifNullType = expr.exprIfNull.getType();

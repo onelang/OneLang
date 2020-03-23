@@ -3,13 +3,21 @@ import { Property, Lambda, Method, IMethodBase } from "../../Ast/Types";
 import { VoidType, Type, AnyType, LambdaType, AmbiguousType } from "../../Ast/AstTypes";
 import { Statement, ReturnStatement } from "../../Ast/Statements";
 import { ErrorManager } from "../../ErrorManager";
-import { NullLiteral } from "../../Ast/Expressions";
+import { NullLiteral, Expression } from "../../Ast/Expressions";
 
 class ReturnTypeInferer {
-    errorMan = new ErrorManager();
+    returnsNull = false;
     returnTypes: Type[] = [];
 
-    addReturnType(returnType: Type) {
+    constructor(public errorMan: ErrorManager) { }
+
+    addReturn(returnValue: Expression) {
+        if (returnValue instanceof NullLiteral) {
+            this.returnsNull = true;
+            return;
+        }
+
+        const returnType = returnValue.actualType;
         if (returnType === null)
             throw new Error("Return type cannot be null");
 
@@ -21,7 +29,13 @@ class ReturnTypeInferer {
         let returnType: Type = null;
 
         if (this.returnTypes.length == 0) {
-            returnType = VoidType.instance;
+            if (this.returnsNull) {
+                if (declaredType !== null)
+                    returnType = declaredType;
+                else
+                    this.errorMan.throw(`${errorContext} returns only null with declared return type!`);
+            } else
+                returnType = VoidType.instance;
         } else if (this.returnTypes.length == 1) {
             returnType = this.returnTypes[0];
         } else {
@@ -44,32 +58,39 @@ class ReturnTypeInferer {
 export class InferReturnType extends InferTypesPlugin {
     returnTypeInfer: ReturnTypeInferer[] = [];
 
+    start() {
+        this.returnTypeInfer.push(new ReturnTypeInferer(this.errorMan));
+    }
+
+    finish(declaredType: Type, errorContext: string): Type {
+        return this.returnTypeInfer.pop().finish(declaredType, errorContext);
+    }
+
+    get current() { return this.returnTypeInfer[this.returnTypeInfer.length - 1]; }
+
     handleStatement(stmt: Statement) {
         if (stmt instanceof ReturnStatement && stmt.expression !== null) {
             this.main.processStatement(stmt);
-            if (this.returnTypeInfer.length !== 0) {
-                const inferer = this.returnTypeInfer[this.returnTypeInfer.length - 1];
-                if (!(stmt.expression instanceof NullLiteral))
-                    inferer.addReturnType(stmt.expression.actualType);
-            }
+            if (this.returnTypeInfer.length !== 0)
+                this.current.addReturn(stmt.expression);
             return true;
         } else
             return false;
     }
 
     handleLambda(lambda: Lambda): boolean {
-        this.returnTypeInfer.push(new ReturnTypeInferer());
+        this.start();
         this.main.processLambda(lambda);
-        lambda.returns = this.returnTypeInfer.pop().finish(lambda.returns, "Lambda");
+        lambda.returns = this.finish(lambda.returns, "Lambda");
         lambda.setActualType(new LambdaType(lambda.parameters, lambda.returns));
         return true;
     }
 
     handleMethod(method: IMethodBase): boolean {
         if (method instanceof Method && method.body !== null) {
-            this.returnTypeInfer.push(new ReturnTypeInferer());
+            this.start();
             this.main.processMethodBase(method);
-            method.returns = this.returnTypeInfer.pop().finish(method.returns, `Method "${method.name}"`);
+            method.returns = this.finish(method.returns, `Method "${method.name}"`);
             return true;
         } else
             return false;
@@ -79,15 +100,15 @@ export class InferReturnType extends InferTypesPlugin {
         this.main.processVariable(prop);
 
         if (prop.getter) {
-            this.returnTypeInfer.push(new ReturnTypeInferer());
+            this.start();
             this.main.processBlock(prop.getter);
-            prop.type = this.returnTypeInfer.pop().finish(prop.type, `Property "${prop.name}"`);
+            prop.type = this.finish(prop.type, `Property "${prop.name}" getter`);
         }
 
         if (prop.setter) {
-            this.returnTypeInfer.push(new ReturnTypeInferer());
+            this.start();
             this.main.processBlock(prop.setter);
-            this.returnTypeInfer.pop().finish(VoidType.instance, `Property "${prop.name}"`);
+            this.finish(VoidType.instance, `Property "${prop.name}" setter`);
         }
 
         return true;

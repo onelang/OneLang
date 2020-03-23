@@ -18,6 +18,9 @@ export class ErrorManager {
     transformer: AstTransformer = null;
     currentNode: IAstNode = null;
     errors: CompilationError[] = [];
+    contextInfo: string[] = [];
+
+    get lastContextInfo() { return this.contextInfo.length > 0 ? this.contextInfo[this.contextInfo.length - 1] : null; }
 
     resetContext(transformer: AstTransformer = null) {
         this.transformer = transformer;
@@ -67,6 +70,9 @@ export class ErrorManager {
         if (t !== null && t.currentStatement !== null)
             text += `\n  Statement: ${TSOverviewGenerator.stmt(t.currentStatement, true)}`;
 
+        if (this.lastContextInfo !== null)
+            text += `\n  Context: ${this.lastContextInfo}`;
+
         if (type === LogType.Info)
             console.log(text);
         else if (type === LogType.Warning)
@@ -80,15 +86,15 @@ export class ErrorManager {
             this.errors.push(new CompilationError(msg, type === LogType.Warning, t && t.name, this.currentNode));
     }
 
-    info(msg: string) {
+    info(msg: string): void {
         this.log(LogType.Info, msg);
     }
 
-    warn(msg: string) {
+    warn(msg: string): void {
         this.log(LogType.Warning, msg);
     }
 
-    throw(msg: string) {
+    throw(msg: string): void {
         this.log(LogType.Error, msg);
     }
 }

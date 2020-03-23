@@ -3,6 +3,7 @@ import { Type, ClassType, GenericsType, EnumType, InterfaceType } from "./AstTyp
 import { Expression } from "./Expressions";
 import { ErrorManager } from "../ErrorManager";
 import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, StaticFieldReference, EnumMemberReference, InstanceFieldReference, StaticPropertyReference, InstancePropertyReference, IReferencable, Reference, GlobalFunctionReference } from "./References";
+import { AstHelper } from "./AstHelper";
 
 export interface IAstNode { }
 
@@ -63,16 +64,16 @@ export class Package {
         if (scope === null)
             scope = new ExportedScope();
 
-        for (const cls of Array.from(file.classes.values()).filter(x => x.isExported || exportAll))
+        for (const cls of file.classes.filter(x => x.isExported || exportAll))
             scope.addExport(cls.name, cls);
 
-        for (const intf of Array.from(file.interfaces.values()).filter(x => x.isExported || exportAll))
+        for (const intf of file.interfaces.filter(x => x.isExported || exportAll))
             scope.addExport(intf.name, intf);
 
-        for (const enum_ of Array.from(file.enums.values()).filter(x => x.isExported || exportAll))
+        for (const enum_ of file.enums.filter(x => x.isExported || exportAll))
             scope.addExport(enum_.name, enum_);
         
-        for (const func of Array.from(file.funcs.values()).filter(x => x.isExported || exportAll))
+        for (const func of file.funcs.filter(x => x.isExported || exportAll))
             scope.addExport(func.name, func);
         
         return scope;
@@ -219,6 +220,7 @@ export interface IInterface {
     methods: Method[];
     leadingTrivia: string;
     parentFile: SourceFile;
+    getAllBaseInterfaces(): IInterface[];
 }
 
 export interface IImportable {
@@ -248,6 +250,9 @@ export class Interface implements IHasAttributesAndTrivia, IInterface, IImportab
     attributes: { [name: string]: string };
 
     type = new InterfaceType(this, this.typeArguments.map(x => new GenericsType(x)));
+
+    _baseInterfaceCache: IInterface[] = null;
+    getAllBaseInterfaces(): IInterface[] { return this._baseInterfaceCache || (this._baseInterfaceCache = AstHelper.collectAllBaseInterfaces(this)); }
 }
 
 export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, ISourceFileMember, IReferencable {
@@ -284,6 +289,9 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, 
         }
 
     type = new ClassType(this, this.typeArguments.map(x => new GenericsType(x)));
+
+    _baseInterfaceCache: IInterface[] = null;
+    getAllBaseInterfaces(): IInterface[] { return this._baseInterfaceCache || (this._baseInterfaceCache = AstHelper.collectAllBaseInterfaces(this)); }
 }
 
 export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia, IClassMember, IAstNode {

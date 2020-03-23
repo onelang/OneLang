@@ -3,7 +3,13 @@ import { Method, GlobalFunction, IAstNode } from "./Types";
 
 export enum TypeRestriction { NoRestriction, ShouldNotHaveType, MustBeGeneric, ShouldNotBeGeneric }
 
-export class Expression implements IAstNode {
+export interface IExpression {
+    setActualType(actualType: Type, allowVoid: boolean, allowGeneric: boolean);
+    setExpectedType(type: Type, allowVoid: boolean);
+    getType(): Type;
+}
+
+export class Expression implements IAstNode, IExpression {
     /** @creator FillParent */
     parentNode: IAstNode = null;
     /** @creator InferTypes */
@@ -37,8 +43,8 @@ export class Expression implements IAstNode {
 
         this.actualType = actualType;
         // TODO: debug only
-        Error.stackTraceLimit = 999;
-        this.actualTypeStack = (new Error()).stack;
+        //Error.stackTraceLimit = 999;
+        //this.actualTypeStack = (new Error()).stack;
     }
 
     setExpectedType(type: Type, allowVoid = false) {
@@ -190,14 +196,20 @@ export class UnresolvedMethodCallExpression extends Expression {
         public args: Expression[]) { super(); }
 }
 
-export class StaticMethodCallExpression extends Expression {
+export interface IMethodCallExpression extends IExpression {
+    method: Method;
+    typeArgs: Type[];
+    args: Expression[];
+}
+
+export class StaticMethodCallExpression extends Expression implements IMethodCallExpression {
     constructor(
         public method: Method,
         public typeArgs: Type[],
         public args: Expression[]) { super(); }
 }
 
-export class InstanceMethodCallExpression extends Expression {
+export class InstanceMethodCallExpression extends Expression implements IMethodCallExpression {
     constructor(
         public object: Expression,
         public method: Method,

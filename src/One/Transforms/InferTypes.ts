@@ -15,6 +15,7 @@ import { TypeScriptNullCoalesce } from "./InferTypesPlugins/TypeScriptNullCoales
 import { InferForeachVarType } from "./InferTypesPlugins/InferForeachVarType";
 import { ResolveFuncCalls } from "./InferTypesPlugins/ResolveFuncCalls";
 import { NullabilityCheckWithNot } from "./InferTypesPlugins/NullabilityCheckWithNot";
+import { ResolveNewCalls } from "./InferTypesPlugins/ResolveNewCall";
 
 enum InferTypesStage { Invalid, Fields, Properties, Methods }
 
@@ -37,6 +38,7 @@ export class InferTypes extends AstTransformer {
         this.addPlugin(new InferForeachVarType());
         this.addPlugin(new ResolveFuncCalls());
         this.addPlugin(new NullabilityCheckWithNot());
+        this.addPlugin(new ResolveNewCalls());
     }
 
     // allow plugins to run AstTransformer methods without running other plugins
@@ -75,7 +77,7 @@ export class InferTypes extends AstTransformer {
         if (transformers.length !== 1) return null;
 
         const plugin = transformers[0];
-        console.log(`[${++this.logIdx}] running transform plugin "${plugin.name}" on '${TSOverviewGenerator.nodeRepr(expr)}'...`);
+        this.errorMan.contextInfo.push(`[${++this.logIdx}] running transform plugin "${plugin.name}" on '${TSOverviewGenerator.nodeRepr(expr)}'...`);
         try {
             const newExpr = plugin.transform(expr);
             // expression changed, restart the type infering process on the new expression
@@ -91,7 +93,7 @@ export class InferTypes extends AstTransformer {
     protected detectType(expr: Expression): boolean {
         for (const plugin of this.plugins) {
             if (!plugin.canDetectType(expr)) continue;
-            console.log(`[${++this.logIdx}] running type detection plugin "${plugin.name}" on '${TSOverviewGenerator.nodeRepr(expr)}'`);
+            this.errorMan.contextInfo.push(`[${++this.logIdx}] running type detection plugin "${plugin.name}" on '${TSOverviewGenerator.nodeRepr(expr)}'`);
             this.errorMan.currentNode = expr;
             try {
                 if (plugin.detectType(expr))

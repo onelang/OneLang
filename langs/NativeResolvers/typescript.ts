@@ -38,7 +38,7 @@ declare class TsMap<V> {
     hasKey(key: string): boolean;
 }
 
-declare class IterableIterator<T> {
+declare interface IterableIterator<T> {
 
 }
 
@@ -105,7 +105,11 @@ declare class Array {
 }
 class Math { }
 class YAML { }
-class Set<T> { }
+
+declare class Set<T> implements IterableIterator<T> {
+    add(item: T): void;
+    values(): IterableIterator<T>;
+}
 
 function parseInt(str: string): number { }
 function import_() { }
