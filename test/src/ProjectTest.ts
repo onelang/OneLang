@@ -98,7 +98,11 @@ initCompiler().then(() => {
                 new ClassType(<Class>file.availableSymbols.get("TsString")),
                 new ClassType(<Class>file.availableSymbols.get("RegExp")),
                 new ClassType(<Class>file.availableSymbols.get("TsArray")),
-                new ClassType(<Class>file.availableSymbols.get("TsMap")));
+                new ClassType(<Class>file.availableSymbols.get("TsMap")),
+                new ClassType(<Class>file.availableSymbols.get("Error")));
+            file.arrayTypes = [
+                new ClassType(<Class>file.availableSymbols.get("TsArray")),
+                new ClassType(<Class>file.availableSymbols.get("IterableIterator"))];
             projectPkg.addFile(file);
         }
 

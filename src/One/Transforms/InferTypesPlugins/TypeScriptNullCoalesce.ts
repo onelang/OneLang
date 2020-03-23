@@ -7,7 +7,7 @@ export class TypeScriptNullCoalesce extends InferTypesPlugin {
 
     canTransform(expr: Expression) { return expr instanceof BinaryExpression && expr.operator === "||"; }
 
-    transform(expr: Expression) {
+    transform(expr: Expression): Expression {
         if (expr instanceof BinaryExpression && expr.operator === "||") {
             expr.left = this.main.visitExpression(expr.left) || expr.left;
             expr.right = this.main.visitExpression(expr.right) || expr.right;

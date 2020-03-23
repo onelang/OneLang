@@ -1,6 +1,6 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Expression, CastExpression, ParenthesizedExpression, BooleanLiteral, NumericLiteral, StringLiteral, TemplateString, RegexLiteral, InstanceOfExpression, NullLiteral, UnaryExpression, BinaryExpression, ConditionalExpression, NewExpression, NullCoalesceExpression, LambdaCallExpression } from "../../Ast/Expressions";
-import { ThisReference, MethodParameterReference, VariableDeclarationReference, ForeachVariableReference, ForVariableReference, SuperReference } from "../../Ast/References";
+import { ThisReference, MethodParameterReference, VariableDeclarationReference, ForeachVariableReference, ForVariableReference, SuperReference, CatchVariableReference } from "../../Ast/References";
 import { ClassType, InterfaceType, Type, AnyType, EnumType, NullType } from "../../Ast/AstTypes";
 
 export class BasicTypeInfer extends InferTypesPlugin {
@@ -39,6 +39,8 @@ export class BasicTypeInfer extends InferTypesPlugin {
             expr.setActualType(expr.decl.type);
         } else if (expr instanceof ForVariableReference) {
             expr.setActualType(expr.decl.type);
+        } else if (expr instanceof CatchVariableReference) {
+            expr.setActualType(expr.decl.type || this.main.currentFile.literalTypes.error);
         } else if (expr instanceof UnaryExpression) {
             const operandType = expr.operand.getType();
             if (operandType instanceof ClassType) {
@@ -69,7 +71,7 @@ export class BasicTypeInfer extends InferTypesPlugin {
                     expr.setActualType(leftType);
                 else
                     throw new Error(`Right-side expression (${rightType.repr()}) is not assignable to left-side (${leftType.repr()}).`);
-            } else if (isEqOrNeq && (leftType instanceof AnyType || rightType instanceof AnyType)) {
+            } else if (isEqOrNeq) {
                 expr.setActualType(litTypes.boolean);
             } else if (leftType instanceof ClassType && rightType instanceof ClassType) {
                 if (leftType.decl === litTypes.numeric.decl && rightType.decl === litTypes.numeric.decl && ["-", "+", "-=", "+=", "%"].includes(expr.operator))
@@ -80,13 +82,9 @@ export class BasicTypeInfer extends InferTypesPlugin {
                     expr.setActualType(litTypes.string);
                 else if (leftType.decl === litTypes.boolean.decl && rightType.decl === litTypes.boolean.decl && ["||", "&&"].includes(expr.operator))
                     expr.setActualType(litTypes.boolean);
-                else if (leftType.decl === rightType.decl && isEqOrNeq)
-                    expr.setActualType(litTypes.boolean);
                 else {
                     debugger;
                 }
-            } else if ((leftType instanceof ClassType || leftType instanceof InterfaceType) && expr.right instanceof NullLiteral && isEqOrNeq) {
-                expr.setActualType(litTypes.boolean);
             } else if (leftType instanceof EnumType && rightType instanceof EnumType) {
                 if (leftType.decl === rightType.decl && isEqOrNeq)
                     expr.setActualType(litTypes.boolean);
@@ -100,14 +98,20 @@ export class BasicTypeInfer extends InferTypesPlugin {
         } else if (expr instanceof ConditionalExpression) {
             const trueType = expr.whenTrue.getType();
             const falseType = expr.whenFalse.getType();
-            if (Type.equals(trueType, falseType))
-                expr.setActualType(trueType);
-            else if (expr.whenTrue instanceof NullLiteral)
-                expr.setActualType(falseType);
-            else if (expr.whenFalse instanceof NullLiteral)
-                expr.setActualType(trueType);
-            else
-                throw new Error(`Different types in the whenTrue (${trueType.repr()}) and whenFalse (${falseType.repr()}) expressions of a conditional expression`);
+            if (expr.expectedType) {
+                if (!Type.isAssignableTo(trueType, expr.expectedType))
+                    throw new Error(`Conditional expression expects ${expr.expectedType.repr()} but got ${trueType.repr()} as true branch`);
+                if (!Type.isAssignableTo(falseType, expr.expectedType))
+                    throw new Error(`Conditional expression expects ${expr.expectedType.repr()} but got ${falseType.repr()} as false branch`);
+                expr.setActualType(expr.expectedType);
+            } else {
+                if (Type.isAssignableTo(trueType, falseType))
+                    expr.setActualType(falseType);
+                else if (Type.isAssignableTo(falseType, trueType))
+                    expr.setActualType(trueType);
+                else
+                    throw new Error(`Different types in the whenTrue (${trueType.repr()}) and whenFalse (${falseType.repr()}) expressions of a conditional expression`);
+            }
         } else if (expr instanceof NullCoalesceExpression) {
             const defaultType = expr.defaultExpr.getType();
             const ifNullType = expr.exprIfNull.getType();

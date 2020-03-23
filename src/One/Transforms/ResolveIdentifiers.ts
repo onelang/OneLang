@@ -1,5 +1,5 @@
 import { AstTransformer } from "../AstTransformer";
-import { SourceFile, Class, Enum, Method, Block, Lambda, GlobalFunction } from "../Ast/Types";
+import { SourceFile, Class, Enum, Method, Block, Lambda, GlobalFunction, IMethodBase, Constructor, Interface } from "../Ast/Types";
 import { ErrorManager } from "../ErrorManager";
 import { Identifier } from "../Ast/Expressions";
 import { IReferencable, Reference } from "../Ast/References";
@@ -91,7 +91,7 @@ export class ResolveIdentifiers extends AstTransformer {
         }
     }
 
-    protected visitLambda(lambda: Lambda) {
+    protected visitLambda(lambda: Lambda): Lambda {
         this.symbolLookup.pushContext(`Lambda`);
         for (const param of lambda.parameters)
             this.symbolLookup.addSymbol(param.name, param);
@@ -100,7 +100,7 @@ export class ResolveIdentifiers extends AstTransformer {
         return null;
     }
 
-    protected visitBlock(block: Block) {
+    protected visitBlock(block: Block): Block {
         this.symbolLookup.pushContext("block");
         super.visitBlock(block);
         this.symbolLookup.popContext();
@@ -112,14 +112,16 @@ export class ResolveIdentifiers extends AstTransformer {
         return super.visitVariableDeclaration(stmt);
     }
     
-    public visitMethodBase(method: Method) {
-        this.symbolLookup.pushContext(`Method: ${method.name}`);
-        for (const param of method.parameters)
+    public visitMethodBase(method: IMethodBase) {
+        this.symbolLookup.pushContext(method instanceof Method ? `Method: ${method.name}` : method instanceof Constructor ? "constructor" : "???");
+        for (const param of method.parameters) {
             this.symbolLookup.addSymbol(param.name, param);
+            if (param.initializer !== null)
+                this.visitExpression(param.initializer);
+        }
         if (method.body)
             super.visitBlock(method.body); // directly process method's body without opening a new scope again
         this.symbolLookup.popContext();
-        return null;
     }
 
     public visitClass(cls: Class) {
@@ -129,7 +131,6 @@ export class ResolveIdentifiers extends AstTransformer {
             this.symbolLookup.addSymbol("super", cls.baseClass.decl);
         super.visitClass(cls);
         this.symbolLookup.popContext();
-        return null;
     }
 
     public visitSourceFile(sourceFile: SourceFile) {
@@ -137,19 +138,21 @@ export class ResolveIdentifiers extends AstTransformer {
         this.symbolLookup.pushContext(`File: ${sourceFile.sourcePath}`);
 
         for (const symbol of sourceFile.availableSymbols.values()) {
-            if (symbol instanceof Class)
+            if (symbol instanceof Class) {
                 this.symbolLookup.addSymbol(symbol.name, symbol);
-            else if (symbol instanceof Enum)
+            } else if (symbol instanceof Interface) {
+                // TODO: is it okay?
+            } else if (symbol instanceof Enum) {
                 this.symbolLookup.addSymbol(symbol.name, symbol);
-            else if (symbol instanceof GlobalFunction)
+            } else if (symbol instanceof GlobalFunction) {
                 this.symbolLookup.addSymbol(symbol.name, symbol);
+            } else
+                debugger;
         }
 
         super.visitSourceFile(sourceFile);
 
         this.symbolLookup.popContext();
         this.errorMan.resetContext();
-
-        return null;
     }
 }

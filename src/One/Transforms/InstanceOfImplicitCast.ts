@@ -1,37 +1,32 @@
 import { AstTransformer } from "../AstTransformer";
 import { ErrorManager } from "../ErrorManager";
 import { InstanceOfExpression, BinaryExpression, Expression, CastExpression, ConditionalExpression, PropertyAccessExpression } from "../Ast/Expressions";
-import { Statement, IfStatement, VariableDeclaration, WhileStatement } from "../Ast/Statements";
-import { ForeachVariableReference, VariableDeclarationReference, MethodParameterReference, InstanceFieldReference, ThisReference } from "../Ast/References";
+import { Statement, IfStatement, VariableDeclaration, WhileStatement, ExpressionStatement, ReturnStatement } from "../Ast/Statements";
+import { ForeachVariableReference, VariableDeclarationReference, MethodParameterReference, InstanceFieldReference, ThisReference, Reference } from "../Ast/References";
 
 export class InstanceOfImplicitCast extends AstTransformer {
     name = "InstanceOfImplicitCast";
     casts: InstanceOfExpression[] = [];
+    castCounts: number[] = [];
 
-    protected addInstanceOfsToContext(condition: Expression): number {
-        let castCount = 0;
-
-        const exprToProcess: Expression[] = [condition];
-        while (exprToProcess.length > 0) {
-            const expr = exprToProcess.shift();
-            if (expr instanceof InstanceOfExpression) {
-                castCount++;
-                this.casts.push(expr);
-            } else if (expr instanceof BinaryExpression && expr.operator === "&&") {
-                exprToProcess.push(expr.left);
-                exprToProcess.push(expr.right);
-            }
+    protected addCast(cast: InstanceOfExpression) {
+        if (this.castCounts.length > 0) {
+            this.casts.push(cast);
+            this.castCounts[this.castCounts.length - 1]++;
         }
-
-        return castCount;
     }
 
-    protected removeFromContext(castCount: number) {
+    protected pushContext() {
+        this.castCounts.push(0);
+    }
+
+    protected popContext() {
+        const castCount = this.castCounts.pop();
         if (castCount !== 0)
             this.casts.splice(this.casts.length - castCount, castCount);
     }
 
-    protected equals(expr1: Expression, expr2: Expression) {
+    protected equals(expr1: Expression, expr2: Expression): boolean {
         // implicit casts don't matter when checking equality...
         while (expr1 instanceof CastExpression && expr1.implicit)
             expr1 = expr1.expression;
@@ -56,18 +51,25 @@ export class InstanceOfImplicitCast extends AstTransformer {
     
     protected visitExpression(expr: Expression): Expression {
         let result: Expression = null;
-        if (expr instanceof ConditionalExpression) {
+        if (expr instanceof InstanceOfExpression) {
+            this.visitExpression(expr.expr);
+            this.addCast(expr);
+        } else if (expr instanceof BinaryExpression && expr.operator === "&&") {
+            expr.left = this.visitExpression(expr.left) || expr.left;
+            expr.right = this.visitExpression(expr.right) || expr.right;
+        } else if (expr instanceof ConditionalExpression) {
+            this.pushContext();
             expr.condition = this.visitExpression(expr.condition) || expr.condition;
-
-            const castCount = this.addInstanceOfsToContext(expr.condition);
             expr.whenTrue = this.visitExpression(expr.whenTrue) || expr.whenTrue;
-            this.removeFromContext(castCount);
+            this.popContext();
 
             expr.whenFalse = this.visitExpression(expr.whenFalse) || expr.whenFalse;
-        } else if (expr instanceof VariableDeclarationReference && expr.parentNode instanceof BinaryExpression && expr.parentNode.operator === "=" && expr.parentNode.left === expr) {
+        } else if (expr instanceof Reference && expr.parentNode instanceof BinaryExpression && expr.parentNode.operator === "=" && expr.parentNode.left === expr) {
             // we should not cast the left-side of an assignment operator
         } else {
+            this.pushContext();
             result = super.visitExpression(expr) || expr;
+            this.popContext();
             const match = this.casts.find(cast => this.equals(result, cast.expr));
             if (match)
                 result = new CastExpression(match.checkType, result, true);
@@ -79,22 +81,24 @@ export class InstanceOfImplicitCast extends AstTransformer {
         this.currentStatement = stmt;
 
         if (stmt instanceof IfStatement) {
+            this.pushContext();
             stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
-
-            const castCount = this.addInstanceOfsToContext(stmt.condition);
             this.visitBlock(stmt.then);
-            this.removeFromContext(castCount);
+            this.popContext();
 
             if (stmt.else_)
                 this.visitBlock(stmt.else_);
         } else if (stmt instanceof WhileStatement) {
+            this.pushContext();
             stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
-
-            const castCount = this.addInstanceOfsToContext(stmt.condition);
             this.visitBlock(stmt.body);
-            this.removeFromContext(castCount);
+            this.popContext();
         } else {
-            return super.visitStatement(stmt);
+            this.pushContext();
+            super.visitStatement(stmt);
+            this.popContext();
         }
+
+        return null;
     }
 }

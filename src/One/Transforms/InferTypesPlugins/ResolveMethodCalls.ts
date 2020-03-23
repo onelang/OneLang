@@ -12,13 +12,18 @@ export class ResolveMethodCalls extends InferTypesPlugin {
 
     protected findMethod(cls: IInterface, methodName: string, isStatic: boolean, args: Expression[]) {
         const allBases = cls instanceof Class ? cls.getAllBaseInterfaces().filter(x => x instanceof Class) : cls.getAllBaseInterfaces();
-        const allMethods = new Linq(allBases).selectMany(x => x.methods).get();
+        const allMethods = new Linq<IInterface>(allBases).selectMany(x => x.methods).get();
         const methods = allMethods.filter(x => x.name === methodName && x.isStatic === isStatic &&
             x.parameters.filter(p => p.initializer === null).length <= args.length && args.length <= x.parameters.length);
         if (methods.length === 0)
             throw new Error(`Method '${methodName}' was not found on type '${cls.name}' with ${args.length} arguments`);
-        else if (methods.length > 1)
+        else if (methods.length > 1) {
+            // TODO: actually we should implement proper method shadowing here...
+            const thisMethods = methods.filter(x => x.parentInterface === cls);
+            if (thisMethods.length === 1)
+                return thisMethods[0];
             throw new Error(`Multiple methods found with name '${methodName}' and ${args.length} arguments on type '${cls.name}'`);
+        }
         return methods[0];
     }
 
@@ -50,8 +55,8 @@ export class ResolveMethodCalls extends InferTypesPlugin {
         } else {
             const resolvedObject = this.main.visitExpression(expr.object) || expr.object;
             const objectType = resolvedObject.getType();
-            const intfType: IInterface = objectType instanceof ClassType ? 
-                objectType.decl : objectType instanceof InterfaceType ? objectType.decl : null;
+            const intfType: IInterface = objectType instanceof ClassType ? objectType.decl : objectType 
+                instanceof InterfaceType ? objectType.decl : null;
 
             if (intfType !== null) {
                 const isStatic = expr.object instanceof ThisReference && this.main.currentMethod instanceof Method && this.main.currentMethod.isStatic;

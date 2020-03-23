@@ -22,7 +22,7 @@ export class ExpressionParserConfig {
 export class ExpressionParser {
     static defaultConfig(): ExpressionParserConfig {
         const config = new ExpressionParserConfig();
-        config.unary = ['!', 'not', '+', '-', '~'];
+        config.unary = ['++', '--', '!', 'not', '+', '-', '~'];
         config.precedenceLevels = [
             new PrecedenceLevel("assignment", ['=', '+=', '-=', '*=', '/=', '<<=', '>>='], true),
             new PrecedenceLevel("conditional", ['?'], false),
@@ -61,7 +61,7 @@ export class ExpressionParser {
         this.reconfigure();
     }
 
-    reconfigure() {
+    reconfigure(): void {
         this.config.precedenceLevels.find(x => x.name === "propertyAccess").operators = this.config.propertyAccessOps;
 
         this.operatorMap = {};

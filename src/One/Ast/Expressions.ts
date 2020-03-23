@@ -4,8 +4,8 @@ import { Method, GlobalFunction, IAstNode } from "./Types";
 export enum TypeRestriction { NoRestriction, ShouldNotHaveType, MustBeGeneric, ShouldNotBeGeneric }
 
 export interface IExpression {
-    setActualType(actualType: Type, allowVoid: boolean, allowGeneric: boolean);
-    setExpectedType(type: Type, allowVoid: boolean);
+    setActualType(actualType: Type, allowVoid: boolean, allowGeneric: boolean): void;
+    setExpectedType(type: Type, allowVoid: boolean): void;
     getType(): Type;
 }
 

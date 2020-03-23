@@ -6,11 +6,11 @@ export class FillAttributesFromTrivia {
     name = "FillAttributesFromTrivia";
 
     static processTrivia(trivia: string) {
-        const result = {};
+        const result: { [name: string]: string } = {};
         if (trivia !== "") {
             const matches = RegexHelpers.matches(/(?:\n|^)\s*(?:\/\/|#)\s*@([a-z0-9_.-]+)(?: ([^\n]+)|$|\n)/g, trivia);
             for (const match of matches)
-                result[match[1]] = match[2] || true;
+                result[match[1]] = match[2];
         }
         return result;
     }
@@ -20,13 +20,7 @@ export class FillAttributesFromTrivia {
             item.attributes = this.processTrivia(item.leadingTrivia);
     }
 
-    private static processMethod(method: IMethodBase) {
-        if (method === null) return;
-        this.process([method]);
-        this.processBlock(method.body);
-    }
-
-    private static processBlock(block: Block) {
+    private static processBlock(block: Block): void {
         if (block === null) return;
         this.process(block.statements);
         for (const stmt of block.statements) {
@@ -39,6 +33,12 @@ export class FillAttributesFromTrivia {
                 this.processBlock(stmt.else_);
             }
         }
+    }
+
+    private static processMethod(method: IMethodBase) {
+        if (method === null) return;
+        this.process([method]);
+        this.processBlock(method.body);
     }
 
     static processFile(file: SourceFile) {

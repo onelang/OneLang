@@ -127,7 +127,8 @@ export class LiteralTypes {
         public string: ClassType,
         public regex: ClassType,
         public array: ClassType,
-        public map: ClassType) { }
+        public map: ClassType,
+        public error: ClassType) { }
 }
 
 export class SourceFile {
@@ -154,6 +155,7 @@ export class SourceFile {
     }
 
     literalTypes: LiteralTypes;
+    arrayTypes: ClassType[] = [];
 }
 
 export class ExportScopeRef {
@@ -346,7 +348,7 @@ export class MethodParameter implements IVariableWithInitializer, IReferencable 
     createReference(): Reference { return new MethodParameterReference(this); }
 }
 
-export interface IMethodBase extends IHasAttributesAndTrivia {
+export interface IMethodBase extends IHasAttributesAndTrivia, IAstNode {
     parameters: MethodParameter[];
     body: Block;
     throws: boolean;
@@ -388,7 +390,7 @@ export class Method implements IMethodBase, IHasAttributesAndTrivia, IClassMembe
     mutates: boolean;
 }
 
-export class GlobalFunction implements IMethodBase, IImportable, IHasAttributesAndTrivia {
+export class GlobalFunction implements IMethodBase, IImportable, IHasAttributesAndTrivia, IReferencable {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,

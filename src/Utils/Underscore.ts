@@ -4,7 +4,7 @@ export class Linq<T> {
     except(items: T[]) { return new Linq(this.items.filter(item => !items.includes(item))); }
     intersect(items: T[]) { return new Linq(this.items.filter(item => items.includes(item))); }
 
-    selectMany<T2>(selector: (item: T) => T2[]) {
+    selectMany<T2>(selector: (item: T) => T2[]): Linq<T2> {
         return new Linq<T2>(this.items.reduce((acc, val) => acc.concat(new Linq(selector(val)).get()), []));
     }
 
@@ -29,6 +29,6 @@ export class Linq<T> {
         return result;
     }
 
-    get() { return this.items; }
-    last() { return this.items[this.items.length - 1]; }
+    get(): T[] { return this.items; }
+    last(): T { return this.items[this.items.length - 1]; }
 }

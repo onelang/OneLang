@@ -10,11 +10,11 @@ export class ResolveFieldAndPropertyAccess extends InferTypesPlugin {
 
     protected getStaticRef(cls: Class, memberName: string): Reference {
         const field = cls.fields.find(x => x.name === memberName);
-        if (field && field.isStatic)
+        if (field !== null && field.isStatic)
             return new StaticFieldReference(field);
 
         const prop = cls.properties.find(x => x.name === memberName);
-        if (prop && prop.isStatic)
+        if (prop !== null && prop.isStatic)
             return new StaticPropertyReference(prop);
 
         this.errorMan.throw(`Could not resolve static member access of a class: ${cls.name}::${memberName}`);
@@ -80,7 +80,7 @@ export class ResolveFieldAndPropertyAccess extends InferTypesPlugin {
             //this.errorMan.throw(`Object has any type (prop="${expr.propertyName}")`);
             expr.setActualType(AnyType.instance);
         } else {
-            this.errorMan.throw(`Expected class as variable type, but got: ${type.constructor.name} (prop="${expr.propertyName}")`);
+            this.errorMan.throw(`Expected class as variable type, but got: ${type.repr()} (prop="${expr.propertyName}")`);
         }
 
         return expr;

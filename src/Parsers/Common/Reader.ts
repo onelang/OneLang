@@ -93,7 +93,7 @@ export class Reader {
         return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9') || c === '_';
     }
 
-    peekToken(token: string) {
+    peekToken(token: string): boolean {
         this.skipWhitespaceAndComment();
 
         if (this.input.startsWith(token, this.offset)) {
@@ -105,7 +105,7 @@ export class Reader {
         }
     }
 
-    readToken(token: string) {
+    readToken(token: string): boolean {
         if (this.peekToken(token)) {
             this.prevTokenOffset = this.offset;
             this.wsOffset = this.offset = this.offset + token.length;
@@ -121,12 +121,12 @@ export class Reader {
         return null;
     }
 
-    expectToken(token: string, errorMsg: string = null) {
+    expectToken(token: string, errorMsg: string = null): void {
         if (!this.readToken(token))
             this.fail(errorMsg || `expected token '${token}'`);
     }
 
-    expectString(errorMsg: string = null) {
+    expectString(errorMsg: string = null): string {
         const result = this.readString();
         if (result === null)
             this.fail(errorMsg || `expected string`);
@@ -147,12 +147,12 @@ export class Reader {
         return matches === null ? null : Array.from(matches);
     }
 
-    peekRegex(pattern: string) {
+    peekRegex(pattern: string): string[] {
         const matches = Reader.matchFromIndex(pattern, this.input, this.offset);
         return matches;
     }
 
-    readRegex(pattern: string) {
+    readRegex(pattern: string): string[] {
         const matches = Reader.matchFromIndex(pattern, this.input, this.offset);
         if (matches !== null) {
             this.prevTokenOffset = this.offset;
@@ -161,7 +161,7 @@ export class Reader {
         return matches;
     }
 
-    skipWhitespaceAndComment() {
+    skipWhitespaceAndComment(): void {
         if (this.commentDisabled) return;
 
         this.moveWsOffset = false;
@@ -179,7 +179,7 @@ export class Reader {
         this.moveWsOffset = true;
     }
 
-    readLeadingTrivia() {
+    readLeadingTrivia(): string {
         this.skipWhitespaceAndComment();
         const thisLineStart = this.input.lastIndexOf("\n", this.offset);
         if (thisLineStart <= this.wsOffset)
@@ -191,7 +191,7 @@ export class Reader {
         return result;
     }
 
-    readIdentifier() {
+    readIdentifier(): string {
         this.skipWhitespace();
         const idMatch = this.readRegex(this.identifierRegex);
         if (idMatch === null) return null;
@@ -199,7 +199,7 @@ export class Reader {
         return idMatch[0];
     }
 
-    readNumber() {
+    readNumber(): string {
         this.skipWhitespace();
         const numMatch = this.readRegex(this.numberRegex);
         if (numMatch === null) return null;
@@ -210,7 +210,7 @@ export class Reader {
         return numMatch[0];
     }
 
-    readString() {
+    readString(): string {
         this.skipWhitespace();
         const strMatch = this.readRegex("'((?<!\\\\)\\\\'|[^'\n])*'") || this.readRegex('"((?<!\\\\)\\\\"|[^"\n])*"');
         if (!strMatch) return null;
@@ -222,14 +222,14 @@ export class Reader {
         return str;
     }
 
-    expectIdentifier(errorMsg: string = null) {
+    expectIdentifier(errorMsg: string = null): string {
         const id = this.readIdentifier();
         if (id === null)
             this.fail(errorMsg || "expected identifier");
         return id;
     }
 
-    readModifiers(modifiers: string[]) {
+    readModifiers(modifiers: string[]): string[] {
         const result = [];
         while (true) {
             let success = false;

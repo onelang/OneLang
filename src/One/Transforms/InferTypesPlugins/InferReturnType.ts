@@ -33,13 +33,13 @@ class ReturnTypeInferer {
                 if (declaredType !== null)
                     returnType = declaredType;
                 else
-                    this.errorMan.throw(`${errorContext} returns only null with declared return type!`);
+                    this.errorMan.throw(`${errorContext} returns only null and it has no declared return type!`);
             } else
                 returnType = VoidType.instance;
         } else if (this.returnTypes.length == 1) {
             returnType = this.returnTypes[0];
         } else {
-            if (declaredType !== null && this.returnTypes.every(x => Type.isAssignableTo(x, declaredType)))
+            if (declaredType !== null && this.returnTypes.every((x, i) => Type.isAssignableTo(x, declaredType)))
                 returnType = declaredType;
             else {
                 this.errorMan.throw(`${errorContext} returns different types: ${this.returnTypes.map(x => x.repr()).join(", ")}`);

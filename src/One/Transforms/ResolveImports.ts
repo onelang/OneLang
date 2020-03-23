@@ -5,7 +5,7 @@ export class ResolveImports {
     name = "ResolveImports";
     
     static processWorkspace(ws: Workspace) {
-        for (const file of new Linq(Object.values(ws.packages)).selectMany(x => Object.values(x.files)).get()) {
+        for (const file of new Linq<Package>(Object.values(ws.packages)).selectMany(x => Object.values(x.files)).get()) {
             for (const imp of file.imports) {
                 const pkg = ws.getPackage(imp.exportScope.packageName);
                 const scope = pkg.getExportedScope(imp.exportScope.scopeName);

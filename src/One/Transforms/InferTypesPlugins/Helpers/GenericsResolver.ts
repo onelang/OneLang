@@ -5,13 +5,13 @@ import { MethodParameter } from "../../../Ast/Types";
 export class GenericsResolver {
     resolutionMap = new Map<string, Type>();
 
-    static fromObject(object: Expression) {
+    static fromObject(object: Expression): GenericsResolver {
         const resolver = new GenericsResolver();
         resolver.collectClassGenericsFromObject(object);
         return resolver;
     }
 
-    public collectClassGenericsFromObject(actualObject: Expression) {
+    public collectClassGenericsFromObject(actualObject: Expression): void {
         const actualType = actualObject.getType();
         if (actualType instanceof ClassType) {
             if (!this.collectResolutionsFromActualType(actualType.decl.type, actualType))
@@ -33,11 +33,11 @@ export class GenericsResolver {
             return true;
         } else if (genericType instanceof ClassType && actualType instanceof ClassType && genericType.decl === actualType.decl) {
             if (genericType.typeArguments.length !== actualType.typeArguments.length)
-                throw new Error(`Same class used with different number of type arguments (${genericType.typeArguments.length} <> ${actualType.typeArguments.length})`);
+                throw new Error(`Same class (${genericType.repr()}) used with different number of type arguments (${genericType.typeArguments.length} <> ${actualType.typeArguments.length})`);
             return genericType.typeArguments.every((x, i) => this.collectResolutionsFromActualType(x, actualType.typeArguments[i]));
         } else if (genericType instanceof InterfaceType && actualType instanceof InterfaceType && genericType.decl === actualType.decl) {
             if (genericType.typeArguments.length !== actualType.typeArguments.length)
-                throw new Error(`Same class used with different number of type arguments (${genericType.typeArguments.length} <> ${actualType.typeArguments.length})`);
+                throw new Error(`Same class (${genericType.repr()}) used with different number of type arguments (${genericType.typeArguments.length} <> ${actualType.typeArguments.length})`);
             return genericType.typeArguments.every((x, i) => this.collectResolutionsFromActualType(x, actualType.typeArguments[i]));
         } else if (genericType instanceof LambdaType && actualType instanceof LambdaType) {
             if (genericType.parameters.length !== actualType.parameters.length)

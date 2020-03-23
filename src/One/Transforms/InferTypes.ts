@@ -50,7 +50,7 @@ export class InferTypes extends AstTransformer {
     public processStatement(stmt: Statement) { return super.visitStatement(stmt); }
     public processExpression(expr: Expression) { return super.visitExpression(expr); }
 
-    addPlugin(plugin: InferTypesPlugin) {
+    addPlugin(plugin: InferTypesPlugin): void {
         plugin.main = this;
         plugin.errorMan = this.errorMan;
         this.plugins.push(plugin);
@@ -85,8 +85,10 @@ export class InferTypes extends AstTransformer {
                 newExpr.parentNode = expr.parentNode;
             return newExpr;
         } catch (e) {
-            this.errorMan.currentNode = expr;
-            this.errorMan.throw(`Error while running type transformation phase: ${e}`);
+            if (e instanceof Error) {
+                this.errorMan.currentNode = expr;
+                this.errorMan.throw(`Error while running type transformation phase: ${e}`);
+            }
         }
     }
 

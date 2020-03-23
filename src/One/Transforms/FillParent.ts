@@ -7,7 +7,7 @@ export class FillParent extends AstTransformer {
     name = "FillParent";
     parentNodeStack: IAstNode[] = [];
 
-    protected visitExpression(expr: Expression) {
+    protected visitExpression(expr: Expression): Expression {
         if (this.parentNodeStack.length === 0) debugger;
         expr.parentNode = this.parentNodeStack[this.parentNodeStack.length - 1];
         this.parentNodeStack.push(expr);
@@ -16,7 +16,7 @@ export class FillParent extends AstTransformer {
         return null;
     }
 
-    protected visitStatement(stmt: Statement) {
+    protected visitStatement(stmt: Statement): Statement {
         this.parentNodeStack.push(stmt);
         super.visitStatement(stmt);
         this.parentNodeStack.pop();
@@ -26,7 +26,7 @@ export class FillParent extends AstTransformer {
     protected visitEnum(enum_: Enum) {
         enum_.parentFile = this.currentFile;
         super.visitEnum(enum_);
-        for (const value of enum_.values.values())
+        for (const value of enum_.values)
             value.parentEnum = enum_;
     }
 

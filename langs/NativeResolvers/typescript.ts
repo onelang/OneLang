@@ -30,6 +30,8 @@ declare class TsArray<T> {
     slice(num: number): T[];
     some(predictate: (item: T) => boolean): boolean;
     every(predictate: (item: T, index: number) => boolean): boolean;
+    splice(start: number, deleteCount: number): void;
+    sort(func: (a: T, b: T) => number): T[];
 }
 
 declare class TsMap<V> {
@@ -46,6 +48,7 @@ declare interface IterableIterator<T> {
 declare class Map<K, V> {
     get(key: K): V;
     set(key: K, value: V): void;
+    delete(key: K): void;
     keys(): IterableIterator<K>;
     values(): IterableIterator<V>;
 }
@@ -66,6 +69,7 @@ declare class TsString {
     lastIndexOf(pattern: string): number;
     trim(): string;
     charAt(idx: number): string;
+    includes(str: string): boolean;
 }
 
 class TsNumber {

@@ -40,8 +40,10 @@ export class ErrorManager {
             location = `${par.parentInterface.parentFile.sourcePath} -> ${par.parentInterface.name}::${par.name} (field)`;
         else if (par instanceof Property)
             location = `${par.parentClass.parentFile.sourcePath} -> ${par.parentClass.name}::${par.name} (property)`;
-        else if (par instanceof Method)
+            else if (par instanceof Method)
             location = `${par.parentInterface.parentFile.sourcePath} -> ${par.parentInterface.name}::${par.name} (method)`;
+        else if (par instanceof Constructor)
+            location = `${par.parentClass.parentFile.sourcePath} -> ${par.parentClass.name}::constructor`;
         else if (par === null) { }
         else if (par instanceof Statement) { }
         else

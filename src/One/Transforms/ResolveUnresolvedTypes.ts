@@ -7,39 +7,42 @@ import { Expression, UnresolvedNewExpression, NewExpression } from "../Ast/Expre
 export class ResolveUnresolvedTypes extends AstTransformer {
     name = "ResolveUnresolvedTypes";
 
-    protected visitType(type: Type) {
+    protected visitType(type: Type): Type {
         super.visitType(type);
-        if (!(type instanceof UnresolvedType)) return null;
-        
-        const symbol = this.currentFile.availableSymbols.get(type.typeName) || null;
-        if (symbol === null) {
-            this.errorMan.throw(`Unresolved type '${type.typeName}' was not found in available symbols`);
-            return null;
+        if (type instanceof UnresolvedType) {
+            const symbol = this.currentFile.availableSymbols.get(type.typeName) || null;
+            if (symbol === null) {
+                this.errorMan.throw(`Unresolved type '${type.typeName}' was not found in available symbols`);
+                return null;
+            }
+    
+            if (symbol instanceof Class)
+                return new ClassType(symbol, type.typeArguments);
+            else if (symbol instanceof Interface)
+                return new InterfaceType(symbol, type.typeArguments);
+            else if (symbol instanceof Enum)
+                return new EnumType(symbol);
+            else {
+                this.errorMan.throw(`Unknown symbol type: ${symbol}`);
+                return null;
+            }
         }
-
-        if (symbol instanceof Class)
-            return new ClassType(symbol, type.typeArguments);
-        else if (symbol instanceof Interface)
-            return new InterfaceType(symbol, type.typeArguments);
-        else if (symbol instanceof Enum)
-            return new EnumType(symbol);
-        else {
-            this.errorMan.throw(`Unknown symbol type: ${symbol}`);
+        else 
             return null;
-        }
     }
 
     protected visitExpression(expr: Expression): Expression {
         if (expr instanceof UnresolvedNewExpression) {
             const classType = this.visitType(expr.cls);
-            if (!(classType instanceof ClassType)) {
+            if (classType instanceof ClassType) {
+                const newExpr = new NewExpression(classType, expr.args);
+                newExpr.parentNode = expr.parentNode;
+                super.visitExpression(newExpr);
+                return newExpr;
+            } else {
                 this.errorMan.throw(`Excepted ClassType, but got ${classType}`);
                 return null;
             }
-            const newExpr = new NewExpression(classType, expr.args);
-            newExpr.parentNode = expr.parentNode;
-            super.visitExpression(newExpr);
-            return newExpr;
         } else {
             return super.visitExpression(expr);
         }

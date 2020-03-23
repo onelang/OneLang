@@ -6,7 +6,7 @@ import { ClassType } from "../../Ast/AstTypes";
 export class NullabilityCheckWithNot extends InferTypesPlugin {
     name = "NullabilityCheckWithNot";
 
-    canTransform(expr: Expression) { return expr instanceof UnaryExpression && expr.operator === "!"; }
+    canTransform(expr: Expression) { return expr instanceof UnaryExpression ? expr.operator === "!" : false; }
 
     transform(expr: Expression): Expression {
         const unaryExpr = <UnaryExpression> expr;

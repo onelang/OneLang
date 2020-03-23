@@ -10,9 +10,8 @@ export class AstHelper {
             const curr = toBeProcessed.pop();
             result.add(curr);
 
-            if (curr instanceof Class)
-                if (curr.baseClass !== null)
-                    toBeProcessed.push((<ClassType> curr.baseClass).decl);
+            if (curr instanceof Class && curr.baseClass !== null)
+                toBeProcessed.push((<ClassType> curr.baseClass).decl);
 
             for (const baseIntf of curr.baseInterfaces)
                 toBeProcessed.push((<InterfaceType> baseIntf).decl);
