@@ -4,15 +4,18 @@ import { ClassType, Type, IInterfaceType, InterfaceType, AnyType } from "../../A
 import { GenericsResolver } from "./Helpers/GenericsResolver";
 import { ClassReference, ThisReference, SuperReference } from "../../Ast/References";
 import { Class, IInterface, Method } from "../../Ast/Types";
-import { Linq } from "../../../Utils/Underscore";
-import { TSOverviewGenerator } from "../../../Utils/TSOverviewGenerator";
 
 export class ResolveMethodCalls extends InferTypesPlugin {
     name = "ResolveMethodCalls";
 
     protected findMethod(cls: IInterface, methodName: string, isStatic: boolean, args: Expression[]) {
         const allBases = cls instanceof Class ? cls.getAllBaseInterfaces().filter(x => x instanceof Class) : cls.getAllBaseInterfaces();
-        const allMethods = new Linq<IInterface>(allBases).selectMany(x => x.methods).get();
+        
+        const allMethods: Method[] = [];
+        for (const base of allBases)
+            for (const method of base.methods)
+                allMethods.push(method);
+
         const methods = allMethods.filter(x => x.name === methodName && x.isStatic === isStatic &&
             x.parameters.filter(p => p.initializer === null).length <= args.length && args.length <= x.parameters.length);
         if (methods.length === 0)
@@ -42,7 +45,7 @@ export class ResolveMethodCalls extends InferTypesPlugin {
             return;
         }
 
-        expr.setActualType(genericsResolver.resolveType(expr.method.returns, true), true, false);
+        expr.setActualType(genericsResolver.resolveType(expr.method.returns, true), true, expr instanceof InstanceMethodCallExpression && Type.isGeneric(expr.object.getType()));
     }
     
     protected transformMethodCall(expr: UnresolvedMethodCallExpression): Expression {
@@ -53,7 +56,7 @@ export class ResolveMethodCalls extends InferTypesPlugin {
             this.resolveReturnType(result, new GenericsResolver());
             return result;
         } else {
-            const resolvedObject = this.main.visitExpression(expr.object) || expr.object;
+            const resolvedObject = expr.object.actualType !== null ? expr.object : this.main.visitExpression(expr.object) || expr.object;
             const objectType = resolvedObject.getType();
             const intfType: IInterface = objectType instanceof ClassType ? objectType.decl : objectType 
                 instanceof InterfaceType ? objectType.decl : null;
@@ -70,11 +73,11 @@ export class ResolveMethodCalls extends InferTypesPlugin {
             } else {
                 debugger;
             }
-            return null;
+            return resolvedObject;
         }
     }
 
-    canTransform(expr: Expression) { return expr instanceof UnresolvedMethodCallExpression; }
+    canTransform(expr: Expression) { return expr instanceof UnresolvedMethodCallExpression && !(expr.actualType instanceof AnyType); }
 
     transform(expr: Expression): Expression {
         return this.transformMethodCall(<UnresolvedMethodCallExpression> expr);

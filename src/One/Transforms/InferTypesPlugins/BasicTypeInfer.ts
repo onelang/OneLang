@@ -1,5 +1,5 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
-import { Expression, CastExpression, ParenthesizedExpression, BooleanLiteral, NumericLiteral, StringLiteral, TemplateString, RegexLiteral, InstanceOfExpression, NullLiteral, UnaryExpression, BinaryExpression, ConditionalExpression, NewExpression, NullCoalesceExpression, LambdaCallExpression } from "../../Ast/Expressions";
+import { Expression, CastExpression, ParenthesizedExpression, BooleanLiteral, NumericLiteral, StringLiteral, TemplateString, RegexLiteral, InstanceOfExpression, NullLiteral, UnaryExpression, BinaryExpression, ConditionalExpression, NewExpression, NullCoalesceExpression, LambdaCallExpression, AwaitExpression } from "../../Ast/Expressions";
 import { ThisReference, MethodParameterReference, VariableDeclarationReference, ForeachVariableReference, ForVariableReference, SuperReference, CatchVariableReference } from "../../Ast/References";
 import { ClassType, InterfaceType, Type, AnyType, EnumType, NullType } from "../../Ast/AstTypes";
 
@@ -48,6 +48,8 @@ export class BasicTypeInfer extends InferTypesPlugin {
 
                 if (opId === "-TsNumber") {
                     expr.setActualType(litTypes.numeric);
+                } else if (opId === "+TsNumber") {
+                    expr.setActualType(litTypes.numeric);
                 } else if (opId === "!TsBoolean") {
                     expr.setActualType(litTypes.boolean);
                 } else if (opId === "++TsNumber") {
@@ -68,19 +70,24 @@ export class BasicTypeInfer extends InferTypesPlugin {
             const isEqOrNeq = expr.operator === "==" || expr.operator === "!=";
             if (expr.operator === "=") {
                 if (Type.isAssignableTo(rightType, leftType))
-                    expr.setActualType(leftType);
+                    expr.setActualType(leftType, false, true);
                 else
                     throw new Error(`Right-side expression (${rightType.repr()}) is not assignable to left-side (${leftType.repr()}).`);
             } else if (isEqOrNeq) {
                 expr.setActualType(litTypes.boolean);
             } else if (leftType instanceof ClassType && rightType instanceof ClassType) {
-                if (leftType.decl === litTypes.numeric.decl && rightType.decl === litTypes.numeric.decl && ["-", "+", "-=", "+=", "%"].includes(expr.operator))
+                if (leftType.decl === litTypes.numeric.decl && rightType.decl === litTypes.numeric.decl && ["-", "+", "-=", "+=", "%", "/"].includes(expr.operator))
                     expr.setActualType(litTypes.numeric);
                 else if (leftType.decl === litTypes.numeric.decl && rightType.decl === litTypes.numeric.decl && ["<", "<=", ">", ">="].includes(expr.operator))
                     expr.setActualType(litTypes.boolean);
                 else if (leftType.decl === litTypes.string.decl && rightType.decl === litTypes.string.decl && ["+", "+="].includes(expr.operator))
                     expr.setActualType(litTypes.string);
+                // TODO: hack: TsString <= TsString
+                else if (leftType.decl === litTypes.string.decl && rightType.decl === litTypes.string.decl && ["<="].includes(expr.operator))
+                    expr.setActualType(litTypes.boolean);
                 else if (leftType.decl === litTypes.boolean.decl && rightType.decl === litTypes.boolean.decl && ["||", "&&"].includes(expr.operator))
+                    expr.setActualType(litTypes.boolean);
+                else if (leftType.decl === litTypes.string.decl && rightType.decl === litTypes.map.decl && expr.operator === "in")
                     expr.setActualType(litTypes.boolean);
                 else {
                     debugger;
@@ -119,6 +126,12 @@ export class BasicTypeInfer extends InferTypesPlugin {
                 this.errorMan.throw(`Null-coalescing operator tried to assign incompatible type "${ifNullType.repr()}" to "${defaultType.repr()}"`);
             else 
                 expr.setActualType(defaultType);
+        } else if (expr instanceof AwaitExpression) {
+            const exprType = expr.expr.getType();
+            if (!Type.isAssignableTo(exprType, litTypes.promise))
+                this.errorMan.throw(`Expected promise type (${litTypes.promise}) for await expression, but got ${exprType.repr()}`);
+            else
+                expr.setActualType((<ClassType> exprType).typeArguments[0]);
         } else {
             return false;
         }

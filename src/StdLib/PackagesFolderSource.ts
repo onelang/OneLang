@@ -1,7 +1,7 @@
 import { PackageSource, PackageId, PackageBundle, PackageContent, PackageType } from "./PackageManager";
 
 export class PackagesFolderSource implements PackageSource {
-    constructor(public packagesDir = "packages") { }
+    constructor(public packagesDir: string = "packages") { }
 
     getPackageBundle(ids: PackageId[], cachedOnly: boolean): Promise<PackageBundle> {
         throw new Error("Method not implemented.");
@@ -13,7 +13,7 @@ export class PackagesFolderSource implements PackageSource {
         const path = await import("path");
 
         const packages: { [id: string]: PackageContent } = {};
-        const allFiles = glob.sync(`${this.packagesDir}/**/*`, { nodir: true });
+        const allFiles: string[] = glob.sync(`${this.packagesDir}/**/*`, { nodir: true });
         for (const fn of allFiles) {
             const pathParts = path.relative(this.packagesDir, fn).split(/\//g); // [0]=implementations/interfaces, [1]=package-name, [2:]=path
             const type = pathParts.shift();
@@ -29,6 +29,6 @@ export class PackagesFolderSource implements PackageSource {
             }
             pkg.files[pathParts.join("/")] = fs.readFileSync(fn, "utf-8");
         }
-        return new PackageBundle(Object.values(packages));
+        return Promise.resolve(new PackageBundle(Object.values(packages)));
     }
 }

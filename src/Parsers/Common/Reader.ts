@@ -8,6 +8,10 @@ export class ParseError {
     constructor(public message: string, public cursor: Cursor = null, public reader: Reader = null) { }
 }
 
+export interface IReaderHooks {
+    errorCallback(error: ParseError): void;
+}
+
 export class Reader {
     wsOffset = 0;
     offset = 0;
@@ -23,7 +27,7 @@ export class Reader {
     numberRegex = "[+-]?(\\d*\\.\\d+|\\d+\\.\\d+|0x[0-9a-fA-F_]+|0b[01_]+|[0-9_]+)";
 
     errors: ParseError[] = [];
-    errorCallback: (error: ParseError) => void = null;
+    hooks: IReaderHooks = null;
 
     wsLineCounter = 0;
     moveWsOffset = true;
@@ -49,17 +53,17 @@ export class Reader {
         return preview;
     }
 
-    fail(message: string, offset = -1) {
+    fail(message: string, offset = -1): void {
         const error = new ParseError(message, this.cursorSearch.getCursorForOffset(offset === -1 ? this.offset : offset), this);
         this.errors.push(error);
 
-        if (this.errorCallback)
-            this.errorCallback(error);
+        if (this.hooks !== null)
+            this.hooks.errorCallback(error);
         else
             throw new Error(`${message} at ${error.cursor.line}:${error.cursor.column}\n${this.linePreview(error.cursor)}`);
     }
 
-    skipWhitespace(includeInTrivia = false) {
+    skipWhitespace(includeInTrivia = false): void {
         for (; this.offset < this.input.length; this.offset++) {
             const c = this.input[this.offset];
             
@@ -74,7 +78,7 @@ export class Reader {
             this.wsOffset = this.offset;
     }
 
-    skipUntil(token: string) {
+    skipUntil(token: string): boolean {
         const index = this.input.indexOf(token, this.offset);
         if (index === -1)
             return false;
@@ -114,7 +118,7 @@ export class Reader {
         return false;
     }
 
-    readAnyOf(tokens: string[]) {
+    readAnyOf(tokens: string[]): string {
         for (const token of tokens)
             if (this.readToken(token))
                 return token;
@@ -144,7 +148,14 @@ export class Reader {
         const regex = new RegExp(pattern, "gy");
         regex.lastIndex = offset;
         const matches = regex.exec(input);
-        return matches === null ? null : Array.from(matches);
+        if (matches === null) {
+            return null;
+        } else {
+            const result: string[] = [];
+            for (let i = 0; i < matches.length; i++)
+                result.push(matches[i]);
+            return result;
+        }
     }
 
     peekRegex(pattern: string): string[] {
@@ -230,7 +241,7 @@ export class Reader {
     }
 
     readModifiers(modifiers: string[]): string[] {
-        const result = [];
+        const result: string[] = [];
         while (true) {
             let success = false;
             for (const modifier of modifiers) {

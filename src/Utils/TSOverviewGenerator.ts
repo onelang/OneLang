@@ -1,35 +1,33 @@
 import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression, StaticMethodCallExpression, LambdaCallExpression, IExpression } from "../One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable, TryStatement } from "../One/Ast/Statements";
-import { Method, Block, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility, IAstNode } from "../One/Ast/Types";
+import { Method, Block, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility, IAstNode, GlobalFunction } from "../One/Ast/Types";
 import { Type, VoidType } from "../One/Ast/AstTypes";
 import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference } from "../One/Ast/References";
 
 export class TSOverviewGenerator {
-    static leading(item: any, isStmt: boolean) {
+    static leading(item: Statement) {
         let result = "";
-        if (item.leadingTrivia && (isStmt ? item.leadingTrivia.length > 0 : item.leadingTrivia.trim().length > 0))
+        if (item.leadingTrivia !== null && item.leadingTrivia.length > 0)
             result += item.leadingTrivia;
-        if (item.attributes)
-            result += Object.entries(item.attributes).map(x => `/// {ATTR} name="${x[0]}", value=${JSON.stringify(x[1])}\n`).join("");
+        if (item.attributes !== null)
+            result += Object.keys(item.attributes).map(x => `/// {ATTR} name="${x}", value=${JSON.stringify(item.attributes[x])}\n`).join("");
         return result;
     }
 
-    static array<T>(items: T[], callback: (item: T) => string) {
-        return items.map(item => this.leading(item, false) + callback(item));
+    static preArr(prefix: string, value: string[]) {
+        return value.length > 0 ? `${prefix}${value.join(", ")}` : "";
     }
 
-    static pre(prefix: string, value: any, separator = ", ") {
-        if (Array.isArray(value))
-            return value.length > 0 ? `${prefix}${value.join(separator)}` : "";
-        else if (typeof value === "boolean")
-            return value ? prefix : "";
-        else if (value)
-            return `${prefix}${value}`;
-        return "";
+    static preIf(prefix: string, condition: boolean) {
+        return condition ? prefix : "";
     }
 
-    static name_(obj: any) { return `${obj instanceof Constructor ? "constructor" : obj.name}${this.typeArgs(obj.typeArguments)}`; }
-    static typeArgs(args: string[]) { return args && args.length > 0 ? `<${args.join(", ")}>` : ""; }
+    static pre(prefix: string, value: string) {
+        return value !== null ? `${prefix}${value}` : "";
+    }
+
+    //static name_(obj: IMethodBase) { return `${obj instanceof Constructor ? "constructor" : obj.name}${this.typeArgs(obj.typeArguments)}`; }
+    static typeArgs(args: string[]): string { return args !== null && args.length > 0 ? `<${args.join(", ")}>` : ""; }
     
     static type(t: Type, raw = false) {
         const repr = !t ? "???" : t.repr();
@@ -42,7 +40,7 @@ export class TSOverviewGenerator {
         const isProp = v instanceof Property;
         if (v instanceof Field || v instanceof Property) {
             const m = <IClassMember>v;
-            result += this.pre("static ", m.isStatic);
+            result += this.preIf("static ", m.isStatic);
             result += 
                 m.visibility === Visibility.Private ? "private " : 
                 m.visibility === Visibility.Protected ? "protected " :
@@ -58,7 +56,7 @@ export class TSOverviewGenerator {
         return result;
     }
 
-    static expr(expr: IExpression, previewOnly = false) {
+    static expr(expr: IExpression, previewOnly = false): string {
         let res = "UNKNOWN-EXPR";
         if (expr instanceof NewExpression) {
             res = `new ${this.type(expr.cls)}(${previewOnly ? "..." : expr.args.map(x => this.expr(x)).join(", ")})`;
@@ -118,7 +116,7 @@ export class TSOverviewGenerator {
             res = `${this.expr(expr.operand)}${expr.operator}`;
         } else if (expr instanceof MapLiteral) {
             const repr = expr.items.map(item => `${item.key}: ${this.expr(item.value)}`).join(",\n");
-            res = repr === "" ? "{}" : repr.includes("\n") ? `{\n${this.pad(repr)}\n}` : `{ ${repr} }`;
+            res = "{L:M}" + (repr === "" ? "{}" : repr.includes("\n") ? `{\n${this.pad(repr)}\n}` : `{ ${repr} }`);
         } else if (expr instanceof NullLiteral) {
             res = `null`;
         } else if (expr instanceof AwaitExpression) {
@@ -182,11 +180,11 @@ export class TSOverviewGenerator {
         } else if (stmt instanceof ForeachStatement) {
             res = `for (const ${stmt.itemVar.name} of ${this.expr(stmt.items)})` + this.block(stmt.body, previewOnly);
         } else if (stmt instanceof IfStatement) {
-            const elseIf = stmt.else_ && stmt.else_.statements.length === 1 && stmt.else_.statements[0] instanceof IfStatement;
+            const elseIf = stmt.else_ !== null && stmt.else_.statements.length === 1 && stmt.else_.statements[0] instanceof IfStatement;
             res = `if (${this.expr(stmt.condition)})${this.block(stmt.then, previewOnly)}`;
             if (!previewOnly)
                 res += (elseIf ? `\nelse ${this.stmt(stmt.else_.statements[0])}` : "") +
-                    (!elseIf && stmt.else_ ? `\nelse` + this.block(stmt.else_) : "");
+                    (!elseIf && stmt.else_ !== null ? `\nelse` + this.block(stmt.else_) : "");
         } else if (stmt instanceof WhileStatement) {
             res = `while (${this.expr(stmt.condition)})` + this.block(stmt.body, previewOnly);
         } else if (stmt instanceof ForStatement) {
@@ -200,25 +198,23 @@ export class TSOverviewGenerator {
         } else if (stmt instanceof ContinueStatement) {
             res = `continue;`;
         } else debugger;
-        return previewOnly ? res : this.leading(stmt, true) + res;
+        return previewOnly ? res : this.leading(stmt) + res;
     }
 
-    static rawBlock(block: Block) { return block.statements.map(stmt => this.stmt(stmt)).join("\n"); }
+    static rawBlock(block: Block): string { return block.statements.map(stmt => this.stmt(stmt)).join("\n"); }
 
-    static methodBase(method: IMethodBase, returns: Type = new VoidType()) {
-        if (!method) return "";
-        return this.pre("/* throws */ ", method.throws) + 
-            `${this.name_(method)}(${method.parameters.map(p => this.var(p)).join(", ")})` +
+    static methodBase(method: IMethodBase, returns: Type = new VoidType()): string {
+        if (method === null) return "";
+        const name = method instanceof Method ? method.name : method instanceof Constructor ? "constructor" : method instanceof GlobalFunction ? method.name : "???";
+        const typeArgs = method instanceof Method ? method.typeArguments : null;
+        return this.preIf("/* throws */ ", method.throws) + 
+            `${name}${this.typeArgs(typeArgs)}(${method.parameters.map(p => this.var(p)).join(", ")})` +
             (returns instanceof VoidType ? "" : `: ${this.type(returns)}`) +
             (method.body ? ` {\n${this.pad(this.rawBlock(method.body))}\n}` : ";");
     }
 
     static method(method: Method) {
-        if (!method) return "";
-        return "" +
-            this.pre("static ", method.isStatic) + 
-            this.pre("/* mutates */ ", method.mutates) + 
-            this.methodBase(method, method.returns);
+        return method === null ? "" : `${method.isStatic ? "static " : ""}${method.mutates ? "/* mutates */ " : ""}${this.methodBase(method, method.returns)}`;
     }
 
     static classLike(cls: IInterface) {
@@ -232,7 +228,7 @@ export class TSOverviewGenerator {
         return this.pad(resList.filter(x => x !== "").join("\n\n"));
     }
 
-    static pad(str: string) { return str.split(/\n/g).map(x => `    ${x}`).join('\n'); }
+    static pad(str: string): string { return str.split(/\n/g).map(x => `    ${x}`).join('\n'); }
     static imp(imp: IImportable) { return "" + 
         (imp instanceof UnresolvedImport ? "X" : imp instanceof Class ? "C" : imp instanceof Interface ? "I" : imp instanceof Enum ? "E" : "???") +
         `:${imp.name}`; }
@@ -247,17 +243,16 @@ export class TSOverviewGenerator {
     }
 
     static generate(sourceFile: SourceFile) {
-        const imps = this.array(sourceFile.imports, imp => 
-            (imp.importAll ? `import * as ${imp.importAs}` : `import { ${imp.imports.map(x => this.imp(x)).join(", ")} }`) +
+        const imps = sourceFile.imports.map(imp => (imp.importAll ? `import * as ${imp.importAs}` : `import { ${imp.imports.map(x => this.imp(x)).join(", ")} }`) +
             ` from "${imp.exportScope.packageName}${this.pre("/", imp.exportScope.scopeName)}";`);
         const enums = sourceFile.enums.map(enum_ => `enum ${enum_.name} { ${enum_.values.map(x => x.name).join(", ")} }`);
-        const intfs = sourceFile.interfaces.map(intf => `interface ${this.name_(intf)}`+
-            `${this.pre(" extends ", intf.baseInterfaces.map(x => this.type(x)))} {\n${this.classLike(intf)}\n}`);
-        const classes = sourceFile.classes.map(cls => `class ${this.name_(cls)}`+
+        const intfs = sourceFile.interfaces.map(intf => `interface ${intf.name}${this.typeArgs(intf.typeArguments)}`+
+            `${this.preArr(" extends ", intf.baseInterfaces.map(x => this.type(x)))} {\n${this.classLike(intf)}\n}`);
+        const classes = sourceFile.classes.map(cls => `class ${cls.name}${this.typeArgs(cls.typeArguments)}`+
             this.pre(" extends ", cls.baseClass ? this.type(cls.baseClass) : null) + 
-            this.pre(" implements ", cls.baseInterfaces.map(x => this.type(x))) + 
+            this.preArr(" implements ", cls.baseInterfaces.map(x => this.type(x))) + 
             ` {\n${this.classLike(cls)}\n}`);
-        const funcs = sourceFile.funcs.map(func => `function ${this.name_(func)}${this.methodBase(func, func.returns)}`);
+        const funcs = sourceFile.funcs.map(func => `function ${func.name}${this.methodBase(func, func.returns)}`);
         const main = this.rawBlock(sourceFile.mainBlock);
         const result = `// export scope: ${sourceFile.exportScope.packageName}/${sourceFile.exportScope.scopeName}\n`+
             [imps.join("\n"), enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), funcs.join("\n\n"), main].filter(x => x !== "").join("\n\n");

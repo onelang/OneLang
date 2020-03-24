@@ -19,6 +19,11 @@ export class ExpressionParserConfig {
     propertyAccessOps: string[];
 }
 
+export interface IExpressionParserHooks {
+    unaryPrehook(): Expression;
+    infixPrehook(left: Expression): Expression;
+}
+
 export class ExpressionParser {
     static defaultConfig(): ExpressionParserConfig {
         const config = new ExpressionParserConfig();
@@ -52,12 +57,10 @@ export class ExpressionParser {
     operators: string[];
     prefixPrecedence: number;
 
-    unaryPrehook: () => Expression = null;
-    infixPrehook: (left: Expression) => Expression = null;
     stringLiteralType: Type = null;
     numericLiteralType: Type = null;
 
-    constructor(public reader: Reader, public nodeManager: NodeManager = null, public config: ExpressionParserConfig = ExpressionParser.defaultConfig()) {
+    constructor(public reader: Reader, public hooks: IExpressionParserHooks = null, public nodeManager: NodeManager = null, public config: ExpressionParserConfig = ExpressionParser.defaultConfig()) {
         this.reconfigure();
     }
 
@@ -121,7 +124,7 @@ export class ExpressionParser {
     }
 
     parseLeft(required = true): Expression {
-        const result = this.unaryPrehook && this.unaryPrehook();
+        const result = this.hooks !== null ? this.hooks.unaryPrehook() : null;
         if (result !== null) return result;
 
         const unary = this.reader.readAnyOf(this.config.unary);
@@ -191,9 +194,9 @@ export class ExpressionParser {
         this.addNode(left, leftStart);
 
         while(true) {
-            if (this.infixPrehook) {
-                const parsed = this.infixPrehook(left);
-                if (parsed) {
+            if (this.hooks !== null) {
+                const parsed = this.hooks.infixPrehook(left);
+                if (parsed !== null) {
                     left = parsed;
                     this.addNode(left, leftStart);
                     continue;

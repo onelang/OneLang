@@ -16,7 +16,6 @@ export class NullabilityCheckWithNot extends InferTypesPlugin {
             const litTypes = this.main.currentFile.literalTypes;
             if (type instanceof ClassType && type.decl !== litTypes.boolean.decl && type.decl !== litTypes.numeric.decl)
                 return new BinaryExpression(unaryExpr.operand, "==", new NullLiteral());
-            return unaryExpr;
         }
 
         return null;

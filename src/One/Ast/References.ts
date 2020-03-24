@@ -1,4 +1,4 @@
-import { Class, Enum, MethodParameter, GlobalFunction, Field, Property, Method, EnumMember, IMethodBase } from "./Types";
+import { Class, Enum, MethodParameter, GlobalFunction, Field, Property, Method, EnumMember, IMethodBase, Lambda, Constructor } from "./Types";
 import { VariableDeclaration, ForVariable, ForeachVariable, CatchVariable } from "./Statements";
 import { Expression, TypeRestriction } from "./Expressions";
 import { Type, EnumType, ClassType } from "./AstTypes";
@@ -34,7 +34,10 @@ export class MethodParameterReference extends Reference {
     constructor(public decl: MethodParameter) { super(); decl.references.push(this); }
 
     setActualType(type: Type) { 
-        super.setActualType(type, false, this.decl.parentMethod instanceof Method ? this.decl.parentMethod.parentInterface.typeArguments.length > 0 : false);
+        super.setActualType(type, false, 
+            this.decl.parentMethod instanceof Lambda ? this.decl.parentMethod.parameters.some(x => Type.isGeneric(x.type)) :
+            this.decl.parentMethod instanceof Constructor ? this.decl.parentMethod.parentClass.typeArguments.length > 0 :
+            this.decl.parentMethod instanceof Method ? this.decl.parentMethod.typeArguments.length > 0 || this.decl.parentMethod.parentInterface.typeArguments.length > 0 : false);
     }
 }
 

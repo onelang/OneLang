@@ -1,4 +1,4 @@
-import { SourceFile, Method, IInterface, Block, Enum, Interface, Class, Field, Property, IAstNode, IMethodBase, Constructor, GlobalFunction } from "../Ast/Types";
+import { SourceFile, Method, IInterface, Block, Enum, Interface, Class, Field, Property, IAstNode, IMethodBase, Constructor, GlobalFunction, Lambda } from "../Ast/Types";
 import { Statement } from "../Ast/Statements";
 import { Expression } from "../Ast/Expressions";
 import { AstTransformer } from "../AstTransformer";
@@ -62,6 +62,7 @@ export class FillParent extends AstTransformer {
         } else if (method instanceof Method) {
             method.parentInterface = this.currentInterface;
         } else if (method instanceof GlobalFunction) {
+        } else if (method instanceof Lambda) {
         } else
             debugger;
 

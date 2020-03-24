@@ -32,6 +32,7 @@ declare class TsArray<T> {
     every(predictate: (item: T, index: number) => boolean): boolean;
     splice(start: number, deleteCount: number): void;
     sort(func: (a: T, b: T) => number): T[];
+    reduce<TAcc>(func: (acc: TAcc, val: T) => TAcc, initVal: TAcc): TAcc;
 }
 
 declare class TsMap<V> {
@@ -66,10 +67,16 @@ declare class TsString {
     replace(from: RegExp, to: string): string;
     repeat(count: number): string;
     match(pattern: RegExp): boolean;
-    lastIndexOf(pattern: string): number;
     trim(): string;
     charAt(idx: number): string;
     includes(str: string): boolean;
+    indexOf(pattern: string): number;
+    indexOf(pattern: string, startIdx: number): number;
+    lastIndexOf(pattern: string): number;
+    lastIndexOf(pattern: string, startIdx: number): number;
+    toUpperCase(): string;
+    toLowerCase(): string;
+    slice(offset: number): string;
 }
 
 class TsNumber {
@@ -87,8 +94,8 @@ class Error {
     }
 }
 
-class Promise<T> {
-
+declare class Promise<T> {
+    static resolve<T>(result: T): Promise<T>;
 }
 
 declare class RegExp {
@@ -98,27 +105,36 @@ declare class RegExp {
 }
 
 declare class RegExpExecArray {
+    length: number;
     get(idx: number): string;
 }
 
 declare class Function {
     apply(thisObj: Object, args: any[]): any;
 }
+
 declare class Array {
     static isArray(obj: any): boolean;
     static from<T>(obj: IterableIterator<T>): T[];
 }
-class Math { }
-class YAML { }
+
+declare class Math {
+    static floor(num: number): number;
+    static min(a: number, b: number): number;
+}
+
+declare class YAML {
+    static safeLoad(data: string): any;
+}
 
 declare class Set<T> implements IterableIterator<T> {
     add(item: T): void;
     values(): IterableIterator<T>;
 }
 
-function parseInt(str: string): number { }
-function import_() { }
+declare function parseInt(str: string): number;
+declare function import_(): Promise<any>;
 
 declare class JSON {
-    stringify(obj: any): string;
+    static stringify(obj: any): string;
 }

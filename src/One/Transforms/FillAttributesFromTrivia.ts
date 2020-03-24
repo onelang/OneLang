@@ -1,5 +1,5 @@
 import { RegexHelpers } from "../../Utils/RegexHelpers";
-import { SourceFile, IMethodBase, Block, IHasAttributesAndTrivia, Package } from "../Ast/Types";
+import { SourceFile, IMethodBase, Block, IHasAttributesAndTrivia, Package, IMethodBaseWithTrivia } from "../Ast/Types";
 import { ForeachStatement, ForStatement, IfStatement } from "../Ast/Statements";
 
 export class FillAttributesFromTrivia {
@@ -35,7 +35,7 @@ export class FillAttributesFromTrivia {
         }
     }
 
-    private static processMethod(method: IMethodBase) {
+    private static processMethod(method: IMethodBaseWithTrivia) {
         if (method === null) return;
         this.process([method]);
         this.processBlock(method.body);

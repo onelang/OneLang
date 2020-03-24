@@ -6,14 +6,17 @@ export class Utils {
         return -1; // whitespace line => pad === 0
     }
 
-    static deindent(str: string) {
+    static deindent(str: string): string {
         const lines = str.split(/\n/g);
         if (lines.length === 1) return str;
     
         if (this.getPadLen(lines[0]) === -1)
             lines.shift();
     
-        const minPadLen = Math.min.apply(null, lines.map(x => this.getPadLen(x)).filter(x => x !== -1));
+        let minPadLen = 9999;
+        for (const padLen of lines.map(x => this.getPadLen(x)).filter(x => x !== -1))
+            if (padLen < minPadLen)
+                minPadLen = padLen;
         const newStr = lines.map(x => x.length !== 0 ? x.substr(minPadLen) : x).join("\n");
         return newStr;
     }

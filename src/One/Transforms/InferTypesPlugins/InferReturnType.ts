@@ -1,12 +1,13 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Property, Lambda, Method, IMethodBase } from "../../Ast/Types";
 import { VoidType, Type, AnyType, LambdaType } from "../../Ast/AstTypes";
-import { Statement, ReturnStatement } from "../../Ast/Statements";
+import { Statement, ReturnStatement, ThrowStatement } from "../../Ast/Statements";
 import { ErrorManager } from "../../ErrorManager";
 import { NullLiteral, Expression } from "../../Ast/Expressions";
 
 class ReturnTypeInferer {
     returnsNull = false;
+    throws = false;
     returnTypes: Type[] = [];
 
     constructor(public errorMan: ErrorManager) { }
@@ -29,7 +30,9 @@ class ReturnTypeInferer {
         let returnType: Type = null;
 
         if (this.returnTypes.length == 0) {
-            if (this.returnsNull) {
+            if (this.throws)
+                returnType = declaredType || VoidType.instance;
+            else if (this.returnsNull) {
                 if (declaredType !== null)
                     returnType = declaredType;
                 else
@@ -74,6 +77,10 @@ export class InferReturnType extends InferTypesPlugin {
             if (this.returnTypeInfer.length !== 0)
                 this.current.addReturn(stmt.expression);
             return true;
+        } else if (stmt instanceof ThrowStatement) {
+            if (this.returnTypeInfer.length !== 0)
+                this.current.throws = true;
+            return false;
         } else
             return false;
     }
@@ -82,7 +89,7 @@ export class InferReturnType extends InferTypesPlugin {
         this.start();
         this.main.processLambda(lambda);
         lambda.returns = this.finish(lambda.returns, "Lambda");
-        lambda.setActualType(new LambdaType(lambda.parameters, lambda.returns));
+        lambda.setActualType(new LambdaType(lambda.parameters, lambda.returns), false, true);
         return true;
     }
 

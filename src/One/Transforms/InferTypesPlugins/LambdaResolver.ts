@@ -31,7 +31,7 @@ export class LambdaResolver extends InferTypesPlugin {
 
     protected visitLambda(lambda: Lambda): void {
         this.setupLambdaParameterTypes(lambda);
-        this.main.visitLambda(lambda);
+        //this.main.visitLambda(lambda);
     }
 
     canTransform(expr: Expression) { return expr instanceof Lambda; }
@@ -39,6 +39,6 @@ export class LambdaResolver extends InferTypesPlugin {
     transform(expr: Expression): Expression {
         this.visitLambda(<Lambda> expr);
         // does not transform actually
-        return expr;
+        return null;
     }
 }

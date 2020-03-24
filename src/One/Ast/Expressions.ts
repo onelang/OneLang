@@ -38,13 +38,13 @@ export class Expression implements IAstNode, IExpression {
         if (this.expectedType !== null && !Type.isAssignableTo(actualType, this.expectedType))
             throw new Error(`Actual type (${actualType.repr()}) is not assignable to the declared type (${this.expectedType.repr()})!`);
 
-        if (!allowGeneric && Type.isGeneric(actualType))
-            throw new Error(`Actual type cannot be generic (${actualType.repr()})!`);
+        //if (!allowGeneric && Type.isGeneric(actualType))
+        //    throw new Error(`Actual type cannot be generic (${actualType.repr()})!`);
 
         this.actualType = actualType;
         // TODO: debug only
-        //Error.stackTraceLimit = 999;
-        //this.actualTypeStack = (new Error()).stack;
+        Error.stackTraceLimit = 999;
+        this.actualTypeStack = (new Error()).stack;
     }
 
     setExpectedType(type: Type, allowVoid = false) {

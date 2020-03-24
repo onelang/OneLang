@@ -57,7 +57,7 @@ export class ImplPkgImplementation {
     interface: ImplPkgImplIntf;
     language: string;
     "native-includes": string[];
-    "native-includes-dir": string;
+    "native-include-dir": string;
     implementation: LangFile;
 }
 
@@ -105,7 +105,7 @@ export class PackageManager {
     }
 
     getLangImpls(langName: string): ImplPkgImplementation[] {
-        const allImpls = [];
+        const allImpls: ImplPkgImplementation[] = [];
         for (const pkg of this.implementationPkgs)
             for (const impl of pkg.implementations)
                 allImpls.push(impl);
@@ -114,7 +114,7 @@ export class PackageManager {
 
     loadImplsIntoLangFile(lang: LangFile) {
         for (const impl of this.getLangImpls(lang.name))
-            Helpers.extend(lang, impl.implementation||{});
+            Helpers.extend(lang, impl.implementation || new LangFile());
     }
 
     getInterfaceDefinitions() {
@@ -122,7 +122,7 @@ export class PackageManager {
     }
 
     getLangNativeImpls(langName: string): PackageNativeImpl[] {
-        let result = [];
+        let result: PackageNativeImpl[] = [];
         for (const pkg of this.implementationPkgs) {
             for (const pkgImpl of pkg.implementations.filter(x => x.language === langName)) {
                 const fileNamePaths: { [name: string]: string } = {};

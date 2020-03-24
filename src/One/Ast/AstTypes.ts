@@ -17,7 +17,8 @@ export class Type implements IType {
     }
 
     static equals(type1: Type, type2: Type): boolean {
-        if (type1 === null || type2 === null) throw new Error("Type is missing!");
+        if (type1 === null || type2 === null)
+            throw new Error("Type is missing!");
         if (type1 instanceof VoidType && type2 instanceof VoidType) return true;
         if (type1 instanceof AnyType && type2 instanceof AnyType) return true;
         if (type1 instanceof GenericsType && type2 instanceof GenericsType) return type1.typeVarName === type2.typeVarName;
@@ -56,7 +57,8 @@ export class Type implements IType {
         if (toBeAssigned instanceof ClassType && whereTo instanceof InterfaceType)
             return toBeAssigned.decl.baseInterfaces.some(x => this.isAssignableTo(x, whereTo));
         if (toBeAssigned instanceof InterfaceType && whereTo instanceof InterfaceType)
-            return toBeAssigned.decl.baseInterfaces.some(x => this.isAssignableTo(x, whereTo));
+            return toBeAssigned.decl.baseInterfaces.some(x => this.isAssignableTo(x, whereTo))  ||
+            toBeAssigned.decl === whereTo.decl && toBeAssigned.typeArguments.every((x, i) => this.isAssignableTo(x, whereTo.typeArguments[i]));
         if (toBeAssigned instanceof LambdaType && whereTo instanceof LambdaType)
             return toBeAssigned.parameters.length === whereTo.parameters.length &&
                 toBeAssigned.parameters.every((p, i) => Type.isAssignableTo(p.type, whereTo.parameters[i].type)) &&

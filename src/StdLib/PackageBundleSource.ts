@@ -5,9 +5,10 @@ export class PackageBundleSource implements PackageSource {
 
     getPackageBundle(ids: PackageId[], cachedOnly: boolean): Promise<PackageBundle> {
         throw new Error("Method not implemented.");
+        return null;
     }
 
     async getAllCached(): Promise<PackageBundle> {
-        return this.bundle;
+        return Promise.resolve(this.bundle);
     }
 }

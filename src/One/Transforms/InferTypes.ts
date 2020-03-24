@@ -16,6 +16,7 @@ import { InferForeachVarType } from "./InferTypesPlugins/InferForeachVarType";
 import { ResolveFuncCalls } from "./InferTypesPlugins/ResolveFuncCalls";
 import { NullabilityCheckWithNot } from "./InferTypesPlugins/NullabilityCheckWithNot";
 import { ResolveNewCalls } from "./InferTypesPlugins/ResolveNewCall";
+import { ResolveElementAccess } from "./InferTypesPlugins/ResolveElementAccess";
 
 enum InferTypesStage { Invalid, Fields, Properties, Methods }
 
@@ -39,6 +40,7 @@ export class InferTypes extends AstTransformer {
         this.addPlugin(new ResolveFuncCalls());
         this.addPlugin(new NullabilityCheckWithNot());
         this.addPlugin(new ResolveNewCalls());
+        this.addPlugin(new ResolveElementAccess());
     }
 
     // allow plugins to run AstTransformer methods without running other plugins
@@ -69,6 +71,8 @@ export class InferTypes extends AstTransformer {
     }
 
     protected runTransformRound(expr: Expression): Expression {
+        if (expr.actualType !== null) return null;
+
         this.errorMan.currentNode = expr;
 
         const transformers = this.plugins.filter(x => x.canTransform(expr));
@@ -88,6 +92,7 @@ export class InferTypes extends AstTransformer {
             if (e instanceof Error) {
                 this.errorMan.currentNode = expr;
                 this.errorMan.throw(`Error while running type transformation phase: ${e}`);
+                return null;
             }
         }
     }
@@ -108,9 +113,16 @@ export class InferTypes extends AstTransformer {
     }
 
     public visitExpression(expr: Expression): Expression {
-        const newExpr = this.runTransformRound(expr);
+        let transformedExpr: Expression = null;
+        while (true) {
+            const newExpr = this.runTransformRound(transformedExpr || expr);
+            if (newExpr === null || newExpr === transformedExpr) break;
+            transformedExpr = newExpr;
+        }
         // if the plugin did not handle the expression, we use the default visit method
-        const expr2 = newExpr !== null ? newExpr : super.visitExpression(expr) || expr;
+        const expr2 = transformedExpr !== null ? transformedExpr : super.visitExpression(expr) || expr;
+
+        if (expr2.actualType !== null) return expr2;
 
         const detectSuccess = this.detectType(expr2);
 
@@ -160,6 +172,8 @@ export class InferTypes extends AstTransformer {
     }
 
     public visitLambda(lambda: Lambda) {
+        if (lambda.actualType !== null) return null;
+
         for (const plugin of this.plugins)
             if (plugin.handleLambda(lambda))
                 return lambda;

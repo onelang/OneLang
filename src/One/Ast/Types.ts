@@ -128,7 +128,8 @@ export class LiteralTypes {
         public regex: ClassType,
         public array: ClassType,
         public map: ClassType,
-        public error: ClassType) { }
+        public error: ClassType,
+        public promise: ClassType) { }
 }
 
 export class SourceFile {
@@ -348,13 +349,16 @@ export class MethodParameter implements IVariableWithInitializer, IReferencable 
     createReference(): Reference { return new MethodParameterReference(this); }
 }
 
-export interface IMethodBase extends IHasAttributesAndTrivia, IAstNode {
+export interface IMethodBase extends IAstNode {
     parameters: MethodParameter[];
     body: Block;
     throws: boolean;
 }
 
-export class Constructor implements IMethodBase, IHasAttributesAndTrivia {
+export interface IMethodBaseWithTrivia extends IMethodBase, IHasAttributesAndTrivia {
+}
+
+export class Constructor implements IMethodBaseWithTrivia, IHasAttributesAndTrivia {
     /** @creator TypeScriptParser2 */
     constructor(
         public parameters: MethodParameter[],
@@ -370,7 +374,7 @@ export class Constructor implements IMethodBase, IHasAttributesAndTrivia {
     throws: boolean;
 }
 
-export class Method implements IMethodBase, IHasAttributesAndTrivia, IClassMember {
+export class Method implements IMethodBaseWithTrivia, IHasAttributesAndTrivia, IClassMember {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -390,7 +394,7 @@ export class Method implements IMethodBase, IHasAttributesAndTrivia, IClassMembe
     mutates: boolean;
 }
 
-export class GlobalFunction implements IMethodBase, IImportable, IHasAttributesAndTrivia, IReferencable {
+export class GlobalFunction implements IMethodBaseWithTrivia, IImportable, IHasAttributesAndTrivia, IReferencable {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -414,9 +418,10 @@ export class Block {
     constructor(public statements: Statement[]) { }
 }
 
-export class Lambda extends Expression {
+export class Lambda extends Expression implements IMethodBase {
     constructor(
         public parameters: MethodParameter[],
         public body: Block) { super(); }
     returns: Type = null;
+    throws: boolean;
 }

@@ -1,5 +1,5 @@
-import { Reader } from "./Common/Reader";
-import { ExpressionParser } from "./Common/ExpressionParser";
+import { Reader, IReaderHooks, ParseError } from "./Common/Reader";
+import { ExpressionParser, IExpressionParserHooks } from "./Common/ExpressionParser";
 import { NodeManager } from "./Common/NodeManager";
 import { IParser } from "./Common/IParser";
 import { Type, AnyType, VoidType, UnresolvedType, LambdaType } from "../One/Ast/AstTypes";
@@ -22,7 +22,7 @@ class MethodSignature {
         public superCallArgs: Expression[]) { }
 }
 
-export class TypeScriptParser2 implements IParser {
+export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IReaderHooks {
     context: string[] = [];
     reader: Reader;
     expressionParser: ExpressionParser;
@@ -32,24 +32,24 @@ export class TypeScriptParser2 implements IParser {
 
     constructor(source: string, public path: SourcePath = null) {
         this.reader = new Reader(source);
-        this.reader.errorCallback = error => {
-            throw new Error(`[TypeScriptParser] ${error.message} at ${error.cursor.line}:${error.cursor.column} (context: ${this.context.join("/")})\n${this.reader.linePreview(error.cursor)}`);
-        };
+        this.reader.hooks = this;
         this.nodeManager = new NodeManager(this.reader);
         this.expressionParser = this.createExpressionParser(this.reader, this.nodeManager);
         this.exportScope = this.path ? new ExportScopeRef(this.path.pkg.name, this.path.path ? this.path.path.replace(/.ts$/, "") : null) : null;
     }
 
-    createExpressionParser(reader: Reader, nodeManager: NodeManager = null) {
-        const expressionParser = new ExpressionParser(reader, nodeManager);
+    createExpressionParser(reader: Reader, nodeManager: NodeManager = null): ExpressionParser {
+        const expressionParser = new ExpressionParser(reader, this, nodeManager);
         expressionParser.stringLiteralType = new UnresolvedType("TsString");
         expressionParser.numericLiteralType = new UnresolvedType("TsNumber");
-        expressionParser.unaryPrehook = () => this.parseExpressionToken();
-        expressionParser.infixPrehook = left => this.parseInfix(left);
         return expressionParser;
     }
 
-    parseInfix(left: Expression) {
+    errorCallback(error: ParseError): void {
+        throw new Error(`[TypeScriptParser] ${error.message} at ${error.cursor.line}:${error.cursor.column} (context: ${this.context.join("/")})\n${this.reader.linePreview(error.cursor)}`);
+    }
+
+    infixPrehook(left: Expression): Expression {
         if (left instanceof PropertyAccessExpression && this.reader.peekRegex("<[A-Za-z0-9_<>]*?>\\(") !== null) {
             const typeArgs = this.parseTypeArgs();
             this.reader.expectToken("(");
@@ -134,7 +134,7 @@ export class TypeScriptParser2 implements IParser {
         return this.expressionParser.parse();
     }
 
-    parseExpressionToken(): Expression {
+    unaryPrehook(): Expression {
         if (this.reader.readToken("null")) {
             return new NullLiteral();
         } else if (this.reader.readToken("true")) {
@@ -158,11 +158,12 @@ export class TypeScriptParser2 implements IParser {
             return new TemplateString(parts);
         } else if (this.reader.readToken("new")) {
             const type = this.parseType();
-            if (!(type instanceof UnresolvedType))
+            if (type instanceof UnresolvedType) {
+                this.reader.expectToken("(");
+                const args = this.expressionParser.parseCallArguments();
+                return new UnresolvedNewExpression(type, args);
+            } else
                 throw new Error(`[TypeScriptParser2] Expected UnresolvedType here!`);
-            this.reader.expectToken("(");
-            const args = this.expressionParser.parseCallArguments();
-            return new UnresolvedNewExpression(type, args);
         } else if (this.reader.readToken("<")) {
             const newType = this.parseType();
             this.reader.expectToken(">");
@@ -178,7 +179,7 @@ export class TypeScriptParser2 implements IParser {
             this.reader.expectToken("===");
             const check = this.reader.expectString();
             
-            let tsType = null;
+            let tsType: string = null;
             if (check === "string")
                 tsType = "TsString";
             else if (check === "boolean")
@@ -212,7 +213,7 @@ export class TypeScriptParser2 implements IParser {
         return null;
     }
 
-    parseLambdaBlock() {
+    parseLambdaBlock(): Block {
         const block = this.parseBlock();
         if (block !== null) return block;
         
@@ -222,7 +223,7 @@ export class TypeScriptParser2 implements IParser {
         return new Block([new ReturnStatement(returnExpr)]);
     }
 
-    parseTypeAndInit() {
+    parseTypeAndInit(): TypeAndInit {
         const type = this.reader.readToken(":") ? this.parseType() : null;
         const init = this.reader.readToken("=") ? this.parseExpression() : null;
 
@@ -232,15 +233,15 @@ export class TypeScriptParser2 implements IParser {
         return new TypeAndInit(type, init);
     }
 
-    expectBlockOrStatement() {
+    expectBlockOrStatement(): Block {
         const block = this.parseBlock();
         if (block !== null) return block;
 
         const stmt = this.expectStatement();
-        return new Block(stmt === null ? [] : [stmt]);
+        return new Block(stmt === null ? <Statement[]>[] : [stmt]);
     }
 
-    expectStatement() {
+    expectStatement(): Statement {
         let statement: Statement = null;
 
         const leadingTrivia = this.reader.readLeadingTrivia();
@@ -288,7 +289,7 @@ export class TypeScriptParser2 implements IParser {
                 const body = this.expectBlockOrStatement();
                 statement = new ForeachStatement(new ForeachVariable(itemVarName), items, body);
             } else {
-                let forVar = null;
+                let forVar: ForVariable = null;
                 if (itemVarName !== null) {
                     const typeAndInit = this.parseTypeAndInit();
                     forVar = new ForVariable(itemVarName, typeAndInit.type, typeAndInit.init);
@@ -330,9 +331,9 @@ export class TypeScriptParser2 implements IParser {
         } else {
             const expr = this.parseExpression();
             statement = new ExpressionStatement(expr);
-            if (!(expr instanceof UnresolvedCallExpression ||
-                (expr instanceof BinaryExpression && ["=", "+=", "-="].includes(expr.operator)) ||
-                (expr instanceof UnaryExpression && ["++", "--"].includes(expr.operator))))
+            const isBinarySet = expr instanceof BinaryExpression && ["=", "+=", "-="].includes(expr.operator);
+            const isUnarySet = expr instanceof UnaryExpression && ["++", "--"].includes(expr.operator);
+            if (!(expr instanceof UnresolvedCallExpression || isBinarySet || isUnarySet))
                 this.reader.fail("this expression is not allowed as statement");
         }
 
@@ -349,7 +350,7 @@ export class TypeScriptParser2 implements IParser {
         return statement;
     }
 
-    parseBlock() {
+    parseBlock(): Block {
         if (!this.reader.readToken("{")) return null;
         const startPos = this.reader.prevTokenOffset;
 
@@ -367,7 +368,7 @@ export class TypeScriptParser2 implements IParser {
         return block;
     }
 
-    expectBlock(errorMsg: string = null) {
+    expectBlock(errorMsg: string = null): Block {
         const block = this.parseBlock();
         if (block === null)
             this.reader.fail(errorMsg || "expected block here");
@@ -387,7 +388,7 @@ export class TypeScriptParser2 implements IParser {
     }
 
     parseGenericsArgs(): string[] {
-        const typeArguments = [];
+        const typeArguments: string[] = [];
         if (this.reader.readToken("<")) {
             do {
                 const generics = this.reader.expectIdentifier();
@@ -398,12 +399,12 @@ export class TypeScriptParser2 implements IParser {
         return typeArguments;
     }
 
-    parseExprStmtFromString(expression: string) {
+    parseExprStmtFromString(expression: string): ExpressionStatement {
         const expr = this.createExpressionParser(new Reader(expression)).parse();
         return new ExpressionStatement(expr);
     }
 
-    parseMethodSignature(isConstructor: boolean, declarationOnly: boolean) {
+    parseMethodSignature(isConstructor: boolean, declarationOnly: boolean): MethodSignature {
         const bodyPrefixStatements: Statement[] = [];
         const params: MethodParameter[] = [];
         const fields: Field[] = [];
@@ -522,9 +523,8 @@ export class TypeScriptParser2 implements IParser {
         return new UnresolvedType(typeName, typeArgs);
     }
 
-    parseClass(leadingTrivia: string, isExported: boolean) {
-        const clsModifiers = this.reader.readModifiers(["declare", "abstract"]);
-        const declarationOnly = clsModifiers.includes("declare");
+    parseClass(leadingTrivia: string, isExported: boolean, declarationOnly: boolean) {
+        const clsModifiers = this.reader.readModifiers(["abstract"]);
         if (!this.reader.readToken("class")) return null;
         const clsStart = this.reader.prevTokenOffset;
         
@@ -576,7 +576,7 @@ export class TypeScriptParser2 implements IParser {
                 this.nodeManager.addNode(member, memberStart);
             } else if (memberName === "get" || memberName === "set") { // property
                 const propName = this.reader.expectIdentifier();
-                let prop = properties[propName];
+                let prop = properties.find(x => x.name === propName);
                 let propType: Type = null;
                 let getter: Block = null;
                 let setter: Block = null;
@@ -707,7 +707,7 @@ export class TypeScriptParser2 implements IParser {
         if (!this.reader.readToken("import")) return null;
         const importStart = this.reader.prevTokenOffset;
 
-        let importAllAlias = null;
+        let importAllAlias: string = null;
         const nameAliases: { [name: string]: string } = {};
 
         if (this.reader.readToken("*")) {
@@ -732,7 +732,7 @@ export class TypeScriptParser2 implements IParser {
 
         const importScope = this.exportScope ? TypeScriptParser2.calculateImportScope(this.exportScope, moduleName) : null;
         
-        const imports = [];
+        const imports: Import[] = [];
         for (const name of Object.keys(nameAliases))
             imports.push(new Import(importScope, false, [new UnresolvedImport(name)], nameAliases[name], leadingTrivia));
 
@@ -759,10 +759,11 @@ export class TypeScriptParser2 implements IParser {
                 continue;
             }
 
-            const modifiers = this.reader.readModifiers(["export"]);
+            const modifiers = this.reader.readModifiers(["export", "declare"]);
             const isExported = modifiers.includes("export");
+            const isDeclaration = modifiers.includes("declare");
 
-            const cls = this.parseClass(leadingTrivia, isExported);
+            const cls = this.parseClass(leadingTrivia, isExported, isDeclaration);
             if (cls !== null) {
                 classes.push(cls);
                 continue;
@@ -783,7 +784,7 @@ export class TypeScriptParser2 implements IParser {
             if (this.reader.readToken("function")) {
                 const funcName = this.readIdentifier();
                 this.reader.expectToken("(");
-                const sig = this.parseMethodSignature(false, false);
+                const sig = this.parseMethodSignature(false, isDeclaration);
                 funcs.push(new GlobalFunction(funcName, sig.params, sig.body, sig.returns, isExported, leadingTrivia));
                 continue;
             }

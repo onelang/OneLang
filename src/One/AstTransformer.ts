@@ -2,7 +2,7 @@ import { Type, IHasTypeArguments, ClassType, InterfaceType, UnresolvedType, Lamb
 import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression, InstanceOfExpression, AwaitExpression, StringLiteral, NumericLiteral, NullLiteral, RegexLiteral, BooleanLiteral, StaticMethodCallExpression, InstanceMethodCallExpression, UnresolvedNewExpression, NullCoalesceExpression, UnresolvedMethodCallExpression } from "./Ast/Expressions";
 import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement, ContinueStatement, DoStatement, TryStatement } from "./Ast/Statements";
 import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda, IMethodBase, Package, GlobalFunction, IInterface, IAstNode } from "./Ast/Types";
-import { ClassReference, EnumReference, ThisReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, InstanceFieldReference, InstancePropertyReference, StaticPropertyReference, StaticFieldReference, CatchVariableReference, GlobalFunctionReference } from "./Ast/References";
+import { ClassReference, EnumReference, ThisReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, InstanceFieldReference, InstancePropertyReference, StaticPropertyReference, StaticFieldReference, CatchVariableReference, GlobalFunctionReference, EnumMemberReference } from "./Ast/References";
 import { ErrorManager } from "./ErrorManager";
 
 export abstract class AstTransformer {
@@ -124,9 +124,7 @@ export abstract class AstTransformer {
     }
 
     protected visitLambda(lambda: Lambda): Lambda {
-        for (const mp of lambda.parameters)
-            this.visitMethodParameter(mp);
-        lambda.body = this.visitBlock(lambda.body) || lambda.body;
+        this.visitMethodBase(lambda);
         return null;
     }
 
@@ -202,6 +200,7 @@ export abstract class AstTransformer {
         } else if (expr instanceof InstancePropertyReference) {
         } else if (expr instanceof StaticFieldReference) {
         } else if (expr instanceof StaticPropertyReference) {
+        } else if (expr instanceof EnumMemberReference) {
         } else if (expr instanceof StaticMethodCallExpression) {
             expr.typeArgs = expr.typeArgs.map(x => this.visitType(x) || x);
             expr.args = expr.args.map(x => this.visitExpression(x) || x);
@@ -218,7 +217,7 @@ export abstract class AstTransformer {
         this.visitVariableWithInitializer(methodParameter);
     }
 
-    protected visitMethodBase(method: IMethodBase) {
+    protected visitMethodBase(method: IMethodBase): void {
         for (const item of method.parameters)
             this.visitMethodParameter(item);
 

@@ -2,18 +2,18 @@ import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Expression, PropertyAccessExpression, UnresolvedCallExpression } from "../../Ast/Expressions";
 import { ClassReference, Reference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, ThisReference, SuperReference, EnumReference } from "../../Ast/References";
 import { Class, Method, Interface } from "../../Ast/Types";
-import { ClassType, InterfaceType, AnyType } from "../../Ast/AstTypes";
+import { ClassType, InterfaceType, AnyType, Type } from "../../Ast/AstTypes";
 import { GenericsResolver } from "./Helpers/GenericsResolver";
 
 export class ResolveFieldAndPropertyAccess extends InferTypesPlugin {
     name = "ResolveFieldAndPropertyAccess";
 
     protected getStaticRef(cls: Class, memberName: string): Reference {
-        const field = cls.fields.find(x => x.name === memberName);
+        const field = cls.fields.find(x => x.name === memberName) || null;
         if (field !== null && field.isStatic)
             return new StaticFieldReference(field);
 
-        const prop = cls.properties.find(x => x.name === memberName);
+        const prop = cls.properties.find(x => x.name === memberName) || null;
         if (prop !== null && prop.isStatic)
             return new StaticPropertyReference(prop);
 
@@ -88,7 +88,8 @@ export class ResolveFieldAndPropertyAccess extends InferTypesPlugin {
 
     canTransform(expr: Expression) { return expr instanceof PropertyAccessExpression &&
         !(expr.object instanceof EnumReference) &&
-        !(expr.parentNode instanceof UnresolvedCallExpression && expr.parentNode.func === expr); }
+        !(expr.parentNode instanceof UnresolvedCallExpression && expr.parentNode.func === expr) &&
+        !(expr.actualType instanceof AnyType); }
 
     transform(expr: Expression): Expression {
         return this.transformPA(<PropertyAccessExpression> expr);
@@ -102,7 +103,7 @@ export class ResolveFieldAndPropertyAccess extends InferTypesPlugin {
     detectType(expr: Expression): boolean {
         if (expr instanceof InstanceFieldReference) {
             const actualType = GenericsResolver.fromObject(expr.object).resolveType(expr.field.type, true);
-            expr.setActualType(actualType);
+            expr.setActualType(actualType, false, Type.isGeneric(expr.object.actualType));
             return true;
         } else if (expr instanceof InstancePropertyReference) {
             const actualType = GenericsResolver.fromObject(expr.object).resolveType(expr.property.type, true);

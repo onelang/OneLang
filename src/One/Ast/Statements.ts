@@ -4,9 +4,9 @@ import { Type } from "./AstTypes";
 import { ForVariableReference, ForeachVariableReference, VariableDeclarationReference, IReferencable, Reference, CatchVariableReference } from "./References";
 
 export class Statement implements IHasAttributesAndTrivia, IAstNode {
-    leadingTrivia: string;
+    leadingTrivia: string = null;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string };
+    attributes: { [name: string]: string } = null;
     parentBlock: Block;
 }
 

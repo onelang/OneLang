@@ -14,11 +14,9 @@ import { ConvertToMethodCall } from "@one/One/Transforms/ConvertToMethodCall";
 import { InferTypes } from "@one/One/Transforms/InferTypes";
 import { FillParent } from "@one/One/Transforms/FillParent";
 import { DetectMethodCalls } from "@one/One/Transforms/DetectMethodCalls";
-import { ExtractSuperCall } from "@one/One/Transforms/ExtractSuperCall";
-import { Linq } from '@one/Utils/Underscore';
+import { Linq } from './Underscore';
 import { PackageStateCapture } from './DiffUtils';
 import * as color from "ansi-colors";
-import { ClassType } from '@one/One/Ast/AstTypes';
 
 const pacMan = new PackageManager(new PackagesFolderSource(`${baseDir}/packages`));
 const langs = getLangFiles();
@@ -93,16 +91,19 @@ initCompiler().then(() => {
             const file = TypeScriptParser2.parseFile(readFile(`${test.projDir}/${fn}`), new SourcePath(projectPkg, fn));
             file.addAvailableSymbols(nativeExports.getAllExports());
             file.literalTypes = new LiteralTypes(
-                new ClassType(<Class>file.availableSymbols.get("TsBoolean")),
-                new ClassType(<Class>file.availableSymbols.get("TsNumber")),
-                new ClassType(<Class>file.availableSymbols.get("TsString")),
-                new ClassType(<Class>file.availableSymbols.get("RegExp")),
-                new ClassType(<Class>file.availableSymbols.get("TsArray")),
-                new ClassType(<Class>file.availableSymbols.get("TsMap")),
-                new ClassType(<Class>file.availableSymbols.get("Error")));
+                (<Class>file.availableSymbols.get("TsBoolean")).type,
+                (<Class>file.availableSymbols.get("TsNumber")).type,
+                (<Class>file.availableSymbols.get("TsString")).type,
+                (<Class>file.availableSymbols.get("RegExp")).type,
+                (<Class>file.availableSymbols.get("TsArray")).type,
+                (<Class>file.availableSymbols.get("TsMap")).type,
+                (<Class>file.availableSymbols.get("Error")).type,
+                (<Class>file.availableSymbols.get("Promise")).type);
             file.arrayTypes = [
-                new ClassType(<Class>file.availableSymbols.get("TsArray")),
-                new ClassType(<Class>file.availableSymbols.get("IterableIterator"))];
+                (<Class>file.availableSymbols.get("TsArray")).type,
+                (<Class>file.availableSymbols.get("IterableIterator")).type,
+                (<Class>file.availableSymbols.get("RegExpExecArray")).type,
+                (<Class>file.availableSymbols.get("TsString")).type];
             projectPkg.addFile(file);
         }
 
@@ -130,8 +131,8 @@ initCompiler().then(() => {
         new ResolveGenericTypeIdentifiers().visitPackage(projectPkg);
         saveState();
 
-        new ConvertToMethodCall().visitPackage(projectPkg);
-        saveState();
+        //new ConvertToMethodCall().visitPackage(projectPkg);
+        //saveState();
 
         new ResolveUnresolvedTypes().visitPackage(projectPkg);
         saveState();
