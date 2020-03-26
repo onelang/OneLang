@@ -1,6 +1,6 @@
 import { Helpers } from "../Utils/Helpers";
 import * as YAML from "js-yaml";
-import { LangFile } from "../Generator/LangFileSchema";
+import { LangFile } from "../Generator/LangFile/LangFileSchema";
 
 export enum PackageType { Interface, Implementation }
 

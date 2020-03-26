@@ -11,6 +11,7 @@ declare class Object {
     static values<T>(map: { [name: string]: T }): T[];
     hasKey(name: string): boolean;
     get(propName: string): any;
+    set(propName: string, newValue: any): void;
     toString(): string;
 }
 
@@ -130,6 +131,7 @@ declare class YAML {
 declare class Set<T> implements IterableIterator<T> {
     add(item: T): void;
     values(): IterableIterator<T>;
+    constructor(values: T[]);
 }
 
 declare function parseInt(str: string): number;

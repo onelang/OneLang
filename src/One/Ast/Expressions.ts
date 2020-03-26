@@ -206,7 +206,8 @@ export class StaticMethodCallExpression extends Expression implements IMethodCal
     constructor(
         public method: Method,
         public typeArgs: Type[],
-        public args: Expression[]) { super(); }
+        public args: Expression[],
+        public isThisCall: boolean) { super(); }
 }
 
 export class InstanceMethodCallExpression extends Expression implements IMethodCallExpression {

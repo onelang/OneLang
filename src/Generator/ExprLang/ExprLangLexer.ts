@@ -41,7 +41,7 @@ export class ExprLangLexer {
     }
 
     addIf(kind: TokenKind, value: string): boolean {
-        if (value) {
+        if (value !== null) {
             this.tokens.push(new Token(kind, value));
             this.offset += value.length;
             return true;

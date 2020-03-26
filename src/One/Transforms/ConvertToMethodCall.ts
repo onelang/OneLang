@@ -5,17 +5,18 @@ export class ConvertToMethodCall extends AstTransformer {
     name = "ConvertToMethodCall";
     
     protected visitExpression(expr: Expression) {
+        const origExpr = expr;
+        if (expr instanceof BinaryExpression && expr.left instanceof ElementAccessExpression && expr.operator === "=")
+            expr = new UnresolvedCallExpression(new PropertyAccessExpression(expr.left.object, "set"), [], [expr.left.elementExpr, expr.right]);
+
         expr = super.visitExpression(expr) || expr;
 
-        let result: Expression = null;
         if (expr instanceof ElementAccessExpression) {
-            result = new UnresolvedCallExpression(new PropertyAccessExpression(expr.object, "get"), [], [expr.elementExpr]);
+            expr = new UnresolvedCallExpression(new PropertyAccessExpression(expr.object, "get"), [], [expr.elementExpr]);
         } else if (expr instanceof BinaryExpression && expr.operator === "in")
-            result = new UnresolvedCallExpression(new PropertyAccessExpression(expr.right, "hasKey"), [], [expr.left]);
+            expr = new UnresolvedCallExpression(new PropertyAccessExpression(expr.right, "hasKey"), [], [expr.left]);
 
-        if (result !== null)
-            result.parentNode = expr.parentNode;
-
-        return result;
+        expr.parentNode = origExpr.parentNode;
+        return expr;
     }
 }

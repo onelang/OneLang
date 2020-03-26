@@ -1,5 +1,5 @@
-import { TemplateMethod } from "./OneTemplate/TemplateGenerator";
-import { SourceFile } from "../One/Ast/Types";
+import { TemplateMethod } from "../OneTemplate/TemplateGenerator";
+import { SourceFile } from "../../One/Ast/Types";
 import { LangFile, TemplateObj, FunctionArgument } from "./LangFileSchema";
 
 export class LangFilePreprocessor {

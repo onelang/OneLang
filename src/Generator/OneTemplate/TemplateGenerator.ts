@@ -200,7 +200,7 @@ export class TemplateGenerator implements IModelHandler {
             }
         }
 
-        const result = resultBlock ? this.generateNode(resultBlock, vars) : null;
+        const result = resultBlock !== null ? this.generateNode(resultBlock, vars) : null;
         return result;
     }
 
@@ -209,7 +209,7 @@ export class TemplateGenerator implements IModelHandler {
 
         const array = <any[]> this.vm.evaluate(node.arrayExpr, vars);
         if (array.length === 0) {
-            result = node.else ? this.generateNode(node.else, vars) : null;
+            result = node.else !== null ? this.generateNode(node.else, vars) : null;
         } else {
             const lines: GeneratedNode[][] = [];
 
@@ -239,7 +239,7 @@ export class TemplateGenerator implements IModelHandler {
         } else if (typeof result === "object" && this.hooks !== null) {
             return this.hooks.objectHook(result);
         } else {
-            return [new GeneratedNode((<Object>result).toString())];
+            return [new GeneratedNode(`${result}`)];
         }
     }
 

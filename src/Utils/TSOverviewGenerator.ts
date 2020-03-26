@@ -2,7 +2,7 @@ import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable, TryStatement } from "../One/Ast/Statements";
 import { Method, Block, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility, IAstNode, GlobalFunction } from "../One/Ast/Types";
 import { Type, VoidType } from "../One/Ast/AstTypes";
-import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference } from "../One/Ast/References";
+import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference, StaticThisReference } from "../One/Ast/References";
 
 export class TSOverviewGenerator {
     static leading(item: Statement) {
@@ -91,7 +91,7 @@ export class TSOverviewGenerator {
         } else if (expr instanceof CharacterLiteral) { 
             res = `'${expr.charValue}'`;
         } else if (expr instanceof ElementAccessExpression) {
-            res = `${this.expr(expr.object)}[${this.expr(expr.elementExpr)}]`;
+            res = `(${this.expr(expr.object)})[${this.expr(expr.elementExpr)}]`;
         } else if (expr instanceof TemplateString) {
             res = "`" + expr.parts.map(x => x.isLiteral ? x.literalText : "${" + this.expr(x.expression) + "}").join('') + "`";
         } else if (expr instanceof BinaryExpression) {
@@ -123,6 +123,8 @@ export class TSOverviewGenerator {
             res = `await ${this.expr(expr.expr)}`;
         } else if (expr instanceof ThisReference) {
             res = `{R}this`;
+        } else if (expr instanceof StaticThisReference) {
+            res = `{R:Static}this`;
         } else if (expr instanceof EnumReference) {
             res = `{R:Enum}${expr.decl.name}`;
         } else if (expr instanceof ClassReference) {
@@ -188,7 +190,7 @@ export class TSOverviewGenerator {
         } else if (stmt instanceof WhileStatement) {
             res = `while (${this.expr(stmt.condition)})` + this.block(stmt.body, previewOnly);
         } else if (stmt instanceof ForStatement) {
-            res = `for (${stmt.itemVar ? this.var(stmt.itemVar) : ""}; ${this.expr(stmt.condition)}; ${this.expr(stmt.incrementor)})` + this.block(stmt.body, previewOnly);
+            res = `for (${stmt.itemVar !== null ? this.var(stmt.itemVar) : ""}; ${this.expr(stmt.condition)}; ${this.expr(stmt.incrementor)})` + this.block(stmt.body, previewOnly);
         } else if (stmt instanceof DoStatement) {
             res = `do${this.block(stmt.body, previewOnly)} while (${this.expr(stmt.condition)})`;
         } else if (stmt instanceof TryStatement) {

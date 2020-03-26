@@ -49,7 +49,7 @@ export class ExprLangParser {
             const level = this.precedenceLevels[i];
             level.precedence = i + 1;
             this.precedenceMap[level.name] = level.precedence;
-            if (level.operators)
+            if (level.operators !== null)
                 for (const op of level.operators)
                     this.precedenceMap[op] = level.precedence;
         }

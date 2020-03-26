@@ -1,4 +1,4 @@
-import { TemplateMethod } from "./OneTemplate/TemplateGenerator";
+import { TemplateMethod } from "../OneTemplate/TemplateGenerator";
 
 export class FunctionArgument {
     constructor(public name: string) { }

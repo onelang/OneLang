@@ -14,6 +14,7 @@ import { ConvertToMethodCall } from "@one/One/Transforms/ConvertToMethodCall";
 import { InferTypes } from "@one/One/Transforms/InferTypes";
 import { FillParent } from "@one/One/Transforms/FillParent";
 import { DetectMethodCalls } from "@one/One/Transforms/DetectMethodCalls";
+import { CsharpGenerator } from "@one/Generator/CsharpGenerator";
 import { Linq } from './Underscore';
 import { PackageStateCapture } from './DiffUtils';
 import * as color from "ansi-colors";
@@ -103,7 +104,8 @@ initCompiler().then(() => {
                 (<Class>file.availableSymbols.get("TsArray")).type,
                 (<Class>file.availableSymbols.get("IterableIterator")).type,
                 (<Class>file.availableSymbols.get("RegExpExecArray")).type,
-                (<Class>file.availableSymbols.get("TsString")).type];
+                (<Class>file.availableSymbols.get("TsString")).type,
+                (<Class>file.availableSymbols.get("Set")).type];
             projectPkg.addFile(file);
         }
 
@@ -114,10 +116,8 @@ initCompiler().then(() => {
             return state;
         }
 
-        const printState = () => {
-            console.log(pkgStates[pkgStates.length - 1].diff(pkgStates[pkgStates.length - 2]).getChanges("summary"));
-            writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
-        }
+        const writeState = () => writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
+        const printState = () => console.log(pkgStates[pkgStates.length - 1].diff(pkgStates[pkgStates.length - 2]).getChanges("summary"));
 
         saveState();
 
@@ -158,14 +158,19 @@ initCompiler().then(() => {
                 debugger;
         }*/
         saveState();
+        writeState();
+
+        const genCsharp = CsharpGenerator.generate(projectPkg);
+        for (const file of genCsharp)
+            writeFile(`test/artifacts/ProjectTest/${test.projName}/CSharp/${file.path.replace(".ts", ".cs")}`, file.content);
+        return;
+        debugger;
 
         printState();
 
         const lastState = new Linq(pkgStates).last();
         if (workspace.errorManager.errors.length > 0)
             debugger;
-
-        debugger;
 
         //head("SUMMARY");
         //_(pkgStates).last().diff(pkgStates[pkgStates.length - 2]).printChangedFiles("summary");

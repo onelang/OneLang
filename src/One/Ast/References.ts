@@ -4,7 +4,7 @@ import { Expression, TypeRestriction } from "./Expressions";
 import { Type, EnumType, ClassType } from "./AstTypes";
 
 export interface IReferencable {
-    createReference(name: string): Reference;
+    createReference(): Reference;
 }
 
 export interface IGetMethodBase {
@@ -57,6 +57,12 @@ export class EnumMemberReference extends Expression {
         if (!(type instanceof EnumType)) throw new Error("Expected EnumType!");
         super.setActualType(type);
     }
+}
+
+export class StaticThisReference extends Reference {
+    constructor(public cls: Class) { super(); cls.staticThisReferences.push(this); }
+
+    setActualType(type: Type) { throw new Error("StaticThisReference cannot have a type!"); }
 }
 
 // has type: yes (needs to be passed as variable which requires type checking)

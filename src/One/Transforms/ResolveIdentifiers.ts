@@ -2,7 +2,7 @@ import { AstTransformer } from "../AstTransformer";
 import { SourceFile, Class, Enum, Method, Block, Lambda, GlobalFunction, IMethodBase, Constructor, Interface } from "../Ast/Types";
 import { ErrorManager } from "../ErrorManager";
 import { Identifier } from "../Ast/Expressions";
-import { IReferencable, Reference } from "../Ast/References";
+import { IReferencable, Reference, StaticThisReference, ThisReference, SuperReference } from "../Ast/References";
 import { VariableDeclaration, ForStatement, ForeachStatement, Statement, IfStatement, TryStatement } from "../Ast/Statements";
 import { ClassType } from "../Ast/AstTypes";
 
@@ -59,7 +59,16 @@ export class ResolveIdentifiers extends AstTransformer {
             this.errorMan.throw(`Identifier '${id.text}' was not found in available symbols`);
             return null;
         }
-        const ref = symbol.createReference(id.text);
+
+        let ref: Reference = null;
+        if (symbol instanceof Class && id.text === "this") {
+            const withinStaticMethod = this.currentMethod instanceof Method && this.currentMethod.isStatic;
+            ref = withinStaticMethod ? <Reference>new StaticThisReference(symbol) : new ThisReference(symbol);
+        } else if (symbol instanceof Class && id.text === "super") {
+            ref = new SuperReference(symbol);
+        } else {
+            ref = symbol.createReference();
+        }
         ref.parentNode = id.parentNode;
         return ref;
     }

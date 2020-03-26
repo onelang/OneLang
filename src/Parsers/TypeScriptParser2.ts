@@ -144,8 +144,12 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
         } else if (this.reader.readToken("`")) {
             const parts: TemplateStringPart[] = [];
             while (true) {
-                const litMatch = this.reader.readRegex("([^$`]|\\$[^{]|\\\\${|\\\\`)*");
-                parts.push(TemplateStringPart.Literal(litMatch[0]));
+                let litMatch = this.reader.readRegex("([^$`]|\\$[^{]|\\\\${|\\\\`)*")[0];
+                litMatch = litMatch.replace(/\\"/g, '"');
+                litMatch = litMatch.replace(/\\`/g, "`");
+                litMatch = litMatch.replace(/\\$/g, "$");
+                litMatch = litMatch.replace(/\\\\/g, "\\");
+                parts.push(TemplateStringPart.Literal(litMatch));
                 if (this.reader.readToken("`"))
                     break;
                 else {

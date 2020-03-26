@@ -2,7 +2,7 @@ import { AstTransformer } from "../AstTransformer";
 import { ErrorManager } from "../ErrorManager";
 import { InstanceOfExpression, BinaryExpression, Expression, CastExpression, ConditionalExpression, PropertyAccessExpression } from "../Ast/Expressions";
 import { Statement, IfStatement, VariableDeclaration, WhileStatement, ExpressionStatement, ReturnStatement } from "../Ast/Statements";
-import { ForeachVariableReference, VariableDeclarationReference, MethodParameterReference, InstanceFieldReference, ThisReference, Reference } from "../Ast/References";
+import { ForeachVariableReference, VariableDeclarationReference, MethodParameterReference, InstanceFieldReference, ThisReference, Reference, StaticThisReference } from "../Ast/References";
 
 export class InstanceOfImplicitCast extends AstTransformer {
     name = "InstanceOfImplicitCast";
@@ -46,6 +46,8 @@ export class InstanceOfImplicitCast extends AstTransformer {
             return expr2 instanceof InstanceFieldReference && expr1.field === expr2.field;
         else if (expr1 instanceof ThisReference)
             return expr2 instanceof ThisReference;
+        else if (expr1 instanceof StaticThisReference)
+            return expr2 instanceof StaticThisReference;
         return false;
     }
     

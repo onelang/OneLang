@@ -1,6 +1,6 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Expression, PropertyAccessExpression, UnresolvedCallExpression } from "../../Ast/Expressions";
-import { ClassReference, Reference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, ThisReference, SuperReference, EnumReference } from "../../Ast/References";
+import { ClassReference, Reference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, ThisReference, SuperReference, EnumReference, StaticThisReference } from "../../Ast/References";
 import { Class, Method, Interface } from "../../Ast/Types";
 import { ClassType, InterfaceType, AnyType, Type } from "../../Ast/AstTypes";
 import { GenericsResolver } from "./Helpers/GenericsResolver";
@@ -58,10 +58,10 @@ export class ResolveFieldAndPropertyAccess extends InferTypesPlugin {
         if (expr.object instanceof ClassReference)
             return this.getStaticRef(expr.object.decl, expr.propertyName);
 
-        expr.object = this.main.visitExpression(expr.object);
-
-        if (expr.object instanceof ThisReference && this.main.currentMethod instanceof Method && this.main.currentMethod.isStatic)
+        if (expr.object instanceof StaticThisReference)
             return this.getStaticRef(expr.object.cls, expr.propertyName);
+
+        expr.object = this.main.visitExpression(expr.object);
 
         if (expr.object instanceof ThisReference)
             return this.getInstanceRef(expr.object.cls, expr.propertyName, expr.object);

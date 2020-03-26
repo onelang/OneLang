@@ -2,7 +2,7 @@ import { Statement } from "./Statements";
 import { Type, ClassType, GenericsType, EnumType, InterfaceType } from "./AstTypes";
 import { Expression } from "./Expressions";
 import { ErrorManager } from "../ErrorManager";
-import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, StaticFieldReference, EnumMemberReference, InstanceFieldReference, StaticPropertyReference, InstancePropertyReference, IReferencable, Reference, GlobalFunctionReference } from "./References";
+import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, StaticFieldReference, EnumMemberReference, InstanceFieldReference, StaticPropertyReference, InstancePropertyReference, IReferencable, Reference, GlobalFunctionReference, StaticThisReference } from "./References";
 import { AstHelper } from "./AstHelper";
 
 export interface IAstNode { }
@@ -282,14 +282,10 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, 
     /** @creator ResolveIdentifiers */
     thisReferences: ThisReference[] = [];
     /** @creator ResolveIdentifiers */
+    staticThisReferences: StaticThisReference[] = [];
+    /** @creator ResolveIdentifiers */
     superReferences: SuperReference[] = [];
-
-    createReference(name: string): Reference {
-        // TODO: hack
-        return name === "this" ? <Reference>new ThisReference(this) : 
-            name === "super" ? <Reference>new SuperReference(this) : 
-            <Reference>new ClassReference(this);
-        }
+    createReference(): Reference { return new ClassReference(this); }
 
     type = new ClassType(this, this.typeArguments.map(x => new GenericsType(x)));
 

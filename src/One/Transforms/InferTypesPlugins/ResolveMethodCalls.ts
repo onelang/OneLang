@@ -2,7 +2,7 @@ import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Expression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, StaticMethodCallExpression, IMethodCallExpression } from "../../Ast/Expressions";
 import { ClassType, Type, IInterfaceType, InterfaceType, AnyType } from "../../Ast/AstTypes";
 import { GenericsResolver } from "./Helpers/GenericsResolver";
-import { ClassReference, ThisReference, SuperReference } from "../../Ast/References";
+import { ClassReference, ThisReference, SuperReference, StaticThisReference } from "../../Ast/References";
 import { Class, IInterface, Method } from "../../Ast/Types";
 
 export class ResolveMethodCalls extends InferTypesPlugin {
@@ -49,10 +49,10 @@ export class ResolveMethodCalls extends InferTypesPlugin {
     }
     
     protected transformMethodCall(expr: UnresolvedMethodCallExpression): Expression {
-        if (expr.object instanceof ClassReference) {
-            const cls = expr.object.decl;
+        if (expr.object instanceof ClassReference || expr.object instanceof StaticThisReference) {
+            const cls = expr.object instanceof ClassReference ? expr.object.decl : expr.object instanceof StaticThisReference ? expr.object.cls : null;
             const method = this.findMethod(cls, expr.methodName, true, expr.args);
-            const result = new StaticMethodCallExpression(method, expr.typeArgs, expr.args);
+            const result = new StaticMethodCallExpression(method, expr.typeArgs, expr.args, expr.object instanceof StaticThisReference);
             this.resolveReturnType(result, new GenericsResolver());
             return result;
         } else {
@@ -62,8 +62,7 @@ export class ResolveMethodCalls extends InferTypesPlugin {
                 instanceof InterfaceType ? objectType.decl : null;
 
             if (intfType !== null) {
-                const isStatic = expr.object instanceof ThisReference && this.main.currentMethod instanceof Method && this.main.currentMethod.isStatic;
-                const method = this.findMethod(intfType, expr.methodName, isStatic, expr.args);
+                const method = this.findMethod(intfType, expr.methodName, false, expr.args);
                 const result = new InstanceMethodCallExpression(resolvedObject, method, expr.typeArgs, expr.args);
                 this.resolveReturnType(result, GenericsResolver.fromObject(resolvedObject));
                 return result;

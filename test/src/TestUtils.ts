@@ -4,7 +4,7 @@ import * as YAML from "js-yaml";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as mkdirp from 'mkdirp';
-import * as LangFileSchema from '@one/Generator/LangFileSchema';
+import * as LangFileSchema from '@one/Generator/LangFile/LangFileSchema';
 
 export { assert };
 

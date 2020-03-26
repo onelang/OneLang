@@ -43,7 +43,7 @@ export class TemplateAstPrinter {
             const arrayExprText = ExprLangAstPrinter.print(node.arrayExpr);
             this.addLine(`For ${node.itemName} in ${arrayExprText}:${node.inline ? " [inline]" : ""}`);
             this.processNode(node.body);
-            if (node.else) {
+            if (node.else !== null) {
                 this.addLine(`Else:`);
                 this.processNode(node.else);
             }
@@ -56,7 +56,7 @@ export class TemplateAstPrinter {
                 first = false;
             }
 
-            if (node.else) {
+            if (node.else !== null) {
                 this.addLine(`else:`);
                 this.processNode(node.else);
             }
