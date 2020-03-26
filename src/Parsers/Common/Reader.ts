@@ -227,9 +227,8 @@ export class Reader {
         if (!strMatch) return null;
 
         let str = strMatch[0].substr(1, strMatch[0].length - 2);
-        str = strMatch[0] === "'" ? str.replace(/\\'/g, "'") : str.replace(/\\"/g, '"');
         // TODO: hack: this logic is langauge-dependent
-        str = str.replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r").replace(/\\\\/g, "\\");
+        str = str.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r").replace(/\\\\/g, "\\");
         return str;
     }
 
