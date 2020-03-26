@@ -14,6 +14,7 @@ import { ConvertToMethodCall } from "@one/One/Transforms/ConvertToMethodCall";
 import { InferTypes } from "@one/One/Transforms/InferTypes";
 import { FillParent } from "@one/One/Transforms/FillParent";
 import { DetectMethodCalls } from "@one/One/Transforms/DetectMethodCalls";
+import { CollectInheritanceInfo } from "@one/One/Transforms/CollectInheritanceInfo";
 import { CsharpGenerator } from "@one/Generator/CsharpGenerator";
 import { Linq } from './Underscore';
 import { PackageStateCapture } from './DiffUtils';
@@ -130,8 +131,8 @@ initCompiler().then(() => {
         new ResolveGenericTypeIdentifiers().visitPackage(projectPkg);
         saveState();
 
-        //new ConvertToMethodCall().visitPackage(projectPkg);
-        //saveState();
+        new ConvertToMethodCall().visitPackage(projectPkg);
+        saveState();
 
         new ResolveUnresolvedTypes().visitPackage(projectPkg);
         saveState();
@@ -145,21 +146,12 @@ initCompiler().then(() => {
         new DetectMethodCalls().visitPackage(projectPkg);
         saveState();
 
-        //new ExtractSuperCall().visitPackage(projectPkg);
-        //saveState();
-
-        //try {
-            new InferTypes().visitPackage(projectPkg);
-        /*} catch (e) {
-            if (e instanceof Error)
-                workspace.errorManager.throw(e.message);
-            else
-                debugger;
-        }*/
+        new InferTypes().visitPackage(projectPkg);
         saveState();
         writeState();
 
         new CollectInheritanceInfo().visitPackage(projectPkg);
+
         const genCsharp = CsharpGenerator.generate(projectPkg);
         for (const file of genCsharp)
             writeFile(`test/artifacts/ProjectTest/${test.projName}/CSharp/${file.path.replace(".ts", ".cs")}`, file.content);
