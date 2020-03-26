@@ -3,16 +3,16 @@ import { ClassType, Type, InterfaceType, IInterfaceType, AnyType } from "../../A
 import { Statement, ForeachStatement } from "../../Ast/Statements";
 
 export class InferForeachVarType extends InferTypesPlugin {
-    name = "InferForeachVarType";
+    constructor() { super("InferForeachVarType"); }
 
     handleStatement(stmt: Statement) { 
         if (stmt instanceof ForeachStatement) {
-            stmt.items = this.main.visitExpression(stmt.items) || stmt.items;
+            stmt.items = this.main.runPluginsOn(stmt.items) || stmt.items;
             const arrayType = stmt.items.getType();
             let found = false;
             if (arrayType instanceof ClassType || arrayType instanceof InterfaceType) {
                 const intfType = <IInterfaceType> arrayType;
-                const isArrayType = this.main.currentFile.arrayTypes.some(x => x.decl === intfType.decl);
+                const isArrayType = this.main.currentFile.arrayTypes.some(x => x.decl === intfType.getDecl());
                 if (isArrayType && intfType.typeArguments.length > 0) {
                     stmt.itemVar.type = intfType.typeArguments[0];
                     found = true;

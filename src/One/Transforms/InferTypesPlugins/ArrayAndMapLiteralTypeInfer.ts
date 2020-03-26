@@ -3,7 +3,7 @@ import { Expression, ArrayLiteral, MapLiteral, CastExpression, BinaryExpression,
 import { Type, ClassType, AnyType } from "../../Ast/AstTypes";
 
 export class ArrayAndMapLiteralTypeInfer extends InferTypesPlugin {
-    name = "ArrayAndMapLiteralTypeInfer";
+    constructor() { super("ArrayAndMapLiteralTypeInfer"); }
 
     protected inferArrayOrMapItemType(items: Expression[], expectedType: Type, isMap: boolean) {
         const itemTypes: Type[] = [];

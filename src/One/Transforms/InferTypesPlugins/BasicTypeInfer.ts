@@ -4,7 +4,7 @@ import { ThisReference, MethodParameterReference, VariableDeclarationReference, 
 import { ClassType, InterfaceType, Type, AnyType, EnumType, NullType } from "../../Ast/AstTypes";
 
 export class BasicTypeInfer extends InferTypesPlugin {
-    name = "BasicTypeInfer";
+    constructor() { super("BasicTypeInfer"); }
 
     canDetectType(expr: Expression) { return true; }
 
@@ -16,11 +16,11 @@ export class BasicTypeInfer extends InferTypesPlugin {
         } else if (expr instanceof ParenthesizedExpression) {
             expr.setActualType(expr.expression.getType());
         } else if (expr instanceof ThisReference) {
-            expr.setActualType(expr.cls.type); // remove type arguments from this
+            expr.setActualType(expr.cls.type, false, false); // remove type arguments from this
         } else if (expr instanceof SuperReference) {
-            expr.setActualType(expr.cls.type);
+            expr.setActualType(expr.cls.type, false, false);
         } else if (expr instanceof MethodParameterReference) {
-            expr.setActualType(expr.decl.type);
+            expr.setActualType(expr.decl.type, false, false);
         } else if (expr instanceof BooleanLiteral) {
             expr.setActualType(litTypes.boolean);
         } else if (expr instanceof NumericLiteral) {
@@ -105,7 +105,7 @@ export class BasicTypeInfer extends InferTypesPlugin {
         } else if (expr instanceof ConditionalExpression) {
             const trueType = expr.whenTrue.getType();
             const falseType = expr.whenFalse.getType();
-            if (expr.expectedType) {
+            if (expr.expectedType !== null) {
                 if (!Type.isAssignableTo(trueType, expr.expectedType))
                     throw new Error(`Conditional expression expects ${expr.expectedType.repr()} but got ${trueType.repr()} as true branch`);
                 if (!Type.isAssignableTo(falseType, expr.expectedType))

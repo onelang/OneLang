@@ -5,9 +5,10 @@ import { Statement } from "../../../Ast/Statements";
 import { Property, Lambda, Method, IMethodBase } from "../../../Ast/Types";
 
 export class InferTypesPlugin {
-    name = "<InferTypesPlugin>";
     main: InferTypes;
     errorMan: ErrorManager = null;
+
+    constructor(public name: string) { }
 
     canTransform(expr: Expression): boolean { return false; }
     canDetectType(expr: Expression): boolean { return false; }

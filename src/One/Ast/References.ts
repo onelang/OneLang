@@ -17,15 +17,15 @@ export class Reference extends Expression { }
 export class ClassReference extends Reference {
     constructor(public decl: Class) { super(); decl.classReferences.push(this); }
 
-    setActualType(type: Type) { throw new Error("ClassReference cannot have a type!"); }
+    setActualType(type: Type, allowVoid: boolean, allowGeneric: boolean) { throw new Error("ClassReference cannot have a type!"); }
 }
 
 // has type: no (requires call, passing functions is not supported yet)
 export class GlobalFunctionReference extends Reference implements IGetMethodBase {
     constructor(public decl: GlobalFunction) { super(); decl.references.push(this); }
 
-    setActualType(type: Type) { throw new Error("GlobalFunctionReference cannot have a type!"); }
-    getMethodBase() { return this.decl; }
+    setActualType(type: Type, allowVoid: boolean, allowGeneric: boolean) { throw new Error("GlobalFunctionReference cannot have a type!"); }
+    getMethodBase(): IMethodBase { return this.decl; }
 }
 
 // has type: yes (it's a variable)
@@ -33,8 +33,8 @@ export class GlobalFunctionReference extends Reference implements IGetMethodBase
 export class MethodParameterReference extends Reference {
     constructor(public decl: MethodParameter) { super(); decl.references.push(this); }
 
-    setActualType(type: Type) { 
-        super.setActualType(type, false, 
+    setActualType(type: Type, allowVoid: boolean, allowGeneric: boolean) { 
+        super.setActualType(type, false,
             this.decl.parentMethod instanceof Lambda ? this.decl.parentMethod.parameters.some(x => Type.isGeneric(x.type)) :
             this.decl.parentMethod instanceof Constructor ? this.decl.parentMethod.parentClass.typeArguments.length > 0 :
             this.decl.parentMethod instanceof Method ? this.decl.parentMethod.typeArguments.length > 0 || this.decl.parentMethod.parentInterface.typeArguments.length > 0 : false);
@@ -45,7 +45,7 @@ export class MethodParameterReference extends Reference {
 export class EnumReference extends Reference {
     constructor(public decl: Enum) { super(); decl.references.push(this); }
 
-    setActualType(type: Type) { throw new Error("EnumReference cannot have a type!"); }
+    setActualType(type: Type, allowVoid: boolean, allowGeneric: boolean) { throw new Error("EnumReference cannot have a type!"); }
 }
 
 // has type: yes
@@ -53,7 +53,7 @@ export class EnumReference extends Reference {
 export class EnumMemberReference extends Expression {
     constructor(public decl: EnumMember) { super(); decl.references.push(this); }
     
-    setActualType(type: Type) { 
+    setActualType(type: Type, allowVoid: boolean, allowGeneric: boolean) {
         if (!(type instanceof EnumType)) throw new Error("Expected EnumType!");
         super.setActualType(type);
     }
@@ -62,7 +62,7 @@ export class EnumMemberReference extends Expression {
 export class StaticThisReference extends Reference {
     constructor(public cls: Class) { super(); cls.staticThisReferences.push(this); }
 
-    setActualType(type: Type) { throw new Error("StaticThisReference cannot have a type!"); }
+    setActualType(type: Type, allowVoid: boolean, allowGeneric: boolean) { throw new Error("StaticThisReference cannot have a type!"); }
 }
 
 // has type: yes (needs to be passed as variable which requires type checking)
@@ -70,7 +70,7 @@ export class StaticThisReference extends Reference {
 export class ThisReference extends Reference {
     constructor(public cls: Class) { super(); cls.thisReferences.push(this); }
 
-    setActualType(type: Type) { 
+    setActualType(type: Type, allowVoid: boolean, allowGeneric: boolean) {
         if (!(type instanceof ClassType)) throw new Error("Expected ClassType!");
         super.setActualType(type, false, this.cls.typeArguments.length > 0);
     }
@@ -80,7 +80,7 @@ export class ThisReference extends Reference {
 export class SuperReference extends Reference {
     constructor(public cls: Class) { super(); cls.superReferences.push(this); }
 
-    setActualType(type: Type) { 
+    setActualType(type: Type, allowVoid: boolean, allowGeneric: boolean) {
         if (!(type instanceof ClassType)) throw new Error("Expected ClassType!");
         super.setActualType(type, false, this.cls.typeArguments.length > 0);
     }
@@ -115,7 +115,7 @@ export class ForeachVariableReference extends Reference {
 export class StaticFieldReference extends Reference {
     constructor(public decl: Field) { super(); decl.staticReferences.push(this); }
 
-    setActualType(type: Type) {
+    setActualType(type: Type, allowVoid: boolean, allowGeneric: boolean) {
         if (Type.isGeneric(type)) throw new Error("StaticField's type cannot be Generic");
         super.setActualType(type);
     }
@@ -126,7 +126,7 @@ export class StaticFieldReference extends Reference {
 export class StaticPropertyReference extends Reference {
     constructor(public decl: Property) { super(); decl.staticReferences.push(this); }
 
-    setActualType(type: Type) {
+    setActualType(type: Type, allowVoid: boolean, allowGeneric: boolean) {
         if (Type.isGeneric(type)) throw new Error("StaticProperty's type cannot be Generic");
         super.setActualType(type);
     }

@@ -6,12 +6,13 @@ import { ClassReference, EnumReference, ThisReference, MethodParameterReference,
 import { ErrorManager } from "./ErrorManager";
 
 export abstract class AstTransformer {
-    name: string = "AstTransformer";
     errorMan: ErrorManager = new ErrorManager();
     currentFile: SourceFile = null;
     currentInterface: IInterface = null;
     currentMethod: IMethodBase = null;
     currentStatement: Statement = null;
+
+    constructor(public name: string) { }
 
     protected visitType(type: Type): Type {
         if (type instanceof ClassType || type instanceof InterfaceType || type instanceof UnresolvedType) {
@@ -30,14 +31,14 @@ export abstract class AstTransformer {
     }
 
     protected visitVariable(variable: IVariable): IVariable {
-        if (variable.type)
+        if (variable.type !== null)
             variable.type = this.visitType(variable.type) || variable.type;
         return null;
     }
 
     protected visitVariableWithInitializer(variable: IVariableWithInitializer): IVariableWithInitializer {
         this.visitVariable(variable);
-        if (variable.initializer)
+        if (variable.initializer !== null)
             variable.initializer = this.visitExpression(variable.initializer) || variable.initializer;
         return null;
     }
@@ -55,14 +56,14 @@ export abstract class AstTransformer {
     protected visitStatement(stmt: Statement): Statement {
         this.currentStatement = stmt;
         if (stmt instanceof ReturnStatement) {
-            if (stmt.expression)
+            if (stmt.expression !== null)
                 stmt.expression = this.visitExpression(stmt.expression) || stmt.expression;
         } else if (stmt instanceof ExpressionStatement) {
             stmt.expression = this.visitExpression(stmt.expression) || stmt.expression;
         } else if (stmt instanceof IfStatement) {
             stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
             stmt.then = this.visitBlock(stmt.then) || stmt.then;
-            if (stmt.else_)
+            if (stmt.else_ !== null)
                 stmt.else_ = this.visitBlock(stmt.else_) || stmt.else_;
         } else if (stmt instanceof ThrowStatement) {
             stmt.expression = this.visitExpression(stmt.expression) || stmt.expression;
@@ -75,7 +76,7 @@ export abstract class AstTransformer {
             stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
             stmt.body = this.visitBlock(stmt.body) || stmt.body;    
         } else if (stmt instanceof ForStatement) {
-            if (stmt.itemVar)
+            if (stmt.itemVar !== null)
                 this.visitVariableWithInitializer(stmt.itemVar);
             stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
             stmt.incrementor = this.visitExpression(stmt.incrementor) || stmt.incrementor;
@@ -212,6 +213,7 @@ export abstract class AstTransformer {
         } else {
             return this.visitUnknownExpression(expr);
         }
+        return null;
     }
 
     protected visitMethodParameter(methodParameter: MethodParameter): void {
@@ -222,7 +224,7 @@ export abstract class AstTransformer {
         for (const item of method.parameters)
             this.visitMethodParameter(item);
 
-        if (method.body)
+        if (method.body !== null)
             method.body = this.visitBlock(method.body) || method.body;
     }
 
@@ -250,9 +252,9 @@ export abstract class AstTransformer {
  
     protected visitProperty(prop: Property) {
         this.visitVariable(prop);
-        if (prop.getter)
+        if (prop.getter !== null)
             prop.getter = this.visitBlock(prop.getter) || prop.getter;
-        if (prop.setter)
+        if (prop.setter !== null)
             prop.setter = this.visitBlock(prop.setter) || prop.setter;
     }
 
@@ -268,7 +270,7 @@ export abstract class AstTransformer {
 
     protected visitClass(cls: Class) {
         this.currentInterface = cls;
-        if (cls.constructor_)
+        if (cls.constructor_ !== null)
             this.visitConstructor(cls.constructor_);
 
         cls.baseClass = this.visitType(cls.baseClass) || cls.baseClass;

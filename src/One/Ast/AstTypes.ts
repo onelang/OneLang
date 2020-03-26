@@ -14,6 +14,8 @@ export class Type implements IType {
             return type.typeArguments.some(x => Type.isGeneric(x));
         else if (type instanceof LambdaType)
             return type.parameters.some(x => Type.isGeneric(x.type)) || Type.isGeneric(type.returnType);
+        else
+            return false;
     }
 
     static equals(type1: Type, type2: Type): boolean {
@@ -108,22 +110,24 @@ export interface IHasTypeArguments {
 }
 
 export interface IInterfaceType extends IType {
-    decl: IInterface;
     typeArguments: Type[];
+    getDecl(): IInterface;
 }
 
 export class InterfaceType extends Type implements IHasTypeArguments, IInterfaceType {
-    constructor(public decl: Interface, public typeArguments: Type[] = []) { super(); }
+    constructor(public decl: Interface, public typeArguments: Type[]) { super(); }
+    getDecl(): IInterface { return this.decl; }
     repr() { return `I:${this.decl.name}${TypeHelper.argsRepr(this.typeArguments)}`; }
 }
 
 export class ClassType extends Type implements IHasTypeArguments, IInterfaceType {
-    constructor(public decl: Class, public typeArguments: Type[] = []) { super(); }
+    constructor(public decl: Class, public typeArguments: Type[]) { super(); }
+    getDecl(): IInterface { return this.decl; }
     repr() { return `C:${this.decl.name}${TypeHelper.argsRepr(this.typeArguments)}`; }
 }
 
 export class UnresolvedType extends Type implements IHasTypeArguments {
-    constructor(public typeName: string, public typeArguments: Type[] = []) { super(); }
+    constructor(public typeName: string, public typeArguments: Type[]) { super(); }
     repr() { return `X:${this.typeName}${TypeHelper.argsRepr(this.typeArguments)}`; }
 }
 

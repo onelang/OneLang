@@ -12,9 +12,9 @@ import { Class, Method } from "../Ast/Types";
  *   and methods "ExampleMethod<T>(...) { ... T ... }"
  */
 export class ResolveGenericTypeIdentifiers extends AstTransformer {
-    name = "ResolveGenericTypeIdentifiers";
+    constructor() { super("ResolveGenericTypeIdentifiers"); }
 
-    protected visitType(type: Type) {
+    protected visitType(type: Type): Type {
         super.visitType(type);
 
         //console.log(type && type.constructor.name, JSON.stringify(type));
@@ -22,5 +22,7 @@ export class ResolveGenericTypeIdentifiers extends AstTransformer {
             ((this.currentInterface instanceof Class && this.currentInterface.typeArguments.includes(type.typeName)) ||
             (this.currentMethod instanceof Method && this.currentMethod.typeArguments.includes(type.typeName))))
             return new GenericsType(type.typeName);
+        
+        return null;
     }
 }

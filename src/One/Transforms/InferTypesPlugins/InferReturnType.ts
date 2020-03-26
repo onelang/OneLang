@@ -27,39 +27,43 @@ class ReturnTypeInferer {
     }
 
     finish(declaredType: Type, errorContext: string): Type {
-        let returnType: Type = null;
+        let inferredType: Type = null;
 
         if (this.returnTypes.length == 0) {
             if (this.throws)
-                returnType = declaredType || VoidType.instance;
+                inferredType = declaredType || VoidType.instance;
             else if (this.returnsNull) {
                 if (declaredType !== null)
-                    returnType = declaredType;
+                    inferredType = declaredType;
                 else
                     this.errorMan.throw(`${errorContext} returns only null and it has no declared return type!`);
             } else
-                returnType = VoidType.instance;
+                inferredType = VoidType.instance;
         } else if (this.returnTypes.length == 1) {
-            returnType = this.returnTypes[0];
+            inferredType = this.returnTypes[0];
         } else {
             if (declaredType !== null && this.returnTypes.every((x, i) => Type.isAssignableTo(x, declaredType)))
-                returnType = declaredType;
+                inferredType = declaredType;
             else {
                 this.errorMan.throw(`${errorContext} returns different types: ${this.returnTypes.map(x => x.repr()).join(", ")}`);
-                returnType = AnyType.instance;
+                inferredType = AnyType.instance;
             }
         }
 
-        if (declaredType !== null && !Type.isAssignableTo(returnType, declaredType))
-            this.errorMan.throw(`${errorContext} returns different type (${returnType.repr()}) than expected ${declaredType.repr()}`);
+        if (declaredType !== null && !Type.isAssignableTo(inferredType, declaredType))
+            this.errorMan.throw(`${errorContext} returns different type (${inferredType.repr()}) than expected ${declaredType.repr()}`);
 
         this.returnTypes = null;
-        return returnType;
+        return declaredType !== null ? declaredType : inferredType;
     }
 }
 
 export class InferReturnType extends InferTypesPlugin {
     returnTypeInfer: ReturnTypeInferer[] = [];
+
+    get current() { return this.returnTypeInfer[this.returnTypeInfer.length - 1]; }
+
+    constructor() { super("InferReturnType"); }
 
     start() {
         this.returnTypeInfer.push(new ReturnTypeInferer(this.errorMan));
@@ -68,8 +72,6 @@ export class InferReturnType extends InferTypesPlugin {
     finish(declaredType: Type, errorContext: string): Type {
         return this.returnTypeInfer.pop().finish(declaredType, errorContext);
     }
-
-    get current() { return this.returnTypeInfer[this.returnTypeInfer.length - 1]; }
 
     handleStatement(stmt: Statement) {
         if (stmt instanceof ReturnStatement && stmt.expression !== null) {
@@ -106,13 +108,13 @@ export class InferReturnType extends InferTypesPlugin {
     handleProperty(prop: Property): boolean {
         this.main.processVariable(prop);
 
-        if (prop.getter) {
+        if (prop.getter !== null) {
             this.start();
             this.main.processBlock(prop.getter);
             prop.type = this.finish(prop.type, `Property "${prop.name}" getter`);
         }
 
-        if (prop.setter) {
+        if (prop.setter !== null) {
             this.start();
             this.main.processBlock(prop.setter);
             this.finish(VoidType.instance, `Property "${prop.name}" setter`);

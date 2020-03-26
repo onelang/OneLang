@@ -51,6 +51,7 @@ declare class Map<K, V> {
     get(key: K): V;
     set(key: K, value: V): void;
     delete(key: K): void;
+    has(key: K): boolean;
     keys(): IterableIterator<K>;
     values(): IterableIterator<V>;
 }
@@ -130,6 +131,7 @@ declare class YAML {
 
 declare class Set<T> implements IterableIterator<T> {
     add(item: T): void;
+    has(item: T): boolean;
     values(): IterableIterator<T>;
     constructor(values: T[]);
 }

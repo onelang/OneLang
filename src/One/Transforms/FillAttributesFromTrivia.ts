@@ -2,8 +2,6 @@ import { SourceFile, IMethodBase, Block, IHasAttributesAndTrivia, Package, IMeth
 import { ForeachStatement, ForStatement, IfStatement } from "../Ast/Statements";
 
 export class FillAttributesFromTrivia {
-    name = "FillAttributesFromTrivia";
-
     static processTrivia(trivia: string) {
         const result: { [name: string]: string } = {};
         if (trivia !== "") {

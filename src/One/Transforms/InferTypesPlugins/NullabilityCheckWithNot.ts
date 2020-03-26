@@ -4,7 +4,7 @@ import { ClassType } from "../../Ast/AstTypes";
 
 // converts "!SomeObject" to "SomeObject === null"
 export class NullabilityCheckWithNot extends InferTypesPlugin {
-    name = "NullabilityCheckWithNot";
+    constructor() { super("NullabilityCheckWithNot"); }
 
     canTransform(expr: Expression) { return expr instanceof UnaryExpression ? expr.operator === "!" : false; }
 

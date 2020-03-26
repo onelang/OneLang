@@ -40,7 +40,7 @@ export class InterfacePackage {
     definition: string;
 
     constructor(public content: PackageContent) {
-        this.interfaceYaml = YAML.safeLoad(content.files["interface.yaml"]);
+        this.interfaceYaml = <InterfaceYaml>YAML.safeLoad(content.files["interface.yaml"]);
         this.definition = content.files[this.interfaceYaml["definition-file"]];
     }
 }
@@ -73,12 +73,12 @@ export class ImplementationPackage {
     implementations: ImplPkgImplementation[] = [];
 
     constructor(public content: PackageContent) {
-        this.implementationYaml = YAML.safeLoad(content.files["package.yaml"]);
+        this.implementationYaml = <ImplPackageYaml>YAML.safeLoad(content.files["package.yaml"]);
         this.implementations = [];
         for (const impl of this.implementationYaml.implements||[])
             this.implementations.push(impl);
         for (const include of this.implementationYaml.includes||[]) {
-            const included = <ImplPackageYaml> YAML.safeLoad(content.files[include]);
+            const included = <ImplPackageYaml>YAML.safeLoad(content.files[include]);
             for (const impl of included.implements)
                 this.implementations.push(impl);
         }
@@ -122,7 +122,7 @@ export class PackageManager {
                     fileNamePaths[fileName] = `native/${fileName}`;
 
                 let incDir = pkgImpl["native-include-dir"];
-                if (incDir) {
+                if (incDir !== null) {
                     if (!incDir.endsWith("/")) incDir += "/";
                     const prefix = `native/${incDir}`;
                     for (const fn of Object.keys(pkg.content.files).filter(x => x.startsWith(prefix)).map(x => x.substr(prefix.length)))

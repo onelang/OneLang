@@ -109,7 +109,7 @@ export class TSOverviewGenerator {
         } else if (expr instanceof RegexLiteral) {
             res = `/${expr.pattern}/${expr.global ? "g" : ""}${expr.caseInsensitive ? "g" : ""}`;
         } else if (expr instanceof Lambda) {
-            res = `(${expr.parameters.map(x => x.name + (x.type ? `: ${this.type(x.type)}` : "")).join(", ")}) => { ${this.rawBlock(expr.body)} }`;
+            res = `(${expr.parameters.map(x => x.name + (x.type !== null ? `: ${this.type(x.type)}` : "")).join(", ")}) => { ${this.rawBlock(expr.body)} }`;
         } else if (expr instanceof UnaryExpression && expr.unaryType === UnaryType.Prefix) {
             res = `${expr.operator}${this.expr(expr.operand)}`;
         } else if (expr instanceof UnaryExpression && expr.unaryType === UnaryType.Postfix) {
@@ -205,14 +205,14 @@ export class TSOverviewGenerator {
 
     static rawBlock(block: Block): string { return block.statements.map(stmt => this.stmt(stmt)).join("\n"); }
 
-    static methodBase(method: IMethodBase, returns: Type = new VoidType()): string {
+    static methodBase(method: IMethodBase, returns: Type): string {
         if (method === null) return "";
         const name = method instanceof Method ? method.name : method instanceof Constructor ? "constructor" : method instanceof GlobalFunction ? method.name : "???";
         const typeArgs = method instanceof Method ? method.typeArguments : null;
         return this.preIf("/* throws */ ", method.throws) + 
             `${name}${this.typeArgs(typeArgs)}(${method.parameters.map(p => this.var(p)).join(", ")})` +
             (returns instanceof VoidType ? "" : `: ${this.type(returns)}`) +
-            (method.body ? ` {\n${this.pad(this.rawBlock(method.body))}\n}` : ";");
+            (method.body !== null ? ` {\n${this.pad(this.rawBlock(method.body))}\n}` : ";");
     }
 
     static method(method: Method) {
@@ -224,7 +224,7 @@ export class TSOverviewGenerator {
         if (cls instanceof Class) {
             resList.push(cls.fields.map(field => this.var(field) + ';').join("\n"));
             resList.push(cls.properties.map(prop => this.var(prop) + ';').join("\n"));
-            resList.push(this.methodBase(cls.constructor_));
+            resList.push(this.methodBase(cls.constructor_, VoidType.instance));
         }
         resList.push(cls.methods.map(method => this.method(method)).join("\n\n"));
         return this.pad(resList.filter(x => x !== "").join("\n\n"));
@@ -240,8 +240,10 @@ export class TSOverviewGenerator {
             return this.stmt(node, true);
         else if (node instanceof Expression)
             return this.expr(node, true);
-        else
+        else {
             debugger;
+            return "/* TODO: missing */";
+        }
     }
 
     static generate(sourceFile: SourceFile) {
@@ -251,7 +253,7 @@ export class TSOverviewGenerator {
         const intfs = sourceFile.interfaces.map(intf => `interface ${intf.name}${this.typeArgs(intf.typeArguments)}`+
             `${this.preArr(" extends ", intf.baseInterfaces.map(x => this.type(x)))} {\n${this.classLike(intf)}\n}`);
         const classes = sourceFile.classes.map(cls => `class ${cls.name}${this.typeArgs(cls.typeArguments)}`+
-            this.pre(" extends ", cls.baseClass ? this.type(cls.baseClass) : null) + 
+            this.pre(" extends ", cls.baseClass !== null ? this.type(cls.baseClass) : null) + 
             this.preArr(" implements ", cls.baseInterfaces.map(x => this.type(x))) + 
             ` {\n${this.classLike(cls)}\n}`);
         const funcs = sourceFile.funcs.map(func => `function ${func.name}${this.methodBase(func, func.returns)}`);

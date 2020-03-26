@@ -35,13 +35,13 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
         this.reader.hooks = this;
         this.nodeManager = new NodeManager(this.reader);
         this.expressionParser = this.createExpressionParser(this.reader, this.nodeManager);
-        this.exportScope = this.path ? new ExportScopeRef(this.path.pkg.name, this.path.path ? this.path.path.replace(/.ts$/, "") : null) : null;
+        this.exportScope = this.path !== null ? new ExportScopeRef(this.path.pkg.name, this.path.path !== null ? this.path.path.replace(/.ts$/, "") : null) : null;
     }
 
     createExpressionParser(reader: Reader, nodeManager: NodeManager = null): ExpressionParser {
         const expressionParser = new ExpressionParser(reader, this, nodeManager);
-        expressionParser.stringLiteralType = new UnresolvedType("TsString");
-        expressionParser.numericLiteralType = new UnresolvedType("TsNumber");
+        expressionParser.stringLiteralType = new UnresolvedType("TsString", []);
+        expressionParser.numericLiteralType = new UnresolvedType("TsNumber", []);
         return expressionParser;
     }
 
@@ -106,11 +106,11 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
 
         let type: Type;
         if (typeName === "string") {
-            type = new UnresolvedType("TsString");
+            type = new UnresolvedType("TsString", []);
         } else if (typeName === "boolean") {
-            type = new UnresolvedType("TsBoolean");
+            type = new UnresolvedType("TsBoolean", []);
         } else if (typeName === "number") {
-            type = new UnresolvedType("TsNumber");
+            type = new UnresolvedType("TsNumber", []);
         } else if (typeName === "any") {
             type = AnyType.instance;
         } else if (typeName === "void") {
@@ -174,7 +174,8 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
             const expression = this.parseExpression();
             return new CastExpression(newType, expression);
         } else if (this.reader.readToken("/")) {
-            const pattern = this.reader.readRegex("((?<![\\\\])[\\\\]/|[^/])+")[0];
+            let pattern = this.reader.readRegex("((?<![\\\\])[\\\\]/|[^/])+")[0];
+            pattern = pattern.replace(/\\(.)/g, '$1');
             this.reader.expectToken("/");
             const modifiers = this.reader.readModifiers(["g", "i"]);
             return new RegexLiteral(pattern, modifiers.includes("i"), modifiers.includes("g"));
@@ -197,8 +198,8 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
             else
                 this.reader.fail("unexpected typeof comparison");
 
-            return new InstanceOfExpression(expr, new UnresolvedType(tsType));
-        } else if (this.reader.peekRegex("\\([A-Za-z0-9_]+\\s*[:,]|\\(\\)")) {
+            return new InstanceOfExpression(expr, new UnresolvedType(tsType, []));
+        } else if (this.reader.peekRegex("\\([A-Za-z0-9_]+\\s*[:,]|\\(\\)") !== null) {
             const params = this.parseLambdaParams();
             this.reader.expectToken("=>");
             const block = this.parseLambdaBlock();
@@ -477,7 +478,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
         const baseInterfaces: Type[] = [];
         if (this.reader.readToken("extends")) {
             do {
-                baseInterfaces.push(new UnresolvedType(this.reader.expectIdentifier()));
+                baseInterfaces.push(this.parseType());
             } while (this.reader.readToken(","))
         }
 
@@ -580,7 +581,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
                 this.nodeManager.addNode(member, memberStart);
             } else if (memberName === "get" || memberName === "set") { // property
                 const propName = this.reader.expectIdentifier();
-                let prop = properties.find(x => x.name === propName);
+                let prop = properties.find(x => x.name === propName) || null;
                 let propType: Type = null;
                 let getter: Block = null;
                 let setter: Block = null;
@@ -595,7 +596,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
                         this.reader.expectToken(";");
                     } else {
                         getter = this.expectBlock("property getter body is missing");
-                        if (prop)
+                        if (prop !== null)
                             prop.getter = getter;
                     }
                 } else if (memberName === "set") { // set propName(value: propType) { ... }
@@ -610,7 +611,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
                         this.reader.expectToken(";");
                     } else {
                         setter = this.expectBlock("property setter body is missing");
-                        if (prop)
+                        if (prop !== null)
                             prop.setter = setter;
                     }
                 }
@@ -734,7 +735,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
         const moduleName = this.reader.expectString();
         this.reader.expectToken(";");
 
-        const importScope = this.exportScope ? TypeScriptParser2.calculateImportScope(this.exportScope, moduleName) : null;
+        const importScope = this.exportScope !== null ? TypeScriptParser2.calculateImportScope(this.exportScope, moduleName) : null;
         
         const imports: Import[] = [];
         for (const name of Object.keys(nameAliases))

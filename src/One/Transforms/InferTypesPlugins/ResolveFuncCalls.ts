@@ -6,7 +6,7 @@ import { LambdaType } from "../../Ast/AstTypes";
 // converts `parseInt(...)` -> UnresolvedCallExpression(GlobalFunctionReference) to GlobalFunctionCallExpression
 // converts `someLambda(...)` -> UnresolvedCallExpression(variable[LambdaType]) to LambdaCallExpression
 export class ResolveFuncCalls extends InferTypesPlugin {
-    name = "ResolveFuncCalls";
+    constructor() { super("ResolveFuncCalls"); }
     
     canTransform(expr: Expression) { return expr instanceof UnresolvedCallExpression; }
 
@@ -14,7 +14,7 @@ export class ResolveFuncCalls extends InferTypesPlugin {
         const callExpr = <UnresolvedCallExpression> expr;
         if (callExpr.func instanceof GlobalFunctionReference) {
             const newExpr = new GlobalFunctionCallExpression(callExpr.func.decl, callExpr.args);
-            callExpr.args = callExpr.args.map(arg => this.main.visitExpression(arg) || arg);
+            callExpr.args = callExpr.args.map(arg => this.main.runPluginsOn(arg) || arg);
             newExpr.setActualType(callExpr.func.decl.returns);
             return newExpr;
         } else {
@@ -25,6 +25,7 @@ export class ResolveFuncCalls extends InferTypesPlugin {
                 return newExpr;
             } else {
                 debugger;
+                return expr;
             }
         }
     }

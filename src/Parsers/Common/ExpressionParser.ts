@@ -60,7 +60,9 @@ export class ExpressionParser {
     stringLiteralType: Type = null;
     numericLiteralType: Type = null;
 
-    constructor(public reader: Reader, public hooks: IExpressionParserHooks = null, public nodeManager: NodeManager = null, public config: ExpressionParserConfig = ExpressionParser.defaultConfig()) {
+    constructor(public reader: Reader, public hooks: IExpressionParserHooks = null, public nodeManager: NodeManager = null, public config: ExpressionParserConfig = null) {
+        if (this.config === null)
+            this.config = ExpressionParser.defaultConfig();
         this.reconfigure();
     }
 
@@ -153,12 +155,11 @@ export class ExpressionParser {
 
         if (required)
             this.reader.fail(`unknown (literal / unary) token in expression`);
-        else 
-            return null;
+
+        return null;
     }
 
     parseOperator() {
-        let op: Operator = null;
         for (const opText of this.operators)
             if (this.reader.peekToken(opText))
                 return this.operatorMap[opText];
@@ -238,7 +239,7 @@ export class ExpressionParser {
         if (left instanceof ParenthesizedExpression && left.expression instanceof Identifier) {
             const expr = this.parse(0, false);
             if (expr !== null)
-                return new CastExpression(new UnresolvedType(left.expression.text), expr);
+                return new CastExpression(new UnresolvedType(left.expression.text, []), expr);
         }
 
         return left;

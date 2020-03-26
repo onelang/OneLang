@@ -3,7 +3,7 @@ import { Expression, BinaryExpression, NullLiteral, NullCoalesceExpression, Arra
 import { Type, ClassType } from "../../Ast/AstTypes";
 
 export class TypeScriptNullCoalesce extends InferTypesPlugin {
-    name = "TypeScriptNullCoalesce";
+    constructor() { super("TypeScriptNullCoalesce"); }
 
     canTransform(expr: Expression) { return expr instanceof BinaryExpression && expr.operator === "||"; }
 
@@ -11,7 +11,7 @@ export class TypeScriptNullCoalesce extends InferTypesPlugin {
         if (expr instanceof BinaryExpression && expr.operator === "||") {
             const litTypes = this.main.currentFile.literalTypes;
             
-            expr.left = this.main.visitExpression(expr.left) || expr.left;
+            expr.left = this.main.runPluginsOn(expr.left) || expr.left;
             const leftType = expr.left.getType();
 
             if (expr.right instanceof ArrayLiteral && expr.right.items.length === 0) {
@@ -28,7 +28,7 @@ export class TypeScriptNullCoalesce extends InferTypesPlugin {
                 }
             }
 
-            expr.right = this.main.visitExpression(expr.right) || expr.right;
+            expr.right = this.main.runPluginsOn(expr.right) || expr.right;
             const rightType = expr.right.getType();
 
             if (expr.right instanceof NullLiteral) { // something-which-can-be-undefined || null

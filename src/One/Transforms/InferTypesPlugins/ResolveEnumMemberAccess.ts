@@ -3,7 +3,7 @@ import { Expression, PropertyAccessExpression } from "../../Ast/Expressions";
 import { EnumMemberReference, EnumReference } from "../../Ast/References";
 
 export class ResolveEnumMemberAccess extends InferTypesPlugin {
-    name = "ResolveEnumMemberAccess";
+    constructor() { super("ResolveEnumMemberAccess"); }
 
     canTransform(expr: Expression) { return expr instanceof PropertyAccessExpression && expr.object instanceof EnumReference; }
 

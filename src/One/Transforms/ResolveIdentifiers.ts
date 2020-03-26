@@ -1,7 +1,7 @@
 import { AstTransformer } from "../AstTransformer";
 import { SourceFile, Class, Enum, Method, Block, Lambda, GlobalFunction, IMethodBase, Constructor, Interface } from "../Ast/Types";
 import { ErrorManager } from "../ErrorManager";
-import { Identifier } from "../Ast/Expressions";
+import { Identifier, Expression } from "../Ast/Expressions";
 import { IReferencable, Reference, StaticThisReference, ThisReference, SuperReference } from "../Ast/References";
 import { VariableDeclaration, ForStatement, ForeachStatement, Statement, IfStatement, TryStatement } from "../Ast/Statements";
 import { ClassType } from "../Ast/AstTypes";
@@ -24,7 +24,7 @@ class SymbolLookup {
     }
 
     addSymbol(name: string, ref: IReferencable) {
-        if (this.symbols.get(name))
+        if (this.symbols.has(name))
             this.throw(`Symbol shadowing: ${name}`);
         this.symbols.set(name, ref);
         this.currLevel.push(name);
@@ -44,15 +44,14 @@ class SymbolLookup {
 }
 
 export class ResolveIdentifiers extends AstTransformer {
-    name = "ResolveIdentifiers";
     symbolLookup: SymbolLookup;
 
     constructor() {
-        super();
+        super("ResolveIdentifiers");
         this.symbolLookup = new SymbolLookup();
     }
 
-    protected visitIdentifier(id: Identifier): Reference {
+    protected visitIdentifier(id: Identifier): Expression {
         super.visitIdentifier(id);
         const symbol = this.symbolLookup.getSymbol(id.text);
         if (symbol === null) {
@@ -76,7 +75,7 @@ export class ResolveIdentifiers extends AstTransformer {
     protected visitStatement(stmt: Statement): Statement { 
         if (stmt instanceof ForStatement) {
             this.symbolLookup.pushContext(`For`);
-            if (stmt.itemVar)
+            if (stmt.itemVar !== null)
                 this.symbolLookup.addSymbol(stmt.itemVar.name, stmt.itemVar);
             super.visitStatement(stmt);
             this.symbolLookup.popContext();
@@ -98,6 +97,7 @@ export class ResolveIdentifiers extends AstTransformer {
         } else {
             return super.visitStatement(stmt);
         }
+        return null;
     }
 
     protected visitLambda(lambda: Lambda): Lambda {
@@ -121,19 +121,22 @@ export class ResolveIdentifiers extends AstTransformer {
         return super.visitVariableDeclaration(stmt);
     }
     
-    public visitMethodBase(method: IMethodBase) {
+    protected visitMethodBase(method: IMethodBase) {
         this.symbolLookup.pushContext(method instanceof Method ? `Method: ${method.name}` : method instanceof Constructor ? "constructor" : "???");
+
         for (const param of method.parameters) {
             this.symbolLookup.addSymbol(param.name, param);
             if (param.initializer !== null)
                 this.visitExpression(param.initializer);
         }
-        if (method.body)
+
+        if (method.body !== null)
             super.visitBlock(method.body); // directly process method's body without opening a new scope again
+
         this.symbolLookup.popContext();
     }
 
-    public visitClass(cls: Class) {
+    protected visitClass(cls: Class) {
         this.symbolLookup.pushContext(`Class: ${cls.name}`);
         this.symbolLookup.addSymbol("this", cls);
         if (cls.baseClass instanceof ClassType)

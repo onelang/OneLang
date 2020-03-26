@@ -29,7 +29,7 @@ export class ErrorManager {
     log(type: LogType, msg: string) {
         const t = this.transformer;
 
-        let text = (t ? `[${t.name}] ` : "") + msg;
+        let text = (t !== null ? `[${t.name}] ` : "") + msg;
 
         let par = this.currentNode;
         while (par instanceof Expression)

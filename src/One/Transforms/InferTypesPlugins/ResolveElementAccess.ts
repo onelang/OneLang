@@ -6,7 +6,7 @@ import { ResolveMethodCalls } from "./ResolveMethodCalls";
 // converts `someObj[var]` -> `someObj.get(var)`
 // converts `someObj["field-name"]` -> `someObj."field-name"`
 export class ResolveElementAccess extends InferTypesPlugin {
-    name = "ResolveElementAccess";
+    constructor() { super("ResolveElementAccess"); }
     
     canTransform(expr: Expression) { 
         const isSet = expr instanceof BinaryExpression && expr.left instanceof ElementAccessExpression && expr.operator === "=";
@@ -18,11 +18,11 @@ export class ResolveElementAccess extends InferTypesPlugin {
 
     transform(expr: Expression): Expression {
         if (expr instanceof BinaryExpression && expr.left instanceof ElementAccessExpression) {
-            expr.left.object = this.main.visitExpression(expr.left.object);
+            expr.left.object = this.main.runPluginsOn(expr.left.object);
             if (this.isMapOrArrayType(expr.left.object.getType()))
                 return new UnresolvedMethodCallExpression(expr.left.object, "set", [], [expr.left.elementExpr, expr.right]);
         } else if (expr instanceof ElementAccessExpression) {
-            expr.object = this.main.visitExpression(expr.object);
+            expr.object = this.main.runPluginsOn(expr.object);
             if (this.isMapOrArrayType(expr.object.getType()))
                 return new UnresolvedMethodCallExpression(expr.object, "get", [], [expr.elementExpr]);
             else if (expr.elementExpr instanceof StringLiteral)

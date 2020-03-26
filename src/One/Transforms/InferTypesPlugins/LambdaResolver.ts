@@ -5,7 +5,7 @@ import { LambdaType, Type } from "../../Ast/AstTypes";
 import { ReturnStatement, Statement } from "../../Ast/Statements";
 
 export class LambdaResolver extends InferTypesPlugin {
-    name = "LambdaResolver";
+    constructor() { super("LambdaResolver"); }
 
     protected setupLambdaParameterTypes(lambda: Lambda) {
         if (lambda.expectedType === null) return;

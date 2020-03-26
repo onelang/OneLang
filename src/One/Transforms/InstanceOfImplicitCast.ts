@@ -5,9 +5,10 @@ import { Statement, IfStatement, VariableDeclaration, WhileStatement, Expression
 import { ForeachVariableReference, VariableDeclarationReference, MethodParameterReference, InstanceFieldReference, ThisReference, Reference, StaticThisReference } from "../Ast/References";
 
 export class InstanceOfImplicitCast extends AstTransformer {
-    name = "InstanceOfImplicitCast";
     casts: InstanceOfExpression[] = [];
     castCounts: number[] = [];
+
+    constructor() { super("InstanceOfImplicitCast"); }
 
     protected addCast(cast: InstanceOfExpression) {
         if (this.castCounts.length > 0) {
@@ -72,8 +73,8 @@ export class InstanceOfImplicitCast extends AstTransformer {
             this.pushContext();
             result = super.visitExpression(expr) || expr;
             this.popContext();
-            const match = this.casts.find(cast => this.equals(result, cast.expr));
-            if (match)
+            const match = this.casts.find(cast => this.equals(result, cast.expr)) || null;
+            if (match !== null)
                 result = new CastExpression(match.checkType, result, true);
         }
         return result;
@@ -88,7 +89,7 @@ export class InstanceOfImplicitCast extends AstTransformer {
             this.visitBlock(stmt.then);
             this.popContext();
 
-            if (stmt.else_)
+            if (stmt.else_ !== null)
                 this.visitBlock(stmt.else_);
         } else if (stmt instanceof WhileStatement) {
             this.pushContext();

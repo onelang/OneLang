@@ -4,8 +4,9 @@ import { Expression } from "../Ast/Expressions";
 import { AstTransformer } from "../AstTransformer";
 
 export class FillParent extends AstTransformer {
-    name = "FillParent";
     parentNodeStack: IAstNode[] = [];
+
+    constructor() { super("FillParent"); }
 
     protected visitExpression(expr: Expression): Expression {
         if (this.parentNodeStack.length === 0) debugger;

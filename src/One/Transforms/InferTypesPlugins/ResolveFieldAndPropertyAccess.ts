@@ -6,7 +6,7 @@ import { ClassType, InterfaceType, AnyType, Type } from "../../Ast/AstTypes";
 import { GenericsResolver } from "./Helpers/GenericsResolver";
 
 export class ResolveFieldAndPropertyAccess extends InferTypesPlugin {
-    name = "ResolveFieldAndPropertyAccess";
+    constructor() { super("ResolveFieldAndPropertyAccess"); }
 
     protected getStaticRef(cls: Class, memberName: string): Reference {
         const field = cls.fields.find(x => x.name === memberName) || null;
@@ -61,7 +61,7 @@ export class ResolveFieldAndPropertyAccess extends InferTypesPlugin {
         if (expr.object instanceof StaticThisReference)
             return this.getStaticRef(expr.object.cls, expr.propertyName);
 
-        expr.object = this.main.visitExpression(expr.object);
+        expr.object = this.main.runPluginsOn(expr.object);
 
         if (expr.object instanceof ThisReference)
             return this.getInstanceRef(expr.object.cls, expr.propertyName, expr.object);
@@ -110,10 +110,10 @@ export class ResolveFieldAndPropertyAccess extends InferTypesPlugin {
             expr.setActualType(actualType);
             return true;
         } else if (expr instanceof StaticPropertyReference) {
-            expr.setActualType(expr.decl.type);
+            expr.setActualType(expr.decl.type, false, false);
             return true;
         } else if (expr instanceof StaticFieldReference) {
-            expr.setActualType(expr.decl.type);
+            expr.setActualType(expr.decl.type, false, false);
             return true;
         }
 

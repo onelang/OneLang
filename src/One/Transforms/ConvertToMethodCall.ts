@@ -2,7 +2,7 @@ import { Expression, ElementAccessExpression, UnresolvedCallExpression, Property
 import { AstTransformer } from "../AstTransformer";
 
 export class ConvertToMethodCall extends AstTransformer {
-    name = "ConvertToMethodCall";
+    constructor() { super("ConvertToMethodCall"); }
     
     protected visitExpression(expr: Expression) {
         const origExpr = expr;

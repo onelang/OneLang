@@ -21,13 +21,12 @@ import { ResolveElementAccess } from "./InferTypesPlugins/ResolveElementAccess";
 enum InferTypesStage { Invalid, Fields, Properties, Methods }
 
 export class InferTypes extends AstTransformer {
-    name = "InferTypes";
     protected stage: InferTypesStage;
     plugins: InferTypesPlugin[] = [];
     logIdx = 0;
 
     constructor() {
-        super();
+        super("InferTypes");
         this.addPlugin(new BasicTypeInfer());
         this.addPlugin(new ArrayAndMapLiteralTypeInfer());
         this.addPlugin(new ResolveFieldAndPropertyAccess());
@@ -45,12 +44,12 @@ export class InferTypes extends AstTransformer {
 
     // allow plugins to run AstTransformer methods without running other plugins
     // TODO: should refactor to a private interface exposed only to plugins?
-    public processLambda(lambda: Lambda) { return super.visitLambda(lambda); }
-    public processMethodBase(method: IMethodBase) { return super.visitMethodBase(method); }
-    public processBlock(block: Block) { return super.visitBlock(block); }
-    public processVariable(variable: IVariable) { return super.visitVariable(variable); }
-    public processStatement(stmt: Statement) { return super.visitStatement(stmt); }
-    public processExpression(expr: Expression) { return super.visitExpression(expr); }
+    public processLambda(lambda: Lambda) { super.visitLambda(lambda); }
+    public processMethodBase(method: IMethodBase) { super.visitMethodBase(method); }
+    public processBlock(block: Block) { super.visitBlock(block); }
+    public processVariable(variable: IVariable) { super.visitVariable(variable); }
+    public processStatement(stmt: Statement) { super.visitStatement(stmt); }
+    public processExpression(expr: Expression) { super.visitExpression(expr); }
 
     addPlugin(plugin: InferTypesPlugin): void {
         plugin.main = this;
@@ -58,7 +57,7 @@ export class InferTypes extends AstTransformer {
         this.plugins.push(plugin);
     }
 
-    visitVariableWithInitializer(variable: IVariableWithInitializer): IVariableWithInitializer {
+    protected visitVariableWithInitializer(variable: IVariableWithInitializer): IVariableWithInitializer {
         if (variable.type !== null && variable.initializer !== null)
             variable.initializer.setExpectedType(variable.type);
 
@@ -92,8 +91,8 @@ export class InferTypes extends AstTransformer {
             if (e instanceof Error) {
                 this.errorMan.currentNode = expr;
                 this.errorMan.throw(`Error while running type transformation phase: ${e}`);
-                return null;
             }
+            return null;
         }
     }
 
@@ -112,7 +111,7 @@ export class InferTypes extends AstTransformer {
         return false;
     }
 
-    public visitExpression(expr: Expression): Expression {
+    protected visitExpression(expr: Expression): Expression {
         let transformedExpr: Expression = null;
         while (true) {
             const newExpr = this.runTransformRound(transformedExpr || expr);
@@ -171,7 +170,7 @@ export class InferTypes extends AstTransformer {
         super.visitMethodBase(method);
     }
 
-    public visitLambda(lambda: Lambda) {
+    protected visitLambda(lambda: Lambda) {
         if (lambda.actualType !== null) return null;
 
         for (const plugin of this.plugins)
@@ -180,6 +179,8 @@ export class InferTypes extends AstTransformer {
 
         return super.visitLambda(lambda);
     }
+
+    public runPluginsOn(expr: Expression) { return this.visitExpression(expr); }
 
     public visitPackage(pkg: Package) {
         for (const stage of [InferTypesStage.Fields, InferTypesStage.Properties, InferTypesStage.Methods]) {

@@ -6,7 +6,7 @@ import { ClassReference, ThisReference, SuperReference, StaticThisReference } fr
 import { Class, IInterface, Method } from "../../Ast/Types";
 
 export class ResolveMethodCalls extends InferTypesPlugin {
-    name = "ResolveMethodCalls";
+    constructor() { super("ResolveMethodCalls"); }
 
     protected findMethod(cls: IInterface, methodName: string, isStatic: boolean, args: Expression[]) {
         const allBases = cls instanceof Class ? cls.getAllBaseInterfaces().filter(x => x instanceof Class) : cls.getAllBaseInterfaces();
@@ -36,7 +36,7 @@ export class ResolveMethodCalls extends InferTypesPlugin {
             const paramType = genericsResolver.resolveType(expr.method.parameters[i].type, false);
             if (paramType !== null)
                 expr.args[i].setExpectedType(paramType);
-            expr.args[i] = this.main.visitExpression(expr.args[i]);
+            expr.args[i] = this.main.runPluginsOn(expr.args[i]);
             genericsResolver.collectResolutionsFromActualType(paramType, expr.args[i].actualType);
         }
 
@@ -56,9 +56,9 @@ export class ResolveMethodCalls extends InferTypesPlugin {
             this.resolveReturnType(result, new GenericsResolver());
             return result;
         } else {
-            const resolvedObject = expr.object.actualType !== null ? expr.object : this.main.visitExpression(expr.object) || expr.object;
+            const resolvedObject = expr.object.actualType !== null ? expr.object : this.main.runPluginsOn(expr.object) || expr.object;
             const objectType = resolvedObject.getType();
-            const intfType: IInterface = objectType instanceof ClassType ? objectType.decl : objectType 
+            const intfType: IInterface = objectType instanceof ClassType ? <IInterface>objectType.decl : objectType 
                 instanceof InterfaceType ? objectType.decl : null;
 
             if (intfType !== null) {

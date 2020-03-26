@@ -1,11 +1,10 @@
 import { AstTransformer } from "../AstTransformer";
 import { Type, UnresolvedType, ClassType, InterfaceType, EnumType } from "../Ast/AstTypes";
-import { SourceFile, Class, Interface, Enum } from "../Ast/Types";
-import { ErrorManager } from "../ErrorManager";
+import { Class, Interface, Enum } from "../Ast/Types";
 import { Expression, UnresolvedNewExpression, NewExpression } from "../Ast/Expressions";
 
 export class ResolveUnresolvedTypes extends AstTransformer {
-    name = "ResolveUnresolvedTypes";
+    constructor() { super("ResolveUnresolvedTypes"); }
 
     protected visitType(type: Type): Type {
         super.visitType(type);
