@@ -86,7 +86,7 @@ export class ImplementationPackage {
 }
 
 export class PackageManager {
-    intefacesPkgs: InterfacePackage[] = [];
+    interfacesPkgs: InterfacePackage[] = [];
     implementationPkgs: ImplementationPackage[] = [];
 
     constructor(public source: PackageSource) { }
@@ -95,7 +95,7 @@ export class PackageManager {
         const allPackages = await this.source.getAllCached();
 
         for (const content of allPackages.packages.filter(x => x.id.type === PackageType.Interface))
-            this.intefacesPkgs.push(new InterfacePackage(content));
+            this.interfacesPkgs.push(new InterfacePackage(content));
 
         for (const content of allPackages.packages.filter(x => x.id.type === PackageType.Implementation))
             this.implementationPkgs.push(new ImplementationPackage(content));
@@ -110,7 +110,7 @@ export class PackageManager {
     }
 
     getInterfaceDefinitions() {
-        return this.intefacesPkgs.map(x => x.definition).join("\n");
+        return this.interfacesPkgs.map(x => x.definition).join("\n");
     }
 
     getLangNativeImpls(langName: string): PackageNativeImpl[] {

@@ -38,7 +38,7 @@ async function initCompiler() {
 
 function createWorkspace() {
     const ws = new Workspace();
-    for (const intfPkg of pacMan.intefacesPkgs) {
+    for (const intfPkg of pacMan.interfacesPkgs) {
         const libName = `${intfPkg.interfaceYaml.vendor}.${intfPkg.interfaceYaml.name}-v${intfPkg.interfaceYaml.version}`;
         const libPkg = new Package(libName);
         const file = TypeScriptParser2.parseFile(intfPkg.definition, new SourcePath(libPkg, Package.INDEX));
