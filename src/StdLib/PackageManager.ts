@@ -1,6 +1,4 @@
-import { Helpers } from "../Utils/Helpers";
 import * as YAML from "js-yaml";
-import { LangFile } from "../Generator/LangFile/LangFileSchema";
 
 export enum PackageType { Interface, Implementation }
 
@@ -58,7 +56,6 @@ export class ImplPkgImplementation {
     language: string;
     "native-includes": string[];
     "native-include-dir": string;
-    implementation: LangFile;
 }
 
 export class ImplPackageYaml {
@@ -110,11 +107,6 @@ export class PackageManager {
             for (const impl of pkg.implementations)
                 allImpls.push(impl);
         return allImpls.filter(x => x.language === langName);
-    }
-
-    loadImplsIntoLangFile(lang: LangFile) {
-        for (const impl of this.getLangImpls(lang.name))
-            Helpers.extend(lang, impl.implementation || new LangFile());
     }
 
     getInterfaceDefinitions() {

@@ -1,6 +1,6 @@
 import 'module-alias/register';
 import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser2";
-import { readFile, glob, readDir, baseDir, getLangFiles, writeFile } from "./TestUtils";
+import { readFile, glob, readDir, baseDir, writeFile } from "./TestUtils";
 import { PackageManager } from '@one/StdLib/PackageManager';
 import { PackagesFolderSource } from '@one/StdLib/PackagesFolderSource';
 import { SourcePath, Package, Workspace, SourceFile, ExportScopeRef, LiteralTypes, Class } from '@one/One/Ast/Types';
@@ -20,7 +20,6 @@ import { PackageStateCapture } from './DiffUtils';
 import * as color from "ansi-colors";
 
 const pacMan = new PackageManager(new PackagesFolderSource(`${baseDir}/packages`));
-const langs = getLangFiles();
 
 //const compiler = new OneCompiler();
 async function initCompiler() {
