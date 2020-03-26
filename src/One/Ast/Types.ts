@@ -213,6 +213,7 @@ export class EnumMember {
 
     /** @creator FillParent */
     parentEnum: Enum;
+    /** @creator ResolveEnumMemberAccess */
     references: EnumMemberReference[] = [];
 }
 
@@ -307,8 +308,12 @@ export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia,
     parentInterface: IInterface;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };
+    /** @creator ResolveFieldAndPropertyAccess */
     staticReferences: StaticFieldReference[] = [];
+    /** @creator ResolveFieldAndPropertyAccess */
     instanceReferences: InstanceFieldReference[] = [];
+    /** @creator CollectInheritanceInfo */
+    interfaceDeclarations: Field[] = null;
 }
 
 export class Property implements IVariable, IHasAttributesAndTrivia, IClassMember, IAstNode {
@@ -326,7 +331,9 @@ export class Property implements IVariable, IHasAttributesAndTrivia, IClassMembe
     parentClass: Class;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };
+    /** @creator ResolveFieldAndPropertyAccess */
     staticReferences: StaticPropertyReference[] = [];
+    /** @creator ResolveFieldAndPropertyAccess */
     instanceReferences: InstancePropertyReference[] = [];
 }
 
@@ -366,7 +373,7 @@ export class Constructor implements IMethodBaseWithTrivia, IHasAttributesAndTriv
     parentClass: Class;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };
-    /** @creator ExtractSuperCall */
+
     throws: boolean;
 }
 
@@ -386,6 +393,13 @@ export class Method implements IMethodBaseWithTrivia, IHasAttributesAndTrivia, I
     parentInterface: IInterface;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };
+    /** @creator CollectInheritanceInfo */
+    interfaceDeclarations: Method[];
+    /** @creator CollectInheritanceInfo */
+    overrides: Method = null;
+    /** @creator CollectInheritanceInfo */
+    overriddenBy: Method[] = [];
+
     throws: boolean;
     mutates: boolean;
 }
@@ -402,6 +416,7 @@ export class GlobalFunction implements IMethodBaseWithTrivia, IImportable, IHasA
     
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string };
+
     throws: boolean;
 
     /** @creator ResolveIdentifiers */
@@ -418,6 +433,7 @@ export class Lambda extends Expression implements IMethodBase {
     constructor(
         public parameters: MethodParameter[],
         public body: Block) { super(); }
+
     returns: Type = null;
     throws: boolean;
 }

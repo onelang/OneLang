@@ -159,6 +159,7 @@ initCompiler().then(() => {
         saveState();
         writeState();
 
+        new CollectInheritanceInfo().visitPackage(projectPkg);
         const genCsharp = CsharpGenerator.generate(projectPkg);
         for (const file of genCsharp)
             writeFile(`test/artifacts/ProjectTest/${test.projName}/CSharp/${file.path.replace(".ts", ".cs")}`, file.content);
