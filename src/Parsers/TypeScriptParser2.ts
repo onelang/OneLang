@@ -509,7 +509,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
     
                 const sig = this.parseMethodSignature(/* isConstructor = */ false, /* declarationOnly = */ true);
     
-                const method = new Method(memberName, methodTypeArgs, sig.params, sig.body, Visibility.Public, false, sig.returns, memberLeadingTrivia);
+                const method = new Method(memberName, methodTypeArgs, sig.params, sig.body, Visibility.Public, false, sig.returns, false, memberLeadingTrivia);
                 methods.push(method);
                 this.nodeManager.addNode(method, memberStart);
                 this.context.pop();
@@ -558,6 +558,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
             const memberStart = this.reader.offset;
             const modifiers = this.reader.readModifiers(["static", "public", "protected", "private", "readonly", "async"]);
             const isStatic = modifiers.includes("static");
+            const isAsync = modifiers.includes("async");
             const visibility = modifiers.includes("private") ? Visibility.Private :
                 modifiers.includes("protected") ? Visibility.Protected : Visibility.Public;
 
@@ -573,7 +574,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
                     for (const field of sig.fields)
                         fields.push(field);
                 } else {
-                    const method = new Method(memberName, methodTypeArgs, sig.params, sig.body, visibility, isStatic, sig.returns, memberLeadingTrivia);
+                    const method = new Method(memberName, methodTypeArgs, sig.params, sig.body, visibility, isStatic, sig.returns, isAsync, memberLeadingTrivia);
                     methods.push(method);
                     member = method;
                 }

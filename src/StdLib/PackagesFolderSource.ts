@@ -1,4 +1,5 @@
 import { PackageSource, PackageId, PackageBundle, PackageContent, PackageType } from "./PackageManager";
+import { Fs, Glob, Path } from "../Utils/Native";
 
 export class PackagesFolderSource implements PackageSource {
     constructor(public packagesDir: string = "packages") { }
@@ -8,9 +9,9 @@ export class PackagesFolderSource implements PackageSource {
     }
 
     async getAllCached(): Promise<PackageBundle> {
-        const fs = await import("fs");
-        const glob = await import("glob");
-        const path = await import("path");
+        const fs = <Fs> await import("fs");
+        const glob = <Glob> await import("glob");
+        const path = <Path> await import("path");
 
         const packages: { [id: string]: PackageContent } = {};
         const allFiles: string[] = glob.sync(`${this.packagesDir}/**/*`, { nodir: true });
@@ -19,16 +20,18 @@ export class PackagesFolderSource implements PackageSource {
             const type = pathParts.shift();
             const pkgDir = pathParts.shift();
             if (type !== "implementations" && type !== "interfaces") continue; // skip e.g. bundle.json
-            let pkg = packages[`${type}/${pkgDir}`];
+            const pkgIdStr = `${type}/${pkgDir}`;
+            let pkg = packages[pkgIdStr];
             if (!pkg) {
                 const pkgDirParts: string[] = pkgDir.split(/-/g);
                 const version = pkgDirParts.pop().replace(/^v/, "");
                 const pkgType = type === "implementations" ? PackageType.Implementation : PackageType.Interface;
                 const pkgId = new PackageId(pkgType, pkgDirParts.join("-"), version);
-                pkg = packages[`${type}/${pkgDir}`] = new PackageContent(pkgId, {}, true);
+                pkg = new PackageContent(pkgId, {}, true);
+                packages[pkgIdStr] = pkg;
             }
             pkg.files[pathParts.join("/")] = fs.readFileSync(fn, "utf-8");
         }
-        return Promise.resolve(new PackageBundle(Object.values(packages)));
+        return new PackageBundle(Object.values(packages));
     }
 }

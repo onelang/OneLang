@@ -79,6 +79,7 @@ declare class TsString {
     toUpperCase(): string;
     toLowerCase(): string;
     slice(offset: number): string;
+    charCodeAt(offset: number): number;
 }
 
 class TsNumber {

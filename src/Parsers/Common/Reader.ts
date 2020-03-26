@@ -94,7 +94,9 @@ export class Reader {
     }
 
     isAlphaNum(c: string) {
-        return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9') || c === '_';
+        const n = c.charCodeAt(0);
+        return (97 <= n && n <= 122) || (65 <= n && n <= 90) || (48 <= n && n <= 57) || n === 95;
+        //return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9') || c === '_';
     }
 
     peekToken(token: string): boolean {

@@ -1,6 +1,6 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Property, Lambda, Method, IMethodBase } from "../../Ast/Types";
-import { VoidType, Type, AnyType, LambdaType } from "../../Ast/AstTypes";
+import { VoidType, Type, AnyType, LambdaType, ClassType } from "../../Ast/AstTypes";
 import { Statement, ReturnStatement, ThrowStatement } from "../../Ast/Statements";
 import { ErrorManager } from "../../ErrorManager";
 import { NullLiteral, Expression } from "../../Ast/Expressions";
@@ -26,7 +26,7 @@ class ReturnTypeInferer {
             this.returnTypes.push(returnType);
     }
 
-    finish(declaredType: Type, errorContext: string): Type {
+    finish(declaredType: Type, errorContext: string, asyncType: ClassType): Type {
         let inferredType: Type = null;
 
         if (this.returnTypes.length == 0) {
@@ -50,8 +50,12 @@ class ReturnTypeInferer {
             }
         }
 
-        if (declaredType !== null && !Type.isAssignableTo(inferredType, declaredType))
-            this.errorMan.throw(`${errorContext} returns different type (${inferredType.repr()}) than expected ${declaredType.repr()}`);
+        let checkType = declaredType;
+        if (checkType !== null && asyncType !== null && checkType instanceof ClassType && checkType.decl === asyncType.decl)
+            checkType = checkType.typeArguments[0];
+
+        if (checkType !== null && !Type.isAssignableTo(inferredType, checkType))
+            this.errorMan.throw(`${errorContext} returns different type (${inferredType.repr()}) than expected ${checkType.repr()}`);
 
         this.returnTypes = null;
         return declaredType !== null ? declaredType : inferredType;
@@ -69,8 +73,8 @@ export class InferReturnType extends InferTypesPlugin {
         this.returnTypeInfer.push(new ReturnTypeInferer(this.errorMan));
     }
 
-    finish(declaredType: Type, errorContext: string): Type {
-        return this.returnTypeInfer.pop().finish(declaredType, errorContext);
+    finish(declaredType: Type, errorContext: string, asyncType: ClassType): Type {
+        return this.returnTypeInfer.pop().finish(declaredType, errorContext, asyncType);
     }
 
     handleStatement(stmt: Statement) {
@@ -90,7 +94,7 @@ export class InferReturnType extends InferTypesPlugin {
     handleLambda(lambda: Lambda): boolean {
         this.start();
         this.main.processLambda(lambda);
-        lambda.returns = this.finish(lambda.returns, "Lambda");
+        lambda.returns = this.finish(lambda.returns, "Lambda", null);
         lambda.setActualType(new LambdaType(lambda.parameters, lambda.returns), false, true);
         return true;
     }
@@ -99,7 +103,7 @@ export class InferReturnType extends InferTypesPlugin {
         if (method instanceof Method && method.body !== null) {
             this.start();
             this.main.processMethodBase(method);
-            method.returns = this.finish(method.returns, `Method "${method.name}"`);
+            method.returns = this.finish(method.returns, `Method "${method.name}"`, method.async ? this.main.currentFile.literalTypes.promise : null);
             return true;
         } else
             return false;
@@ -111,13 +115,13 @@ export class InferReturnType extends InferTypesPlugin {
         if (prop.getter !== null) {
             this.start();
             this.main.processBlock(prop.getter);
-            prop.type = this.finish(prop.type, `Property "${prop.name}" getter`);
+            prop.type = this.finish(prop.type, `Property "${prop.name}" getter`, null);
         }
 
         if (prop.setter !== null) {
             this.start();
             this.main.processBlock(prop.setter);
-            this.finish(VoidType.instance, `Property "${prop.name}" setter`);
+            this.finish(VoidType.instance, `Property "${prop.name}" setter`, null);
         }
 
         return true;

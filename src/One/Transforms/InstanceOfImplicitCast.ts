@@ -13,7 +13,8 @@ export class InstanceOfImplicitCast extends AstTransformer {
     protected addCast(cast: InstanceOfExpression) {
         if (this.castCounts.length > 0) {
             this.casts.push(cast);
-            this.castCounts[this.castCounts.length - 1]++;
+            const last = this.castCounts.length - 1;
+            this.castCounts[last] = this.castCounts[last] + 1;
         }
     }
 

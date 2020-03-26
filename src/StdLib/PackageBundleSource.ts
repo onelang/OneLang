@@ -8,6 +8,6 @@ export class PackageBundleSource implements PackageSource {
     }
 
     async getAllCached(): Promise<PackageBundle> {
-        return Promise.resolve(this.bundle);
+        return await Promise.resolve(this.bundle);
     }
 }

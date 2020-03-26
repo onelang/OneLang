@@ -281,9 +281,11 @@ export class CsharpGenerator {
         const overrides = method instanceof Method ? method.overrides !== null : false;
         const virtual = method instanceof Method ? !overrides && method.overriddenBy.length > 0 : false;
         const intfMethod = method instanceof Method ? method.parentInterface instanceof Interface : false;
+        const async = method instanceof Method ? method.async : false;
         return this.preIf("/* throws */ ", method.throws) + 
             (intfMethod ? "" : this.vis(visibility) + " ") +
             this.preIf("virtual ", virtual) + this.preIf("override ", overrides) +
+            this.preIf("async ", async) +
             (method instanceof Constructor ? "" : `${this.type(returns)} `) +
             this.name_(name) + this.typeArgs(typeArgs) + 
             `(${method.parameters.map(p => this.var(p)).join(", ")})` +
@@ -328,6 +330,7 @@ export class CsharpGenerator {
 
         const methods: string[] = [];
         for (const method of cls.methods) {
+            if (cls instanceof Class && method.body === null) continue; // declaration only
             methods.push(
                 this.preIf("static ", method.isStatic) + 
                 this.preIf("/* mutates */ ", method.mutates) + 
@@ -365,7 +368,7 @@ export class CsharpGenerator {
         const main = sourceFile.mainBlock.statements.length > 0 ? 
             `public class Program\n{\n    static void Main(string[] args)\n    {\n${this.pad(this.rawBlock(sourceFile.mainBlock))}\n    }\n}` : "";
 
-        const usingsSet = new Set<string>(sourceFile.imports.map(x => this.pathToNs(x.exportScope.scopeName)));
+        const usingsSet = new Set<string>(sourceFile.imports.map(x => this.pathToNs(x.exportScope.scopeName)).filter(x => x !== ""));
         const usings: string[] = [];
         for (const using of this.usings)
             usings.push(`using ${using};`);

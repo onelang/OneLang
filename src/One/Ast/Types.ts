@@ -387,6 +387,7 @@ export class Method implements IMethodBaseWithTrivia, IHasAttributesAndTrivia, I
         public visibility: Visibility,
         public isStatic: boolean,
         public returns: Type,
+        public async: boolean,
         public leadingTrivia: string) { }
     
     /** @creator FillParent */
