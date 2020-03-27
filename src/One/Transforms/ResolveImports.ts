@@ -1,7 +1,7 @@
 import { Workspace, UnresolvedImport } from "../Ast/Types";
 
 export class ResolveImports {
-    static processWorkspace(ws: Workspace) {
+    static processWorkspace(ws: Workspace): void {
         for (const pkg of Object.values(ws.packages))
             for (const file of Object.values(pkg.files)) {
                 for (const imp of file.imports) {

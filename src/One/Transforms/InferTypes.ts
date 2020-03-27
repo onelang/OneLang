@@ -182,7 +182,7 @@ export class InferTypes extends AstTransformer {
 
     public runPluginsOn(expr: Expression) { return this.visitExpression(expr); }
 
-    public visitPackage(pkg: Package) {
+    public visitPackage(pkg: Package): void {
         for (const stage of [InferTypesStage.Fields, InferTypesStage.Properties, InferTypesStage.Methods]) {
             this.stage = stage;
             super.visitPackage(pkg);

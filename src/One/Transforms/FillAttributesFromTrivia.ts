@@ -41,7 +41,7 @@ export class FillAttributesFromTrivia {
         this.processBlock(method.body);
     }
 
-    static processFile(file: SourceFile) {
+    static processFile(file: SourceFile): void {
         this.process(file.imports);
         this.process(file.enums);
         this.process(file.interfaces);
@@ -65,7 +65,7 @@ export class FillAttributesFromTrivia {
         }
     }
 
-    static processPackage(pkg: Package) {
+    static processPackage(pkg: Package): void {
         for (const file of Object.values(pkg.files))
             this.processFile(file);
     }

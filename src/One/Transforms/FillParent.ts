@@ -75,7 +75,7 @@ export class FillParent extends AstTransformer {
         this.parentNodeStack.pop();
     }
 
-    public visitSourceFile(file: SourceFile) {
+    public visitSourceFile(file: SourceFile): void {
         for (const imp of file.imports)
             imp.parentFile = file;
 

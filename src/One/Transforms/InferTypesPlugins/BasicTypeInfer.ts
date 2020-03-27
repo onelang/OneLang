@@ -128,10 +128,10 @@ export class BasicTypeInfer extends InferTypesPlugin {
                 expr.setActualType(defaultType);
         } else if (expr instanceof AwaitExpression) {
             const exprType = expr.expr.getType();
-            if (!Type.isAssignableTo(exprType, litTypes.promise))
-                this.errorMan.throw(`Expected promise type (${litTypes.promise}) for await expression, but got ${exprType.repr()}`);
+            if (exprType instanceof ClassType && exprType.decl === litTypes.promise.decl)
+                expr.setActualType((<ClassType> exprType).typeArguments[0], true);
             else
-                expr.setActualType((<ClassType> exprType).typeArguments[0]);
+                this.errorMan.throw(`Expected promise type (${litTypes.promise.repr()}) for await expression, but got ${exprType.repr()}`);
         } else {
             return false;
         }

@@ -338,7 +338,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
             statement = new ExpressionStatement(expr);
             const isBinarySet = expr instanceof BinaryExpression && ["=", "+=", "-="].includes(expr.operator);
             const isUnarySet = expr instanceof UnaryExpression && ["++", "--"].includes(expr.operator);
-            if (!(expr instanceof UnresolvedCallExpression || isBinarySet || isUnarySet))
+            if (!(expr instanceof UnresolvedCallExpression || isBinarySet || isUnarySet || expr instanceof AwaitExpression))
                 this.reader.fail("this expression is not allowed as statement");
         }
 
@@ -819,7 +819,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
         return this.parseSourceFile();
     }
 
-    static parseFile(source: string, path: SourcePath = null) {
+    static parseFile(source: string, path: SourcePath = null): SourceFile {
         return new TypeScriptParser2(source, path).parseSourceFile();
     }
 }

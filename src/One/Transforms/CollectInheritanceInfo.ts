@@ -17,7 +17,7 @@ export class CollectInheritanceInfo {
         }
     }
 
-    visitPackage(pkg: Package) {
+    visitPackage(pkg: Package): void {
         for (const file of Object.values(pkg.files))
             for (const cls of file.classes)
                 this.visitClass(cls);

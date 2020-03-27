@@ -57,7 +57,7 @@ export class CsharpGenerator {
                 return `${this.type(t.typeArguments[0])}[]`;
             else if (t.decl.name === "Promise") {
                 this.usings.add("System.Threading.Tasks");
-                return `Task${typeArgs}`;
+                return t.typeArguments[0] instanceof VoidType ? "Task"  : `Task${typeArgs}`;
             } else if (t.decl.name === "Object") {
                 this.usings.add("System");
                 return `object`;

@@ -91,7 +91,7 @@ export class PackageManager {
 
     constructor(public source: PackageSource) { }
 
-    async loadAllCached() {
+    async loadAllCached(): Promise<void> {
         const allPackages = await this.source.getAllCached();
 
         for (const content of allPackages.packages.filter(x => x.id.type === PackageType.Interface))
