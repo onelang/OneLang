@@ -1,27 +1,27 @@
-import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression, StaticMethodCallExpression, LambdaCallExpression, IExpression } from "../One/Ast/Expressions";
+import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression, StaticMethodCallExpression, LambdaCallExpression, IExpression, IMethodCallExpression } from "../One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable, TryStatement } from "../One/Ast/Statements";
 import { Method, Block, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility, IAstNode, GlobalFunction, Package, SourcePath } from "../One/Ast/Types";
 import { Type, VoidType, ClassType, InterfaceType, EnumType, AnyType, LambdaType, NullType, GenericsType } from "../One/Ast/AstTypes";
-import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference, StaticThisReference, Reference } from "../One/Ast/References";
+import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference, StaticThisReference, Reference, VariableReference } from "../One/Ast/References";
 
 export class GeneratedFile {
     constructor(public path: string, public content: string) { }
 }
 
 export class CsharpGenerator {
-    static usings = new Set<string>(); // TODO: make instance
-    static currentClass: IInterface; // TODO: make instance
-    static reservedWords = ["object", "else", "operator", "class", "enum", "void", "string", "implicit", "Type", "Enum", "params", "using", "throw", "ref", "base", "virtual", "interface"];
-    static fieldToMethodHack = ["length"];
+    usings = new Set<string>(); // TODO: make instance
+    currentClass: IInterface; // TODO: make instance
+    reservedWords = ["object", "else", "operator", "class", "enum", "void", "string", "implicit", "Type", "Enum", "params", "using", "throw", "ref", "base", "virtual", "interface"];
+    fieldToMethodHack = ["length"];
 
-    static name_(name: string) {
+    name_(name: string) {
         if (this.reservedWords.includes(name)) name += "_";
         if (this.fieldToMethodHack.includes(name)) name += "()";
         name = name.replace(/-/g, '');
         return name;
     }
 
-    static leading(item: Statement) {
+    leading(item: Statement) {
         let result = "";
         if (item.leadingTrivia !== null && item.leadingTrivia.length > 0)
             result += item.leadingTrivia;
@@ -30,21 +30,22 @@ export class CsharpGenerator {
         return result;
     }
 
-    static preArr(prefix: string, value: string[]) {
+    preArr(prefix: string, value: string[]) {
         return value.length > 0 ? `${prefix}${value.join(", ")}` : "";
     }
 
-    static preIf(prefix: string, condition: boolean) {
+    preIf(prefix: string, condition: boolean) {
         return condition ? prefix : "";
     }
 
-    static pre(prefix: string, value: string) {
+    pre(prefix: string, value: string) {
         return value !== null ? `${prefix}${value}` : "";
     }
 
-    static typeArgs(args: string[]): string { return args !== null && args.length > 0 ? `<${args.join(", ")}>` : ""; }
-    
-    static type(t: Type): string {
+    typeArgs(args: string[]): string { return args !== null && args.length > 0 ? `<${args.join(", ")}>` : ""; }
+    typeArgs2(args: Type[]): string { return this.typeArgs(args.map(x => this.type(x))); }
+
+    type(t: Type, mutates = true): string {
         if (t instanceof ClassType) {
             const typeArgs = this.typeArgs(t.typeArguments.map(x => this.type(x)));
             if (t.decl.name === "TsString")
@@ -53,9 +54,13 @@ export class CsharpGenerator {
                 return "bool";
             else if (t.decl.name === "TsNumber")
                 return "int";
-            else if (t.decl.name === "TsArray")
-                return `${this.type(t.typeArguments[0])}[]`;
-            else if (t.decl.name === "Promise") {
+            else if (t.decl.name === "TsArray") {
+                if (mutates) {
+                    this.usings.add("System.Collections.Generic");
+                    return `List<${this.type(t.typeArguments[0])}>`;
+                } else
+                    return `${this.type(t.typeArguments[0])}[]`;
+            } else if (t.decl.name === "Promise") {
                 this.usings.add("System.Threading.Tasks");
                 return t.typeArguments[0] instanceof VoidType ? "Task"  : `Task${typeArgs}`;
             } else if (t.decl.name === "Object") {
@@ -89,20 +94,76 @@ export class CsharpGenerator {
         }
     }
 
-    static vis(v: Visibility) {
+    vis(v: Visibility) {
         return v === Visibility.Private ? "private" :
                v === Visibility.Protected ? "protected" :
                v === Visibility.Public ? "public" :
                "/* TODO: not set */public";
     }
 
-    static varWoInit(v: IVariable) { return `${this.type(v.type)} ${this.name_(v.name)}`; }
-    static var(v: IVariableWithInitializer) { return `${this.varWoInit(v)}${v.initializer !== null ? ` = ${this.expr(v.initializer)}` : ""}`; }
+    varWoInit(v: IVariable) {
+        let type: string;
+        if (v.type instanceof ClassType && v.type.decl.name === "TsArray") {
+            if (v.mutability.mutated) {
+                this.usings.add("System.Collections.Generic");
+                type = `List<${this.type(v.type.typeArguments[0])}>`;
+            } else {
+                type = `${this.type(v.type.typeArguments[0])}[]`;
+            }
+        } else {
+            type = this.type(v.type);
+        }
+        return `${type} ${this.name_(v.name)}`;
+    }
 
-    static expr(expr: IExpression): string {
+    var(v: IVariableWithInitializer) { return `${this.varWoInit(v)}${v.initializer !== null ? ` = ${this.expr(v.initializer)}` : ""}`; }
+
+    exprCall(typeArgs: Type[], args: Expression[]) {
+        return this.typeArgs2(typeArgs) + `(${args.map(x => this.expr(x)).join(", ")})`;
+    }
+
+    mutateArg(arg: Expression, shouldBeMutable: boolean) {
+        if (arg.actualType instanceof ClassType && arg.actualType.decl.name == "TsArray") {
+            if (arg instanceof VariableReference) {
+                const currentlyMutable = arg.getVariable().mutability.mutated;
+                if (currentlyMutable && !shouldBeMutable)
+                    return `${this.expr(arg)}.ToArray()`;
+                else if (!currentlyMutable && shouldBeMutable) {
+                    this.usings.add("System.Linq");
+                    return `${this.expr(arg)}.ToList()`;
+                }
+            }
+            else if (arg instanceof ArrayLiteral && !shouldBeMutable) {
+                const itemType = (<ClassType>arg.actualType).typeArguments[0];
+                const itemIsArray = itemType instanceof ClassType && itemType.decl.name == "TsArray";
+                return arg.items.length === 0 && !itemIsArray ? `new ${this.type(itemType)}[0]` : 
+                    `new ${this.type(itemType)}[] { ${arg.items.map(x => this.expr(x)).join(', ')} }`;
+            }
+        }
+        return this.expr(arg);
+    }
+
+    mutatedExpr(expr: Expression, toWhere: Expression) {
+        if (toWhere instanceof VariableReference)
+            return this.mutateArg(expr, toWhere.getVariable().mutability.mutated);
+        return this.expr(expr);
+    }
+
+    callParams(args: Expression[], params: MethodParameter[]) {
+        const argReprs: string[] = [];
+        for (let i = 0; i < args.length; i++)
+            argReprs.push(this.mutateArg(args[i], params[i].mutability.mutated));
+        return `(${argReprs.join(", ")})`;
+    }
+
+    methodCall(expr: IMethodCallExpression) {
+        return this.name_(expr.method.name) + this.typeArgs2(expr.typeArgs) + this.callParams(expr.args, expr.method.parameters);
+    }
+
+    expr(expr: IExpression): string {
         let res = "UNKNOWN-EXPR";
         if (expr instanceof NewExpression) {
-            res = `new ${this.type(expr.cls)}(${expr.args.map(x => this.expr(x)).join(", ")})`;
+            res = `new ${this.type(expr.cls)}${this.callParams(expr.args, expr.cls.decl.constructor_ !== null ? expr.cls.decl.constructor_.parameters : [])}`;
         } else if (expr instanceof UnresolvedNewExpression) {
             res = `/* TODO: UnresolvedNewExpression */ new ${this.type(expr.cls)}(${expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof Identifier) {
@@ -110,21 +171,15 @@ export class CsharpGenerator {
         } else if (expr instanceof PropertyAccessExpression) {
             res = `/* TODO: PropertyAccessExpression */ ${this.expr(expr.object)}.${expr.propertyName}`;
         } else if (expr instanceof UnresolvedCallExpression) {
-            const typeArgs = expr.typeArgs.length > 0 ? `<${expr.typeArgs.map(x => this.type(x)).join(", ")}>` : "";
-            res = `/* TODO: UnresolvedCallExpression */ ${this.expr(expr.func)}${typeArgs}(${expr.args.map(x => this.expr(x)).join(", ")})`;
+            res = `/* TODO: UnresolvedCallExpression */ ${this.expr(expr.func)}${this.exprCall(expr.typeArgs, expr.args)}`;
         } else if (expr instanceof UnresolvedMethodCallExpression) {
-            const typeArgs = expr.typeArgs.length > 0 ? `<${expr.typeArgs.map(x => this.type(x)).join(", ")}>` : "";
-            res = `/* TODO: UnresolvedMethodCallExpression */ ${this.expr(expr.object)}.${expr.methodName}${typeArgs}(${expr.args.map(x => this.expr(x)).join(", ")})`;
+            res = `/* TODO: UnresolvedMethodCallExpression */ ${this.expr(expr.object)}.${expr.methodName}${this.exprCall(expr.typeArgs, expr.args)}`;
         } else if (expr instanceof InstanceMethodCallExpression) {
-            const typeArgs = expr.typeArgs.length > 0 ? `<${expr.typeArgs.map(x => this.type(x)).join(", ")}>` : "";
-            //if (expr.object instanceof ThisReference) debugger;
-            res = `${this.expr(expr.object)}.${this.name_(expr.method.name)}${typeArgs}(${expr.args.map(x => this.expr(x)).join(", ")})`;
+            res = `${this.expr(expr.object)}.${this.methodCall(expr)}`;
         } else if (expr instanceof StaticMethodCallExpression) {
-            const typeArgs = expr.typeArgs.length > 0 ? `<${expr.typeArgs.map(x => this.type(x)).join(", ")}>` : "";
-            const intfPrefix = `${this.name_(expr.method.parentInterface.name)}.`;
-            res = `${intfPrefix}${this.name_(expr.method.name)}${typeArgs}(${expr.args.map(x => this.expr(x)).join(", ")})`;
+            res = `${this.name_(expr.method.parentInterface.name)}.${this.methodCall(expr)}`;
         } else if (expr instanceof GlobalFunctionCallExpression) {
-            res = `Global.${this.name_(expr.func.name)}(${expr.args.map(x => this.expr(x)).join(", ")})`;
+            res = `Global.${this.name_(expr.func.name)}${this.exprCall([], expr.args)}`;
         } else if (expr instanceof LambdaCallExpression) {
             res = `${this.expr(expr.method)}(${expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof BooleanLiteral) {
@@ -149,20 +204,16 @@ export class CsharpGenerator {
             }
             res = `$"${parts.join('')}"`;
         } else if (expr instanceof BinaryExpression) {
-            res = `${this.expr(expr.left)} ${expr.operator} ${this.expr(expr.right)}`;
+            res = `${this.expr(expr.left)} ${expr.operator} ${this.mutatedExpr(expr.right, expr.operator === "=" ? expr.left : null)}`;
         } else if (expr instanceof ArrayLiteral) {
             if (expr.items.length === 0) {
-                const arrayType = (<ClassType>expr.actualType).typeArguments[0];
-                if (arrayType instanceof ClassType && arrayType.decl.name === "TsArray")
-                    res = `new ${this.type(expr.actualType)} { }`;
-                else
-                    res = `new ${this.type(arrayType)}[0]`;
+                res = `new ${this.type(expr.actualType)}()`;
             } else
-                res = `new[] { ${expr.items.map(x => this.expr(x)).join(', ')} }`;
+                res = `new ${this.type(expr.actualType)} { ${expr.items.map(x => this.expr(x)).join(', ')} }`;
         } else if (expr instanceof CastExpression) {
             res = `((${this.type(expr.newType)})${this.expr(expr.expression)})`;
         } else if (expr instanceof ConditionalExpression) {
-            res = `${this.expr(expr.condition)} ? ${this.expr(expr.whenTrue)} : ${this.expr(expr.whenFalse)}`;
+            res = `${this.expr(expr.condition)} ? ${this.expr(expr.whenTrue)} : ${this.mutatedExpr(expr.whenFalse, expr.whenTrue)}`;
         } else if (expr instanceof InstanceOfExpression) {
             res = `${this.expr(expr.expr)} is ${this.type(expr.checkType)}`;
         } else if (expr instanceof ParenthesizedExpression) {
@@ -215,22 +266,22 @@ export class CsharpGenerator {
         } else if (expr instanceof EnumMemberReference) {
             res = `${this.name_(expr.decl.parentEnum.name)}.${this.name_(expr.decl.name)}`;
         } else if (expr instanceof NullCoalesceExpression) {
-            res = `${this.expr(expr.defaultExpr)} ?? ${this.expr(expr.exprIfNull)}`;
+            res = `${this.expr(expr.defaultExpr)} ?? ${this.mutatedExpr(expr.exprIfNull, expr.defaultExpr)}`;
         } else debugger;
         return res;
     }
 
-    static block(block: Block, allowOneLiner = true): string {
+    block(block: Block, allowOneLiner = true): string {
         const stmtLen = block.statements.length;
         return stmtLen === 0 ? " { }" : allowOneLiner && stmtLen === 1 ? `\n${this.pad(this.rawBlock(block))}` : ` {\n${this.pad(this.rawBlock(block))}\n}`;
     }
 
-    static stmt(stmt: Statement): string {
+    stmt(stmt: Statement): string {
         let res = "UNKNOWN-STATEMENT";
         if (stmt instanceof BreakStatement) {
             res = "break;";
         } else if (stmt instanceof ReturnStatement) {
-            res = stmt.expression === null ? "return;" : `return ${this.expr(stmt.expression)};`;
+            res = stmt.expression === null ? "return;" : `return ${this.mutateArg(stmt.expression, false)};`;
         } else if (stmt instanceof UnsetStatement) {
             res = `/* unset ${this.expr(stmt.expression)}; */`;
         } else if (stmt instanceof ThrowStatement) {
@@ -239,7 +290,7 @@ export class CsharpGenerator {
             res = `${this.expr(stmt.expression)};`;
         } else if (stmt instanceof VariableDeclaration) {
             if (stmt.initializer instanceof NullLiteral)
-                res = `${this.type(stmt.type)} ${this.name_(stmt.name)} = null;`;
+                res = `${this.type(stmt.type, stmt.mutability.mutated)} ${this.name_(stmt.name)} = null;`;
             else if (stmt.initializer !== null)
                 res = `var ${this.name_(stmt.name)} = ${this.expr(stmt.initializer)};`;
             else
@@ -271,10 +322,10 @@ export class CsharpGenerator {
         return this.leading(stmt) + res;
     }
 
-    static stmts(stmts: Statement[]): string { return stmts.map(stmt => this.stmt(stmt)).join("\n"); }
-    static rawBlock(block: Block): string { return this.stmts(block.statements); }
+    stmts(stmts: Statement[]): string { return stmts.map(stmt => this.stmt(stmt)).join("\n"); }
+    rawBlock(block: Block): string { return this.stmts(block.statements); }
 
-    static methodBase(method: IMethodBase, returns: Type, visibility: Visibility, bodyPrefix: Statement[] = null): string {
+    methodBase(method: IMethodBase, returns: Type, visibility: Visibility, bodyPrefix: Statement[] = null): string {
         if (method === null) return "";
         const name = method instanceof Method ? method.name : method instanceof Constructor ? method.parentClass.name : "???";
         const typeArgs = method instanceof Method ? method.typeArguments : null;
@@ -286,14 +337,14 @@ export class CsharpGenerator {
             (intfMethod ? "" : this.vis(visibility) + " ") +
             this.preIf("virtual ", virtual) + this.preIf("override ", overrides) +
             this.preIf("async ", async) +
-            (method instanceof Constructor ? "" : `${this.type(returns)} `) +
+            (method instanceof Constructor ? "" : `${this.type(returns, false)} `) +
             this.name_(name) + this.typeArgs(typeArgs) + 
             `(${method.parameters.map(p => this.var(p)).join(", ")})` +
             (method instanceof Constructor && method.superCallArgs !== null ? `: base(${method.superCallArgs.map(x => this.expr(x)).join(", ")})` : "") + 
             (method.body !== null ? ` {\n${this.pad(this.stmts((bodyPrefix || []).concat(method.body.statements)))}\n}` : ";");
     }
 
-    static classLike(cls: IInterface) {
+    classLike(cls: IInterface) {
         this.currentClass = cls;
         const resList: string[] = [];
 
@@ -325,7 +376,7 @@ export class CsharpGenerator {
 
             resList.push(this.methodBase(cls.constructor_, VoidType.instance, Visibility.Public, bodyPrefix));
         } else if (cls instanceof Interface) {
-            resList.push(cls.fields.map(field => `${this.type(field.type)} ${this.name_(field.name)} { get; set; }`).join("\n"));
+            resList.push(cls.fields.map(field => `${this.varWoInit(field)} { get; set; }`).join("\n"));
         }
 
         const methods: string[] = [];
@@ -333,23 +384,23 @@ export class CsharpGenerator {
             if (cls instanceof Class && method.body === null) continue; // declaration only
             methods.push(
                 this.preIf("static ", method.isStatic) + 
-                this.preIf("/* mutates */ ", method.mutates) + 
+                this.preIf("@mutates ", "mutates" in method.attributes) + 
                 this.methodBase(method, method.returns, method.visibility));
         }
         resList.push(methods.join("\n\n"));
         return this.pad(resList.filter(x => x !== "").join("\n\n"));
     }
 
-    static pad(str: string): string { return str.split(/\n/g).map(x => `    ${x}`).join('\n'); }
+    pad(str: string): string { return str.split(/\n/g).map(x => `    ${x}`).join('\n'); }
 
-    static pathToNs(path: string): string {
+    pathToNs(path: string): string {
         // Generator/ExprLang/ExprLangAst.ts -> Generator.ExprLang
         const parts = path.split(/\//g);
         parts.pop();
         return parts.join('.');
     }
 
-    static genFile(sourceFile: SourceFile): string {
+    genFile(sourceFile: SourceFile): string {
         const enums = sourceFile.enums.map(enum_ => `public enum ${this.name_(enum_.name)} { ${enum_.values.map(x => this.name_(x.name)).join(", ")} }`);
 
         const intfs = sourceFile.interfaces.map(intf => `public interface ${this.name_(intf.name)}${this.typeArgs(intf.typeArguments)}`+
@@ -380,7 +431,7 @@ export class CsharpGenerator {
         return result;
     }
 
-    static generate(pkg: Package): GeneratedFile[] {
+    generate(pkg: Package): GeneratedFile[] {
         const result: GeneratedFile[] = [];
         for (const path of Object.keys(pkg.files))
             result.push(new GeneratedFile(path, this.genFile(pkg.files[path])));
