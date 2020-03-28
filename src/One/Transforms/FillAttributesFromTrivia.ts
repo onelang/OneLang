@@ -5,7 +5,7 @@ export class FillAttributesFromTrivia {
     static processTrivia(trivia: string) {
         const result: { [name: string]: string } = {};
         if (trivia !== "") {
-            const regex = /(?:\n|^)\s*(?:\/\/|#|\/\*\*?)\s*@([a-z0-9_.-]+)(?: \*\/|([^\n]+)|$|\n)/g;
+            const regex = /(?:\n|^)\s*(?:\/\/|#|\/\*\*?)\s*@([a-z0-9_.-]+) ?((?!\n|\*\/|$).+)?/g;
             while(true) {
                 const match = regex.exec(trivia) || null;
                 if (match === null) break;

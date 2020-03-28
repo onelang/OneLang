@@ -25,8 +25,8 @@ export class CsharpGenerator {
         let result = "";
         if (item.leadingTrivia !== null && item.leadingTrivia.length > 0)
             result += item.leadingTrivia;
-        if (item.attributes !== null)
-            result += Object.keys(item.attributes).map(x => `/// {ATTR} name="${x}", value=${JSON.stringify(item.attributes[x])}\n`).join("");
+        //if (item.attributes !== null)
+        //    result += Object.keys(item.attributes).map(x => `// @${x} ${item.attributes[x]}\n`).join("");
         return result;
     }
 
@@ -278,7 +278,9 @@ export class CsharpGenerator {
 
     stmt(stmt: Statement): string {
         let res = "UNKNOWN-STATEMENT";
-        if (stmt instanceof BreakStatement) {
+        if (stmt.attributes !== null && "csharp-override" in stmt.attributes) {
+            res = stmt.attributes["csharp-override"];
+        } else if (stmt instanceof BreakStatement) {
             res = "break;";
         } else if (stmt instanceof ReturnStatement) {
             res = stmt.expression === null ? "return;" : `return ${this.mutateArg(stmt.expression, false)};`;
