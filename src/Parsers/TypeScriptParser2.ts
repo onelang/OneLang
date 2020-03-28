@@ -243,6 +243,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
         if (block !== null) return block;
 
         const stmt = this.expectStatement();
+        // @csharp-override return new Block(stmt == null ? new Statement[0] : new Statement[] { stmt });
         return new Block(stmt === null ? <Statement[]>[] : [stmt]);
     }
 
@@ -456,6 +457,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
                     superCallArgs = firstStmt.expression.args;
                     body.statements.shift();
                 }
+            // @csharp-override body.statements = bodyPrefixStatements.concat(body.statements).ToList();
             body.statements = bodyPrefixStatements.concat(body.statements);
         }
 

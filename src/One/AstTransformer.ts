@@ -106,6 +106,7 @@ export abstract class AstTransformer {
     }
 
     protected visitBlock(block: Block): Block {
+        // @csharp-override block.statements = block.statements.map(x => this.visitStatement(x) ?? x).ToList();
         block.statements = block.statements.map(x => this.visitStatement(x) || x);
         return null;
     }
