@@ -15,7 +15,9 @@ export function readFile(fn: string): string {
 
 export function writeFile(fn: string, data: any) {
     const fullFn = `${baseDir}/${fn}`;
-    mkdirp.sync(path.dirname(fullFn));
+    const dir = path.dirname(fullFn);
+    if (!fs.existsSync(dir))
+        mkdirp.sync(dir);
     fs.writeFileSync(fullFn, data);
 }
 
