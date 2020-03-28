@@ -57,9 +57,10 @@ export class Type implements IType {
             return (toBeAssigned.decl.baseClass !== null && this.isAssignableTo(toBeAssigned.decl.baseClass, whereTo)) ||
                 toBeAssigned.decl === whereTo.decl && toBeAssigned.typeArguments.every((x, i) => this.isAssignableTo(x, whereTo.typeArguments[i]));
         if (toBeAssigned instanceof ClassType && whereTo instanceof InterfaceType)
-            return toBeAssigned.decl.baseInterfaces.some(x => this.isAssignableTo(x, whereTo));
+            return (toBeAssigned.decl.baseClass !== null && Type.isAssignableTo(toBeAssigned.decl.baseClass, whereTo)) || 
+                toBeAssigned.decl.baseInterfaces.some(x => this.isAssignableTo(x, whereTo));
         if (toBeAssigned instanceof InterfaceType && whereTo instanceof InterfaceType)
-            return toBeAssigned.decl.baseInterfaces.some(x => this.isAssignableTo(x, whereTo))  ||
+            return toBeAssigned.decl.baseInterfaces.some(x => this.isAssignableTo(x, whereTo)) ||
             toBeAssigned.decl === whereTo.decl && toBeAssigned.typeArguments.every((x, i) => this.isAssignableTo(x, whereTo.typeArguments[i]));
         if (toBeAssigned instanceof LambdaType && whereTo instanceof LambdaType)
             return toBeAssigned.parameters.length === whereTo.parameters.length &&
