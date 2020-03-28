@@ -1,6 +1,7 @@
 import 'module-alias/register';
 import { readFile, glob, readDir, baseDir, writeFile } from "./TestUtils";
 import { CsharpGenerator } from "@one/Generator/CsharpGenerator";
+import { FillMutabilityInfo } from "@one/One/Transforms/FillMutabilityInfo";
 import { Compiler } from "@one/One/Compiler";
 import { Linq } from './Underscore';
 import { PackageStateCapture } from './DiffUtils';
@@ -43,7 +44,13 @@ compiler.init(`${baseDir}/packages`).then(() => {
         compiler.processWorkspace();
         saveState();
 
-        const genCsharp = CsharpGenerator.generate(compiler.projectPkg);
+        new FillMutabilityInfo().visitPackage(compiler.projectPkg);
+        saveState();
+
+        writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
+        printState();
+
+        const genCsharp = new CsharpGenerator().generate(compiler.projectPkg);
         for (const file of genCsharp)
             writeFile(`test/artifacts/ProjectTest/${test.projName}/CSharp/${file.path.replace(".ts", ".cs")}`, file.content);
         return;
@@ -62,7 +69,6 @@ compiler.init(`${baseDir}/packages`).then(() => {
         console.log(allChanges);
 
         //writeFile(`test/artifacts/ProjectTest/${test.projName}/allChanges.txt`, allChanges);
-        //writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
 
         debugger;
     }

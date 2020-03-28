@@ -1,8 +1,8 @@
 import { Type, IHasTypeArguments, ClassType, InterfaceType, UnresolvedType, LambdaType } from "./Ast/AstTypes";
-import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression, InstanceOfExpression, AwaitExpression, StringLiteral, NumericLiteral, NullLiteral, RegexLiteral, BooleanLiteral, StaticMethodCallExpression, InstanceMethodCallExpression, UnresolvedNewExpression, NullCoalesceExpression, UnresolvedMethodCallExpression } from "./Ast/Expressions";
+import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression, InstanceOfExpression, AwaitExpression, StringLiteral, NumericLiteral, NullLiteral, RegexLiteral, BooleanLiteral, StaticMethodCallExpression, InstanceMethodCallExpression, UnresolvedNewExpression, NullCoalesceExpression, UnresolvedMethodCallExpression, GlobalFunctionCallExpression } from "./Ast/Expressions";
 import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement, ContinueStatement, DoStatement, TryStatement } from "./Ast/Statements";
 import { Block, Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda, IMethodBase, Package, GlobalFunction, IInterface, IAstNode } from "./Ast/Types";
-import { ClassReference, EnumReference, ThisReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, InstanceFieldReference, InstancePropertyReference, StaticPropertyReference, StaticFieldReference, CatchVariableReference, GlobalFunctionReference, EnumMemberReference, StaticThisReference } from "./Ast/References";
+import { ClassReference, EnumReference, ThisReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, InstanceFieldReference, InstancePropertyReference, StaticPropertyReference, StaticFieldReference, CatchVariableReference, GlobalFunctionReference, EnumMemberReference, StaticThisReference, VariableReference } from "./Ast/References";
 import { ErrorManager } from "./ErrorManager";
 
 export abstract class AstTransformer {
@@ -129,6 +129,10 @@ export abstract class AstTransformer {
         return null;
     }
 
+    protected visitVariableReference(varRef: VariableReference): VariableReference {
+        return null;
+    }
+
     protected visitExpression(expr: Expression): Expression {
         if (expr instanceof BinaryExpression) {
             expr.left = this.visitExpression(expr.left) || expr.left;
@@ -192,19 +196,30 @@ export abstract class AstTransformer {
         } else if (expr instanceof ThisReference) {
         } else if (expr instanceof StaticThisReference) {
         } else if (expr instanceof MethodParameterReference) {
+            return this.visitVariableReference(expr);
         } else if (expr instanceof VariableDeclarationReference) {
+            return this.visitVariableReference(expr);
         } else if (expr instanceof ForVariableReference) {
+            return this.visitVariableReference(expr);
         } else if (expr instanceof ForeachVariableReference) {
+            return this.visitVariableReference(expr);
         } else if (expr instanceof CatchVariableReference) {
+            return this.visitVariableReference(expr);
         } else if (expr instanceof GlobalFunctionReference) {
         } else if (expr instanceof SuperReference) {
         } else if (expr instanceof InstanceFieldReference) {
+            return this.visitVariableReference(expr);
         } else if (expr instanceof InstancePropertyReference) {
+            return this.visitVariableReference(expr);
         } else if (expr instanceof StaticFieldReference) {
+            return this.visitVariableReference(expr);
         } else if (expr instanceof StaticPropertyReference) {
+            return this.visitVariableReference(expr);
         } else if (expr instanceof EnumMemberReference) {
         } else if (expr instanceof StaticMethodCallExpression) {
             expr.typeArgs = expr.typeArgs.map(x => this.visitType(x) || x);
+            expr.args = expr.args.map(x => this.visitExpression(x) || x);
+        } else if (expr instanceof GlobalFunctionCallExpression) {
             expr.args = expr.args.map(x => this.visitExpression(x) || x);
         } else if (expr instanceof InstanceMethodCallExpression) {
             expr.object = this.visitExpression(expr.object) || expr.object;

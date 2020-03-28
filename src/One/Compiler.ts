@@ -13,6 +13,7 @@ import { InstanceOfImplicitCast } from "./Transforms/InstanceOfImplicitCast";
 import { DetectMethodCalls } from "./Transforms/DetectMethodCalls";
 import { InferTypes } from "./Transforms/InferTypes";
 import { CollectInheritanceInfo } from "./Transforms/CollectInheritanceInfo";
+import { FillMutabilityInfo } from "./Transforms/FillMutabilityInfo";
 
 export class Compiler {
     pacMan: PackageManager = null;
@@ -33,6 +34,7 @@ export class Compiler {
         FillAttributesFromTrivia.processFile(this.nativeFile);
         new ResolveGenericTypeIdentifiers().visitSourceFile(this.nativeFile);
         new ResolveUnresolvedTypes().visitSourceFile(this.nativeFile);
+        new FillMutabilityInfo().visitSourceFile(this.nativeFile);
     }
 
     newWorkspace() {

@@ -9,11 +9,18 @@ export interface IAstNode { }
 
 export enum Visibility { Public, Protected, Private }
 
+export class MutabilityInfo {
+    unused = true;
+    reassigned = false;
+    mutated = false;
+}
+
 /// types: ForeachVariable, Property
 ///   IVariableWithInitializer: VariableDeclaration, ForVariable, Field, MethodParameter
 export interface IVariable {
     name: string;
     type: Type;
+    mutability: MutabilityInfo;
 }
 
 export interface IClassMember {
@@ -221,6 +228,7 @@ export interface IInterface {
     name: string;
     typeArguments: string[];
     baseInterfaces: Type[];
+    fields: Field[];
     methods: Method[];
     leadingTrivia: string;
     parentFile: SourceFile;
@@ -314,6 +322,8 @@ export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia,
     instanceReferences: InstanceFieldReference[] = [];
     /** @creator CollectInheritanceInfo */
     interfaceDeclarations: Field[] = null;
+    /** @creator FillMutability */
+    mutability: MutabilityInfo = null;
 }
 
 export class Property implements IVariable, IHasAttributesAndTrivia, IClassMember, IAstNode {
@@ -335,6 +345,8 @@ export class Property implements IVariable, IHasAttributesAndTrivia, IClassMembe
     staticReferences: StaticPropertyReference[] = [];
     /** @creator ResolveFieldAndPropertyAccess */
     instanceReferences: InstancePropertyReference[] = [];
+    /** @creator FillMutability */
+    mutability: MutabilityInfo = null;
 }
 
 export class MethodParameter implements IVariableWithInitializer, IReferencable {
@@ -350,6 +362,9 @@ export class MethodParameter implements IVariableWithInitializer, IReferencable 
     /** @creator ResolveIdentifiers */
     references: MethodParameterReference[] = [];
     createReference(): Reference { return new MethodParameterReference(this); }
+
+    /** @creator FillMutability */
+    mutability: MutabilityInfo = null;
 }
 
 export interface IMethodBase extends IAstNode {
@@ -402,10 +417,9 @@ export class Method implements IMethodBaseWithTrivia, IHasAttributesAndTrivia, I
     overriddenBy: Method[] = [];
 
     throws: boolean;
-    mutates: boolean;
 }
 
-export class GlobalFunction implements IMethodBaseWithTrivia, IImportable, IHasAttributesAndTrivia, IReferencable {
+export class GlobalFunction implements IMethodBaseWithTrivia, IImportable, IHasAttributesAndTrivia, IReferencable, IMethodBase {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,

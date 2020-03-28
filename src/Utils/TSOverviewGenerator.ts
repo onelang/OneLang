@@ -47,7 +47,13 @@ export class TSOverviewGenerator {
                 m.visibility === Visibility.Public ? "public " :
                 "VISIBILITY-NOT-SET";
         }
-        result += `${isProp ? "get " : ""}${v.name}${isProp ? "()" : ""}: ${this.type(v.type)}`;
+        result += `${isProp ? "@prop " : ""}`;
+        if (v.mutability !== null) {
+            result += `${v.mutability.unused ? "@unused " : ""}`;
+            result += `${v.mutability.mutated ? "@mutated " : ""}`;
+            result += `${v.mutability.reassigned ? "@reass " : ""}`;
+        }
+        result += `${v.name}${isProp ? "()" : ""}: ${this.type(v.type)}`;
         if (v instanceof VariableDeclaration || v instanceof ForVariable || v instanceof Field || v instanceof MethodParameter) {
             const init = (<IVariableWithInitializer>v).initializer;
             if (init !== null)
@@ -178,7 +184,7 @@ export class TSOverviewGenerator {
         } else if (stmt instanceof ExpressionStatement) {
             res = `${this.expr(stmt.expression)};`;
         } else if (stmt instanceof VariableDeclaration) {
-            res = `${stmt.isMutable ? "let" : "const"} ${this.var(stmt)};`;
+            res = `var ${this.var(stmt)};`;
         } else if (stmt instanceof ForeachStatement) {
             res = `for (const ${stmt.itemVar.name} of ${this.expr(stmt.items)})` + this.block(stmt.body, previewOnly);
         } else if (stmt instanceof IfStatement) {
@@ -216,13 +222,13 @@ export class TSOverviewGenerator {
     }
 
     static method(method: Method) {
-        return method === null ? "" : `${method.isStatic ? "static " : ""}${method.mutates ? "/* mutates */ " : ""}${this.methodBase(method, method.returns)}`;
+        return method === null ? "" : `${method.isStatic ? "static " : ""}${"mutates" in method.attributes ? "@mutates " : ""}${this.methodBase(method, method.returns)}`;
     }
 
     static classLike(cls: IInterface) {
         const resList: string[] = [];
+        resList.push(cls.fields.map(field => this.var(field) + ';').join("\n"));
         if (cls instanceof Class) {
-            resList.push(cls.fields.map(field => this.var(field) + ';').join("\n"));
             resList.push(cls.properties.map(prop => this.var(prop) + ';').join("\n"));
             resList.push(this.methodBase(cls.constructor_, VoidType.instance));
         }

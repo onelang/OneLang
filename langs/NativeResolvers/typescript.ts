@@ -17,6 +17,7 @@ declare class Object {
 
 declare class TsArray<T> {
     get length(): number;
+    /** @mutates */
     push(item: T): void;
     get(index: number): T;
     set(index: number, value: T): void;
@@ -24,13 +25,16 @@ declare class TsArray<T> {
     join(separator: string): string;
     map<T2>(selector: (item: T) => T2): T2[];
     find(predicate: (value: T) => boolean): T;
+    /** @mutates */
     shift(): T;
     includes(item: T): boolean;
+    /** @mutates */
     pop(): T;
     filter(predicate: (item: T) => boolean): T[];
     slice(num: number): T[];
     some(predictate: (item: T) => boolean): boolean;
     every(predictate: (item: T, index: number) => boolean): boolean;
+    /** @mutates */
     splice(start: number, deleteCount: number): void;
     sort(func: (a: T, b: T) => number): T[];
     reduce<TAcc>(func: (acc: TAcc, val: T) => TAcc, initVal: TAcc): TAcc;

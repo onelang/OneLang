@@ -1,4 +1,4 @@
-import { Class, Enum, MethodParameter, GlobalFunction, Field, Property, Method, EnumMember, IMethodBase, Lambda, Constructor } from "./Types";
+import { Class, Enum, MethodParameter, GlobalFunction, Field, Property, Method, EnumMember, IMethodBase, Lambda, Constructor, IVariable } from "./Types";
 import { VariableDeclaration, ForVariable, ForeachVariable, CatchVariable } from "./Statements";
 import { Expression, TypeRestriction } from "./Expressions";
 import { Type, EnumType, ClassType } from "./AstTypes";
@@ -12,6 +12,10 @@ export interface IGetMethodBase {
 }
 
 export class Reference extends Expression { }
+
+export class VariableReference extends Reference {
+    getVariable(): IVariable { throw new Error("Abstract method"); }
+}
 
 // has type: no (not an instance, one of it's property or field will have type)
 export class ClassReference extends Reference {
@@ -30,7 +34,7 @@ export class GlobalFunctionReference extends Reference implements IGetMethodBase
 
 // has type: yes (it's a variable)
 // is generic: should be (if the class is `List<T>` then method param should be `T`, and not `string` - but we cannot check this)
-export class MethodParameterReference extends Reference {
+export class MethodParameterReference extends VariableReference {
     constructor(public decl: MethodParameter) { super(); decl.references.push(this); }
 
     setActualType(type: Type, allowVoid: boolean, allowGeneric: boolean) { 
@@ -39,6 +43,8 @@ export class MethodParameterReference extends Reference {
             this.decl.parentMethod instanceof Constructor ? this.decl.parentMethod.parentClass.typeArguments.length > 0 :
             this.decl.parentMethod instanceof Method ? this.decl.parentMethod.typeArguments.length > 0 || this.decl.parentMethod.parentInterface.typeArguments.length > 0 : false);
     }
+
+    getVariable(): IVariable { return this.decl; }
 }
 
 // has type: no (only it's values has a value)
@@ -50,7 +56,7 @@ export class EnumReference extends Reference {
 
 // has type: yes
 // is generic: no
-export class EnumMemberReference extends Expression {
+export class EnumMemberReference extends Reference {
     constructor(public decl: EnumMember) { super(); decl.references.push(this); }
     
     setActualType(type: Type, allowVoid: boolean, allowGeneric: boolean) {
@@ -88,58 +94,68 @@ export class SuperReference extends Reference {
 
 // has type: yes
 // is generic: can be
-export class VariableDeclarationReference extends Reference {
+export class VariableDeclarationReference extends VariableReference {
     constructor(public decl: VariableDeclaration) { super(); decl.references.push(this); }
+    getVariable(): IVariable { return this.decl; }
 }
 
 // has type: yes
 // is generic: can be
-export class ForVariableReference extends Reference {
+export class ForVariableReference extends VariableReference {
     constructor(public decl: ForVariable) { super(); decl.references.push(this); }
+    getVariable(): IVariable { return this.decl; }
 }
 
 // has type: ???
 // is generic: ???
-export class CatchVariableReference extends Reference {
+export class CatchVariableReference extends VariableReference {
     constructor(public decl: CatchVariable) { super(); decl.references.push(this); }
+    getVariable(): IVariable { return this.decl; }
 }
 
 // has type: yes
 // is generic: can be
-export class ForeachVariableReference extends Reference {
+export class ForeachVariableReference extends VariableReference {
     constructor(public decl: ForeachVariable) { super(); decl.references.push(this); }
+    getVariable(): IVariable { return this.decl; }
 }
 
 // has type: yes
 // is generic: no
-export class StaticFieldReference extends Reference {
+export class StaticFieldReference extends VariableReference {
     constructor(public decl: Field) { super(); decl.staticReferences.push(this); }
 
     setActualType(type: Type, allowVoid: boolean, allowGeneric: boolean) {
         if (Type.isGeneric(type)) throw new Error("StaticField's type cannot be Generic");
         super.setActualType(type);
     }
+
+    getVariable(): IVariable { return this.decl; }
 }
 
 // has type: yes
 // is generic: no
-export class StaticPropertyReference extends Reference {
+export class StaticPropertyReference extends VariableReference {
     constructor(public decl: Property) { super(); decl.staticReferences.push(this); }
 
     setActualType(type: Type, allowVoid: boolean, allowGeneric: boolean) {
         if (Type.isGeneric(type)) throw new Error("StaticProperty's type cannot be Generic");
         super.setActualType(type);
     }
+
+    getVariable(): IVariable { return this.decl; }
 }
 
 // has type: yes
 // is generic: can be
-export class InstanceFieldReference extends Reference {
+export class InstanceFieldReference extends VariableReference {
     constructor(public object: Expression, public field: Field) { super(); field.instanceReferences.push(this); }
+    getVariable(): IVariable { return this.field; }
 }
 
 // has type: yes
 // is generic: can be
-export class InstancePropertyReference extends Reference {
+export class InstancePropertyReference extends VariableReference {
     constructor(public object: Expression, public property: Property) { super(); property.instanceReferences.push(this); }
+    getVariable(): IVariable { return this.property; }
 }

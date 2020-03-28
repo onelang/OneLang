@@ -1,4 +1,4 @@
-import { Block, IVariableWithInitializer, IVariable, IHasAttributesAndTrivia, IAstNode } from "./Types";
+import { Block, IVariableWithInitializer, IVariable, IHasAttributesAndTrivia, IAstNode, MutabilityInfo } from "./Types";
 import { Expression } from "./Expressions";
 import { Type } from "./AstTypes";
 import { ForVariableReference, ForeachVariableReference, VariableDeclarationReference, IReferencable, Reference, CatchVariableReference } from "./References";
@@ -42,11 +42,13 @@ export class VariableDeclaration extends Statement implements IVariableWithIniti
         public name: string,
         public type: Type,
         public initializer: Expression) { super(); }
-    isMutable: boolean;
 
     /** @creator ResolveIdentifiers */
     references: VariableDeclarationReference[] = [];
     createReference(): Reference { return new VariableDeclarationReference(this); }
+
+    /** @creator FillMutability */
+    mutability: MutabilityInfo = null;
 }
 
 export class WhileStatement extends Statement {
@@ -68,6 +70,9 @@ export class ForeachVariable implements IVariable, IReferencable {
     /** @creator ResolveIdentifiers */
     references: ForeachVariableReference[] = [];
     createReference(): Reference { return new ForeachVariableReference(this); }
+
+    /** @creator FillMutability */
+    mutability: MutabilityInfo = null;
 }
 
 export class ForeachStatement extends Statement {
@@ -86,6 +91,9 @@ export class ForVariable implements IVariableWithInitializer, IReferencable {
     /** @creator ResolveIdentifiers */
     references: ForVariableReference[] = [];
     createReference(): Reference { return new ForVariableReference(this); }
+
+    /** @creator FillMutability */
+    mutability: MutabilityInfo = null;
 }
 
 export class ForStatement extends Statement {
@@ -104,6 +112,9 @@ export class CatchVariable implements IVariable, IReferencable {
     /** @creator ResolveIdentifiers */
     references: CatchVariableReference[] = [];
     createReference(): Reference { return new CatchVariableReference(this); }
+
+    /** @creator FillMutability */
+    mutability: MutabilityInfo = null;
 }
 
 export class TryStatement extends Statement {
