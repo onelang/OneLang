@@ -44,15 +44,13 @@ compiler.init(`${baseDir}/packages`).then(() => {
         compiler.processWorkspace();
         saveState();
 
-        new FillMutabilityInfo().visitPackage(compiler.projectPkg);
-        saveState();
-
-        writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
-        printState();
+        //writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
+        //printState();
 
         const genCsharp = new CsharpGenerator().generate(compiler.projectPkg);
         for (const file of genCsharp)
             writeFile(`test/artifacts/ProjectTest/${test.projName}/CSharp/${file.path.replace(".ts", ".cs")}`, file.content);
+        console.log("DONE.");
         return;
         debugger;
 

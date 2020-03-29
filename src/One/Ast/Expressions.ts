@@ -18,7 +18,7 @@ export class Expression implements IAstNode, IExpression {
     actualType: Type = null;
     actualTypeStack: string = null;
 
-    protected typeCheck(type: Type, allowVoid: boolean) {
+    protected typeCheck(type: Type, allowVoid: boolean): void {
         if (type === null)
             throw new Error("New type cannot be null!");
 
@@ -29,7 +29,7 @@ export class Expression implements IAstNode, IExpression {
             throw new Error("Expression's type cannot be UnresolvedType!");
     }
 
-    setActualType(actualType: Type, allowVoid = false, allowGeneric = false) {
+    setActualType(actualType: Type, allowVoid = false, allowGeneric = false): void {
         if (this.actualType !== null)
             throw new Error(`Expression already has actual type (current type = ${this.actualType.repr()}, new type = ${actualType.repr()})`);
 
@@ -47,7 +47,7 @@ export class Expression implements IAstNode, IExpression {
         this.actualTypeStack = (new Error()).stack;
     }
 
-    setExpectedType(type: Type, allowVoid = false) {
+    setExpectedType(type: Type, allowVoid = false): void {
         if (this.actualType !== null)
             throw new Error("Cannot set expected type after actual type was already set!");
 
@@ -59,7 +59,7 @@ export class Expression implements IAstNode, IExpression {
         this.expectedType = type;
     }
 
-    getType() { return this.actualType || this.expectedType; }
+    getType(): Type { return this.actualType || this.expectedType; }
 }
 
 export class Identifier extends Expression {
@@ -97,8 +97,8 @@ export class TemplateStringPart {
         public literalText: string,
         public expression: Expression) { }
 
-    static Literal(literalText: string) { return new TemplateStringPart(true, literalText, null); }
-    static Expression(expr: Expression) { return new TemplateStringPart(false, null, expr); }
+    static Literal(literalText: string): TemplateStringPart { return new TemplateStringPart(true, literalText, null); }
+    static Expression(expr: Expression): TemplateStringPart { return new TemplateStringPart(false, null, expr); }
 }
 
 export class TemplateString extends Expression {

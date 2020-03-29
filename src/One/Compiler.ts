@@ -90,5 +90,6 @@ export class Compiler {
         new DetectMethodCalls().visitPackage(this.projectPkg);
         new InferTypes().visitPackage(this.projectPkg);
         new CollectInheritanceInfo().visitPackage(this.projectPkg);
+        new FillMutabilityInfo().visitPackage(this.projectPkg);
     }
 }

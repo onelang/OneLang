@@ -135,7 +135,7 @@ declare class YAML {
     static safeLoad(data: string): any;
 }
 
-declare class Set<T> implements IterableIterator<T> {
+declare class Set<T> extends IterableIterator<T> {
     add(item: T): void;
     has(item: T): boolean;
     values(): IterableIterator<T>;

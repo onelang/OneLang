@@ -90,7 +90,7 @@ export class ExpressionParser {
         this.operators = Object.keys(this.operatorMap).sort((a,b) => b.length - a.length);
     }
 
-    parseMapLiteral(keySeparator = ":", startToken = "{", endToken = "}") {
+    parseMapLiteral(keySeparator = ":", startToken = "{", endToken = "}"): MapLiteral {
         if (!this.reader.readToken(startToken)) return null;
 
         const items: MapLiteralItem[] = [];
@@ -110,7 +110,7 @@ export class ExpressionParser {
         return new MapLiteral(items);
     }
 
-    parseArrayLiteral(startToken = "[", endToken = "]") {
+    parseArrayLiteral(startToken = "[", endToken = "]"): ArrayLiteral {
         if (!this.reader.readToken(startToken)) return null;
         
         const items: Expression[] = [];
@@ -167,7 +167,7 @@ export class ExpressionParser {
         return null;
     }
 
-    parseCallArguments() {
+    parseCallArguments(): Expression[] {
         const args: Expression[] = [];
 
         if (!this.reader.readToken(")")) {

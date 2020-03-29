@@ -41,7 +41,7 @@ export class Reader {
 
     get cursor() { return this.cursorSearch.getCursorForOffset(this.offset); }
 
-    linePreview(cursor: Cursor) {
+    linePreview(cursor: Cursor): string {
         const line = this.input.substring(cursor.lineStart, cursor.lineEnd - 1);
         return `${line}\n${" ".repeat(cursor.column - 1)}^^^`;
     }

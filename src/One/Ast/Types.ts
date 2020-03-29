@@ -45,18 +45,18 @@ export interface ISourceFileMember {
 export class ExportedScope {
     exports = new Map<string, IImportable>();
 
-    getExport(name: string) {
+    getExport(name: string): IImportable {
         const exp = this.exports.get(name) || null;
         if (exp === null)
             throw new Error(`Export ${name} was not found in exported symbols.`);
         return exp;
     }
 
-    addExport(name: string, value: IImportable) {
+    addExport(name: string, value: IImportable): void {
         this.exports.set(name, value);
     }
 
-    getAllExports() { return Array.from(this.exports.values()); }
+    getAllExports(): IImportable[] { return Array.from(this.exports.values()); }
 }
 
 export class Package {
@@ -86,7 +86,7 @@ export class Package {
         return scope;
     }
 
-    addFile(file: SourceFile, exportAll = false) {
+    addFile(file: SourceFile, exportAll = false): void {
         if (file.sourcePath.pkg !== this || file.exportScope.packageName !== this.name)
             throw new Error("This file belongs to another package!");
         
@@ -95,7 +95,7 @@ export class Package {
         this.exportedScopes[scopeName] = Package.collectExportsFromFile(file, exportAll, this.exportedScopes[scopeName]);
     }
 
-    getExportedScope(name: string) {
+    getExportedScope(name: string): ExportedScope {
         const scope = this.exportedScopes[name] || null;
         if (scope === null)
             throw new Error(`Scope "${name}" was not found in package "${this.name}"`);
@@ -107,11 +107,11 @@ export class Workspace {
     packages: { [name: string]: Package } = {};
     errorManager = new ErrorManager();
 
-    addPackage(pkg: Package) { 
+    addPackage(pkg: Package): void { 
         this.packages[pkg.name] = pkg;
     }
 
-    getPackage(name: string) {
+    getPackage(name: string): Package {
         const pkg = this.packages[name] || null;
         if (pkg === null)
             throw new Error(`Package was not found: "${name}"`);

@@ -18,7 +18,7 @@ export class GenericsResolver {
         this.resolutionMap.set(typeVarName, actualType);
     }
 
-    public collectFromMethodCall(methodCall: IMethodCallExpression) {
+    public collectFromMethodCall(methodCall: IMethodCallExpression): void {
         if (methodCall.typeArgs.length === 0) return;
         if (methodCall.typeArgs.length !== methodCall.method.typeArguments.length)
             throw new Error(`Expected ${methodCall.method.typeArguments.length} type argument(s) for method call, but got ${methodCall.typeArgs.length}`);

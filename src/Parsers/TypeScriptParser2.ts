@@ -178,7 +178,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
             return new CastExpression(newType, expression);
         } else if (this.reader.readToken("/")) {
             let pattern = this.reader.readRegex("((?<![\\\\])[\\\\]/|[^/])+")[0];
-            pattern = pattern.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r").replace(/\\\\/g, "\\");
+            //pattern = pattern.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r").replace(/\\\\/g, "\\");
             this.reader.expectToken("/");
             const modifiers = this.reader.readModifiers(["g", "i"]);
             return new RegexLiteral(pattern, modifiers.includes("i"), modifiers.includes("g"));
