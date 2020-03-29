@@ -17,7 +17,10 @@ export class CsharpGenerator {
     name_(name: string) {
         if (this.reservedWords.includes(name)) name += "_";
         if (this.fieldToMethodHack.includes(name)) name += "()";
-        name = name.replace(/-/g, '');
+        const nameParts = name.split(/-/g);
+        for (let i = 1; i < nameParts.length; i++)
+            nameParts[i] = nameParts[i][0].toUpperCase() + nameParts[i].substr(1);
+        name = nameParts.join('');
         return name;
     }
 
