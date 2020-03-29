@@ -47,8 +47,8 @@ export class Reader {
     }
 
     get preview() {
-        let preview = this.input.substr(this.offset, 20).replace(/\n/g, "\\n");
-        if (preview.length === 20)
+        let preview = this.input.substr(this.offset, 30).replace(/\n/g, "\\n");
+        if (preview.length === 30)
             preview += "...";
         return preview;
     }
