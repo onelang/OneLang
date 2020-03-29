@@ -104,9 +104,11 @@ export class CsharpGenerator {
                "/* TODO: not set */public";
     }
 
-    varWoInit(v: IVariable) {
+    varWoInit(v: IVariable, attr: IHasAttributesAndTrivia) {
         let type: string;
-        if (v.type instanceof ClassType && v.type.decl.name === "TsArray") {
+        if (attr !== null && attr.attributes !== null && "csharp-type" in attr.attributes)
+            type = attr.attributes["csharp-type"];
+        else if (v.type instanceof ClassType && v.type.decl.name === "TsArray") {
             if (v.mutability.mutated) {
                 this.usings.add("System.Collections.Generic");
                 type = `List<${this.type(v.type.typeArguments[0])}>`;
@@ -119,7 +121,9 @@ export class CsharpGenerator {
         return `${type} ${this.name_(v.name)}`;
     }
 
-    var(v: IVariableWithInitializer) { return `${this.varWoInit(v)}${v.initializer !== null ? ` = ${this.expr(v.initializer)}` : ""}`; }
+    var(v: IVariableWithInitializer, attrs: IHasAttributesAndTrivia) {
+        return `${this.varWoInit(v, attrs)}${v.initializer !== null ? ` = ${this.expr(v.initializer)}` : ""}`;
+    }
 
     exprCall(typeArgs: Type[], args: Expression[]) {
         return this.typeArgs2(typeArgs) + `(${args.map(x => this.expr(x)).join(", ")})`;
@@ -310,7 +314,7 @@ export class CsharpGenerator {
         } else if (stmt instanceof WhileStatement) {
             res = `while (${this.expr(stmt.condition)})` + this.block(stmt.body);
         } else if (stmt instanceof ForStatement) {
-            res = `for (${stmt.itemVar !== null ? this.var(stmt.itemVar) : ""}; ${this.expr(stmt.condition)}; ${this.expr(stmt.incrementor)})` + this.block(stmt.body);
+            res = `for (${stmt.itemVar !== null ? this.var(stmt.itemVar, null) : ""}; ${this.expr(stmt.condition)}; ${this.expr(stmt.incrementor)})` + this.block(stmt.body);
         } else if (stmt instanceof DoStatement) {
             res = `do${this.block(stmt.body)} while (${this.expr(stmt.condition)});`;
         } else if (stmt instanceof TryStatement) {
@@ -354,12 +358,12 @@ export class CsharpGenerator {
                     
                         return `${prefix}${this.varWoInit(field, field)};`;
                 } else
-                    return `${prefix}${this.var(field)};`;
+                    return `${prefix}${this.var(field, field)};`;
             }).join("\n"));
 
             resList.push(cls.properties.map(prop => {
                 return `${this.vis(prop.visibility)} ${this.preIf("static ", prop.isStatic)}` +
-                    this.varWoInit(prop) +
+                    this.varWoInit(prop, prop) +
                     (prop.getter !== null ? ` {\n    get {\n${this.pad(this.block(prop.getter))}\n    }\n}` : "") +
                     (prop.setter !== null ? ` {\n    set {\n${this.pad(this.block(prop.setter))}\n    }\n}` : "");
             }).join("\n"));
@@ -388,7 +392,7 @@ export class CsharpGenerator {
                 resList.push(`public ${this.name_(cls.name)}()\n{\n${this.pad(this.stmts(complexFieldInits))}\n}`);
 
         } else if (cls instanceof Interface) {
-            resList.push(cls.fields.map(field => `${this.varWoInit(field)} { get; set; }`).join("\n"));
+            resList.push(cls.fields.map(field => `${this.varWoInit(field, field)} { get; set; }`).join("\n"));
         }
 
         const methods: string[] = [];

@@ -27,12 +27,20 @@ export class PackageNativeImpl {
     code: string;
 }
 
-export interface InterfaceYaml {
+export class InterfaceDependency {
+    name: string;
+    // @csharp-type double
+    minver: number;
+}
+
+export class InterfaceYaml {
     "file-version": number;
     vendor: string;
     name: string;
+    // @csharp-type double
     version: number;
     "definition-file": string;
+    dependencies: InterfaceDependency[];
 }
 
 export class InterfacePackage {
