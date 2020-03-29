@@ -23,7 +23,7 @@ enum InferTypesStage { Invalid, Fields, Properties, Methods }
 export class InferTypes extends AstTransformer {
     protected stage: InferTypesStage;
     plugins: InferTypesPlugin[] = [];
-    logIdx = 0;
+    contextInfoIdx = 0;
 
     constructor() {
         super("InferTypes");
@@ -80,7 +80,7 @@ export class InferTypes extends AstTransformer {
         if (transformers.length !== 1) return null;
 
         const plugin = transformers[0];
-        this.errorMan.contextInfo.push(`[${++this.logIdx}] running transform plugin "${plugin.name}" on '${TSOverviewGenerator.nodeRepr(expr)}'...`);
+        this.errorMan.lastContextInfo = `[${++this.contextInfoIdx}] running transform plugin "${plugin.name}"`;
         try {
             const newExpr = plugin.transform(expr);
             // expression changed, restart the type infering process on the new expression
@@ -99,7 +99,7 @@ export class InferTypes extends AstTransformer {
     protected detectType(expr: Expression): boolean {
         for (const plugin of this.plugins) {
             if (!plugin.canDetectType(expr)) continue;
-            this.errorMan.contextInfo.push(`[${++this.logIdx}] running type detection plugin "${plugin.name}" on '${TSOverviewGenerator.nodeRepr(expr)}'`);
+            this.errorMan.lastContextInfo = `[${++this.contextInfoIdx}] running type detection plugin "${plugin.name}"`;
             this.errorMan.currentNode = expr;
             try {
                 if (plugin.detectType(expr))

@@ -16,7 +16,6 @@ export class Expression implements IAstNode, IExpression {
     expectedType: Type = null;
     /** @creator InferTypes */
     actualType: Type = null;
-    actualTypeStack: string = null;
 
     protected typeCheck(type: Type, allowVoid: boolean): void {
         if (type === null)
@@ -38,13 +37,11 @@ export class Expression implements IAstNode, IExpression {
         if (this.expectedType !== null && !Type.isAssignableTo(actualType, this.expectedType))
             throw new Error(`Actual type (${actualType.repr()}) is not assignable to the declared type (${this.expectedType.repr()})!`);
 
+        // TODO: decide if this check needed or not
         //if (!allowGeneric && Type.isGeneric(actualType))
         //    throw new Error(`Actual type cannot be generic (${actualType.repr()})!`);
 
         this.actualType = actualType;
-        // TODO: debug only
-        Error.stackTraceLimit = 999;
-        this.actualTypeStack = (new Error()).stack;
     }
 
     setExpectedType(type: Type, allowVoid = false): void {

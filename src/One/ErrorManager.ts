@@ -18,9 +18,7 @@ export class ErrorManager {
     transformer: AstTransformer = null;
     currentNode: IAstNode = null;
     errors: CompilationError[] = [];
-    contextInfo: string[] = [];
-
-    get lastContextInfo() { return this.contextInfo.length > 0 ? this.contextInfo[this.contextInfo.length - 1] : null; }
+    lastContextInfo: string;
 
     resetContext(transformer: AstTransformer = null): void {
         this.transformer = transformer;
