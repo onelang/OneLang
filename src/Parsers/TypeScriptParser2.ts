@@ -242,9 +242,11 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
         const block = this.parseBlock();
         if (block !== null) return block;
 
+        const stmts: Statement[] = [];
         const stmt = this.expectStatement();
-        // @csharp-override return new Block(stmt == null ? new Statement[0] : new Statement[] { stmt });
-        return new Block(stmt === null ? <Statement[]>[] : [stmt]);
+        if (stmt !== null)
+            stmts.push(stmt);
+        return new Block(stmts);
     }
 
     expectStatement(): Statement {

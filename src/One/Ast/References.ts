@@ -37,7 +37,7 @@ export class GlobalFunctionReference extends Reference implements IGetMethodBase
 export class MethodParameterReference extends VariableReference {
     constructor(public decl: MethodParameter) { super(); decl.references.push(this); }
 
-    setActualType(type: Type, allowVoid: boolean, allowGeneric: boolean) { 
+    setActualType(type: Type, allowVoid: boolean, allowGeneric: boolean): void {
         super.setActualType(type, false,
             this.decl.parentMethod instanceof Lambda ? this.decl.parentMethod.parameters.some(x => Type.isGeneric(x.type)) :
             this.decl.parentMethod instanceof Constructor ? this.decl.parentMethod.parentClass.typeArguments.length > 0 :

@@ -20,7 +20,6 @@ class SymbolLookup {
     pushContext(name: string) {
         this.levelNames.push(name);
         this.currLevel = [];
-        // @csharp-override this.levelSymbols.push(this.currLevel);
         this.levelSymbols.push(this.currLevel);
     }
 

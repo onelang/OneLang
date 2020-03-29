@@ -310,12 +310,13 @@ export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia,
         public initializer: Expression,
         public visibility: Visibility,
         public isStatic: boolean,
+        public constructorParam: MethodParameter,
         public leadingTrivia: string) { }
 
     /** @creator FillParent */
     parentInterface: IInterface;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string };
+    attributes: { [name: string]: string } = null;
     /** @creator ResolveFieldAndPropertyAccess */
     staticReferences: StaticFieldReference[] = [];
     /** @creator ResolveFieldAndPropertyAccess */

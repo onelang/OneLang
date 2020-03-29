@@ -1,8 +1,9 @@
 import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression, StaticMethodCallExpression, LambdaCallExpression, IExpression, IMethodCallExpression } from "../One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable, TryStatement } from "../One/Ast/Statements";
-import { Method, Block, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility, IAstNode, GlobalFunction, Package, SourcePath } from "../One/Ast/Types";
+import { Method, Block, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility, IAstNode, GlobalFunction, Package, SourcePath, IHasAttributesAndTrivia } from "../One/Ast/Types";
 import { Type, VoidType, ClassType, InterfaceType, EnumType, AnyType, LambdaType, NullType, GenericsType } from "../One/Ast/AstTypes";
 import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference, StaticThisReference, Reference, VariableReference } from "../One/Ast/References";
+import { InferTypes } from "../One/Transforms/InferTypes";
 
 export class GeneratedFile {
     constructor(public path: string, public content: string) { }
@@ -97,6 +98,8 @@ export class CsharpGenerator {
         }
     }
 
+    isTsArray(type: Type) { return type instanceof ClassType && type.decl.name == "TsArray"; }
+
     vis(v: Visibility) {
         return v === Visibility.Private ? "private" :
                v === Visibility.Protected ? "protected" :
@@ -130,36 +133,42 @@ export class CsharpGenerator {
     }
 
     mutateArg(arg: Expression, shouldBeMutable: boolean) {
-        if (arg.actualType instanceof ClassType && arg.actualType.decl.name == "TsArray") {
-            if (arg instanceof VariableReference) {
-                const currentlyMutable = arg.getVariable().mutability.mutated;
-                if (currentlyMutable && !shouldBeMutable)
-                    return `${this.expr(arg)}.ToArray()`;
-                else if (!currentlyMutable && shouldBeMutable) {
-                    this.usings.add("System.Linq");
-                    return `${this.expr(arg)}.ToList()`;
-                }
-            }
-            else if (arg instanceof ArrayLiteral && !shouldBeMutable) {
+        if (this.isTsArray(arg.actualType)) {
+            if (arg instanceof ArrayLiteral && !shouldBeMutable) {
                 const itemType = (<ClassType>arg.actualType).typeArguments[0];
-                const itemIsArray = itemType instanceof ClassType && itemType.decl.name == "TsArray";
-                return arg.items.length === 0 && !itemIsArray ? `new ${this.type(itemType)}[0]` : 
+                return arg.items.length === 0 && !this.isTsArray(itemType) ? `new ${this.type(itemType)}[0]` : 
                     `new ${this.type(itemType)}[] { ${arg.items.map(x => this.expr(x)).join(', ')} }`;
+            }
+
+            let currentlyMutable = shouldBeMutable;
+            if (arg instanceof VariableReference)
+                currentlyMutable = arg.getVariable().mutability.mutated;
+            else if (arg instanceof InstanceMethodCallExpression || arg instanceof StaticMethodCallExpression)
+                currentlyMutable = false;
+            
+            if (currentlyMutable && !shouldBeMutable)
+                return `${this.expr(arg)}.ToArray()`;
+            else if (!currentlyMutable && shouldBeMutable) {
+                this.usings.add("System.Linq");
+                return `${this.expr(arg)}.ToList()`;
             }
         }
         return this.expr(arg);
     }
 
     mutatedExpr(expr: Expression, toWhere: Expression) {
-        if (toWhere instanceof VariableReference)
-            return this.mutateArg(expr, toWhere.getVariable().mutability.mutated);
+        if (toWhere instanceof VariableReference) {
+            const v = toWhere.getVariable();
+            if (this.isTsArray(v.type))
+                return this.mutateArg(expr, v.mutability.mutated);
+        }
         return this.expr(expr);
     }
 
     callParams(args: Expression[], params: MethodParameter[]) {
         const argReprs: string[] = [];
         for (let i = 0; i < args.length; i++)
-            argReprs.push(this.mutateArg(args[i], params[i].mutability.mutated));
+            argReprs.push(this.isTsArray(params[i].type) ? this.mutateArg(args[i], params[i].mutability.mutated) : this.expr(args[i]));
         return `(${argReprs.join(", ")})`;
     }
 
@@ -280,13 +289,14 @@ export class CsharpGenerator {
 
     block(block: Block, allowOneLiner = true): string {
         const stmtLen = block.statements.length;
-        return stmtLen === 0 ? " { }" : allowOneLiner && stmtLen === 1 ? `\n${this.pad(this.rawBlock(block))}` : ` {\n${this.pad(this.rawBlock(block))}\n}`;
+        return stmtLen === 0 ? " { }" : allowOneLiner && stmtLen === 1 && !(block.statements[0] instanceof IfStatement) ? 
+            `\n${this.pad(this.rawBlock(block))}` : ` {\n${this.pad(this.rawBlock(block))}\n}`;
     }
 
     stmt(stmt: Statement): string {
         let res = "UNKNOWN-STATEMENT";
-        if (stmt.attributes !== null && "csharp-override" in stmt.attributes) {
-            res = stmt.attributes["csharp-override"];
+        if (stmt.attributes !== null && "csharp" in stmt.attributes) {
+            res = stmt.attributes["csharp"];
         } else if (stmt instanceof BreakStatement) {
             res = "break;";
         } else if (stmt instanceof ReturnStatement) {
