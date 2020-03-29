@@ -1,4 +1,4 @@
-import * as YAML from "js-yaml";
+import { Yaml } from "../Utils/Yaml";
 
 export enum PackageType { Interface, Implementation }
 
@@ -40,7 +40,7 @@ export class InterfacePackage {
     definition: string;
 
     constructor(public content: PackageContent) {
-        this.interfaceYaml = <InterfaceYaml>YAML.safeLoad(content.files["interface.yaml"]);
+        this.interfaceYaml = Yaml.load<InterfaceYaml>(content.files["interface.yaml"]);
         this.definition = content.files[this.interfaceYaml["definition-file"]];
     }
 }
@@ -73,12 +73,12 @@ export class ImplementationPackage {
     implementations: ImplPkgImplementation[] = [];
 
     constructor(public content: PackageContent) {
-        this.implementationYaml = <ImplPackageYaml>YAML.safeLoad(content.files["package.yaml"]);
+        this.implementationYaml = Yaml.load<ImplPackageYaml>(content.files["package.yaml"]);
         this.implementations = [];
         for (const impl of this.implementationYaml.implements||[])
             this.implementations.push(impl);
         for (const include of this.implementationYaml.includes||[]) {
-            const included = <ImplPackageYaml>YAML.safeLoad(content.files[include]);
+            const included = Yaml.load<ImplPackageYaml>(content.files[include]);
             for (const impl of included.implements)
                 this.implementations.push(impl);
         }
