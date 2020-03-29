@@ -10,8 +10,8 @@ export class GeneratedFile {
 }
 
 export class CsharpGenerator {
-    usings = new Set<string>(); // TODO: make instance
-    currentClass: IInterface; // TODO: make instance
+    usings: Set<string>;
+    currentClass: IInterface;
     reservedWords = ["object", "else", "operator", "class", "enum", "void", "string", "implicit", "Type", "Enum", "params", "using", "throw", "ref", "base", "virtual", "interface"];
     fieldToMethodHack = ["length"];
 
@@ -199,7 +199,7 @@ export class CsharpGenerator {
         } else if (expr instanceof LambdaCallExpression) {
             res = `${this.expr(expr.method)}(${expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof BooleanLiteral) {
-            res = `${expr.boolValue}`;
+            res = `${expr.boolValue ? "true" : "false"}`;
         } else if (expr instanceof StringLiteral) { 
             res = `${JSON.stringify(expr.stringValue)}`;
         } else if (expr instanceof NumericLiteral) { 
@@ -454,6 +454,7 @@ export class CsharpGenerator {
     }
 
     genFile(sourceFile: SourceFile): string {
+        this.usings = new Set<string>();
         const enums = sourceFile.enums.map(enum_ => `public enum ${this.name_(enum_.name)} { ${enum_.values.map(x => this.name_(x.name)).join(", ")} }`);
 
         const intfs = sourceFile.interfaces.map(intf => `public interface ${this.name_(intf.name)}${this.typeArgs(intf.typeArguments)}`+
