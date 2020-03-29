@@ -47,7 +47,7 @@ declare class TsMap<V> {
     hasKey(key: string): boolean;
 }
 
-declare interface IterableIterator<T> {
+declare class IterableIterator<T> {
 
 }
 
@@ -71,6 +71,7 @@ declare class TsString {
     startsWith(str: string, position: number): boolean;
     endsWith(str: string): boolean;
     replace(from: RegExp, to: string): string;
+    //replace(from: string, to: string): string;
     repeat(count: number): string;
     match(pattern: RegExp): boolean;
     trim(): string;
