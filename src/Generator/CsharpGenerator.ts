@@ -211,9 +211,28 @@ export class CsharpGenerator {
         } else if (expr instanceof TemplateString) {
             const parts: string[] = [];
             for (const part of expr.parts) {
-                if (part.isLiteral)
-                    parts.push(part.literalText.replace(/\\/g, `\\\\`).replace(/"/g, `\\"`)
-                        .replace(/\n/g, `\\n`).replace(/\r/g, `\\r`).replace(/\t/g, `\\t`).replace(/{/g, "{{").replace(/}/g, "}}"));
+                // parts.push(part.literalText.replace(new RegExp("\\n"), $"\\n").replace(new RegExp("\\r"), $"\\r").replace(new RegExp("\\t"), $"\\t").replace(new RegExp("{"), "{{").replace(new RegExp("}"), "}}").replace(new RegExp("\""), $"\\\""));
+                if (part.isLiteral) {
+                    let lit = "";
+                    for (let i = 0; i < part.literalText.length; i++) {
+                        const chr = part.literalText[i];
+                        if (chr === '\n')      lit += "\\n";
+                        else if (chr === '\r') lit += "\\r";
+                        else if (chr === '\t') lit += "\\t";
+                        else if (chr === '\\') lit += "\\\\";
+                        else if (chr === '"')  lit += '\\"';
+                        else if (chr === '{')  lit += "{{";
+                        else if (chr === '}')  lit += "}}";
+                        else {
+                            const chrCode = chr.charCodeAt(0);
+                            if (32 <= chrCode && chrCode <= 126)
+                                lit += chr;
+                            else
+                                throw new Error(`invalid char in template string (code=${chrCode})`);
+                        }
+                    }
+                    parts.push(lit);
+                }
                 else {
                     const repr = this.expr(part.expression);
                     parts.push(part.expression instanceof ConditionalExpression ? `{(${repr})}` : `{${repr}}`);

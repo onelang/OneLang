@@ -99,6 +99,19 @@ export class Reader {
         //return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9') || c === '_';
     }
 
+    readExactly(what: string): boolean {
+        if (this.input.startsWith(what, this.offset)) {
+            this.wsOffset = this.offset = this.offset + what.length;
+            return true;
+        }
+        return false;
+    }
+
+    readChar(): string {
+        // TODO: should we move wsOffset?
+        return this.input[this.offset++];
+    }
+
     peekToken(token: string): boolean {
         this.skipWhitespaceAndComment();
 
@@ -225,12 +238,30 @@ export class Reader {
 
     readString(): string {
         this.skipWhitespace();
-        const strMatch = this.readRegex("'((?<!\\\\)\\\\'|[^'\n])*'") || this.readRegex('"((?<!\\\\)\\\\"|[^"\n])*"');
-        if (!strMatch) return null;
 
-        let str = strMatch[0].substr(1, strMatch[0].length - 2);
-        // TODO: hack: this logic is langauge-dependent
-        str = str.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r").replace(/\\\\/g, "\\");
+        const sepChar = this.input[this.offset];
+        if (sepChar !== "'" && sepChar !== '"') return null;
+
+        let str = "";
+        this.readExactly(sepChar);
+        while (!this.readExactly(sepChar)) {
+            const chr = this.readChar();
+            if (chr == "\\") {
+                const esc = this.readChar();
+                if (esc === "n")          str += "\n";
+                else if (esc === "r")     str += "\r";
+                else if (esc === "t")     str += "\t";
+                else if (esc === "\\")    str += "\\";
+                else if (esc === sepChar) str += sepChar;
+                else
+                    this.fail("invalid escape", this.offset - 1);
+            } else {
+                const chrCode = chr.charCodeAt(0);
+                if (!(32 <= chrCode && chrCode <= 126) || chr === "\\" || chr === sepChar)
+                    this.fail(`not allowed character (code=${chrCode})`, this.offset - 1);
+                str += chr;
+            }
+        }
         return str;
     }
 

@@ -143,23 +143,40 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
             return new BooleanLiteral(false);
         } else if (this.reader.readToken("`")) {
             const parts: TemplateStringPart[] = [];
+            let litPart = "";
             while (true) {
-                let litMatch = this.reader.readRegex("([^$`]|\\$[^{]|\\\\${|\\\\`)*")[0];
-                litMatch = litMatch.replace(/\\"/g, '"');
-                litMatch = litMatch.replace(/\\n/g, '\n');
-                litMatch = litMatch.replace(/\\r/g, '\r');
-                litMatch = litMatch.replace(/\\t/g, '\t');
-                litMatch = litMatch.replace(/\\`/g, "`");
-                litMatch = litMatch.replace(/\\$/g, "$");
-                litMatch = litMatch.replace(/\\\\/g, "\\");
-                parts.push(TemplateStringPart.Literal(litMatch));
-                if (this.reader.readToken("`"))
+                if (this.reader.readExactly("`")) {
+                    if (litPart !== "") {
+                        parts.push(TemplateStringPart.Literal(litPart));
+                        litPart = "";
+                    }
+
                     break;
-                else {
-                    this.reader.expectToken("${");
+                } else if (this.reader.readExactly("${")) {
+                    if (litPart !== "") {
+                        parts.push(TemplateStringPart.Literal(litPart));
+                        litPart = "";
+                    }
+
                     const expr = this.parseExpression();
                     parts.push(TemplateStringPart.Expression(expr));
                     this.reader.expectToken("}");
+                } else if (this.reader.readExactly("\\")) {
+                    const chr = this.reader.readChar();
+                    if (chr === "n")      litPart += "\n";
+                    else if (chr === "r") litPart += "\r";
+                    else if (chr === "t") litPart += "\t";
+                    else if (chr === "`") litPart += "`";
+                    else if (chr === "$") litPart += "$";
+                    else if (chr === "\\") litPart += "\\";
+                    else
+                        this.reader.fail("invalid escape", this.reader.offset - 1);
+                } else {
+                    const chr = this.reader.readChar();
+                    const chrCode = chr.charCodeAt(0);
+                    if (!(32 <= chrCode && chrCode <= 126) || chr === "`" || chr === "\\")
+                        this.reader.fail(`not allowed character (code=${chrCode})`, this.reader.offset - 1);
+                    litPart += chr;
                 }
             }
             return new TemplateString(parts);
