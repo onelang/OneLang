@@ -411,7 +411,6 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
     }
 
     parseMethodSignature(isConstructor: boolean, declarationOnly: boolean): MethodSignature {
-        const bodyPrefixStatements: Statement[] = [];
         const params: MethodParameter[] = [];
         const fields: Field[] = [];
         if (!this.reader.readToken(")")) {
@@ -428,11 +427,10 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
                 const param = new MethodParameter(paramName, typeAndInit.type, typeAndInit.init);
                 params.push(param);
 
-                if (isPublic) {
-                    // init should be used as ony the constructor's method parameter, but not again as a field initializer too
-                    fields.push(new Field(paramName, typeAndInit.type, null, Visibility.Public, false, null));
-                    bodyPrefixStatements.push(this.parseExprStmtFromString(`this.${paramName} = ${paramName}`));
-                }
+                // init should be used as only the constructor's method parameter, but not again as a field initializer too
+                //   (otherwise it would called twice if cloned or cause AST error is just referenced from two separate places)
+                if (isPublic)
+                    fields.push(new Field(paramName, typeAndInit.type, null, Visibility.Public, false, param, null));
 
                 this.nodeManager.addNode(param, paramStart);
                 this.context.pop();
@@ -457,8 +455,6 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
                     superCallArgs = firstStmt.expression.args;
                     body.statements.shift();
                 }
-            // @csharp-override body.statements = bodyPrefixStatements.concat(body.statements).ToList();
-            body.statements = bodyPrefixStatements.concat(body.statements);
         }
 
         return new MethodSignature(params, fields, body, returns, superCallArgs);
@@ -499,7 +495,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
                 const fieldType = this.parseType();
                 this.reader.expectToken(";");
 
-                const field = new Field(memberName, fieldType, null, Visibility.Public, false, memberLeadingTrivia);
+                const field = new Field(memberName, fieldType, null, Visibility.Public, false, null, memberLeadingTrivia);
                 fields.push(field);
 
                 this.nodeManager.addNode(field, memberStart);
@@ -632,7 +628,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
                 const typeAndInit = this.parseTypeAndInit();
                 this.reader.expectToken(";");
 
-                const field = new Field(memberName, typeAndInit.type, typeAndInit.init, visibility, isStatic, memberLeadingTrivia);
+                const field = new Field(memberName, typeAndInit.type, typeAndInit.init, visibility, isStatic, null, memberLeadingTrivia);
                 fields.push(field);
 
                 this.nodeManager.addNode(field, memberStart);

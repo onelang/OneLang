@@ -330,30 +330,12 @@ export class CsharpGenerator {
     stmts(stmts: Statement[]): string { return stmts.map(stmt => this.stmt(stmt)).join("\n"); }
     rawBlock(block: Block): string { return this.stmts(block.statements); }
 
-    methodBase(method: IMethodBase, returns: Type, visibility: Visibility, bodyPrefix: Statement[] = null): string {
-        if (method === null) return "";
-        const name = method instanceof Method ? method.name : method instanceof Constructor ? method.parentClass.name : "???";
-        const typeArgs = method instanceof Method ? method.typeArguments : null;
-        const overrides = method instanceof Method ? method.overrides !== null : false;
-        const virtual = method instanceof Method ? !overrides && method.overriddenBy.length > 0 : false;
-        const intfMethod = method instanceof Method ? method.parentInterface instanceof Interface : false;
-        const async = method instanceof Method ? method.async : false;
-        return this.preIf("/* throws */ ", method.throws) + 
-            (intfMethod ? "" : this.vis(visibility) + " ") +
-            this.preIf("virtual ", virtual) + this.preIf("override ", overrides) +
-            this.preIf("async ", async) +
-            (method instanceof Constructor ? "" : `${this.type(returns, false)} `) +
-            this.name_(name) + this.typeArgs(typeArgs) + 
-            `(${method.parameters.map(p => this.var(p)).join(", ")})` +
-            (method instanceof Constructor && method.superCallArgs !== null ? `: base(${method.superCallArgs.map(x => this.expr(x)).join(", ")})` : "") + 
-            (method.body !== null ? ` {\n${this.pad(this.stmts((bodyPrefix || []).concat(method.body.statements)))}\n}` : ";");
-    }
-
     classLike(cls: IInterface) {
         this.currentClass = cls;
         const resList: string[] = [];
 
-        const bodyPrefix: Statement[] = [];
+        const staticConstructorStmts: Statement[] = [];
+        const complexFieldInits: Statement[] = [];
         if (cls instanceof Class) {
             resList.push(cls.fields.map(field => {
                 const isInitializerComplex = field.initializer !== null && 
@@ -363,11 +345,14 @@ export class CsharpGenerator {
 
                 const prefix = `${this.vis(field.visibility)} ${this.preIf("static ", field.isStatic)}`;
                 if (field.interfaceDeclarations.length > 0)
-                    return `${prefix}${this.varWoInit(field)} { get; set; }`;
+                    return `${prefix}${this.varWoInit(field, field)} { get; set; }`;
                 else if (isInitializerComplex) {
-                    const fieldRef = field.isStatic ? <Reference>new StaticFieldReference(field) : new InstanceFieldReference(new ThisReference(cls), field);
-                    bodyPrefix.push(new ExpressionStatement(new BinaryExpression(fieldRef, "=", field.initializer)));
-                    return `${prefix}${this.varWoInit(field)};`;
+                    if (field.isStatic)
+                        staticConstructorStmts.push(new ExpressionStatement(new BinaryExpression(new StaticFieldReference(field), "=", field.initializer)));
+                    else
+                        complexFieldInits.push(new ExpressionStatement(new BinaryExpression(new InstanceFieldReference(new ThisReference(cls), field), "=", field.initializer)));
+                    
+                        return `${prefix}${this.varWoInit(field, field)};`;
                 } else
                     return `${prefix}${this.var(field)};`;
             }).join("\n"));
@@ -379,7 +364,29 @@ export class CsharpGenerator {
                     (prop.setter !== null ? ` {\n    set {\n${this.pad(this.block(prop.setter))}\n    }\n}` : "");
             }).join("\n"));
 
-            resList.push(this.methodBase(cls.constructor_, VoidType.instance, Visibility.Public, bodyPrefix));
+            if (staticConstructorStmts.length > 0)
+                resList.push(`static ${this.name_(cls.name)}()\n{\n${this.pad(this.stmts(staticConstructorStmts))}\n}`);
+
+            if (cls.constructor_ !== null) {
+                const constrFieldInits: Statement[] = cls.fields.filter(x => x.constructorParam !== null)
+                    .map(field => {
+                        const fieldRef = new InstanceFieldReference(new ThisReference(cls), field);
+                        const mpRef = new MethodParameterReference(field.constructorParam);
+                        // TODO: decide what to do with "after-TypeEngine" transformations
+                        mpRef.setActualType(field.type, false, false);
+                        return new ExpressionStatement(new BinaryExpression(fieldRef, "=", mpRef));
+                    });
+
+                resList.push(
+                    "public " +
+                    this.preIf("/* throws */ ", cls.constructor_.throws) + 
+                    this.name_(cls.name) +
+                    `(${cls.constructor_.parameters.map(p => this.var(p, null)).join(", ")})` +
+                    (cls.constructor_.superCallArgs !== null ? `: base(${cls.constructor_.superCallArgs.map(x => this.expr(x)).join(", ")})` : "") +
+                    `\n{\n${this.pad(this.stmts(constrFieldInits.concat(complexFieldInits).concat(cls.constructor_.body.statements)))}\n}`);
+            } else if (complexFieldInits.length > 0)
+                resList.push(`public ${this.name_(cls.name)}()\n{\n${this.pad(this.stmts(complexFieldInits))}\n}`);
+
         } else if (cls instanceof Interface) {
             resList.push(cls.fields.map(field => `${this.varWoInit(field)} { get; set; }`).join("\n"));
         }
@@ -388,9 +395,16 @@ export class CsharpGenerator {
         for (const method of cls.methods) {
             if (cls instanceof Class && method.body === null) continue; // declaration only
             methods.push(
-                this.preIf("static ", method.isStatic) + 
-                this.preIf("@mutates ", "mutates" in method.attributes) + 
-                this.methodBase(method, method.returns, method.visibility));
+                (method.parentInterface instanceof Interface ? "" : this.vis(method.visibility) + " ") +
+                this.preIf("static ", method.isStatic) +
+                this.preIf("virtual ", method.overrides === null && method.overriddenBy.length > 0) + 
+                this.preIf("override ", method.overrides !== null) +
+                this.preIf("async ", method.async) +
+                this.preIf("/* throws */ ", method.throws) +
+                `${this.type(method.returns, false)} ` +
+                this.name_(method.name) + this.typeArgs(method.typeArguments) + 
+                `(${method.parameters.map(p => this.var(p, null)).join(", ")})` +
+                (method.body !== null ? ` {\n${this.pad(this.stmts(method.body.statements))}\n}` : ";"));
         }
         resList.push(methods.join("\n\n"));
         return this.pad(resList.filter(x => x !== "").join("\n\n"));
