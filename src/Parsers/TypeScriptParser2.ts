@@ -146,6 +146,9 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
             while (true) {
                 let litMatch = this.reader.readRegex("([^$`]|\\$[^{]|\\\\${|\\\\`)*")[0];
                 litMatch = litMatch.replace(/\\"/g, '"');
+                litMatch = litMatch.replace(/\\n/g, '\n');
+                litMatch = litMatch.replace(/\\r/g, '\r');
+                litMatch = litMatch.replace(/\\t/g, '\t');
                 litMatch = litMatch.replace(/\\`/g, "`");
                 litMatch = litMatch.replace(/\\$/g, "$");
                 litMatch = litMatch.replace(/\\\\/g, "\\");
@@ -175,7 +178,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
             return new CastExpression(newType, expression);
         } else if (this.reader.readToken("/")) {
             let pattern = this.reader.readRegex("((?<![\\\\])[\\\\]/|[^/])+")[0];
-            pattern = pattern.replace(/\\(.)/g, '$1');
+            pattern = pattern.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r").replace(/\\\\/g, "\\");
             this.reader.expectToken("/");
             const modifiers = this.reader.readModifiers(["g", "i"]);
             return new RegexLiteral(pattern, modifiers.includes("i"), modifiers.includes("g"));

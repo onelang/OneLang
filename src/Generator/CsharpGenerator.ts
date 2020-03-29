@@ -212,7 +212,8 @@ export class CsharpGenerator {
             const parts: string[] = [];
             for (const part of expr.parts) {
                 if (part.isLiteral)
-                    parts.push(part.literalText.replace(/\\/g, `\\\\`).replace(/"/g, `\\"`).replace(/{/g, "{{").replace(/}/g, "}}"));
+                    parts.push(part.literalText.replace(/\\/g, `\\\\`).replace(/"/g, `\\"`)
+                        .replace(/\n/g, `\\n`).replace(/\r/g, `\\r`).replace(/\t/g, `\\t`).replace(/{/g, "{{").replace(/}/g, "}}"));
                 else {
                     const repr = this.expr(part.expression);
                     parts.push(part.expression instanceof ConditionalExpression ? `{(${repr})}` : `{${repr}}`);
