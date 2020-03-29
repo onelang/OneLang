@@ -1,4 +1,4 @@
-import { Expression } from "../../../Ast/Expressions";
+import { Expression, IMethodCallExpression } from "../../../Ast/Expressions";
 import { ClassType, Type, GenericsType, InterfaceType, LambdaType, EnumType, AnyType } from "../../../Ast/AstTypes";
 import { MethodParameter } from "../../../Ast/Types";
 
@@ -9,6 +9,21 @@ export class GenericsResolver {
         const resolver = new GenericsResolver();
         resolver.collectClassGenericsFromObject(object);
         return resolver;
+    }
+
+    public addResolution(typeVarName: string, actualType: Type) {
+        const prevRes = this.resolutionMap.get(typeVarName) || null;
+        if (prevRes !== null && !Type.equals(prevRes, actualType))
+            throw new Error(`Resolving '${typeVarName}' is ambiguous, ${prevRes.repr()} <> ${actualType.repr()}`);
+        this.resolutionMap.set(typeVarName, actualType);
+    }
+
+    public collectFromMethodCall(methodCall: IMethodCallExpression) {
+        if (methodCall.typeArgs.length === 0) return;
+        if (methodCall.typeArgs.length !== methodCall.method.typeArguments.length)
+            throw new Error(`Expected ${methodCall.method.typeArguments.length} type argument(s) for method call, but got ${methodCall.typeArgs.length}`);
+        for (let i = 0; i < methodCall.typeArgs.length; i++)
+            this.addResolution(methodCall.method.typeArguments[i], methodCall.typeArgs[i]);
     }
 
     public collectClassGenericsFromObject(actualObject: Expression): void {
@@ -26,10 +41,7 @@ export class GenericsResolver {
     public collectResolutionsFromActualType(genericType: Type, actualType: Type): boolean {
         if (!Type.isGeneric(genericType)) return true;
         if (genericType instanceof GenericsType) {
-            const prevRes = this.resolutionMap.get(genericType.typeVarName) || null;
-            if (prevRes !== null && !Type.equals(prevRes, actualType))
-                throw new Error(`Resolving ${genericType.repr()} is ambiguous, ${prevRes.repr()} <> ${actualType.repr()}`);
-            this.resolutionMap.set(genericType.typeVarName, actualType);
+            this.addResolution(genericType.typeVarName, actualType);
             return true;
         } else if (genericType instanceof ClassType && actualType instanceof ClassType && genericType.decl === actualType.decl) {
             if (genericType.typeArguments.length !== actualType.typeArguments.length)

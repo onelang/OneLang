@@ -31,6 +31,8 @@ export class ResolveMethodCalls extends InferTypesPlugin {
     }
 
     protected resolveReturnType(expr: IMethodCallExpression, genericsResolver: GenericsResolver) {
+        genericsResolver.collectFromMethodCall(expr);
+        
         for (let i = 0; i < expr.args.length; i++) {
             // actually doesn't have to resolve, but must check if generic type confirm the previous argument with the same generic type
             const paramType = genericsResolver.resolveType(expr.method.parameters[i].type, false);
