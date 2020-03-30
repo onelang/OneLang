@@ -32,14 +32,14 @@ export class ResolveUnresolvedTypes extends AstTransformer {
 
     protected visitExpression(expr: Expression): Expression {
         if (expr instanceof UnresolvedNewExpression) {
-            const classType = this.visitType(expr.cls);
-            if (classType instanceof ClassType) {
-                const newExpr = new NewExpression(classType, expr.args);
+            const clsType = this.visitType(expr.cls);
+            if (clsType instanceof ClassType) {
+                const newExpr = new NewExpression(clsType, expr.args);
                 newExpr.parentNode = expr.parentNode;
                 super.visitExpression(newExpr);
                 return newExpr;
             } else {
-                this.errorMan.throw(`Excepted ClassType, but got ${classType}`);
+                this.errorMan.throw(`Excepted ClassType, but got ${clsType}`);
                 return null;
             }
         } else {
