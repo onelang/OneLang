@@ -239,7 +239,7 @@ export class ExpressionParser {
         if (left instanceof ParenthesizedExpression && left.expression instanceof Identifier) {
             const expr = this.parse(0, false);
             if (expr !== null)
-                return new CastExpression(new UnresolvedType(left.expression.text, []), expr);
+                return new CastExpression(new UnresolvedType(left.expression.text, []), expr, null);
         }
 
         return left;

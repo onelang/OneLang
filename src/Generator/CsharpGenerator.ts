@@ -12,8 +12,9 @@ export class GeneratedFile {
 export class CsharpGenerator {
     usings: Set<string>;
     currentClass: IInterface;
-    reservedWords = ["object", "else", "operator", "class", "enum", "void", "string", "implicit", "Type", "Enum", "params", "using", "throw", "ref", "base", "virtual", "interface"];
+    reservedWords = ["object", "else", "operator", "class", "enum", "void", "string", "implicit", "Type", "Enum", "params", "using", "throw", "ref", "base", "virtual", "interface", "int", "const"];
     fieldToMethodHack = ["length"];
+    instanceOfIds: { [name: string]: number } = {};
 
     name_(name: string) {
         if (this.reservedWords.includes(name)) name += "_";
@@ -176,6 +177,38 @@ export class CsharpGenerator {
         return this.name_(expr.method.name) + this.typeArgs2(expr.typeArgs) + this.callParams(expr.args, expr.method.parameters);
     }
 
+    inferExprNameForType(type: Type): string {
+        if (type instanceof ClassType && type.typeArguments.every((x,_) => x instanceof ClassType)) {
+            const fullName = type.typeArguments.map(x => (<ClassType>x).decl.name).join('') + type.decl.name;
+            const nameParts: string[] = [];
+            let partStartIdx = 0;
+            for (let i = 1; i < fullName.length; i++) {
+                const chrCode = fullName.charCodeAt(i);
+                const chrIsUpper = 65 <= chrCode && chrCode <= 90;
+                if (chrIsUpper) {
+                    nameParts.push(fullName.substring(partStartIdx, i));
+                    partStartIdx = i;
+                }
+            }
+            nameParts.push(fullName.substr(partStartIdx));
+
+            const shortNameParts: string[] = [];
+            for (let i = 0; i < nameParts.length; i++) {
+                let p = nameParts[i];
+                if (p.length > 5) {
+                    let cutPoint = 3;
+                    for (; cutPoint <= 4; cutPoint++)
+                        if ("aeoiu".includes(p[cutPoint]))
+                            break;
+                    p = p.substr(0, cutPoint);
+                }
+                shortNameParts.push(i === 0 ? p.toLowerCase() : p);
+            }
+            return shortNameParts.join('');
+        }
+        return null;
+    }
+
     expr(expr: IExpression): string {
         let res = "UNKNOWN-EXPR";
         if (expr instanceof NewExpression) {
@@ -247,11 +280,22 @@ export class CsharpGenerator {
             } else
                 res = `new ${this.type(expr.actualType)} { ${expr.items.map(x => this.expr(x)).join(', ')} }`;
         } else if (expr instanceof CastExpression) {
-            res = `((${this.type(expr.newType)})${this.expr(expr.expression)})`;
+            if (expr.instanceOfCast !== null && expr.instanceOfCast.alias !== null)
+                res = this.name_(expr.instanceOfCast.alias);
+            else
+                res = `((${this.type(expr.newType)})${this.expr(expr.expression)})`;
         } else if (expr instanceof ConditionalExpression) {
             res = `${this.expr(expr.condition)} ? ${this.expr(expr.whenTrue)} : ${this.mutatedExpr(expr.whenFalse, expr.whenTrue)}`;
         } else if (expr instanceof InstanceOfExpression) {
-            res = `${this.expr(expr.expr)} is ${this.type(expr.checkType)}`;
+            if (expr.implicitCasts !== null && expr.implicitCasts.length > 0) {
+                let aliasPrefix = this.inferExprNameForType(expr.checkType);
+                if (aliasPrefix === null)
+                    aliasPrefix = expr.expr instanceof VariableReference ? expr.expr.getVariable().name : "obj";
+                const id = aliasPrefix in this.instanceOfIds ? this.instanceOfIds[aliasPrefix] : 1;
+                this.instanceOfIds[aliasPrefix] = id + 1;
+                expr.alias = `${aliasPrefix}${id === 1 ? "" : `${id}`}`;
+            }
+            res = `${this.expr(expr.expr)} is ${this.type(expr.checkType)}${expr.alias !== null ? ` ${this.name_(expr.alias)}` : ""}`;
         } else if (expr instanceof ParenthesizedExpression) {
             res = `(${this.expr(expr.expression)})`;
         } else if (expr instanceof RegexLiteral) {
@@ -454,6 +498,7 @@ export class CsharpGenerator {
     }
 
     genFile(sourceFile: SourceFile): string {
+        this.instanceOfIds = {};
         this.usings = new Set<string>();
         const enums = sourceFile.enums.map(enum_ => `public enum ${this.name_(enum_.name)} { ${enum_.values.map(x => this.name_(x.name)).join(", ")} }`);
 

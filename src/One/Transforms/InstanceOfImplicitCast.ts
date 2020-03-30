@@ -12,6 +12,7 @@ export class InstanceOfImplicitCast extends AstTransformer {
 
     protected addCast(cast: InstanceOfExpression) {
         if (this.castCounts.length > 0) {
+            cast.implicitCasts = [];
             this.casts.push(cast);
             const last = this.castCounts.length - 1;
             this.castCounts[last] = this.castCounts[last] + 1;
@@ -30,9 +31,9 @@ export class InstanceOfImplicitCast extends AstTransformer {
 
     protected equals(expr1: Expression, expr2: Expression): boolean {
         // implicit casts don't matter when checking equality...
-        while (expr1 instanceof CastExpression && expr1.implicit)
+        while (expr1 instanceof CastExpression && expr1.instanceOfCast !== null)
             expr1 = expr1.expression;
-        while (expr2 instanceof CastExpression && expr2.implicit)
+        while (expr2 instanceof CastExpression && expr2.instanceOfCast !== null)
             expr2 = expr2.expression;
         
         // MetP, V, MethP.PA, V.PA, MethP/V [ {FEVR} ], FEVR
@@ -75,8 +76,11 @@ export class InstanceOfImplicitCast extends AstTransformer {
             result = super.visitExpression(expr) || expr;
             this.popContext();
             const match = this.casts.find(cast => this.equals(result, cast.expr)) || null;
-            if (match !== null)
-                result = new CastExpression(match.checkType, result, true);
+            if (match !== null) {
+                const castExpr = new CastExpression(match.checkType, result, match);
+                match.implicitCasts.push(castExpr);
+                result = castExpr;
+            }
         }
         return result;
     }

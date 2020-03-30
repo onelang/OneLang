@@ -192,7 +192,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
             const newType = this.parseType();
             this.reader.expectToken(">");
             const expression = this.parseExpression();
-            return new CastExpression(newType, expression);
+            return new CastExpression(newType, expression, null);
         } else if (this.reader.readToken("/")) {
             let pattern = this.reader.readRegex("((?<![\\\\])[\\\\]/|[^/])+")[0];
             //pattern = pattern.replace(/\\"/g, '"').replace(/\\'/g, "'").replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r").replace(/\\\\/g, "\\");

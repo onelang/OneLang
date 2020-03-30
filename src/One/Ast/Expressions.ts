@@ -152,7 +152,8 @@ export class CastExpression extends Expression {
     constructor(
         public newType: Type,
         public expression: Expression,
-        public implicit: boolean = false) { super(); }
+        // in case the cast is an implicit cast happening because of an "instanceof" primitive
+        public instanceOfCast: InstanceOfExpression) { super(); }
 }
 
 export class ParenthesizedExpression extends Expression {
@@ -236,6 +237,12 @@ export class InstanceOfExpression extends Expression {
     constructor(
         public expr: Expression,
         public checkType: Type) { super(); }
+
+    // list of all the implicit casts happening because of this instanceof
+    /** @creator InstanceOfImplicitCast */
+    implicitCasts: CastExpression[] = null;
+
+    alias: string = null;
 }
 
 export class AwaitExpression extends Expression {
