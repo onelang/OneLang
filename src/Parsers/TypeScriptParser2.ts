@@ -4,8 +4,8 @@ import { NodeManager } from "./Common/NodeManager";
 import { IParser } from "./Common/IParser";
 import { Type, AnyType, VoidType, UnresolvedType, LambdaType } from "../One/Ast/AstTypes";
 import { Expression, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, BinaryExpression, UnaryExpression, UnresolvedCallExpression, PropertyAccessExpression, InstanceOfExpression, RegexLiteral, AwaitExpression, ParenthesizedExpression, UnresolvedNewExpression } from "../One/Ast/Expressions";
-import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileStatement, ForeachStatement, ForStatement, ReturnStatement, ThrowStatement, BreakStatement, ExpressionStatement, ForeachVariable, ForVariable, DoStatement, ContinueStatement, TryStatement, CatchVariable } from "../One/Ast/Statements";
-import { Block, Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package, Lambda, UnresolvedImport, GlobalFunction } from "../One/Ast/Types";
+import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileStatement, ForeachStatement, ForStatement, ReturnStatement, ThrowStatement, BreakStatement, ExpressionStatement, ForeachVariable, ForVariable, DoStatement, ContinueStatement, TryStatement, CatchVariable, Block } from "../One/Ast/Statements";
+import { Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package, Lambda, UnresolvedImport, GlobalFunction } from "../One/Ast/Types";
 
 class TypeAndInit {
     constructor(
@@ -734,7 +734,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
         const importStart = this.reader.prevTokenOffset;
 
         let importAllAlias: string = null;
-        const nameAliases: { [name: string]: string } = {};
+        let importParts: UnresolvedImport[] = [];
 
         if (this.reader.readToken("*")) {
             this.reader.expectToken("as");
@@ -745,8 +745,9 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
                 if (this.reader.peekToken("}")) break;
     
                 const imp = this.reader.expectIdentifier();
-                const importAs = this.reader.readToken("as") ? this.reader.readIdentifier() : null;
-                nameAliases[imp] = importAs;
+                if (this.reader.readToken("as"))
+                    this.reader.fail("This is not yet supported");
+                importParts.push(new UnresolvedImport(imp));
                 this.nodeManager.addNode(imp, this.reader.prevTokenOffset);
             } while(this.reader.readToken(","));
             this.reader.expectToken("}");
@@ -759,8 +760,8 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
         const importScope = this.exportScope !== null ? TypeScriptParser2.calculateImportScope(this.exportScope, moduleName) : null;
         
         const imports: Import[] = [];
-        for (const name of Object.keys(nameAliases))
-            imports.push(new Import(importScope, false, [new UnresolvedImport(name)], nameAliases[name], leadingTrivia));
+        if (importParts.length > 0)
+            imports.push(new Import(importScope, false, importParts, null, leadingTrivia));
 
         if (importAllAlias !== null)
             imports.push(new Import(importScope, true, null, importAllAlias, leadingTrivia));

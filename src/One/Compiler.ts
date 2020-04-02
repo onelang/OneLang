@@ -37,7 +37,7 @@ export class Compiler {
         new FillMutabilityInfo().visitSourceFile(this.nativeFile);
     }
 
-    newWorkspace() {
+    newWorkspace(pkgName = "@") {
         this.workspace = new Workspace();
         for (const intfPkg of this.pacMan.interfacesPkgs) {
             const libName = `${intfPkg.interfaceYaml.vendor}.${intfPkg.interfaceYaml.name}-v${intfPkg.interfaceYaml.version}`;
@@ -47,7 +47,7 @@ export class Compiler {
             this.workspace.addPackage(libPkg);
         }
 
-        this.projectPkg = new Package("@");
+        this.projectPkg = new Package(pkgName);
         this.workspace.addPackage(this.projectPkg);
     }
 

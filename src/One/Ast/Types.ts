@@ -1,9 +1,9 @@
-import { Statement } from "./Statements";
 import { Type, ClassType, GenericsType, EnumType, InterfaceType } from "./AstTypes";
 import { Expression } from "./Expressions";
 import { ErrorManager } from "../ErrorManager";
 import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, StaticFieldReference, EnumMemberReference, InstanceFieldReference, StaticPropertyReference, InstancePropertyReference, IReferencable, Reference, GlobalFunctionReference, StaticThisReference } from "./References";
 import { AstHelper } from "./AstHelper";
+import { Block } from "./Statements";
 
 export interface IAstNode { }
 
@@ -264,7 +264,11 @@ export class Interface implements IHasAttributesAndTrivia, IInterface, IImportab
     type = new InterfaceType(this, this.typeArguments.map(x => new GenericsType(x)));
 
     _baseInterfaceCache: IInterface[] = null;
-    getAllBaseInterfaces(): IInterface[] { return this._baseInterfaceCache || (this._baseInterfaceCache = AstHelper.collectAllBaseInterfaces(this)); }
+    getAllBaseInterfaces(): IInterface[] {
+        if (this._baseInterfaceCache === null)
+            this._baseInterfaceCache = AstHelper.collectAllBaseInterfaces(this);
+        return this._baseInterfaceCache;
+    }
 }
 
 export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, ISourceFileMember, IReferencable {
@@ -299,7 +303,11 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, 
     type = new ClassType(this, this.typeArguments.map(x => new GenericsType(x)));
 
     _baseInterfaceCache: IInterface[] = null;
-    getAllBaseInterfaces(): IInterface[] { return this._baseInterfaceCache || (this._baseInterfaceCache = AstHelper.collectAllBaseInterfaces(this)); }
+    getAllBaseInterfaces(): IInterface[] {
+        if (this._baseInterfaceCache === null)
+            this._baseInterfaceCache = AstHelper.collectAllBaseInterfaces(this);
+        return this._baseInterfaceCache;
+    }
 }
 
 export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia, IClassMember, IAstNode {
@@ -438,11 +446,6 @@ export class GlobalFunction implements IMethodBaseWithTrivia, IImportable, IHasA
     /** @creator ResolveIdentifiers */
     references: GlobalFunctionReference[] = [];
     createReference(): Reference { return new GlobalFunctionReference(this); }
-}
-
-export class Block {
-    /** @creator TypeScriptParser2 */
-    constructor(public statements: Statement[]) { }
 }
 
 export class Lambda extends Expression implements IMethodBase {

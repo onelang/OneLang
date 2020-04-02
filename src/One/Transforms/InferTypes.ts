@@ -1,14 +1,13 @@
 import { AstTransformer } from "../AstTransformer";
 import { Expression } from "../Ast/Expressions";
-import { Package, Property, Field, IMethodBase, IVariableWithInitializer, Lambda, Block, IVariable, Method } from "../Ast/Types";
+import { Package, Property, Field, IMethodBase, IVariableWithInitializer, Lambda, IVariable, Method } from "../Ast/Types";
 import { BasicTypeInfer } from "./InferTypesPlugins/BasicTypeInfer";
 import { InferTypesPlugin } from "./InferTypesPlugins/Helpers/InferTypesPlugin";
 import { ArrayAndMapLiteralTypeInfer } from "./InferTypesPlugins/ArrayAndMapLiteralTypeInfer";
 import { ResolveFieldAndPropertyAccess } from "./InferTypesPlugins/ResolveFieldAndPropertyAccess";
 import { ResolveMethodCalls } from "./InferTypesPlugins/ResolveMethodCalls";
 import { LambdaResolver } from "./InferTypesPlugins/LambdaResolver";
-import { TSOverviewGenerator } from "../../Utils/TSOverviewGenerator";
-import { Statement } from "../Ast/Statements";
+import { Statement, Block } from "../Ast/Statements";
 import { ResolveEnumMemberAccess } from "./InferTypesPlugins/ResolveEnumMemberAccess";
 import { InferReturnType } from "./InferTypesPlugins/InferReturnType";
 import { TypeScriptNullCoalesce } from "./InferTypesPlugins/TypeScriptNullCoalesce";
@@ -80,7 +79,8 @@ export class InferTypes extends AstTransformer {
         if (transformers.length !== 1) return null;
 
         const plugin = transformers[0];
-        this.errorMan.lastContextInfo = `[${++this.contextInfoIdx}] running transform plugin "${plugin.name}"`;
+        this.contextInfoIdx++;
+        this.errorMan.lastContextInfo = `[${this.contextInfoIdx}] running transform plugin "${plugin.name}"`;
         try {
             const newExpr = plugin.transform(expr);
             // expression changed, restart the type infering process on the new expression
@@ -99,7 +99,8 @@ export class InferTypes extends AstTransformer {
     protected detectType(expr: Expression): boolean {
         for (const plugin of this.plugins) {
             if (!plugin.canDetectType(expr)) continue;
-            this.errorMan.lastContextInfo = `[${++this.contextInfoIdx}] running type detection plugin "${plugin.name}"`;
+            this.contextInfoIdx++;
+            this.errorMan.lastContextInfo = `[${this.contextInfoIdx}] running type detection plugin "${plugin.name}"`;
             this.errorMan.currentNode = expr;
             try {
                 if (plugin.detectType(expr))

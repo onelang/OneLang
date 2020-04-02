@@ -1,4 +1,4 @@
-import { Block, IVariableWithInitializer, IVariable, IHasAttributesAndTrivia, IAstNode, MutabilityInfo } from "./Types";
+import { IVariableWithInitializer, IVariable, IHasAttributesAndTrivia, IAstNode, MutabilityInfo } from "./Types";
 import { Expression } from "./Expressions";
 import { Type } from "./AstTypes";
 import { ForVariableReference, ForeachVariableReference, VariableDeclarationReference, IReferencable, Reference, CatchVariableReference } from "./References";
@@ -127,4 +127,9 @@ export class TryStatement extends Statement {
             if (this.catchBody === null && this.finallyBody === null)
                 throw new Error("try without catch and finally is not allowed");
         }
+}
+
+export class Block {
+    /** @creator TypeScriptParser2 */
+    constructor(public statements: Statement[]) { }
 }

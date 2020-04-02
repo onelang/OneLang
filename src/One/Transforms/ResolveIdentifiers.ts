@@ -1,9 +1,9 @@
 import { AstTransformer } from "../AstTransformer";
-import { SourceFile, Class, Enum, Method, Block, Lambda, GlobalFunction, IMethodBase, Constructor, Interface } from "../Ast/Types";
+import { SourceFile, Class, Enum, Method, Lambda, GlobalFunction, IMethodBase, Constructor, Interface } from "../Ast/Types";
 import { ErrorManager } from "../ErrorManager";
 import { Identifier, Expression } from "../Ast/Expressions";
 import { IReferencable, Reference, StaticThisReference, ThisReference, SuperReference } from "../Ast/References";
-import { VariableDeclaration, ForStatement, ForeachStatement, Statement, IfStatement, TryStatement } from "../Ast/Statements";
+import { VariableDeclaration, ForStatement, ForeachStatement, Statement, IfStatement, TryStatement, Block } from "../Ast/Statements";
 import { ClassType } from "../Ast/AstTypes";
 
 class SymbolLookup {

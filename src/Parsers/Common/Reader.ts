@@ -109,7 +109,8 @@ export class Reader {
 
     readChar(): string {
         // TODO: should we move wsOffset?
-        return this.input[this.offset++];
+        this.offset++;
+        return this.input[this.offset - 1];
     }
 
     peekToken(token: string): boolean {
@@ -155,7 +156,7 @@ export class Reader {
     expectOneOf(tokens: string[]) {
         const result = this.readAnyOf(tokens);
         if (result === null)
-            this.fail(`expected one of ${tokens.map(x => `'${x}'`).join(", ")}`);
+            this.fail(`expected one of the following tokens: ${tokens.join(", ")}`);
         return result;
     }
 

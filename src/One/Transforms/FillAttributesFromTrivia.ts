@@ -1,5 +1,5 @@
-import { SourceFile, IMethodBase, Block, IHasAttributesAndTrivia, Package, IMethodBaseWithTrivia } from "../Ast/Types";
-import { ForeachStatement, ForStatement, IfStatement } from "../Ast/Statements";
+import { SourceFile, IMethodBase, IHasAttributesAndTrivia, Package, IMethodBaseWithTrivia } from "../Ast/Types";
+import { ForeachStatement, ForStatement, IfStatement, Block } from "../Ast/Statements";
 
 export class FillAttributesFromTrivia {
     static processTrivia(trivia: string) {

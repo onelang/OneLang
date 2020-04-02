@@ -1,6 +1,7 @@
 import 'module-alias/register';
 import { readFile, glob, readDir, baseDir, writeFile } from "./TestUtils";
 import { CsharpGenerator } from "@one/Generator/CsharpGenerator";
+import { PythonGenerator } from "@one/Generator/PythonGenerator";
 import { Compiler } from "@one/One/Compiler";
 import { Linq } from './Underscore';
 import { PackageStateCapture } from './DiffUtils';
@@ -24,7 +25,7 @@ compiler.init(`${baseDir}/packages`).then(() => {
         if (test.projName !== "OneLang") continue;
         //if (test.projName !== "ComplexTest01") continue;
 
-        compiler.newWorkspace();
+        compiler.newWorkspace(test.projName);
         compiler.addOverlayPackage("js-yaml");
 
         const files = glob(test.projDir);
@@ -49,6 +50,10 @@ compiler.init(`${baseDir}/packages`).then(() => {
         const genCsharp = new CsharpGenerator().generate(compiler.projectPkg);
         for (const file of genCsharp)
             writeFile(`test/artifacts/ProjectTest/${test.projName}/CSharp/${file.path.replace(".ts", ".cs")}`, file.content);
+
+        const genPython = new PythonGenerator().generate(compiler.projectPkg);
+        for (const file of genPython)
+            writeFile(`test/artifacts/ProjectTest/${test.projName}/Python/${file.path.replace(".ts", ".py")}`, file.content);
         console.log("DONE.");
         return;
         debugger;

@@ -1,4 +1,4 @@
-import { Enum, Method, Interface, Class, IImportable, MethodParameter, IInterface } from "./Types";
+import { Enum, Interface, Class, MethodParameter, IInterface } from "./Types";
 
 export interface IType {
     repr(): string;

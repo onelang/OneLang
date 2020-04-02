@@ -11,17 +11,16 @@ export class ResolveMethodCalls extends InferTypesPlugin {
     protected findMethod(cls: IInterface, methodName: string, isStatic: boolean, args: Expression[]) {
         const allBases = cls instanceof Class ? cls.getAllBaseInterfaces().filter(x => x instanceof Class) : cls.getAllBaseInterfaces();
         
-        const allMethods: Method[] = [];
-        for (const base of allBases)
-            for (const method of base.methods)
-                allMethods.push(method);
-
-        const methods = allMethods.filter(m => {
-            const minLen = m.parameters.filter(p => p.initializer === null).length;
-            const maxLen = m.parameters.length;
-            const match = m.name === methodName && m.isStatic === isStatic && minLen <= args.length && args.length <= maxLen;
-            return match;
-        });
+        const methods: Method[] = [];
+        for (const base of allBases) {
+            for (const m of base.methods) {
+                const minLen = m.parameters.filter(p => p.initializer === null).length;
+                const maxLen = m.parameters.length;
+                const match = m.name === methodName && m.isStatic === isStatic && minLen <= args.length && args.length <= maxLen;
+                if (match)
+                    methods.push(m);
+            }
+        }
         
         if (methods.length === 0)
             throw new Error(`Method '${methodName}' was not found on type '${cls.name}' with ${args.length} arguments`);

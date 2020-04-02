@@ -1,13 +1,9 @@
 import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression, StaticMethodCallExpression, LambdaCallExpression, IExpression, IMethodCallExpression } from "../One/Ast/Expressions";
-import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable, TryStatement } from "../One/Ast/Statements";
-import { Method, Block, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility, IAstNode, GlobalFunction, Package, SourcePath, IHasAttributesAndTrivia } from "../One/Ast/Types";
+import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, TryStatement, Block } from "../One/Ast/Statements";
+import { Class, SourceFile, IVariable, Lambda, Interface, IInterface, MethodParameter, IVariableWithInitializer, Visibility, Package, IHasAttributesAndTrivia } from "../One/Ast/Types";
 import { Type, VoidType, ClassType, InterfaceType, EnumType, AnyType, LambdaType, NullType, GenericsType } from "../One/Ast/AstTypes";
-import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference, StaticThisReference, Reference, VariableReference } from "../One/Ast/References";
-import { InferTypes } from "../One/Transforms/InferTypes";
-
-export class GeneratedFile {
-    constructor(public path: string, public content: string) { }
-}
+import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference, StaticThisReference, VariableReference } from "../One/Ast/References";
+import { GeneratedFile } from "./GeneratedFile";
 
 export class CsharpGenerator {
     usings: Set<string>;
@@ -126,7 +122,7 @@ export class CsharpGenerator {
     }
 
     var(v: IVariableWithInitializer, attrs: IHasAttributesAndTrivia) {
-        return `${this.varWoInit(v, attrs)}${v.initializer !== null ? ` = ${this.expr(v.initializer)}` : ""}`;
+        return this.varWoInit(v, attrs) + (v.initializer !== null ? ` = ${this.expr(v.initializer)}` : "");
     }
 
     exprCall(typeArgs: Type[], args: Expression[]) {
@@ -293,7 +289,7 @@ export class CsharpGenerator {
                     aliasPrefix = expr.expr instanceof VariableReference ? expr.expr.getVariable().name : "obj";
                 const id = aliasPrefix in this.instanceOfIds ? this.instanceOfIds[aliasPrefix] : 1;
                 this.instanceOfIds[aliasPrefix] = id + 1;
-                expr.alias = `${aliasPrefix}${id === 1 ? "" : `${id}`}`;
+                expr.alias = aliasPrefix + (id === 1 ? "" : `${id}`);
             }
             res = `${this.expr(expr.expr)} is ${this.type(expr.checkType)}${expr.alias !== null ? ` ${this.name_(expr.alias)}` : ""}`;
         } else if (expr instanceof ParenthesizedExpression) {
@@ -423,7 +419,8 @@ export class CsharpGenerator {
         const staticConstructorStmts: Statement[] = [];
         const complexFieldInits: Statement[] = [];
         if (cls instanceof Class) {
-            resList.push(cls.fields.map(field => {
+            const fieldReprs: string[] = [];
+            for (const field of cls.fields) {
                 const isInitializerComplex = field.initializer !== null && 
                     !(field.initializer instanceof StringLiteral) && 
                     !(field.initializer instanceof BooleanLiteral) && 
@@ -431,17 +428,18 @@ export class CsharpGenerator {
 
                 const prefix = `${this.vis(field.visibility)} ${this.preIf("static ", field.isStatic)}`;
                 if (field.interfaceDeclarations.length > 0)
-                    return `${prefix}${this.varWoInit(field, field)} { get; set; }`;
+                    fieldReprs.push(`${prefix}${this.varWoInit(field, field)} { get; set; }`);
                 else if (isInitializerComplex) {
                     if (field.isStatic)
                         staticConstructorStmts.push(new ExpressionStatement(new BinaryExpression(new StaticFieldReference(field), "=", field.initializer)));
                     else
                         complexFieldInits.push(new ExpressionStatement(new BinaryExpression(new InstanceFieldReference(new ThisReference(cls), field), "=", field.initializer)));
                     
-                        return `${prefix}${this.varWoInit(field, field)};`;
+                        fieldReprs.push(`${prefix}${this.varWoInit(field, field)};`);
                 } else
-                    return `${prefix}${this.var(field, field)};`;
-            }).join("\n"));
+                    fieldReprs.push(`${prefix}${this.var(field, field)};`);
+            }
+            resList.push(fieldReprs.join("\n"));
 
             resList.push(cls.properties.map(prop => {
                 return `${this.vis(prop.visibility)} ${this.preIf("static ", prop.isStatic)}` +
@@ -454,14 +452,14 @@ export class CsharpGenerator {
                 resList.push(`static ${this.name_(cls.name)}()\n{\n${this.pad(this.stmts(staticConstructorStmts))}\n}`);
 
             if (cls.constructor_ !== null) {
-                const constrFieldInits: Statement[] = cls.fields.filter(x => x.constructorParam !== null)
-                    .map(field => {
-                        const fieldRef = new InstanceFieldReference(new ThisReference(cls), field);
-                        const mpRef = new MethodParameterReference(field.constructorParam);
-                        // TODO: decide what to do with "after-TypeEngine" transformations
-                        mpRef.setActualType(field.type, false, false);
-                        return new ExpressionStatement(new BinaryExpression(fieldRef, "=", mpRef));
-                    });
+                const constrFieldInits: Statement[] = [];
+                for (const field of cls.fields.filter(x => x.constructorParam !== null)) {
+                    const fieldRef = new InstanceFieldReference(new ThisReference(cls), field);
+                    const mpRef = new MethodParameterReference(field.constructorParam);
+                    // TODO: decide what to do with "after-TypeEngine" transformations
+                    mpRef.setActualType(field.type, false, false);
+                    constrFieldInits.push(new ExpressionStatement(new BinaryExpression(fieldRef, "=", mpRef)));
+                }
 
                 resList.push(
                     "public " +

@@ -1,4 +1,4 @@
-import { SourceFile, Method, IInterface, Block, Enum, Interface, Class, Field, Property, IAstNode, IMethodBase, Constructor, GlobalFunction, Lambda } from "../Ast/Types";
+import { SourceFile, Method, IInterface, Enum, Interface, Class, Field, Property, IAstNode, IMethodBase, Constructor, GlobalFunction, Lambda } from "../Ast/Types";
 import { Statement } from "../Ast/Statements";
 import { Expression } from "../Ast/Expressions";
 import { AstTransformer } from "../AstTransformer";
