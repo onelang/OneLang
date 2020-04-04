@@ -133,7 +133,8 @@ export class PythonGenerator {
             const parent = expr.method.parentInterface === this.currentClass ? "cls" : this.clsName(expr.method.parentInterface);
             res = `${parent}.${this.methodCall(expr)}`;
         } else if (expr instanceof GlobalFunctionCallExpression) {
-            res = `Global.${this.name_(expr.func.name)}${this.exprCall(expr.args)}`;
+            this.imports.add("from OneLangHelper import *");
+            res = `${this.name_(expr.func.name)}${this.exprCall(expr.args)}`;
         } else if (expr instanceof LambdaCallExpression) {
             res = `${this.expr(expr.method)}(${expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof BooleanLiteral) {
@@ -381,6 +382,7 @@ export class PythonGenerator {
     genFile(sourceFile: SourceFile): string {
         this.currentFile = sourceFile;
         this.imports = new Set<string>();
+        this.imports.add("from OneLangHelper import *"); // TODO: do not add this globally, just for nativeResolver methods
         
         if (sourceFile.enums.length > 0)
             this.imports.add("from enum import Enum");
