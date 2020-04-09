@@ -3,6 +3,7 @@ import { ErrorManager } from "../ErrorManager";
 import { InstanceOfExpression, BinaryExpression, Expression, CastExpression, ConditionalExpression, PropertyAccessExpression } from "../Ast/Expressions";
 import { Statement, IfStatement, VariableDeclaration, WhileStatement, ExpressionStatement, ReturnStatement } from "../Ast/Statements";
 import { ForeachVariableReference, VariableDeclarationReference, MethodParameterReference, InstanceFieldReference, ThisReference, Reference, StaticThisReference } from "../Ast/References";
+import { ArrayHelper } from "../../Utils/ArrayHelper";
 
 export class InstanceOfImplicitCast extends AstTransformer {
     casts: InstanceOfExpression[] = [];
@@ -26,7 +27,7 @@ export class InstanceOfImplicitCast extends AstTransformer {
     protected popContext() {
         const castCount = this.castCounts.pop();
         if (castCount !== 0)
-            this.casts.splice(this.casts.length - castCount, castCount);
+            ArrayHelper.removeLastN(this.casts, castCount);
     }
 
     protected equals(expr1: Expression, expr2: Expression): boolean {

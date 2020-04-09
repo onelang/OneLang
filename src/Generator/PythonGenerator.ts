@@ -5,6 +5,9 @@ import { Type, VoidType, ClassType, InterfaceType, EnumType, AnyType, LambdaType
 import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference, StaticThisReference, Reference, VariableReference } from "../One/Ast/References";
 import { GeneratedFile } from "./GeneratedFile";
 import { TSOverviewGenerator } from "../Utils/TSOverviewGenerator";
+import { IGeneratorPlugin } from "./IGeneratorPlugin";
+import { JsToPython } from "./PythonPlugins/JsToPython";
+import { NameUtils } from "./NameUtils";
 
 export class PythonGenerator {
     tmplStrLevel = 0;
@@ -12,8 +15,13 @@ export class PythonGenerator {
     currentFile: SourceFile;
     imports: Set<string>;
     currentClass: IInterface;
-    reservedWords: string[] = ["from", "async", "global", "lambda", "cls", "import"];
+    reservedWords: string[] = ["from", "async", "global", "lambda", "cls", "import", "pass"];
     fieldToMethodHack: string[] = [];
+    plugins: IGeneratorPlugin[] = [];
+
+    constructor() {
+        this.plugins.push(new JsToPython(this));
+    }
 
     type(type: Type) {
         if (type instanceof ClassType) {
@@ -21,9 +29,10 @@ export class PythonGenerator {
             else if (type.decl.name === "TsBoolean") return "bool";
             else if (type.decl.name === "TsNumber")  return "int";
             else
-                return type.decl.name;
+                return this.clsName(type.decl);
         } else {
             debugger;
+            return "NOT-HANDLED-TYPE";
         }
     }
 
@@ -51,11 +60,18 @@ export class PythonGenerator {
         return this.splitName(name).join("_");
     }
 
-    enumName(name: string) {
+    enumName(enum_: Enum, isDecl = false) {
+        let name = this.name_(enum_.name).toUpperCase();
+        if (isDecl || enum_.parentFile.exportScope === null || enum_.parentFile === this.currentFile)
+            return name;
+        return this.calcImportAlias(enum_.parentFile.exportScope) + "." + name;
+    }
+
+    enumMemberName(name: string) {
         return this.name_(name).toUpperCase();
     }
 
-    clsName(cls: IInterface, isDecl = false) {
+    clsName(cls: IInterface, isDecl = false): string {
         if (isDecl || cls.parentFile.exportScope === null || cls.parentFile === this.currentFile) return cls.name;
         return this.calcImportAlias(cls.parentFile.exportScope) + "." + cls.name;
     }
@@ -114,6 +130,12 @@ export class PythonGenerator {
     }
 
     expr(expr: IExpression): string {
+        for (const plugin of this.plugins) {
+            const result = plugin.expr(expr);
+            if (result !== null)
+                return result;
+        }
+
         let res = "UNKNOWN-EXPR";
         if (expr instanceof NewExpression) {
             res = `${this.clsName(expr.cls.decl)}${this.callParams(expr.args)}`;
@@ -130,10 +152,11 @@ export class PythonGenerator {
         } else if (expr instanceof InstanceMethodCallExpression) {
             res = `${this.expr(expr.object)}.${this.methodCall(expr)}`;
         } else if (expr instanceof StaticMethodCallExpression) {
-            const parent = expr.method.parentInterface === this.currentClass ? "cls" : this.clsName(expr.method.parentInterface);
+            //const parent = expr.method.parentInterface === this.currentClass ? "cls" : this.clsName(expr.method.parentInterface);
+            const parent = this.clsName(expr.method.parentInterface);
             res = `${parent}.${this.methodCall(expr)}`;
         } else if (expr instanceof GlobalFunctionCallExpression) {
-            this.imports.add("from OneLangHelper import *");
+            this.imports.add("from OneLangStdLib import *");
             res = `${this.name_(expr.func.name)}${this.exprCall(expr.args)}`;
         } else if (expr instanceof LambdaCallExpression) {
             res = `${this.expr(expr.method)}(${expr.args.map(x => this.expr(x)).join(", ")})`;
@@ -178,7 +201,7 @@ export class PythonGenerator {
                     parts.push(part.expression instanceof ConditionalExpression ? `{(${repr})}` : `{${repr}}`);
                 }
             }
-            res = this.tmplStrLevel === 1 ? `f"${parts.join('')}"` : `f'''${parts.join('')}'''`;
+            res = this.tmplStrLevel === 1 ? `f'${parts.join('')}'` : `f'''${parts.join('')}'''`;
         } else if (expr instanceof BinaryExpression) {
             const op = expr.operator === "&&" ? "and" : expr.operator === "||" ? "or" : expr.operator;
             res = `${this.expr(expr.left)} ${op} ${this.expr(expr.right)}`;
@@ -189,13 +212,13 @@ export class PythonGenerator {
         } else if (expr instanceof ConditionalExpression) {
             res = `${this.expr(expr.whenTrue)} if ${this.expr(expr.condition)} else ${this.expr(expr.whenFalse)}`;
         } else if (expr instanceof InstanceOfExpression) {
-            res = `instanceof(${this.expr(expr.expr)}, ${this.type(expr.checkType)})`;
+            res = `isinstance(${this.expr(expr.expr)}, ${this.type(expr.checkType)})`;
         } else if (expr instanceof ParenthesizedExpression) {
             res = `(${this.expr(expr.expression)})`;
         } else if (expr instanceof RegexLiteral) {
             res = `RegExp(${JSON.stringify(expr.pattern)})`;
         } else if (expr instanceof Lambda) {
-            let body: string;
+            let body: string = "INVALID-BODY";
             if (expr.body.statements.length === 1 && expr.body.statements[0] instanceof ReturnStatement)
                 body = this.expr((<ReturnStatement>expr.body.statements[0]).expression);
             else {
@@ -210,26 +233,30 @@ export class PythonGenerator {
             const op = expr.operator === "!" ? "not " : expr.operator;
             if (op === "++")
                 res = `${this.expr(expr.operand)} = ${this.expr(expr.operand)} + 1`;
+            else if (op === "--")
+                res = `${this.expr(expr.operand)} = ${this.expr(expr.operand)} - 1`;
             else
                 res = `${op}${this.expr(expr.operand)}`;
         } else if (expr instanceof UnaryExpression && expr.unaryType === UnaryType.Postfix) {
             if (expr.operator === "++")
                 res = `${this.expr(expr.operand)} = ${this.expr(expr.operand)} + 1`;
+            else if (expr.operator === "--")
+                res = `${this.expr(expr.operand)} = ${this.expr(expr.operand)} - 1`;
             else
                 res = `${this.expr(expr.operand)}${expr.operator}`;
         } else if (expr instanceof MapLiteral) {
             const repr = expr.items.map(item => `${JSON.stringify(item.key)}: ${this.expr(item.value)}`).join(",\n");
-            res = `{ ${repr} }`;
+            res = expr.items.length === 0 ? "{}" : `{\n${this.pad(repr)}\n}`;
         } else if (expr instanceof NullLiteral) {
             res = `None`;
         } else if (expr instanceof AwaitExpression) {
-            res = `await ${this.expr(expr.expr)}`;
+            res = `${this.expr(expr.expr)}`;
         } else if (expr instanceof ThisReference) {
             res = `self`;
         } else if (expr instanceof StaticThisReference) {
             res = `cls`;
         } else if (expr instanceof EnumReference) {
-            res = `${this.name_(expr.decl.name)}`;
+            res = `${this.enumName(expr.decl)}`;
         } else if (expr instanceof ClassReference) {
             res = `${this.name_(expr.decl.name)}`;
         } else if (expr instanceof MethodParameterReference) {
@@ -249,64 +276,83 @@ export class PythonGenerator {
         } else if (expr instanceof StaticFieldReference) {
             res = `${this.clsName(expr.decl.parentInterface)}.${this.name_(expr.decl.name)}`;
         } else if (expr instanceof StaticPropertyReference) {
-            res = `${this.clsName(expr.decl.parentClass)}.${this.name_(expr.decl.name)}`;
+            res = `${this.clsName(expr.decl.parentClass)}.get_${this.name_(expr.decl.name)}()`;
         } else if (expr instanceof InstanceFieldReference) {
             res = `${this.expr(expr.object)}.${this.name_(expr.field.name)}`;
         } else if (expr instanceof InstancePropertyReference) {
-            res = `${this.expr(expr.object)}.${this.name_(expr.property.name)}`;
+            res = `${this.expr(expr.object)}.get_${this.name_(expr.property.name)}()`;
         } else if (expr instanceof EnumMemberReference) {
-            res = `${this.name_(expr.decl.parentEnum.name)}.${this.enumName(expr.decl.name)}`;
+            res = `${this.enumName(expr.decl.parentEnum)}.${this.enumMemberName(expr.decl.name)}`;
         } else if (expr instanceof NullCoalesceExpression) {
             res = `${this.expr(expr.defaultExpr)} or ${this.expr(expr.exprIfNull)}`;
         } else debugger;
         return res;
     }
 
-    stmt(stmt: Statement): string {
-        let res = "UNKNOWN-STATEMENT";
-        if (stmt.attributes !== null && "python" in stmt.attributes) {
-            res = stmt.attributes["python"];
-        } else if (stmt instanceof BreakStatement) {
-            res = "break";
+    stmtDefault(stmt: Statement): string {
+        const nl = "\n";
+        if (stmt instanceof BreakStatement) {
+            return "break";
         } else if (stmt instanceof ReturnStatement) {
-            res = stmt.expression === null ? "return" : `return ${this.expr(stmt.expression)}`;
+            return stmt.expression === null ? "return" : `return ${this.expr(stmt.expression)}`;
         } else if (stmt instanceof UnsetStatement) {
-            res = `/* unset ${this.expr(stmt.expression)}; */`;
+            return `/* unset ${this.expr(stmt.expression)}; */`;
         } else if (stmt instanceof ThrowStatement) {
-            res = `raise ${this.expr(stmt.expression)}`;
+            return `raise ${this.expr(stmt.expression)}`;
         } else if (stmt instanceof ExpressionStatement) {
-            res = `${this.expr(stmt.expression)}`;
+            return `${this.expr(stmt.expression)}`;
         } else if (stmt instanceof VariableDeclaration) {
-            res = stmt.initializer !== null ? `${this.name_(stmt.name)} = ${this.expr(stmt.initializer)}` : "";
+            return stmt.initializer !== null ? `${this.name_(stmt.name)} = ${this.expr(stmt.initializer)}` : "";
         } else if (stmt instanceof ForeachStatement) {
-            res = `for ${this.name_(stmt.itemVar.name)} in ${this.expr(stmt.items)}:\n${this.block(stmt.body)}`;
+            return `for ${this.name_(stmt.itemVar.name)} in ${this.expr(stmt.items)}:\n${this.block(stmt.body)}`;
         } else if (stmt instanceof IfStatement) {
             const elseIf = stmt.else_ !== null && stmt.else_.statements.length === 1 && stmt.else_.statements[0] instanceof IfStatement;
-            res = `if ${this.expr(stmt.condition)}:\n${this.block(stmt.then)}`;
-            res += (elseIf ? `\nel${this.stmt(stmt.else_.statements[0])}` : "") +
+            return `if ${this.expr(stmt.condition)}:\n${this.block(stmt.then)}` +
+                (elseIf ? `\nel${this.stmt(stmt.else_.statements[0])}` : "") +
                 (!elseIf && stmt.else_ !== null ? `\nelse:\n${this.block(stmt.else_)}` : "");
         } else if (stmt instanceof WhileStatement) {
-            res = `while ${this.expr(stmt.condition)}:\n${this.block(stmt.body)}`;
+            return `while ${this.expr(stmt.condition)}:\n${this.block(stmt.body)}`;
         } else if (stmt instanceof ForStatement) {
-            res = `${stmt.itemVar !== null ? `${this.var(stmt.itemVar, null)}\n` : ""}\nwhile ${this.expr(stmt.condition)}:\n${this.block(stmt.body)}\n${this.expr(stmt.incrementor)}`;
+            return (stmt.itemVar !== null ? `${this.var(stmt.itemVar, null)}\n` : "") + 
+                `\nwhile ${this.expr(stmt.condition)}:\n${this.block(stmt.body)}\n${this.pad(this.expr(stmt.incrementor))}`;
         } else if (stmt instanceof DoStatement) {
-            res = `while True:\n${this.block(stmt.body)}\n${this.pad(`if not (${this.expr(stmt.condition)}):\n${this.pad("break")}`)}`;
+            return `while True:\n${this.block(stmt.body)}\n${this.pad(`if not (${this.expr(stmt.condition)}):${nl}${this.pad("break")}`)}`;
         } else if (stmt instanceof TryStatement) {
-            res = `try:\n${this.block(stmt.tryBody)}`;
-            if (stmt.catchBody !== null)
-                res += `\nexcept Exception as ${this.name_(stmt.catchVar.name)}:\n${this.block(stmt.catchBody)}`;
-            if (stmt.finallyBody !== null)
-                res += `\nfinally:\n${this.block(stmt.finallyBody)}`;
+            return `try:\n${this.block(stmt.tryBody)}` +
+                (stmt.catchBody !== null ? `\nexcept Exception as ${this.name_(stmt.catchVar.name)}:\n${this.block(stmt.catchBody)}` : "") +
+                (stmt.finallyBody !== null ? `\nfinally:\n${this.block(stmt.finallyBody)}` : "");
         } else if (stmt instanceof ContinueStatement) {
-            res = `continue`;
-        } else debugger;
+            return `continue`;
+        } else {
+            debugger;
+            return "UNKNOWN-STATEMENT";
+        }
+    }
+
+    stmt(stmt: Statement): string {
+        let res: string = null;
+
+        if (stmt.attributes !== null && "python" in stmt.attributes) {
+            res = stmt.attributes["python"];
+        } else {
+            for (const plugin of this.plugins) {
+                res = plugin.stmt(stmt);
+                if (res !== null) break;
+            }
+
+            if (res === null)
+                res = this.stmtDefault(stmt);
+        }
+
         return this.leading(stmt) + res;
     }
 
-    stmts(stmts: Statement[]): string { return this.pad(stmts.length === 0 ? "pass" : stmts.map(stmt => this.stmt(stmt)).join("\n")); }
-    block(block: Block): string { return this.stmts(block.statements); }
+    stmts(stmts: Statement[], skipPass = false): string { return this.pad(stmts.length === 0 && !skipPass ? "pass" : stmts.map(stmt => this.stmt(stmt)).join("\n")); }
+    block(block: Block, skipPass = false): string { return this.stmts(block.statements, skipPass); }
+    pass(str: string) { return str === "" ? "pass" : str; }
 
     cls(cls: Class) {
+        if (cls.attributes["external"] === "true") return "";
         this.currentClass = cls;
         const resList: string[] = [];
         const classAttributes: string[] = [];
@@ -314,25 +360,38 @@ export class PythonGenerator {
         const staticFields = cls.fields.filter(x => x.isStatic);
 
         if (staticFields.length > 0) {
-            this.imports.add("import OneLangHelper as one");
+            this.imports.add("import OneLangStdLib as one");
             classAttributes.push("@one.static_init");
             const fieldInits = staticFields.map(f => `cls.${this.vis(f.visibility)}${this.var(f, f).replace(cls.name, "cls")}`);
-            resList.push(`@classmethod\ndef static_init(cls):\n${this.pad(fieldInits.join("\n"))}`);
+            resList.push(`@classmethod\ndef static_init(cls):\n` + this.pad(fieldInits.join("\n")));
         }
 
-        if (cls.constructor_ !== null) {
-            const constrFieldInits: Statement[] = [];
-            for (const field of cls.fields.filter(x => x.constructorParam !== null)) {
-                const fieldRef = new InstanceFieldReference(new ThisReference(cls), field);
-                const mpRef = new MethodParameterReference(field.constructorParam);
-                // TODO: decide what to do with "after-TypeEngine" transformations
-                mpRef.setActualType(field.type, false, false);
-                constrFieldInits.push(new ExpressionStatement(new BinaryExpression(fieldRef, "=", mpRef)));
-            }
+        const constrStmts: string[] = [];
 
-            resList.push(
-                `def __init__(self${cls.constructor_.parameters.map(p => `, ${this.var(p, null)}`).join('')}):\n` +
-                this.stmts(constrFieldInits.concat(cls.constructor_.body.statements)));
+        for (const field of cls.fields.filter(x => !x.isStatic)) {
+            const init = field.constructorParam !== null ? this.name_(field.constructorParam.name) : 
+                field.initializer !== null ? this.expr(field.initializer) : "None";
+            constrStmts.push(`self.${this.name_(field.name)} = ${init}`);
+        }
+
+        if (cls.baseClass !== null) {
+            if (cls.constructor_ !== null && cls.constructor_.superCallArgs !== null)
+                constrStmts.push(`super().__init__(${cls.constructor_.superCallArgs.map(x => this.expr(x)).join(", ")})`);
+            else
+                constrStmts.push(`super().__init__()`);
+        }
+
+        if (cls.constructor_ !== null)
+            for (const stmt of cls.constructor_.body.statements)
+                constrStmts.push(this.stmt(stmt));
+
+        resList.push(
+            `def __init__(self${cls.constructor_ === null ? "" : cls.constructor_.parameters.map(p => `, ${this.var(p, null)}`).join('')}):\n` +
+            this.pad(this.pass(constrStmts.join("\n"))));
+
+        for (const prop of cls.properties) {
+            if (prop.getter !== null)
+                resList.push(`def get_${this.name_(prop.name)}(self):\n${this.block(prop.getter)}`);
         }
 
         const methods: string[] = [];
@@ -340,7 +399,6 @@ export class PythonGenerator {
             if (method.body === null) continue; // declaration only
             methods.push(
                 (method.isStatic ? "@classmethod\n" : "") +
-                (method.async ? "async " : "") +
                 `def ${this.name_(method.name)}` +
                 `(${method.isStatic ? "cls" : "self"}${method.parameters.map(p => `, ${this.var(p, null)}`).join("")}):` +
                 "\n" +
@@ -353,7 +411,7 @@ export class PythonGenerator {
         return classAttributes.map(x => `${x}\n`).join("") + clsHdr + this.pad(resList2.length > 0 ? resList2.join("\n\n") : "pass");
     }
 
-    pad(str: string): string { return str.split(/\n/g).map(x => `    ${x}`).join('\n'); }
+    pad(str: string): string { return str === "" ? "" : str.split(/\n/g).map(x => `    ${x}`).join('\n'); }
 
     calcRelImport(targetPath: ExportScopeRef, fromPath: ExportScopeRef) {
         const targetParts = targetPath.scopeName.split(/\//g);
@@ -376,13 +434,13 @@ export class PythonGenerator {
     calcImportAlias(targetPath: ExportScopeRef): string {
         const parts = targetPath.scopeName.split(/\//g);
         const filename = parts[parts.length - 1];
-        return filename[0].toLowerCase() + filename.substr(1);
+        return NameUtils.shortName(filename);
     }
 
     genFile(sourceFile: SourceFile): string {
         this.currentFile = sourceFile;
         this.imports = new Set<string>();
-        this.imports.add("from OneLangHelper import *"); // TODO: do not add this globally, just for nativeResolver methods
+        this.imports.add("from OneLangStdLib import *"); // TODO: do not add this globally, just for nativeResolver methods
         
         if (sourceFile.enums.length > 0)
             this.imports.add("from enum import Enum");
@@ -391,8 +449,8 @@ export class PythonGenerator {
         for (const enum_ of sourceFile.enums) {
             const values: string[] = [];
             for (let i = 0; i < enum_.values.length; i++)
-                values.push(`${this.enumName(enum_.values[i].name)} = ${i + 1}`);
-            enums.push(`class ${this.name_(enum_.name)}(Enum):\n${this.pad(values.join("\n"))}`);
+                values.push(`${this.enumMemberName(enum_.values[i].name)} = ${i + 1}`);
+            enums.push(`class ${this.enumName(enum_, true)}(Enum):\n` + this.pad(values.join("\n")));
         }
 
         const classes: string[] = [];
@@ -407,6 +465,7 @@ export class PythonGenerator {
         for (const import_ of sourceFile.imports.filter(x => !x.importAll)) {
             //const relImp = this.calcRelImport(import_.exportScope, sourceFile.exportScope);
             const alias = this.calcImportAlias(import_.exportScope);
+            //if (import_.exportScope.scopeName.startsWith("_external/")) continue;
             imports.push(`import ${this.package.name}.${import_.exportScope.scopeName.replace(/\//g, ".")} as ${alias}`);
         }
 
@@ -416,7 +475,7 @@ export class PythonGenerator {
     generate(pkg: Package): GeneratedFile[] {
         this.package = pkg;
         const result: GeneratedFile[] = [];
-        for (const path of Object.keys(pkg.files))
+        for (const path of Object.keys(pkg.files).filter(x => !x.startsWith("_external/")))
             result.push(new GeneratedFile(`${pkg.name}/${path}`, this.genFile(pkg.files[path])));
         return result;
     }

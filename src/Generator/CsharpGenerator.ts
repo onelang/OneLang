@@ -4,6 +4,7 @@ import { Class, SourceFile, IVariable, Lambda, Interface, IInterface, MethodPara
 import { Type, VoidType, ClassType, InterfaceType, EnumType, AnyType, LambdaType, NullType, GenericsType } from "../One/Ast/AstTypes";
 import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference, StaticThisReference, VariableReference } from "../One/Ast/References";
 import { GeneratedFile } from "./GeneratedFile";
+import { NameUtils } from "./NameUtils";
 
 export class CsharpGenerator {
     usings: Set<string>;
@@ -86,7 +87,11 @@ export class CsharpGenerator {
             return `${t.typeVarName}`;
         else if (t instanceof LambdaType) {
             const isFunc = !(t.returnType instanceof VoidType);
-            return `${isFunc ? "Func" : "Action"}<${t.parameters.map(x => this.type(x.type)).join(", ")}${isFunc ? this.type(t.returnType) : ""}>`;
+            const paramTypes = t.parameters.map(x => this.type(x.type));
+            if (isFunc)
+                paramTypes.push(this.type(t.returnType));
+            this.usings.add("System");
+            return `${isFunc ? "Func" : "Action"}<${paramTypes.join(", ")}>`;
         } else if (t === null) {
             return "/* TODO */ object";
         } else {
@@ -176,31 +181,7 @@ export class CsharpGenerator {
     inferExprNameForType(type: Type): string {
         if (type instanceof ClassType && type.typeArguments.every((x,_) => x instanceof ClassType)) {
             const fullName = type.typeArguments.map(x => (<ClassType>x).decl.name).join('') + type.decl.name;
-            const nameParts: string[] = [];
-            let partStartIdx = 0;
-            for (let i = 1; i < fullName.length; i++) {
-                const chrCode = fullName.charCodeAt(i);
-                const chrIsUpper = 65 <= chrCode && chrCode <= 90;
-                if (chrIsUpper) {
-                    nameParts.push(fullName.substring(partStartIdx, i));
-                    partStartIdx = i;
-                }
-            }
-            nameParts.push(fullName.substr(partStartIdx));
-
-            const shortNameParts: string[] = [];
-            for (let i = 0; i < nameParts.length; i++) {
-                let p = nameParts[i];
-                if (p.length > 5) {
-                    let cutPoint = 3;
-                    for (; cutPoint <= 4; cutPoint++)
-                        if ("aeoiu".includes(p[cutPoint]))
-                            break;
-                    p = p.substr(0, cutPoint);
-                }
-                shortNameParts.push(i === 0 ? p.toLowerCase() : p);
-            }
-            return shortNameParts.join('');
+            return NameUtils.shortName(fullName);
         }
         return null;
     }
@@ -379,7 +360,7 @@ export class CsharpGenerator {
             if (stmt.initializer instanceof NullLiteral)
                 res = `${this.type(stmt.type, stmt.mutability.mutated)} ${this.name_(stmt.name)} = null;`;
             else if (stmt.initializer !== null)
-                res = `var ${this.name_(stmt.name)} = ${this.expr(stmt.initializer)};`;
+                res = `var ${this.name_(stmt.name)} = ${this.mutateArg(stmt.initializer, stmt.mutability.mutated)};`;
             else
                 res = `${this.type(stmt.type)} ${this.name_(stmt.name)};`;
         } else if (stmt instanceof ForeachStatement) {
@@ -435,7 +416,7 @@ export class CsharpGenerator {
                     else
                         complexFieldInits.push(new ExpressionStatement(new BinaryExpression(new InstanceFieldReference(new ThisReference(cls), field), "=", field.initializer)));
                     
-                        fieldReprs.push(`${prefix}${this.varWoInit(field, field)};`);
+                    fieldReprs.push(`${prefix}${this.varWoInit(field, field)};`);
                 } else
                     fieldReprs.push(`${prefix}${this.var(field, field)};`);
             }
@@ -465,7 +446,7 @@ export class CsharpGenerator {
                     "public " +
                     this.preIf("/* throws */ ", cls.constructor_.throws) + 
                     this.name_(cls.name) +
-                    `(${cls.constructor_.parameters.map(p => this.var(p, null)).join(", ")})` +
+                    `(${cls.constructor_.parameters.map(p => this.var(p, p)).join(", ")})` +
                     (cls.constructor_.superCallArgs !== null ? `: base(${cls.constructor_.superCallArgs.map(x => this.expr(x)).join(", ")})` : "") +
                     `\n{\n${this.pad(this.stmts(constrFieldInits.concat(complexFieldInits).concat(cls.constructor_.body.statements)))}\n}`);
             } else if (complexFieldInits.length > 0)
@@ -525,20 +506,23 @@ export class CsharpGenerator {
             `public class Program\n{\n    static void Main(string[] args)\n    {\n${this.pad(this.rawBlock(sourceFile.mainBlock))}\n    }\n}` : "";
 
         const usingsSet = new Set<string>(sourceFile.imports.map(x => this.pathToNs(x.exportScope.scopeName)).filter(x => x !== ""));
-        const usings: string[] = [];
         for (const using of this.usings)
-            usings.push(`using ${using};`);
+            usingsSet.add(using);
+
+        const usings: string[] = [];
         for (const using of usingsSet)
-            usings.push(`using ${using};`);
+            if (using !== "_external")
+                usings.push(`using ${using};`);
 
         let result = [enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), main].filter(x => x !== "").join("\n\n");
-        result = `${usings.join("\n")}\n\nnamespace ${this.pathToNs(sourceFile.sourcePath.path)}\n{\n${this.pad(result)}\n}`;
+        const nl = "\n"; // Python fix
+        result = `${usings.join(nl)}\n\nnamespace ${this.pathToNs(sourceFile.sourcePath.path)}\n{\n${this.pad(result)}\n}`;
         return result;
     }
 
     generate(pkg: Package): GeneratedFile[] {
         const result: GeneratedFile[] = [];
-        for (const path of Object.keys(pkg.files))
+        for (const path of Object.keys(pkg.files).filter(x => !x.startsWith("_external/")))
             result.push(new GeneratedFile(path, this.genFile(pkg.files[path])));
         return result;
     }

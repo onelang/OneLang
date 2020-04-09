@@ -75,6 +75,7 @@ declare class TsString {
     repeat(count: number): string;
     match(pattern: RegExp): boolean;
     trim(): string;
+    trimEnd(): string;
     charAt(idx: number): string;
     includes(str: string): boolean;
     indexOf(pattern: string): number;

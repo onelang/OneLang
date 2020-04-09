@@ -44,7 +44,8 @@ compiler.init(`${baseDir}/packages`).then(() => {
         compiler.processWorkspace();
         saveState();
 
-        //writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
+        console.log('writing lastState...');
+        writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
         //printState();
 
         const genCsharp = new CsharpGenerator().generate(compiler.projectPkg);

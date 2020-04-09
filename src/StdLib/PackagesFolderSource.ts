@@ -1,5 +1,5 @@
 import { PackageSource, PackageId, PackageBundle, PackageContent, PackageType } from "./PackageManager";
-import { Fs, Glob, Path } from "../Utils/Native";
+import { Fs, Glob, Path } from "../_external/Native";
 
 export class PackagesFolderSource implements PackageSource {
     constructor(public packagesDir: string = "packages") { }
@@ -16,6 +16,7 @@ export class PackagesFolderSource implements PackageSource {
         const packages: { [id: string]: PackageContent } = {};
         const allFiles: string[] = glob.sync(`${this.packagesDir}/**/*`, { nodir: true });
         for (const fn of allFiles) {
+            if (fn.includes("bundle.json")) continue; // TODO: hack
             const pathParts = path.relative(this.packagesDir, fn).split(/\//g); // [0]=implementations/interfaces, [1]=package-name, [2:]=path
             const type = pathParts.shift();
             const pkgDir = pathParts.shift();

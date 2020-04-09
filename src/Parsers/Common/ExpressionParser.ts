@@ -2,6 +2,7 @@ import { Reader } from "./Reader";
 import { NodeManager } from "./NodeManager";
 import { UnresolvedType, Type } from "../../One/Ast/AstTypes";
 import { Expression, MapLiteral, ArrayLiteral, UnaryType, Identifier, NumericLiteral, StringLiteral, UnresolvedCallExpression, CastExpression, BinaryExpression, UnaryExpression, ParenthesizedExpression, ConditionalExpression, ElementAccessExpression, PropertyAccessExpression, MapLiteralItem } from "../../One/Ast/Expressions";
+import { ArrayHelper } from "../../Utils/ArrayHelper";
 
 class Operator {
     constructor(public text: string, public precedence: number, public isBinary: boolean, public isRightAssoc: boolean, public isPostfix: boolean) { }
@@ -87,7 +88,7 @@ export class ExpressionParser {
             }
         }
 
-        this.operators = Object.keys(this.operatorMap).sort((a,b) => b.length - a.length);
+        this.operators = ArrayHelper.sortBy(Object.keys(this.operatorMap), x => -x.length);
     }
 
     parseMapLiteral(keySeparator = ":", startToken = "{", endToken = "}"): MapLiteral {

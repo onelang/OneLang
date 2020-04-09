@@ -35,20 +35,20 @@ export class ErrorManager {
 
         let location: string = null;
         if (par instanceof Field)
-            location = `${par.parentInterface.parentFile.sourcePath} -> ${par.parentInterface.name}::${par.name} (field)`;
+            location = `${par.parentInterface.parentFile.sourcePath.path} -> ${par.parentInterface.name}::${par.name} (field)`;
         else if (par instanceof Property)
-            location = `${par.parentClass.parentFile.sourcePath} -> ${par.parentClass.name}::${par.name} (property)`;
+            location = `${par.parentClass.parentFile.sourcePath.path} -> ${par.parentClass.name}::${par.name} (property)`;
             else if (par instanceof Method)
-            location = `${par.parentInterface.parentFile.sourcePath} -> ${par.parentInterface.name}::${par.name} (method)`;
+            location = `${par.parentInterface.parentFile.sourcePath.path} -> ${par.parentInterface.name}::${par.name} (method)`;
         else if (par instanceof Constructor)
-            location = `${par.parentClass.parentFile.sourcePath} -> ${par.parentClass.name}::constructor`;
+            location = `${par.parentClass.parentFile.sourcePath.path} -> ${par.parentClass.name}::constructor`;
         else if (par === null) { }
         else if (par instanceof Statement) { }
         else
             debugger;
 
         if (location === null && t !== null && t.currentFile !== null) {
-            location = `${t.currentFile.sourcePath}`;
+            location = `${t.currentFile.sourcePath.path}`;
             if (t.currentInterface !== null) {
                 location += ` -> ${t.currentInterface.name}`;
                 if (t.currentMethod instanceof Method)
