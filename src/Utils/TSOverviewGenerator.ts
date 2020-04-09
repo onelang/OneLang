@@ -1,11 +1,11 @@
 import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression, StaticMethodCallExpression, LambdaCallExpression, IExpression } from "../One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable, TryStatement, Block } from "../One/Ast/Statements";
-import { Method, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility, IAstNode, GlobalFunction } from "../One/Ast/Types";
+import { Method, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility, IAstNode, GlobalFunction, IHasAttributesAndTrivia } from "../One/Ast/Types";
 import { Type, VoidType } from "../One/Ast/AstTypes";
 import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference, StaticThisReference } from "../One/Ast/References";
 
 export class TSOverviewGenerator {
-    static leading(item: Statement) {
+    static leading(item: IHasAttributesAndTrivia) {
         let result = "";
         if (item.leadingTrivia !== null && item.leadingTrivia.length > 0)
             result += item.leadingTrivia;
@@ -216,7 +216,7 @@ export class TSOverviewGenerator {
         const name = method instanceof Method ? method.name : method instanceof Constructor ? "constructor" : method instanceof GlobalFunction ? method.name : "???";
         const typeArgs = method instanceof Method ? method.typeArguments : null;
         return this.preIf("/* throws */ ", method.throws) + 
-            `${name}${this.typeArgs(typeArgs)}(${method.parameters.map(p => this.var(p)).join(", ")})` +
+            `${name}${this.typeArgs(typeArgs)}(${method.parameters.map(p => this.leading(p) + this.var(p)).join(", ")})` +
             (returns instanceof VoidType ? "" : `: ${this.type(returns)}`) +
             (method.body !== null ? ` {\n${this.pad(this.rawBlock(method.body))}\n}` : ";");
     }
@@ -255,14 +255,14 @@ export class TSOverviewGenerator {
     static generate(sourceFile: SourceFile) {
         const imps = sourceFile.imports.map(imp => (imp.importAll ? `import * as ${imp.importAs}` : `import { ${imp.imports.map(x => this.imp(x)).join(", ")} }`) +
             ` from "${imp.exportScope.packageName}${this.pre("/", imp.exportScope.scopeName)}";`);
-        const enums = sourceFile.enums.map(enum_ => `enum ${enum_.name} { ${enum_.values.map(x => x.name).join(", ")} }`);
-        const intfs = sourceFile.interfaces.map(intf => `interface ${intf.name}${this.typeArgs(intf.typeArguments)}`+
+        const enums = sourceFile.enums.map(enum_ => `${this.leading(enum_)}enum ${enum_.name} { ${enum_.values.map(x => x.name).join(", ")} }`);
+        const intfs = sourceFile.interfaces.map(intf => `${this.leading(intf)}interface ${intf.name}${this.typeArgs(intf.typeArguments)}`+
             `${this.preArr(" extends ", intf.baseInterfaces.map(x => this.type(x)))} {\n${this.classLike(intf)}\n}`);
-        const classes = sourceFile.classes.map(cls => `class ${cls.name}${this.typeArgs(cls.typeArguments)}`+
+        const classes = sourceFile.classes.map(cls => `${this.leading(cls)}class ${cls.name}${this.typeArgs(cls.typeArguments)}`+
             this.pre(" extends ", cls.baseClass !== null ? this.type(cls.baseClass) : null) + 
             this.preArr(" implements ", cls.baseInterfaces.map(x => this.type(x))) + 
             ` {\n${this.classLike(cls)}\n}`);
-        const funcs = sourceFile.funcs.map(func => `function ${func.name}${this.methodBase(func, func.returns)}`);
+        const funcs = sourceFile.funcs.map(func => `${this.leading(func)}function ${func.name}${this.methodBase(func, func.returns)}`);
         const main = this.rawBlock(sourceFile.mainBlock);
         const result = `// export scope: ${sourceFile.exportScope.packageName}/${sourceFile.exportScope.scopeName}\n`+
             [imps.join("\n"), enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), funcs.join("\n\n"), main].filter(x => x !== "").join("\n\n");
