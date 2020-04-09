@@ -1,4 +1,4 @@
-import { Yaml } from "../Utils/Yaml";
+import { Yaml, YamlValue } from "../_external/Yaml";
 
 export enum PackageType { Interface, Implementation }
 
@@ -28,19 +28,27 @@ export class PackageNativeImpl {
 }
 
 export class InterfaceDependency {
-    name: string;
-    // @csharp-type double
-    minver: number;
+    constructor(
+        public name: string,
+        // @csharp-type double
+        public minver: number) { }
 }
 
 export class InterfaceYaml {
-    "file-version": number;
-    vendor: string;
-    name: string;
-    // @csharp-type double
-    version: number;
-    "definition-file": string;
-    dependencies: InterfaceDependency[];
+    constructor(
+        // @csharp-type double
+        public fileVersion: number,
+        public vendor: string,
+        public name: string,
+        // @csharp-type double
+        public version: number,
+        public definitionFile: string,
+        public dependencies: InterfaceDependency[]) { }
+
+    static fromYaml(obj: YamlValue) {
+        return new InterfaceYaml(obj.dbl("file-version"), obj.str("vendor"), obj.str("name"), obj.dbl("version"), obj.str("definition-file"),
+            obj.arr("dependencies").map(dep => new InterfaceDependency(dep.str("name"), dep.dbl("minver"))));
+    }
 }
 
 export class InterfacePackage {
@@ -48,32 +56,45 @@ export class InterfacePackage {
     definition: string;
 
     constructor(public content: PackageContent) {
-        this.interfaceYaml = Yaml.load<InterfaceYaml>(content.files["interface.yaml"]);
-        this.definition = content.files[this.interfaceYaml["definition-file"]];
+        this.interfaceYaml = InterfaceYaml.fromYaml(Yaml.load(content.files["interface.yaml"]));
+        this.definition = content.files[this.interfaceYaml.definitionFile];
     }
 }
 
 export class ImplPkgImplIntf { 
-    name: string;
-    minver: number;
-    maxver: number;
+    constructor(
+        public name: string,
+        // @csharp-type double
+        public minver: number,
+        // @csharp-type double
+        public maxver: number) { }
 }
 
 export class ImplPkgImplementation {
-    interface: ImplPkgImplIntf;
-    language: string;
-    "native-includes": string[];
-    "native-include-dir": string;
+    constructor(
+        public interface_: ImplPkgImplIntf,
+        public language: string,
+        public nativeIncludes: string[],
+        public nativeIncludeDir: string) { }
 }
 
 export class ImplPackageYaml {
-    "file-version": number;
-    vendor: string;
-    name: string;
-    description: string;
-    version: string;
-    includes: string[];
-    implements: ImplPkgImplementation[];
+    constructor(
+        // @csharp-type double
+        public fileVersion: number,
+        public vendor: string,
+        public name: string,
+        public description: string,
+        public version: string,
+        public includes: string[],
+        public implements_: ImplPkgImplementation[]) { }
+    
+    static fromYaml(obj: YamlValue) {
+        return new ImplPackageYaml(obj.dbl("file-version"), obj.str("vendor"), obj.str("name"), obj.str("description"), obj.str("version"), obj.strArr("includes"),
+            obj.arr("implements").map(impl => new ImplPkgImplementation(
+                new ImplPkgImplIntf(impl.obj("interface").str("name"), impl.obj("interface").dbl("minver"), impl.obj("interface").dbl("maxver")),
+                impl.str("language"), impl.strArr("native-includes"), impl.str("native-include-dir"))));
+    }
 }
 
 export class ImplementationPackage {
@@ -81,13 +102,13 @@ export class ImplementationPackage {
     implementations: ImplPkgImplementation[] = [];
 
     constructor(public content: PackageContent) {
-        this.implementationYaml = Yaml.load<ImplPackageYaml>(content.files["package.yaml"]);
+        this.implementationYaml = ImplPackageYaml.fromYaml(Yaml.load(content.files["package.yaml"]));
         this.implementations = [];
-        for (const impl of this.implementationYaml.implements||[])
+        for (const impl of this.implementationYaml.implements_||[])
             this.implementations.push(impl);
         for (const include of this.implementationYaml.includes||[]) {
-            const included = Yaml.load<ImplPackageYaml>(content.files[include]);
-            for (const impl of included.implements)
+            const included = ImplPackageYaml.fromYaml(Yaml.load(content.files[include]));
+            for (const impl of included.implements_)
                 this.implementations.push(impl);
         }
     }
@@ -126,10 +147,10 @@ export class PackageManager {
         for (const pkg of this.implementationPkgs) {
             for (const pkgImpl of pkg.implementations.filter(x => x.language === langName)) {
                 const fileNamePaths: { [name: string]: string } = {};
-                for (const fileName of pkgImpl["native-includes"] || [])
+                for (const fileName of pkgImpl.nativeIncludes)
                     fileNamePaths[fileName] = `native/${fileName}`;
 
-                let incDir = pkgImpl["native-include-dir"];
+                let incDir = pkgImpl.nativeIncludeDir;
                 if (incDir !== null) {
                     if (!incDir.endsWith("/")) incDir += "/";
                     const prefix = `native/${incDir}`;
