@@ -358,15 +358,19 @@ export class Property implements IVariable, IHasAttributesAndTrivia, IClassMembe
     mutability: MutabilityInfo = null;
 }
 
-export class MethodParameter implements IVariableWithInitializer, IReferencable {
+export class MethodParameter implements IVariableWithInitializer, IReferencable, IHasAttributesAndTrivia {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
         public type: Type,
-        public initializer: Expression) { }
+        public initializer: Expression,
+        public leadingTrivia: string) { }
 
     /** @creator FillParent */
     parentMethod: IMethodBase = null;
+
+    /** @creator FillAttributesFromTrivia */
+    attributes: { [name: string]: string };
 
     /** @creator ResolveIdentifiers */
     references: MethodParameterReference[] = [];

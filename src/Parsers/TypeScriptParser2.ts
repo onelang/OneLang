@@ -60,7 +60,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
             return new InstanceOfExpression(left, type);
         } else if (left instanceof Identifier && this.reader.readToken("=>")) {
             const block = this.parseLambdaBlock();
-            return new Lambda([new MethodParameter(left.text, null, null)], block);
+            return new Lambda([new MethodParameter(left.text, null, null, null)], block);
         }
         return null;
     }
@@ -73,7 +73,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
             do {
                 const paramName = this.reader.expectIdentifier();
                 const type = this.reader.readToken(":") ? this.parseType() : null;
-                params.push(new MethodParameter(paramName, type, null));
+                params.push(new MethodParameter(paramName, type, null, null));
             } while (this.reader.readToken(","));
             this.reader.expectToken(")");
         }
@@ -437,7 +437,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
         const fields: Field[] = [];
         if (!this.reader.readToken(")")) {
             do {
-                this.reader.skipWhitespace();
+                const leadingTrivia = this.reader.readLeadingTrivia();
                 const paramStart = this.reader.offset;
                 const isPublic = this.reader.readToken("public");
                 if (isPublic && !isConstructor)
@@ -446,13 +446,13 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
                 const paramName = this.reader.expectIdentifier();
                 this.context.push(`arg:${paramName}`);
                 const typeAndInit = this.parseTypeAndInit();
-                const param = new MethodParameter(paramName, typeAndInit.type, typeAndInit.init);
+                const param = new MethodParameter(paramName, typeAndInit.type, typeAndInit.init, leadingTrivia);
                 params.push(param);
 
                 // init should be used as only the constructor's method parameter, but not again as a field initializer too
                 //   (otherwise it would called twice if cloned or cause AST error is just referenced from two separate places)
                 if (isPublic)
-                    fields.push(new Field(paramName, typeAndInit.type, null, Visibility.Public, false, param, null));
+                    fields.push(new Field(paramName, typeAndInit.type, null, Visibility.Public, false, param, param.leadingTrivia));
 
                 this.nodeManager.addNode(param, paramStart);
                 this.context.pop();

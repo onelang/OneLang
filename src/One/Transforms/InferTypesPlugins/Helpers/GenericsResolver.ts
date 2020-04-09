@@ -76,7 +76,7 @@ export class GenericsResolver {
         } else if (type instanceof InterfaceType) {
             return new InterfaceType(type.decl, type.typeArguments.map(x => this.resolveType(x, mustResolveAllGenerics)));
         } else if (type instanceof LambdaType) {
-            return new LambdaType(type.parameters.map(x => new MethodParameter(x.name, this.resolveType(x.type, mustResolveAllGenerics), x.initializer)), this.resolveType(type.returnType, mustResolveAllGenerics));
+            return new LambdaType(type.parameters.map(x => new MethodParameter(x.name, this.resolveType(x.type, mustResolveAllGenerics), x.initializer, null)), this.resolveType(type.returnType, mustResolveAllGenerics));
         } else
             return type;
     }

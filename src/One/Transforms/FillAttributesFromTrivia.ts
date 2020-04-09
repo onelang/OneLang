@@ -38,6 +38,7 @@ export class FillAttributesFromTrivia {
     private static processMethod(method: IMethodBaseWithTrivia) {
         if (method === null) return;
         this.process([method]);
+        this.process(method.parameters);
         this.processBlock(method.body);
     }
 
