@@ -14,6 +14,12 @@ import { DetectMethodCalls } from "./Transforms/DetectMethodCalls";
 import { InferTypes } from "./Transforms/InferTypes";
 import { CollectInheritanceInfo } from "./Transforms/CollectInheritanceInfo";
 import { FillMutabilityInfo } from "./Transforms/FillMutabilityInfo";
+import { AstTransformer } from "./AstTransformer";
+import { ITransformer } from "./ITransform";
+
+export interface CompilerHooks {
+    afterStage(stageName: string): void;
+}
 
 export class Compiler {
     pacMan: PackageManager = null;
@@ -21,6 +27,7 @@ export class Compiler {
     nativeFile: SourceFile = null;
     nativeExports: ExportedScope = null;
     projectPkg: Package = null;
+    hooks: CompilerHooks = null;
 
     async init(packagesDir: string): Promise<void> {
         this.pacMan = new PackageManager(new PackagesFolderSource(packagesDir));
@@ -80,16 +87,27 @@ export class Compiler {
 
     processWorkspace() {
         new FillParent().visitPackage(this.projectPkg);
+        if (this.hooks !== null) this.hooks.afterStage("FillParent");
+        
         FillAttributesFromTrivia.processPackage(this.projectPkg);
+        if (this.hooks !== null) this.hooks.afterStage("FillAttributesFromTrivia");
+        
         ResolveImports.processWorkspace(this.workspace);
-        new ResolveGenericTypeIdentifiers().visitPackage(this.projectPkg);
-        new ConvertToMethodCall().visitPackage(this.projectPkg);
-        new ResolveUnresolvedTypes().visitPackage(this.projectPkg);
-        new ResolveIdentifiers().visitPackage(this.projectPkg);
-        new InstanceOfImplicitCast().visitPackage(this.projectPkg);
-        new DetectMethodCalls().visitPackage(this.projectPkg);
-        new InferTypes().visitPackage(this.projectPkg);
-        new CollectInheritanceInfo().visitPackage(this.projectPkg);
-        new FillMutabilityInfo().visitPackage(this.projectPkg);
+        if (this.hooks !== null) this.hooks.afterStage("ResolveImports");
+
+        const transforms: ITransformer[] = [];
+        transforms.push(new ResolveGenericTypeIdentifiers());
+        transforms.push(new ConvertToMethodCall());
+        transforms.push(new ResolveUnresolvedTypes());
+        transforms.push(new ResolveIdentifiers());
+        transforms.push(new InstanceOfImplicitCast());
+        transforms.push(new DetectMethodCalls());
+        transforms.push(new InferTypes());
+        transforms.push(new CollectInheritanceInfo());
+        transforms.push(new FillMutabilityInfo());
+        for (const trans of transforms) {
+            trans.visitPackage(this.projectPkg);
+            if (this.hooks !== null) this.hooks.afterStage(trans.name);
+        }
     }
 }

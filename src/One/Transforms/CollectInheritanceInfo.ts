@@ -1,6 +1,9 @@
 import { Package, Class, Interface } from "../Ast/Types";
+import { ITransformer } from "../ITransform";
 
-export class CollectInheritanceInfo {
+export class CollectInheritanceInfo implements ITransformer {
+    name = "CollectInheritanceInfo";
+    
     visitClass(cls: Class) {
         const allBaseIIntfs = cls.getAllBaseInterfaces();
         const intfs = allBaseIIntfs.map(x => x instanceof Interface ? x : null).filter(x => x !== null);

@@ -1,5 +1,5 @@
 import 'module-alias/register';
-import { readFile, glob, readDir, baseDir, writeFile } from "./TestUtils";
+import { readFile, glob, readDir, baseDir, writeFile, exists } from "./TestUtils";
 import { CsharpGenerator } from "@one/Generator/CsharpGenerator";
 import { PythonGenerator } from "@one/Generator/PythonGenerator";
 import { Compiler } from "@one/One/Compiler";
@@ -41,6 +41,18 @@ compiler.init(`${baseDir}/packages`).then(() => {
 
         const printState = () => console.log(pkgStates[pkgStates.length - 1].diff(pkgStates[pkgStates.length - 2]).getChanges("summary"));
 
+        let stage = 0;
+        compiler.hooks = {
+            afterStage: stageName => {
+                const state = saveState();
+                const stageFn = `test/artifacts/ProjectTest/${test.projName}/stages/${stage++}_${stageName}.txt`;
+                const stageSummary = state.getSummary();
+                //if (exists(stageFn)) {
+                //    const expectedState =
+                //}
+                //writeFile(, );
+            }
+        };
         compiler.processWorkspace();
         saveState();
 
