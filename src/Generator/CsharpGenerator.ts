@@ -511,8 +511,7 @@ export class CsharpGenerator {
 
         const usings: string[] = [];
         for (const using of usingsSet)
-            if (using !== "_external")
-                usings.push(`using ${using};`);
+            usings.push(`using ${using};`);
 
         let result = [enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), main].filter(x => x !== "").join("\n\n");
         const nl = "\n"; // Python fix
@@ -522,7 +521,7 @@ export class CsharpGenerator {
 
     generate(pkg: Package): GeneratedFile[] {
         const result: GeneratedFile[] = [];
-        for (const path of Object.keys(pkg.files).filter(x => !x.startsWith("_external/")))
+        for (const path of Object.keys(pkg.files))
             result.push(new GeneratedFile(path, this.genFile(pkg.files[path])));
         return result;
     }

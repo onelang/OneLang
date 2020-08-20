@@ -1,4 +1,4 @@
-import * as YAML from "js-yaml";
+import { OneYaml } from "One.Yaml-v0.1";
 
 // @external
 export class YamlValue {

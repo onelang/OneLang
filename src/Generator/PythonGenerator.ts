@@ -465,7 +465,6 @@ export class PythonGenerator {
         for (const import_ of sourceFile.imports.filter(x => !x.importAll)) {
             //const relImp = this.calcRelImport(import_.exportScope, sourceFile.exportScope);
             const alias = this.calcImportAlias(import_.exportScope);
-            //if (import_.exportScope.scopeName.startsWith("_external/")) continue;
             imports.push(`import ${this.package.name}.${import_.exportScope.scopeName.replace(/\//g, ".")} as ${alias}`);
         }
 
@@ -475,7 +474,7 @@ export class PythonGenerator {
     generate(pkg: Package): GeneratedFile[] {
         this.package = pkg;
         const result: GeneratedFile[] = [];
-        for (const path of Object.keys(pkg.files).filter(x => !x.startsWith("_external/")))
+        for (const path of Object.keys(pkg.files))
             result.push(new GeneratedFile(`${pkg.name}/${path}`, this.genFile(pkg.files[path])));
         return result;
     }

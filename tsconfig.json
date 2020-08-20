@@ -8,7 +8,11 @@
         "experimentalDecorators": true,
         "declaration": true,
         "composite": true,
-        "rootDir": "src/"
+        "rootDir": "src/",
+        "baseUrl": "./",
+        "paths": {
+            "*": ["onepkg/*"]
+        }
     },
     "include": ["src/**/*"],
 }

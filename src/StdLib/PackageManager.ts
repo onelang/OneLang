@@ -1,4 +1,4 @@
-import { Yaml, YamlValue } from "../_external/Yaml";
+import { OneYaml, YamlValue } from "One.Yaml-v0.1";
 
 export enum PackageType { Interface, Implementation }
 
@@ -56,7 +56,7 @@ export class InterfacePackage {
     definition: string;
 
     constructor(public content: PackageContent) {
-        this.interfaceYaml = InterfaceYaml.fromYaml(Yaml.load(content.files["interface.yaml"]));
+        this.interfaceYaml = InterfaceYaml.fromYaml(OneYaml.load(content.files["interface.yaml"]));
         this.definition = content.files[this.interfaceYaml.definitionFile];
     }
 }
