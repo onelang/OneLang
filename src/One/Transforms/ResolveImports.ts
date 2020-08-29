@@ -1,5 +1,9 @@
 import { Workspace, UnresolvedImport } from "../Ast/Types";
 
+/**
+ * Fills SourceFile's `availableSymbols` property with all the imported symbols.
+ * Also replaces UnresolvedImports in `Import.imports` to an IImportable (either Interface or Class or GlobalFunction)
+ */
 export class ResolveImports {
     static processWorkspace(ws: Workspace): void {
         for (const pkg of Object.values(ws.packages))

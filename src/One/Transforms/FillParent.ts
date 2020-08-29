@@ -3,6 +3,9 @@ import { Statement } from "../Ast/Statements";
 import { Expression } from "../Ast/Expressions";
 import { AstTransformer } from "../AstTransformer";
 
+/**
+ * Fills Expression's parentNode field
+ */
 export class FillParent extends AstTransformer {
     parentNodeStack: IAstNode[] = [];
 

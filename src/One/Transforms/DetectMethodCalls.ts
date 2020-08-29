@@ -1,6 +1,9 @@
 import { AstTransformer } from "../AstTransformer";
 import { Expression, UnresolvedCallExpression, PropertyAccessExpression, UnresolvedMethodCallExpression } from "../Ast/Expressions";
 
+/**
+ * Converts "obj.method(args)" from a generic "func(args)"-style call to a method call of the "method" method on the "obj" object with "args" arguments
+ */
 export class DetectMethodCalls extends AstTransformer {
     constructor() { super("DetectMethodCalls"); }
 

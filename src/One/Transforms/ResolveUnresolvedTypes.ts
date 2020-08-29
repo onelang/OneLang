@@ -3,6 +3,10 @@ import { Type, UnresolvedType, ClassType, InterfaceType, EnumType } from "../Ast
 import { Class, Interface, Enum } from "../Ast/Types";
 import { Expression, UnresolvedNewExpression, NewExpression } from "../Ast/Expressions";
 
+/**
+ * Replaces UnresolvedType to either ClassType, InterfaceType or EnumType.
+ * Also converts UnresolvedNewExpression (with UnresolvedType) to NewExpression (with explicit ClassType).
+ */
 export class ResolveUnresolvedTypes extends AstTransformer {
     constructor() { super("ResolveUnresolvedTypes"); }
 

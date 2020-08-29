@@ -6,6 +6,13 @@ import { IReferencable, Reference, StaticThisReference, ThisReference, SuperRefe
 import { VariableDeclaration, ForStatement, ForeachStatement, Statement, IfStatement, TryStatement, Block } from "../Ast/Statements";
 import { ClassType } from "../Ast/AstTypes";
 
+/**
+ * Converts Identifier (basically any single non-reserved words like 'variable' or first part of property accesses, e.g. the 'obj' part of 'obj.prop') to 
+ *  - VariableReference (for, foreach, catch variables, method parameters, etc) - in case of 'obj.prop' it converts 'obj' to VR
+ *  - GlobalFunctionReference - in case of 'method(args)' it converts 'method' to GFR
+ *  - ClassReference - in case of 'StaticClass.variable' it converts 'StaticClass' to CR
+ *  - EnumReference - in case of 'EnumName.EnumValue' it converts 'EnumName' to ER
+ */
 class SymbolLookup {
     errorMan: ErrorManager = new ErrorManager();
     levelSymbols: string[][] = [];

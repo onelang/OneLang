@@ -1,6 +1,9 @@
 import { SourceFile, IMethodBase, IHasAttributesAndTrivia, Package, IMethodBaseWithTrivia } from "../Ast/Types";
 import { ForeachStatement, ForStatement, IfStatement, Block } from "../Ast/Statements";
 
+/**
+ * Extract `@attributeName attribute value` attributes from comments (// and /* style comments)
+ */
 export class FillAttributesFromTrivia {
     static processTrivia(trivia: string) {
         const result: { [name: string]: string } = {};

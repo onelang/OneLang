@@ -1,6 +1,9 @@
 import { Expression, ElementAccessExpression, UnresolvedCallExpression, PropertyAccessExpression, BinaryExpression, StringLiteral } from "../Ast/Expressions";
 import { AstTransformer } from "../AstTransformer";
 
+/**
+ * Converts "key in obj" to "obj.hasKey(key)"
+ */
 export class ConvertToMethodCall extends AstTransformer {
     constructor() { super("ConvertToMethodCall"); }
     

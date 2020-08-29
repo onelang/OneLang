@@ -4,6 +4,13 @@ import { Expression, BinaryExpression, InstanceMethodCallExpression } from "../A
 import { VariableReference } from "../Ast/References";
 import { VariableDeclaration } from "../Ast/Statements";
 
+/**
+ * Fills variable's mutability property which contains the following properties:
+ *  - unused: variable was not used (never referenced by a VariableReference)
+ *  - reassigned: variable was reassigned via a "varName = somethingElse" like construct
+ *    -> Note: if the variable was declared non-initialized then first initialization also makes it's reassigned property true (TODO: is it a bug or intentional?)
+ *  - mutated: a method was called on this variable which has "@mutates" attribute
+ */
 export class FillMutabilityInfo extends AstTransformer {
     constructor() { super("FillMutabilityInfo"); }
 
