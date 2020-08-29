@@ -5,13 +5,17 @@ import { Type, VoidType, ClassType, InterfaceType, EnumType, AnyType, LambdaType
 import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference, StaticThisReference, VariableReference } from "../One/Ast/References";
 import { GeneratedFile } from "./GeneratedFile";
 import { NameUtils } from "./NameUtils";
+import { IGenerator } from "./IGenerator";
 
-export class CsharpGenerator {
+export class CsharpGenerator implements IGenerator {
     usings: Set<string>;
     currentClass: IInterface;
     reservedWords = ["object", "else", "operator", "class", "enum", "void", "string", "implicit", "Type", "Enum", "params", "using", "throw", "ref", "base", "virtual", "interface", "int", "const"];
     fieldToMethodHack = ["length"];
     instanceOfIds: { [name: string]: number } = {};
+
+    getLangName(): string { return "CSharp"; }
+    getExtension(): string { return "cs"; }
 
     name_(name: string) {
         if (this.reservedWords.includes(name)) name += "_";
