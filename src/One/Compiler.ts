@@ -34,7 +34,7 @@ export class Compiler {
         await this.pacMan.loadAllCached();
     }
 
-    setupNativeResolver(content: string) {
+    setupNativeResolver(content: string): void {
         this.nativeFile = TypeScriptParser2.parseFile(content);
         this.nativeExports = Package.collectExportsFromFile(this.nativeFile, true);
         new FillParent().visitSourceFile(this.nativeFile);
@@ -44,28 +44,26 @@ export class Compiler {
         new FillMutabilityInfo().visitSourceFile(this.nativeFile);
     }
 
-    newWorkspace(pkgName = "@") {
+    newWorkspace(pkgName = "@"): void {
         this.workspace = new Workspace();
         for (const intfPkg of this.pacMan.interfacesPkgs) {
             const libName = `${intfPkg.interfaceYaml.vendor}.${intfPkg.interfaceYaml.name}-v${intfPkg.interfaceYaml.version}`;
-            const libPkg = new Package(libName);
-            const file = TypeScriptParser2.parseFile(intfPkg.definition, new SourcePath(libPkg, Package.INDEX));
-            libPkg.addFile(file);
-            this.workspace.addPackage(libPkg);
+            this.addInterfacePackage(libName, intfPkg.definition);
         }
 
-        this.projectPkg = new Package(pkgName);
+        this.projectPkg = new Package(pkgName, false);
         this.workspace.addPackage(this.projectPkg);
     }
 
-    addOverlayPackage(pkgName: string) {
-        const jsYamlPkg = new Package(pkgName);
-        jsYamlPkg.addFile(new SourceFile([], [], [], [], [], null, new SourcePath(jsYamlPkg, Package.INDEX), new ExportScopeRef(pkgName, Package.INDEX)));
-        this.workspace.addPackage(jsYamlPkg);
+    addInterfacePackage(libName: string, definitionFileContent: string): void {
+        const libPkg = new Package(libName, true);
+        const file = TypeScriptParser2.parseFile(definitionFileContent, new SourcePath(libPkg, Package.INDEX));
+        this.setupFile(file);
+        libPkg.addFile(file, true);
+        this.workspace.addPackage(libPkg);
     }
 
-    addProjectFile(fn: string, content: string) {
-        const file = TypeScriptParser2.parseFile(content, new SourcePath(this.projectPkg, fn));
+    setupFile(file: SourceFile): void {
         file.addAvailableSymbols(this.nativeExports.getAllExports());
         file.literalTypes = new LiteralTypes(
             (<Class>file.availableSymbols.get("TsBoolean")).type,
@@ -82,16 +80,30 @@ export class Compiler {
             (<Class>file.availableSymbols.get("RegExpExecArray")).type,
             (<Class>file.availableSymbols.get("TsString")).type,
             (<Class>file.availableSymbols.get("Set")).type];
+    }
+
+    addProjectFile(fn: string, content: string): void {
+        const file = TypeScriptParser2.parseFile(content, new SourcePath(this.projectPkg, fn));
+        this.setupFile(file);
         this.projectPkg.addFile(file);
     }
 
-    processWorkspace() {
+    processWorkspace(): void {
+        for (const pkg of Object.values(this.workspace.packages).filter(x => x.definitionOnly)) {
+            // sets method's parentInterface property
+            new FillParent().visitPackage(pkg);
+            FillAttributesFromTrivia.processPackage(pkg);
+            new ResolveGenericTypeIdentifiers().visitPackage(pkg);
+            new ResolveUnresolvedTypes().visitPackage(pkg);
+            //if (this.hooks !== null) this.hooks.afterStage("FillAttributesFromTrivia");
+        }
+
         new FillParent().visitPackage(this.projectPkg);
         if (this.hooks !== null) this.hooks.afterStage("FillParent");
-        
+
         FillAttributesFromTrivia.processPackage(this.projectPkg);
         if (this.hooks !== null) this.hooks.afterStage("FillAttributesFromTrivia");
-        
+
         ResolveImports.processWorkspace(this.workspace);
         if (this.hooks !== null) this.hooks.afterStage("ResolveImports");
 

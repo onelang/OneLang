@@ -102,12 +102,12 @@ export class ImplementationPackage {
     implementations: ImplPkgImplementation[] = [];
 
     constructor(public content: PackageContent) {
-        this.implementationYaml = ImplPackageYaml.fromYaml(Yaml.load(content.files["package.yaml"]));
+        this.implementationYaml = ImplPackageYaml.fromYaml(OneYaml.load(content.files["package.yaml"]));
         this.implementations = [];
         for (const impl of this.implementationYaml.implements_||[])
             this.implementations.push(impl);
         for (const include of this.implementationYaml.includes||[]) {
-            const included = ImplPackageYaml.fromYaml(Yaml.load(content.files[include]));
+            const included = ImplPackageYaml.fromYaml(OneYaml.load(content.files[include]));
             for (const impl of included.implements_)
                 this.implementations.push(impl);
         }

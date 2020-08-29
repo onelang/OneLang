@@ -11,8 +11,8 @@ declare class OneClass {
     getField(name: string): OneField;
     getMethod(name: string): OneMethod;
 
-    getFields(): OneArray<OneField>;
-    getMethods(): OneArray<OneMethod>;
+    getFields(): OneField[];
+    getMethods(): OneMethod[];
 }
 
 declare class OneField {

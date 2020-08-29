@@ -12,9 +12,7 @@ export class PackagesFolderSource implements PackageSource {
         const packages: { [id: string]: PackageContent } = {};
         const allFiles: string[] = OneFile.listFiles(this.packagesDir, true);
         for (let fn of allFiles) {
-            if (fn.includes("bundle.json")) continue; // TODO: hack
-            if (fn.startsWith(this.packagesDir))
-                fn = fn.substr(this.packagesDir.length);
+            if (fn === "bundle.json") continue; // TODO: hack
             const pathParts = fn.split(/\//g); // [0]=implementations/interfaces, [1]=package-name, [2:]=path
             const type = pathParts.shift();
             const pkgDir = pathParts.shift();
@@ -29,7 +27,7 @@ export class PackagesFolderSource implements PackageSource {
                 pkg = new PackageContent(pkgId, {}, true);
                 packages[pkgIdStr] = pkg;
             }
-            pkg.files[pathParts.join("/")] = OneFile.readText(fn);
+            pkg.files[pathParts.join("/")] = OneFile.readText(`${this.packagesDir}/${fn}`);
         }
         return new PackageBundle(Object.values(packages));
     }

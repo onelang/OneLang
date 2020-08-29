@@ -1,7 +1,6 @@
 import * as crypto from "crypto";
 import { glob, readFile, exists, writeFile, deleteFile } from './TestUtils';
 import { IArtifactFileSystem } from "./ArtifactManager";
-import { load } from "js-yaml";
 
 export class FolderCacheBundle implements IArtifactFileSystem {
     public cacheIdFn = ".cacheId";

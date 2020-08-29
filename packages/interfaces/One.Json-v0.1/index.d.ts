@@ -1,31 +1,31 @@
 ///<reference path="../One.Core-v0.1/index.d.ts" />
 
 export declare class OneJProperty {
-    getName(): OneString;
+    getName(): string;
     getValue(obj: OneJValue): OneJValue;
 }
 
 export declare class OneJObject {
-    getProperties(): OneArray<OneJProperty>;
-    count(): OneNumber;
-    names(): OneArray<OneString>;
+    getProperties(): OneJProperty[];
+    count(): number;
+    names(): string[];
     get(name: string): OneJValue;
 }
 
 export declare class OneJValue {
-    isObject(): OneBoolean;
-    isArray(): OneBoolean;
-    isString(): OneBoolean;
-    isNumber(): OneBoolean;
-    isBool(): OneBoolean;
-    isNull(): OneBoolean;
+    isObject(): boolean;
+    isArray(): boolean;
+    isString(): boolean;
+    isNumber(): boolean;
+    isBool(): boolean;
+    isNull(): boolean;
 
-    asString(): OneString;
-    asNumber(): OneNumber;
-    asBool(): OneBoolean;
+    asString(): string;
+    asNumber(): number;
+    asBool(): boolean;
     asObject(): OneJObject;
 
-    getArrayItems(): OneArray<OneJValue>;
+    getArrayItems(): OneJValue[];
 }
 
 export declare class OneJson {

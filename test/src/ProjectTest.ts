@@ -1,4 +1,8 @@
 import 'module-alias/register';
+
+process.env.NODE_PATH = `${__dirname}/../../onepkg`;
+require("module").Module._initPaths();
+
 import { readFile, glob, readDir, baseDir, writeFile, exists } from "./TestUtils";
 import { CsharpGenerator } from "@one/Generator/CsharpGenerator";
 import { PythonGenerator } from "@one/Generator/PythonGenerator";
@@ -26,7 +30,6 @@ compiler.init(`${baseDir}/packages`).then(() => {
         //if (test.projName !== "ComplexTest01") continue;
 
         compiler.newWorkspace(test.projName);
-        compiler.addOverlayPackage("js-yaml");
 
         const files = glob(test.projDir);
         for (const fn of files)
@@ -50,7 +53,7 @@ compiler.init(`${baseDir}/packages`).then(() => {
                 //if (exists(stageFn)) {
                 //    const expectedState =
                 //}
-                //writeFile(, );
+                writeFile(stageFn, stageSummary);
             }
         };
         compiler.processWorkspace();

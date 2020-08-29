@@ -60,7 +60,7 @@ export class ExportedScope {
 }
 
 export class Package {
-    constructor(public name: string) { }
+    constructor(public name: string, public definitionOnly: boolean) { }
 
     static readonly INDEX = "index";
 
@@ -189,9 +189,9 @@ export class Import implements IHasAttributesAndTrivia, ISourceFileMember {
         }
     
     /** @creator FillParent */
-    parentFile: SourceFile;
+    parentFile: SourceFile = null;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string };
+    attributes: { [name: string]: string } = null;
 }
 
 export class Enum implements IHasAttributesAndTrivia, IImportable, ISourceFileMember, IReferencable {
@@ -203,9 +203,9 @@ export class Enum implements IHasAttributesAndTrivia, IImportable, ISourceFileMe
         public leadingTrivia: string) { }
 
     /** @creator FillParent */
-    parentFile: SourceFile;
+    parentFile: SourceFile = null;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string };
+    attributes: { [name: string]: string } = null;
 
     /** @creator ResolveIdentifiers */
     references: EnumReference[] = [];
@@ -257,9 +257,9 @@ export class Interface implements IHasAttributesAndTrivia, IInterface, IImportab
         public leadingTrivia: string) { }
 
     /** @creator FillParent */
-    parentFile: SourceFile;
+    parentFile: SourceFile = null;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string };
+    attributes: { [name: string]: string } = null;
 
     type = new InterfaceType(this, this.typeArguments.map(x => new GenericsType(x)));
 
@@ -286,9 +286,9 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, 
         public leadingTrivia: string) { }
 
     /** @creator FillParent */
-    parentFile: SourceFile;
+    parentFile: SourceFile = null;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string };
+    attributes: { [name: string]: string } = null;
 
     /** @creator ResolveIdentifiers */
     classReferences: ClassReference[] = [];
@@ -322,7 +322,7 @@ export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia,
         public leadingTrivia: string) { }
 
     /** @creator FillParent */
-    parentInterface: IInterface;
+    parentInterface: IInterface = null;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string } = null;
     /** @creator ResolveFieldAndPropertyAccess */
@@ -347,9 +347,9 @@ export class Property implements IVariable, IHasAttributesAndTrivia, IClassMembe
         public leadingTrivia: string) { }
 
     /** @creator FillParent */
-    parentClass: Class;
+    parentClass: Class = null;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string };
+    attributes: { [name: string]: string } = null;
     /** @creator ResolveFieldAndPropertyAccess */
     staticReferences: StaticPropertyReference[] = [];
     /** @creator ResolveFieldAndPropertyAccess */
@@ -370,7 +370,7 @@ export class MethodParameter implements IVariableWithInitializer, IReferencable,
     parentMethod: IMethodBase = null;
 
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string };
+    attributes: { [name: string]: string } = null;
 
     /** @creator ResolveIdentifiers */
     references: MethodParameterReference[] = [];
@@ -398,9 +398,9 @@ export class Constructor implements IMethodBaseWithTrivia, IHasAttributesAndTriv
         public leadingTrivia: string) { }
 
     /** @creator FillParent */
-    parentClass: Class;
+    parentClass: Class = null;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string };
+    attributes: { [name: string]: string } = null;
 
     throws: boolean;
 }
@@ -419,11 +419,11 @@ export class Method implements IMethodBaseWithTrivia, IHasAttributesAndTrivia, I
         public leadingTrivia: string) { }
     
     /** @creator FillParent */
-    parentInterface: IInterface;
+    parentInterface: IInterface = null;
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string };
+    attributes: { [name: string]: string } = null;
     /** @creator CollectInheritanceInfo */
-    interfaceDeclarations: Method[];
+    interfaceDeclarations: Method[] = null;
     /** @creator CollectInheritanceInfo */
     overrides: Method = null;
     /** @creator CollectInheritanceInfo */
@@ -443,7 +443,7 @@ export class GlobalFunction implements IMethodBaseWithTrivia, IImportable, IHasA
         public leadingTrivia: string) { }
     
     /** @creator FillAttributesFromTrivia */
-    attributes: { [name: string]: string };
+    attributes: { [name: string]: string } = null;
 
     throws: boolean;
 

@@ -222,7 +222,10 @@ export class TSOverviewGenerator {
     }
 
     static method(method: Method) {
-        return method === null ? "" : `${method.isStatic ? "static " : ""}${"mutates" in method.attributes ? "@mutates " : ""}${this.methodBase(method, method.returns)}`;
+        return method === null ? "" : 
+            (method.isStatic ? "static " : "") + 
+            (method.attributes !== null && "mutates" in method.attributes ? "@mutates " : "") + 
+            this.methodBase(method, method.returns);
     }
 
     static classLike(cls: IInterface) {

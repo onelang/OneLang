@@ -1,18 +1,19 @@
-import { OneYaml } from "One.Yaml-v0.1";
+const YAML = require('js-yaml');
 
-// @external
-export class YamlValue {
-    constructor(public value: { [key: string]: any }) { }
-    obj(key: string): YamlValue { return new YamlValue(this.value[key]); }
-    dbl(key: string): number { return this.value[key] || 0; }
-    str(key: string): string { return this.value[key] || null; }
-    arr(key: string): YamlValue[] { return (this.value[key] || []).map(x => new YamlValue(x)); }
-    strArr(key: string): string[] { return this.value[key] || []; }
+class YamlValue {
+    constructor(value) { this.value = value; }
+    obj(key) { return new YamlValue(this.value[key]); }
+    dbl(key) { return this.value[key] || 0; }
+    str(key) { return this.value[key] || null; }
+    arr(key) { return (this.value[key] || []).map(x => new YamlValue(x)); }
+    strArr(key) { return this.value[key] || []; }
 }
 
-// @external
-export class Yaml {
-    static load(content: string): YamlValue {
+class OneYaml {
+    static load(content) {
         return new YamlValue(YAML.safeLoad(content));
     }
 }
+
+exports.YamlValue = YamlValue;
+exports.OneYaml = OneYaml;
