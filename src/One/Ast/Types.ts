@@ -1,6 +1,5 @@
 import { Type, ClassType, GenericsType, EnumType, InterfaceType } from "./AstTypes";
 import { Expression } from "./Expressions";
-import { ErrorManager } from "../ErrorManager";
 import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, StaticFieldReference, EnumMemberReference, InstanceFieldReference, StaticPropertyReference, InstancePropertyReference, IReferencable, Reference, GlobalFunctionReference, StaticThisReference } from "./References";
 import { AstHelper } from "./AstHelper";
 import { Block } from "./Statements";
@@ -105,7 +104,6 @@ export class Package {
 
 export class Workspace {
     packages: { [name: string]: Package } = {};
-    errorManager = new ErrorManager();
 
     addPackage(pkg: Package): void { 
         this.packages[pkg.name] = pkg;

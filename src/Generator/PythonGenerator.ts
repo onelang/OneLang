@@ -1,4 +1,4 @@
-import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression, StaticMethodCallExpression, LambdaCallExpression, IExpression, IMethodCallExpression } from "../One/Ast/Expressions";
+import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression, StaticMethodCallExpression, LambdaCallExpression, IMethodCallExpression } from "../One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable, TryStatement, Block } from "../One/Ast/Statements";
 import { Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility, IAstNode, GlobalFunction, Package, SourcePath, IHasAttributesAndTrivia, ExportedScope, ExportScopeRef } from "../One/Ast/Types";
 import { Type, VoidType, ClassType, InterfaceType, EnumType, AnyType, LambdaType, NullType, GenericsType } from "../One/Ast/AstTypes";
@@ -8,6 +8,7 @@ import { TSOverviewGenerator } from "../Utils/TSOverviewGenerator";
 import { IGeneratorPlugin } from "./IGeneratorPlugin";
 import { JsToPython } from "./PythonPlugins/JsToPython";
 import { NameUtils } from "./NameUtils";
+import { IExpression } from "../One/Ast/Interfaces";
 
 export class PythonGenerator {
     tmplStrLevel = 0;
@@ -463,7 +464,9 @@ export class PythonGenerator {
         for (const import_ of this.imports)
             imports.push(import_);
         for (const import_ of sourceFile.imports.filter(x => !x.importAll)) {
-            //const relImp = this.calcRelImport(import_.exportScope, sourceFile.exportScope);
+            if (import_.attributes["python-ignore"] === "true")
+                continue;
+
             const alias = this.calcImportAlias(import_.exportScope);
             imports.push(`import ${this.package.name}.${import_.exportScope.scopeName.replace(/\//g, ".")} as ${alias}`);
         }

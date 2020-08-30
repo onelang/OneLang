@@ -1,8 +1,6 @@
+// @python-ignore
 import { Enum, Interface, Class, MethodParameter, IInterface } from "./Types";
-
-export interface IType {
-    repr(): string;
-}
+import { IType } from "./Interfaces";
 
 export class Type implements IType {
     static isGeneric(type: Type): boolean {

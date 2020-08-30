@@ -1,10 +1,11 @@
 import { IGeneratorPlugin } from "../IGeneratorPlugin";
-import { IExpression, InstanceMethodCallExpression, Expression, StaticMethodCallExpression, RegexLiteral } from "../../One/Ast/Expressions";
+import { InstanceMethodCallExpression, Expression, StaticMethodCallExpression, RegexLiteral } from "../../One/Ast/Expressions";
 import { Statement } from "../../One/Ast/Statements";
 import { ClassType, InterfaceType } from "../../One/Ast/AstTypes";
 import { PythonGenerator } from "../PythonGenerator";
 import { Class, Method } from "../../One/Ast/Types";
 import { InstanceFieldReference, InstancePropertyReference } from "../../One/Ast/References";
+import { IExpression } from "../../One/Ast/Interfaces";
 
 export class JsToPython implements IGeneratorPlugin {
     unhandledMethods = new Set<string>();

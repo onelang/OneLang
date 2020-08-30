@@ -1,4 +1,4 @@
-import { IExpression } from "../One/Ast/Expressions";
+import { IExpression } from "../One/Ast/Interfaces";
 import { Statement } from "../One/Ast/Statements";
 
 export interface IGeneratorPlugin {

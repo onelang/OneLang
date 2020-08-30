@@ -1,13 +1,9 @@
 import { Type, VoidType, UnresolvedType, ClassType } from "./AstTypes";
+// @python-ignore
 import { Method, GlobalFunction, IAstNode } from "./Types";
+import { IExpression } from "./Interfaces";
 
 export enum TypeRestriction { NoRestriction, ShouldNotHaveType, MustBeGeneric, ShouldNotBeGeneric }
-
-export interface IExpression {
-    setActualType(actualType: Type, allowVoid: boolean, allowGeneric: boolean): void;
-    setExpectedType(type: Type, allowVoid: boolean): void;
-    getType(): Type;
-}
 
 export class Expression implements IAstNode, IExpression {
     /** @creator FillParent */

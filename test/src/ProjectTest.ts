@@ -77,8 +77,8 @@ compiler.init(`${baseDir}/packages`).then(() => {
         printState();
 
         const lastState = new Linq(pkgStates).last();
-        if (compiler.workspace.errorManager.errors.length > 0)
-            debugger;
+        // if (compiler.workspace.errorManager.errors.length > 0)
+        //     debugger;
 
         //head("SUMMARY");
         //_(pkgStates).last().diff(pkgStates[pkgStates.length - 2]).printChangedFiles("summary");
