@@ -168,6 +168,8 @@ export class ExportScopeRef {
     constructor(
         public packageName: string,
         public scopeName: string) { }
+
+    getId(): string { return `${this.packageName}.${this.scopeName}`; }
 }
 
 /**

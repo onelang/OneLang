@@ -1,4 +1,4 @@
-// @python-import OneFile
+// @python-import-all OneFile
 import { OneFile } from "One.File-v0.1";
 import { IGenerator } from "../Generator/IGenerator";
 import { Compiler } from "../One/Compiler";

@@ -1,3 +1,4 @@
+// @python-import-all OneYaml
 import { OneYaml, YamlValue } from "One.Yaml-v0.1";
 
 export enum PackageType { Interface, Implementation }

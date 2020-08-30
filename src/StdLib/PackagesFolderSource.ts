@@ -1,5 +1,6 @@
-import { PackageSource, PackageId, PackageBundle, PackageContent, PackageType } from "./PackageManager";
+// @python-import-all OneFile
 import { OneFile } from "One.File-v0.1";
+import { PackageSource, PackageId, PackageBundle, PackageContent, PackageType } from "./PackageManager";
 
 export class PackagesFolderSource implements PackageSource {
     constructor(public packagesDir: string = "packages") { }

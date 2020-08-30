@@ -15,6 +15,7 @@ export class PythonGenerator {
     package: Package;
     currentFile: SourceFile;
     imports: Set<string>;
+    importAllScopes: Set<string>;
     currentClass: IInterface;
     reservedWords: string[] = ["from", "async", "global", "lambda", "cls", "import", "pass"];
     fieldToMethodHack: string[] = [];
@@ -61,11 +62,18 @@ export class PythonGenerator {
         return this.splitName(name).join("_");
     }
 
+    calcImportedName(exportScope: ExportScopeRef, name: string): string {
+        if (this.importAllScopes.has(exportScope.getId()))
+            return name;
+        else
+            return this.calcImportAlias(exportScope) + "." + name;
+    }
+
     enumName(enum_: Enum, isDecl = false) {
         let name = this.name_(enum_.name).toUpperCase();
         if (isDecl || enum_.parentFile.exportScope === null || enum_.parentFile === this.currentFile)
             return name;
-        return this.calcImportAlias(enum_.parentFile.exportScope) + "." + name;
+        return this.calcImportedName(enum_.parentFile.exportScope, name);
     }
 
     enumMemberName(name: string) {
@@ -74,7 +82,7 @@ export class PythonGenerator {
 
     clsName(cls: IInterface, isDecl = false): string {
         if (isDecl || cls.parentFile.exportScope === null || cls.parentFile === this.currentFile) return cls.name;
-        return this.calcImportAlias(cls.parentFile.exportScope) + "." + cls.name;
+        return this.calcImportedName(cls.parentFile.exportScope, cls.name);
     }
 
     leading(item: Statement) {
@@ -441,11 +449,25 @@ export class PythonGenerator {
     genFile(sourceFile: SourceFile): string {
         this.currentFile = sourceFile;
         this.imports = new Set<string>();
+        this.importAllScopes = new Set<string>();
         this.imports.add("from OneLangStdLib import *"); // TODO: do not add this globally, just for nativeResolver methods
         
         if (sourceFile.enums.length > 0)
             this.imports.add("from enum import Enum");
-            
+
+        for (const import_ of sourceFile.imports.filter(x => !x.importAll)) {
+            if (import_.attributes["python-ignore"] === "true")
+                continue;
+
+            if ("python-import-all" in import_.attributes) {
+                this.imports.add(`from ${import_.attributes["python-import-all"]} import *`);
+                this.importAllScopes.add(import_.exportScope.getId());
+            } else {
+                const alias = this.calcImportAlias(import_.exportScope);
+                this.imports.add(`import ${this.package.name}.${import_.exportScope.scopeName.replace(/\//g, ".")} as ${alias}`);
+            }
+        }
+
         const enums: string[] = [];
         for (const enum_ of sourceFile.enums) {
             const values: string[] = [];
@@ -461,15 +483,8 @@ export class PythonGenerator {
         const main = sourceFile.mainBlock.statements.length > 0 ? this.block(sourceFile.mainBlock) : "";
 
         const imports: string[] = [];
-        for (const import_ of this.imports)
-            imports.push(import_);
-        for (const import_ of sourceFile.imports.filter(x => !x.importAll)) {
-            if (import_.attributes["python-ignore"] === "true")
-                continue;
-
-            const alias = this.calcImportAlias(import_.exportScope);
-            imports.push(`import ${this.package.name}.${import_.exportScope.scopeName.replace(/\//g, ".")} as ${alias}`);
-        }
+        for (const imp of this.imports)
+            imports.push(imp);
 
         return [imports.join("\n"), enums.join("\n\n"), classes.join("\n\n"), main].filter(x => x !== "").join("\n\n");
     }
