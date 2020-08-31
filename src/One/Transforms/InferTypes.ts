@@ -88,11 +88,8 @@ export class InferTypes extends AstTransformer {
                 newExpr.parentNode = expr.parentNode;
             return newExpr;
         } catch (e) {
-            if (e instanceof Error) {
-                this.errorMan.currentNode = expr;
-                this.errorMan.throw(`Error while running type transformation phase: ${e}`);
-            }
-            return null;
+            this.errorMan.currentNode = expr;
+            this.errorMan.throw(`Error while running type transformation phase: ${e}`);
         }
     }
 

@@ -90,7 +90,7 @@ export class TSOverviewGenerator {
         } else if (expr instanceof LambdaCallExpression) {
             res = `${this.expr(expr.method)}(${previewOnly ? "..." : expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof BooleanLiteral) {
-            res = `${expr.boolValue}`;
+            res = `${expr.boolValue ? "true" : "false"}`;
         } else if (expr instanceof StringLiteral) { 
             res = `${JSON.stringify(expr.stringValue)}`;
         } else if (expr instanceof NumericLiteral) { 
@@ -256,7 +256,7 @@ export class TSOverviewGenerator {
         }
     }
 
-    static generate(sourceFile: SourceFile) {
+    static generate(sourceFile: SourceFile): string {
         const imps = sourceFile.imports.map(imp => (imp.importAll ? `import * as ${imp.importAs}` : `import { ${imp.imports.map(x => this.imp(x)).join(", ")} }`) +
             ` from "${imp.exportScope.packageName}${this.pre("/", imp.exportScope.scopeName)}";`);
         const enums = sourceFile.enums.map(enum_ => `${this.leading(enum_)}enum ${enum_.name} { ${enum_.values.map(x => x.name).join(", ")} }`);

@@ -49,8 +49,11 @@ export class JsToPython implements IGeneratorPlugin {
             if (method.name === "split") {
                 if (args[0] instanceof RegexLiteral) {
                     const pattern = (<RegexLiteral>args[0]).pattern;
-                    if (!pattern.startsWith("^"))
-                        return `${objR}.split(${JSON.stringify(pattern)})`;
+                    if (!pattern.startsWith("^")) {
+                        //return `${objR}.split(${JSON.stringify(pattern)})`;
+                        this.main.imports.add("import re");
+                        return `re.split(${JSON.stringify(pattern)}, ${objR})`;
+                    }
                 }
 
                 return `${argsR[0]}.split(${objR})`;
@@ -102,6 +105,16 @@ export class JsToPython implements IGeneratorPlugin {
                 return `${argsR[0]}.keys()`;
             } else if (method.name === "values") {
                 return `${argsR[0]}.values()`;
+            }
+        } else if (cls.name === "Set") {
+            const objR = this.main.expr(obj);
+            const argsR = args.map(x => this.main.expr(x));
+            if (method.name === "values") {
+                return `${objR}.keys()`;
+            } else if (method.name === "has") {
+                return `${argsR[0]} in ${objR}`;
+            } else if (method.name === "add") {
+                return `${objR}[${argsR[0]}] = None`;
             }
         } else if (cls.name === "ArrayHelper") {
             const argsR = args.map(x => this.main.expr(x));

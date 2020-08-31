@@ -81,6 +81,8 @@ export class PythonGenerator {
     }
 
     clsName(cls: IInterface, isDecl = false): string {
+        // TODO: hack
+        if (cls.name === "Set") return "dict";
         if (isDecl || cls.parentFile.exportScope === null || cls.parentFile === this.currentFile) return cls.name;
         return this.calcImportedName(cls.parentFile.exportScope, cls.name);
     }
@@ -147,7 +149,11 @@ export class PythonGenerator {
 
         let res = "UNKNOWN-EXPR";
         if (expr instanceof NewExpression) {
-            res = `${this.clsName(expr.cls.decl)}${this.callParams(expr.args)}`;
+            // TODO: hack
+            if (expr.cls.decl.name === "Set")
+                res = expr.args.length === 0 ? "dict()" : `dict.fromkeys${this.callParams(expr.args)}`;
+            else
+                res = `${this.clsName(expr.cls.decl)}${this.callParams(expr.args)}`;
         } else if (expr instanceof UnresolvedNewExpression) {
             res = `/* TODO: UnresolvedNewExpression */ ${expr.cls.typeName}(${expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof Identifier) {
