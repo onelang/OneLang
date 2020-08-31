@@ -7,8 +7,7 @@ import { readFile, glob, readDir, baseDir, writeFile, exists } from "./TestUtils
 import { CsharpGenerator } from "@one/Generator/CsharpGenerator";
 import { PythonGenerator } from "@one/Generator/PythonGenerator";
 import { Compiler } from "@one/One/Compiler";
-import { Linq } from './Underscore';
-import { PackageStateCapture } from './DiffUtils';
+import { PackageStateCapture } from "@one/Test/PackageStateCapture";
 import * as color from "ansi-colors";
 
 const compiler = new Compiler();
@@ -42,7 +41,7 @@ compiler.init(`${baseDir}/packages`).then(() => {
             return state;
         }
 
-        const printState = () => console.log(pkgStates[pkgStates.length - 1].diff(pkgStates[pkgStates.length - 2]).getChanges("summary"));
+        //const printState = () => console.log(pkgStates[pkgStates.length - 1].diff(pkgStates[pkgStates.length - 2]).getChanges("summary"));
 
         let stage = 0;
         compiler.hooks = {
@@ -71,23 +70,23 @@ compiler.init(`${baseDir}/packages`).then(() => {
         for (const file of genPython)
             writeFile(`test/artifacts/ProjectTest/${test.projName}/Python/${file.path.replace(".ts", ".py")}`, file.content);
         console.log("DONE.");
-        return;
-        debugger;
+        // return;
+        // debugger;
 
-        printState();
+        // printState();
 
-        const lastState = new Linq(pkgStates).last();
-        // if (compiler.workspace.errorManager.errors.length > 0)
-        //     debugger;
+        // const lastState = new Linq(pkgStates).last();
+        // // if (compiler.workspace.errorManager.errors.length > 0)
+        // //     debugger;
 
-        //head("SUMMARY");
-        //_(pkgStates).last().diff(pkgStates[pkgStates.length - 2]).printChangedFiles("summary");
-        head("FULL");
-        const allChanges = lastState.diff(pkgStates[0]).getChanges("full");
-        console.log(allChanges);
+        // //head("SUMMARY");
+        // //_(pkgStates).last().diff(pkgStates[pkgStates.length - 2]).printChangedFiles("summary");
+        // head("FULL");
+        // const allChanges = lastState.diff(pkgStates[0]).getChanges("full");
+        // console.log(allChanges);
 
-        //writeFile(`test/artifacts/ProjectTest/${test.projName}/allChanges.txt`, allChanges);
+        // //writeFile(`test/artifacts/ProjectTest/${test.projName}/allChanges.txt`, allChanges);
 
-        debugger;
+        // debugger;
     }
 })

@@ -1,7 +1,27 @@
 // @python-import-all OneFile
 import { OneFile } from "One.File-v0.1";
 import { IGenerator } from "../Generator/IGenerator";
-import { Compiler } from "../One/Compiler";
+import { Compiler, ICompilerHooks } from "../One/Compiler";
+import { PackageStateCapture } from "./PackageStateCapture";
+
+class CompilerHooks implements ICompilerHooks {
+    stage = 0;
+    constructor(public compiler: Compiler, public baseDir: string) { }
+
+    afterStage(stageName: string): void {
+        const state = new PackageStateCapture(this.compiler.projectPkg);
+        const stageFn = `${this.baseDir}/test/artifacts/ProjectTest/OneLang/stages/${this.stage}_${stageName}.txt`;
+        this.stage++;
+        const stageSummary = state.getSummary();
+        const expected = OneFile.readText(stageFn);
+        if (stageSummary !== expected) {
+            OneFile.writeText(stageFn + "_diff.txt",  stageSummary);
+            throw new Error(`Stage result differs from expected: ${stageName} -> ${stageFn}`);
+        } else {
+            console.log(`[+] Stage passed: ${stageName}`);
+        }
+    }
+}
 
 export class SelfTestRunner {
     constructor(public baseDir: string) { }
@@ -11,11 +31,13 @@ export class SelfTestRunner {
         const compiler = new Compiler();
         await compiler.init(`${this.baseDir}packages/`);
         compiler.setupNativeResolver(OneFile.readText(`${this.baseDir}langs/NativeResolvers/typescript.ts`));
-        compiler.newWorkspace();
+        compiler.newWorkspace("OneLang");
 
         const projDir = `${this.baseDir}src/`;
         for (const file of OneFile.listFiles(projDir, true).filter(x => x.endsWith(".ts")))
             compiler.addProjectFile(file, OneFile.readText(`${projDir}/${file}`));
+
+        compiler.hooks = new CompilerHooks(compiler, this.baseDir);
 
         compiler.processWorkspace();
         const generated = generator.generate(compiler.projectPkg);

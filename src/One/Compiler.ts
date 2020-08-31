@@ -17,7 +17,7 @@ import { FillMutabilityInfo } from "./Transforms/FillMutabilityInfo";
 import { AstTransformer } from "./AstTransformer";
 import { ITransformer } from "./ITransform";
 
-export interface CompilerHooks {
+export interface ICompilerHooks {
     afterStage(stageName: string): void;
 }
 
@@ -27,7 +27,7 @@ export class Compiler {
     nativeFile: SourceFile = null;
     nativeExports: ExportedScope = null;
     projectPkg: Package = null;
-    hooks: CompilerHooks = null;
+    hooks: ICompilerHooks = null;
 
     async init(packagesDir: string): Promise<void> {
         this.pacMan = new PackageManager(new PackagesFolderSource(packagesDir));

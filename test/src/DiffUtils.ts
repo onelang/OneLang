@@ -1,7 +1,6 @@
 import * as jsdiff from "diff";
 import * as color from "ansi-colors";
-import { Package } from "@one/One/Ast/Types";
-import { TSOverviewGenerator } from "@one/Utils/TSOverviewGenerator";
+import { PackageStateCapture } from "../../src/Test/PackageStateCapture";
 
 class FileStateChanges {
     constructor(public pkgName: string, public fileName: string, public diff: Change[]) { }
@@ -40,28 +39,15 @@ class WorkspaceStateChanges {
         return this.fileChanges.filter(x => mode === "full" ? true : x.hasChanges())
             .map(x => `${color.bgBlue(` === ${x.fileName} === `)}\n${x.colorText(mode)}`).join("\n\n");
     }
-}
 
-export class PackageStateCapture {
-    overviews: { [name: string]: string } = {};
-
-    constructor(public pkg: Package) { 
-        for (const file of Object.values(pkg.files))
-            this.overviews[file.sourcePath.path] = TSOverviewGenerator.generate(file);
-    }
-
-    diff(baseLine: PackageStateCapture) {
+    static diff(before: PackageStateCapture, after: PackageStateCapture): WorkspaceStateChanges {
         const result: FileStateChanges[] = [];
-        for (const file of Object.keys(this.overviews)) {
-            const diff = cleverDiff(baseLine.overviews[file], this.overviews[file]);
-            result.push(new FileStateChanges(this.pkg.name, file, diff));
+        for (const file of Object.keys(after.overviews)) {
+            const diff = cleverDiff(before.overviews[file], after.overviews[file]);
+            result.push(new FileStateChanges(after.pkg.name, file, diff));
         }
         return new WorkspaceStateChanges(result);
     }
-
-    getSummary() {
-        return Object.entries(this.overviews).map(x => `=== ${x[0]} ===\n\n${x[1]}`).join('\n\n');
-    }    
 }
 
 enum ChangeType { Added = "Added", Removed = "Removed", SameText = "SameText", SameBlock = "SameBlock" }
