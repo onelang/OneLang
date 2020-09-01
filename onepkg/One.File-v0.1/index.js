@@ -1,5 +1,6 @@
 const glob = require('glob');
 const fs = require('fs');
+const path = require('path');
 
 class OneFile {
     static readText(fn) { 
@@ -7,6 +8,9 @@ class OneFile {
     }
 
     static writeText(fn, content) {
+        const dir = path.dirname(fn);
+        if (!fs.existsSync(dir))
+            fs.mkdirSync(dir, { recursive: true });
         return fs.writeFileSync(fn, content, 'utf8');
     }
 
