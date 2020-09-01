@@ -35,7 +35,7 @@
     "pretest": "tsc -b . test",
     "test": "npx mocha",
     "bundle": "node build/bundle-packages.js",
-    "prepare": "npm run build",
+    "prepublishOnly": "npm run build",
     "release": "release-it"
   },
   "dependencies": {
