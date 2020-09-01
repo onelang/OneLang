@@ -50,13 +50,12 @@ export class SelfTestRunner {
             const fn = genFile.path.replace(/\.ts$/, ext);
             const projBase = `${this.baseDir}test/artifacts/ProjectTest/OneLang`;
             const tsGenPath = `${projBase}/${langName}/${fn}`;
-            const reGenPath = `${projBase}/${langName}_Regen_${langName}/${fn}`;
+            const reGenPath = `${projBase}/${langName}_Regen/${fn}`;
             const tsGenContent = OneFile.readText(tsGenPath);
             const reGenContent = genFile.content;
 
-            OneFile.writeText(reGenPath, genFile.content);
-            
             if (tsGenContent != reGenContent) {
+                OneFile.writeText(reGenPath, genFile.content);
                 console.error(`Content does not match: ${genFile.path}`);
                 allMatch = false;
             }
