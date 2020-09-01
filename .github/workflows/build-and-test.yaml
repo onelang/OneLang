@@ -1,12 +1,8 @@
-name: Node.js CI
-
+name: Build and test OneLang cross-compilation
 on: [push]
-
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
       with:
@@ -29,8 +25,8 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.7
-    - run: ls -al
-    - run: ls -al
+    - name: Install Python dependencies
+      run: pip install -r requirements.txt
       working-directory: ./test/artifacts/ProjectTest/OneLang/Python
     - run: python main.py
       working-directory: ./test/artifacts/ProjectTest/OneLang/Python
