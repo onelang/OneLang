@@ -27,5 +27,8 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.7
+    - run: ls -al
+    - run: ls -al
+      working-directory: ./test/artifacts/ProjectTest/OneLang/Python
     - run: python main.py
       working-directory: ./test/artifacts/ProjectTest/OneLang/Python
