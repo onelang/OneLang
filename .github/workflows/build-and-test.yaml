@@ -23,3 +23,9 @@ jobs:
     - run: npx tsc -b . test build
     - run: npx ./test/lib/ProjectTest.js
     - run: npx ./test/lib/SelfTest.js
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - run: python main.py
+      working-directory: ./test/artifacts/ProjectTest/OneLang/Python
