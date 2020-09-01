@@ -14,7 +14,6 @@ jobs:
       with:
         node-version: '12.x'
     - run: npm install
-    - run: npm run build --if-present
-    - run: npm test
-      env:
-        CI: true
+    - run: npx tsc -b . test build
+    - run: npx ./test/lib/ProjectTest.js
+    - run: npx ./test/lib/SelfTest.js
