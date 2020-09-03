@@ -58,6 +58,8 @@ export class SelfTestRunner {
                 OneFile.writeText(reGenPath, genFile.content);
                 console.error(`Content does not match: ${genFile.path}`);
                 allMatch = false;
+            } else {
+                console.log(`[+] Content matches: ${genFile.path}`);
             }
         }
 

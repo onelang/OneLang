@@ -52,6 +52,7 @@ compiler.init(`${baseDir}/packages`).then(() => {
                 //if (exists(stageFn)) {
                 //    const expectedState =
                 //}
+                console.log(`writing file... ${stageFn}`);
                 writeFile(stageFn, stageSummary);
             }
         };
