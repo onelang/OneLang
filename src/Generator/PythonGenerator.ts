@@ -1,14 +1,14 @@
 import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression, StaticMethodCallExpression, LambdaCallExpression, IMethodCallExpression } from "../One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable, TryStatement, Block } from "../One/Ast/Statements";
 import { Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility, IAstNode, GlobalFunction, Package, SourcePath, IHasAttributesAndTrivia, ExportedScope, ExportScopeRef } from "../One/Ast/Types";
-import { Type, VoidType, ClassType, InterfaceType, EnumType, AnyType, LambdaType, NullType, GenericsType } from "../One/Ast/AstTypes";
+import { VoidType, ClassType, InterfaceType, EnumType, AnyType, LambdaType, NullType, GenericsType } from "../One/Ast/AstTypes";
 import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference, StaticThisReference, Reference, VariableReference } from "../One/Ast/References";
 import { GeneratedFile } from "./GeneratedFile";
 import { TSOverviewGenerator } from "../Utils/TSOverviewGenerator";
 import { IGeneratorPlugin } from "./IGeneratorPlugin";
 import { JsToPython } from "./PythonPlugins/JsToPython";
 import { NameUtils } from "./NameUtils";
-import { IExpression } from "../One/Ast/Interfaces";
+import { IExpression, IType } from "../One/Ast/Interfaces";
 
 export class PythonGenerator {
     tmplStrLevel = 0;
@@ -25,7 +25,7 @@ export class PythonGenerator {
         this.plugins.push(new JsToPython(this));
     }
 
-    type(type: Type) {
+    type(type: IType) {
         if (type instanceof ClassType) {
             if (type.decl.name === "TsString")       return "str";
             else if (type.decl.name === "TsBoolean") return "bool";
@@ -108,7 +108,7 @@ export class PythonGenerator {
         return value !== null ? `${prefix}${value}` : "";
     }
 
-    isTsArray(type: Type) { return type instanceof ClassType && type.decl.name == "TsArray"; }
+    isTsArray(type: IType) { return type instanceof ClassType && type.decl.name == "TsArray"; }
 
     vis(v: Visibility) {
         return v === Visibility.Private ? "__" :

@@ -1,8 +1,9 @@
-import { Type, ClassType, GenericsType, EnumType, InterfaceType } from "./AstTypes";
+import { ClassType, GenericsType, EnumType, InterfaceType } from "./AstTypes";
 import { Expression } from "./Expressions";
 import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, StaticFieldReference, EnumMemberReference, InstanceFieldReference, StaticPropertyReference, InstancePropertyReference, IReferencable, Reference, GlobalFunctionReference, StaticThisReference } from "./References";
 import { AstHelper } from "./AstHelper";
 import { Block } from "./Statements";
+import { IType } from "./Interfaces";
 
 export interface IAstNode { }
 
@@ -18,7 +19,7 @@ export class MutabilityInfo {
 ///   IVariableWithInitializer: VariableDeclaration, ForVariable, Field, MethodParameter
 export interface IVariable {
     name: string;
-    type: Type;
+    type: IType;
     mutability: MutabilityInfo;
 }
 
@@ -227,7 +228,7 @@ export class EnumMember {
 export interface IInterface {
     name: string;
     typeArguments: string[];
-    baseInterfaces: Type[];
+    baseInterfaces: IType[];
     fields: Field[];
     methods: Method[];
     leadingTrivia: string;
@@ -250,7 +251,7 @@ export class Interface implements IHasAttributesAndTrivia, IInterface, IImportab
     constructor(
         public name: string,
         public typeArguments: string[],
-        public baseInterfaces: Type[],
+        public baseInterfaces: IType[],
         public fields: Field[],
         public methods: Method[],
         public isExported: boolean,
@@ -276,8 +277,8 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, 
     constructor(
         public name: string,
         public typeArguments: string[],
-        public baseClass: Type,
-        public baseInterfaces: Type[],
+        public baseClass: IType,
+        public baseInterfaces: IType[],
         public fields: Field[],
         public properties: Property[],
         public constructor_: Constructor,
@@ -314,7 +315,7 @@ export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia,
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
-        public type: Type,
+        public type: IType,
         public initializer: Expression,
         public visibility: Visibility,
         public isStatic: boolean,
@@ -339,7 +340,7 @@ export class Property implements IVariable, IHasAttributesAndTrivia, IClassMembe
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
-        public type: Type,
+        public type: IType,
         public getter: Block,
         public setter: Block,
         public visibility: Visibility,
@@ -362,7 +363,7 @@ export class MethodParameter implements IVariableWithInitializer, IReferencable,
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
-        public type: Type,
+        public type: IType,
         public initializer: Expression,
         public leadingTrivia: string) { }
 
@@ -414,7 +415,7 @@ export class Method implements IMethodBaseWithTrivia, IHasAttributesAndTrivia, I
         public body: Block,
         public visibility: Visibility,
         public isStatic: boolean,
-        public returns: Type,
+        public returns: IType,
         public async: boolean,
         public leadingTrivia: string) { }
     
@@ -438,7 +439,7 @@ export class GlobalFunction implements IMethodBaseWithTrivia, IImportable, IHasA
         public name: string,
         public parameters: MethodParameter[],
         public body: Block,
-        public returns: Type,
+        public returns: IType,
         public isExported: boolean,
         public leadingTrivia: string) { }
     
@@ -457,6 +458,6 @@ export class Lambda extends Expression implements IMethodBase {
         public parameters: MethodParameter[],
         public body: Block) { super(); }
 
-    returns: Type = null;
+    returns: IType = null;
     throws: boolean;
 }

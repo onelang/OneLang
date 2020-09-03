@@ -1,21 +1,22 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Expression, ArrayLiteral, MapLiteral, CastExpression, BinaryExpression, ConditionalExpression } from "../../Ast/Expressions";
-import { Type, ClassType, AnyType } from "../../Ast/AstTypes";
+import { ClassType, AnyType, TypeHelper } from "../../Ast/AstTypes";
+import { IType } from "../../Ast/Interfaces";
 
 export class ArrayAndMapLiteralTypeInfer extends InferTypesPlugin {
     constructor() { super("ArrayAndMapLiteralTypeInfer"); }
 
-    protected inferArrayOrMapItemType(items: Expression[], expectedType: Type, isMap: boolean) {
-        const itemTypes: Type[] = [];
+    protected inferArrayOrMapItemType(items: Expression[], expectedType: IType, isMap: boolean) {
+        const itemTypes: IType[] = [];
         for (const item of items)
-            if (!itemTypes.some(t => Type.equals(t, item.getType())))
+            if (!itemTypes.some(t => TypeHelper.equals(t, item.getType())))
                 itemTypes.push(item.getType());
 
         const literalType = isMap ? this.main.currentFile.literalTypes.map : this.main.currentFile.literalTypes.array;
 
-        let itemType: Type = null;
+        let itemType: IType = null;
         if (itemTypes.length === 0) {
-            if (!expectedType) {
+            if (expectedType === null) {
                 this.errorMan.warn(`Could not determine the type of an empty ${isMap ? "MapLiteral" : "ArrayLiteral"}, using AnyType instead`);
                 itemType = AnyType.instance;
             } else if (expectedType instanceof ClassType && expectedType.decl === literalType.decl) {

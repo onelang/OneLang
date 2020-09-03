@@ -2,14 +2,15 @@ import { Reader, IReaderHooks, ParseError } from "./Common/Reader";
 import { ExpressionParser, IExpressionParserHooks } from "./Common/ExpressionParser";
 import { NodeManager } from "./Common/NodeManager";
 import { IParser } from "./Common/IParser";
-import { Type, AnyType, VoidType, UnresolvedType, LambdaType } from "../One/Ast/AstTypes";
+import { AnyType, VoidType, UnresolvedType, LambdaType } from "../One/Ast/AstTypes";
 import { Expression, TemplateString, TemplateStringPart, NewExpression, Identifier, CastExpression, NullLiteral, BooleanLiteral, BinaryExpression, UnaryExpression, UnresolvedCallExpression, PropertyAccessExpression, InstanceOfExpression, RegexLiteral, AwaitExpression, ParenthesizedExpression, UnresolvedNewExpression } from "../One/Ast/Expressions";
 import { VariableDeclaration, Statement, UnsetStatement, IfStatement, WhileStatement, ForeachStatement, ForStatement, ReturnStatement, ThrowStatement, BreakStatement, ExpressionStatement, ForeachVariable, ForVariable, DoStatement, ContinueStatement, TryStatement, CatchVariable, Block } from "../One/Ast/Statements";
 import { Class, Method, MethodParameter, Field, Visibility, SourceFile, Property, Constructor, Interface, EnumMember, Enum, IMethodBase, Import, SourcePath, ExportScopeRef, Package, Lambda, UnresolvedImport, GlobalFunction } from "../One/Ast/Types";
+import { IType } from "../One/Ast/Interfaces";
 
 class TypeAndInit {
     constructor(
-        public type: Type,
+        public type: IType,
         public init: Expression) { }
 }
 
@@ -18,7 +19,7 @@ class MethodSignature {
         public params: MethodParameter[],
         public fields: Field[],
         public body: Block,
-        public returns: Type,
+        public returns: IType,
         public superCallArgs: Expression[]) { }
 }
 
@@ -80,7 +81,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
         return params;
     }
 
-    parseType(): Type {
+    parseType(): IType {
         if (this.reader.readToken("{")) {
             this.reader.expectToken("[");
             this.reader.readIdentifier();
@@ -104,7 +105,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
         const typeName = this.reader.expectIdentifier();
         const startPos = this.reader.prevTokenOffset;
 
-        let type: Type;
+        let type: IType;
         if (typeName === "string") {
             type = new UnresolvedType("TsString", []);
         } else if (typeName === "boolean") {
@@ -411,8 +412,8 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
         return block;
     }
 
-    parseTypeArgs(): Type[] {
-        const typeArguments: Type[] = [];
+    parseTypeArgs(): IType[] {
+        const typeArguments: IType[] = [];
         if (this.reader.readToken("<")) {
             do {
                 const generics = this.parseType();
@@ -469,7 +470,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
             this.reader.expectToken(")");
         }
 
-        let returns: Type = null;
+        let returns: IType = null;
         if (!isConstructor) // in case of constructor, "returns" won't be used
             returns = this.reader.readToken(":") ? this.parseType() : this.missingReturnTypeIsVoid ? VoidType.instance : null;
 
@@ -503,7 +504,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
 
         const intfTypeArgs = this.parseGenericsArgs();
 
-        const baseInterfaces: Type[] = [];
+        const baseInterfaces: IType[] = [];
         if (this.reader.readToken("extends")) {
             do {
                 baseInterfaces.push(this.parseType());
@@ -567,7 +568,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
         const typeArgs = this.parseGenericsArgs();
         const baseClass = this.reader.readToken("extends") ? this.parseSpecifiedType() : null;
 
-        const baseInterfaces: Type[] = [];
+        const baseInterfaces: IType[] = [];
         if (this.reader.readToken("implements")) {
             do {
                 baseInterfaces.push(this.parseSpecifiedType());
@@ -611,7 +612,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
             } else if (memberName === "get" || memberName === "set") { // property
                 const propName = this.reader.expectIdentifier();
                 let prop = properties.find(x => x.name === propName) || null;
-                let propType: Type = null;
+                let propType: IType = null;
                 let getter: Block = null;
                 let setter: Block = null;
 

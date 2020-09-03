@@ -1,9 +1,9 @@
 import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression, StaticMethodCallExpression, LambdaCallExpression } from "../One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, ForVariable, TryStatement, Block } from "../One/Ast/Statements";
 import { Method, Class, IClassMember, SourceFile, IMethodBase, Constructor, IVariable, Lambda, IImportable, UnresolvedImport, Interface, Enum, IInterface, Field, Property, MethodParameter, IVariableWithInitializer, Visibility, IAstNode, GlobalFunction, IHasAttributesAndTrivia } from "../One/Ast/Types";
-import { Type, VoidType } from "../One/Ast/AstTypes";
+import { VoidType } from "../One/Ast/AstTypes";
 import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference, StaticThisReference } from "../One/Ast/References";
-import { IExpression } from "../One/Ast/Interfaces";
+import { IExpression, IType } from "../One/Ast/Interfaces";
 
 export class TSOverviewGenerator {
     static leading(item: IHasAttributesAndTrivia) {
@@ -30,8 +30,8 @@ export class TSOverviewGenerator {
     //static name_(obj: IMethodBase) { return `${obj instanceof Constructor ? "constructor" : obj.name}${this.typeArgs(obj.typeArguments)}`; }
     static typeArgs(args: string[]): string { return args !== null && args.length > 0 ? `<${args.join(", ")}>` : ""; }
     
-    static type(t: Type, raw = false) {
-        const repr = !t ? "???" : t.repr();
+    static type(t: IType, raw = false) {
+        const repr = t === null ? "???" : t.repr();
         if (repr === "U:UNKNOWN") debugger;
         return (raw ? "" : "{T}") + repr;
     }
@@ -212,7 +212,7 @@ export class TSOverviewGenerator {
 
     static rawBlock(block: Block): string { return block.statements.map(stmt => this.stmt(stmt)).join("\n"); }
 
-    static methodBase(method: IMethodBase, returns: Type): string {
+    static methodBase(method: IMethodBase, returns: IType): string {
         if (method === null) return "";
         const name = method instanceof Method ? method.name : method instanceof Constructor ? "constructor" : method instanceof GlobalFunction ? method.name : "???";
         const typeArgs = method instanceof Method ? method.typeArguments : null;

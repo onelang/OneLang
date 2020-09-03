@@ -1,7 +1,7 @@
-import { Type, VoidType, UnresolvedType, ClassType } from "./AstTypes";
+import { VoidType, UnresolvedType, ClassType, TypeHelper } from "./AstTypes";
 // @python-ignore
 import { Method, GlobalFunction, IAstNode } from "./Types";
-import { IExpression } from "./Interfaces";
+import { IExpression, IType } from "./Interfaces";
 
 export enum TypeRestriction { NoRestriction, ShouldNotHaveType, MustBeGeneric, ShouldNotBeGeneric }
 
@@ -9,11 +9,11 @@ export class Expression implements IAstNode, IExpression {
     /** @creator FillParent */
     parentNode: IAstNode = null;
     /** @creator InferTypes */
-    expectedType: Type = null;
+    expectedType: IType = null;
     /** @creator InferTypes */
-    actualType: Type = null;
+    actualType: IType = null;
 
-    protected typeCheck(type: Type, allowVoid: boolean): void {
+    protected typeCheck(type: IType, allowVoid: boolean): void {
         if (type === null)
             throw new Error("New type cannot be null!");
 
@@ -24,23 +24,23 @@ export class Expression implements IAstNode, IExpression {
             throw new Error("Expression's type cannot be UnresolvedType!");
     }
 
-    setActualType(actualType: Type, allowVoid = false, allowGeneric = false): void {
+    setActualType(actualType: IType, allowVoid = false, allowGeneric = false): void {
         if (this.actualType !== null)
             throw new Error(`Expression already has actual type (current type = ${this.actualType.repr()}, new type = ${actualType.repr()})`);
 
         this.typeCheck(actualType, allowVoid);
 
-        if (this.expectedType !== null && !Type.isAssignableTo(actualType, this.expectedType))
+        if (this.expectedType !== null && !TypeHelper.isAssignableTo(actualType, this.expectedType))
             throw new Error(`Actual type (${actualType.repr()}) is not assignable to the declared type (${this.expectedType.repr()})!`);
 
         // TODO: decide if this check needed or not
-        //if (!allowGeneric && Type.isGeneric(actualType))
+        //if (!allowGeneric && TypeHelper.isGeneric(actualType))
         //    throw new Error(`Actual type cannot be generic (${actualType.repr()})!`);
 
         this.actualType = actualType;
     }
 
-    setExpectedType(type: Type, allowVoid = false): void {
+    setExpectedType(type: IType, allowVoid = false): void {
         if (this.actualType !== null)
             throw new Error("Cannot set expected type after actual type was already set!");
 
@@ -52,7 +52,7 @@ export class Expression implements IAstNode, IExpression {
         this.expectedType = type;
     }
 
-    getType(): Type { return this.actualType || this.expectedType; }
+    getType(): IType { return this.actualType || this.expectedType; }
 }
 
 export class Identifier extends Expression {
@@ -146,7 +146,7 @@ export class UnaryExpression extends Expression {
 
 export class CastExpression extends Expression {
     constructor(
-        public newType: Type,
+        public newType: IType,
         public expression: Expression,
         // in case the cast is an implicit cast happening because of an "instanceof" primitive
         public instanceOfCast: InstanceOfExpression) { super(); }
@@ -178,7 +178,7 @@ export class ElementAccessExpression extends Expression {
 export class UnresolvedCallExpression extends Expression {
     constructor(
         public func: Expression,
-        public typeArgs: Type[],
+        public typeArgs: IType[],
         public args: Expression[]) { super(); }
 }
 
@@ -186,20 +186,20 @@ export class UnresolvedMethodCallExpression extends Expression {
     constructor(
         public object: Expression,
         public methodName: string,
-        public typeArgs: Type[],
+        public typeArgs: IType[],
         public args: Expression[]) { super(); }
 }
 
 export interface IMethodCallExpression extends IExpression {
     method: Method;
-    typeArgs: Type[];
+    typeArgs: IType[];
     args: Expression[];
 }
 
 export class StaticMethodCallExpression extends Expression implements IMethodCallExpression {
     constructor(
         public method: Method,
-        public typeArgs: Type[],
+        public typeArgs: IType[],
         public args: Expression[],
         public isThisCall: boolean) { super(); }
 }
@@ -208,7 +208,7 @@ export class InstanceMethodCallExpression extends Expression implements IMethodC
     constructor(
         public object: Expression,
         public method: Method,
-        public typeArgs: Type[],
+        public typeArgs: IType[],
         public args: Expression[]) { super(); }
 }
 
@@ -232,7 +232,7 @@ export class TodoExpression extends Expression {
 export class InstanceOfExpression extends Expression { 
     constructor(
         public expr: Expression,
-        public checkType: Type) { super(); }
+        public checkType: IType) { super(); }
 
     // list of all the implicit casts happening because of this instanceof
     /** @creator InstanceOfImplicitCast */

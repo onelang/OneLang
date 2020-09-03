@@ -2,7 +2,7 @@ import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Expression, PropertyAccessExpression, UnresolvedCallExpression } from "../../Ast/Expressions";
 import { ClassReference, Reference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, ThisReference, SuperReference, EnumReference, StaticThisReference } from "../../Ast/References";
 import { Class, Method, Interface } from "../../Ast/Types";
-import { ClassType, InterfaceType, AnyType, Type } from "../../Ast/AstTypes";
+import { ClassType, InterfaceType, AnyType, TypeHelper } from "../../Ast/AstTypes";
 import { GenericsResolver } from "./Helpers/GenericsResolver";
 
 export class ResolveFieldAndPropertyAccess extends InferTypesPlugin {
@@ -74,7 +74,7 @@ export class ResolveFieldAndPropertyAccess extends InferTypesPlugin {
             if (ref === null)
                 this.errorMan.throw(`Could not resolve instance member access of a interface: ${type.repr()}::${expr.propertyName}`);
             return ref;
-        } else if (!type) {
+        } else if (type === null) {
             this.errorMan.throw(`Type was not inferred yet (prop="${expr.propertyName}")`);
         } else if (type instanceof AnyType) {
             //this.errorMan.throw(`Object has any type (prop="${expr.propertyName}")`);
@@ -103,7 +103,7 @@ export class ResolveFieldAndPropertyAccess extends InferTypesPlugin {
     detectType(expr: Expression): boolean {
         if (expr instanceof InstanceFieldReference) {
             const actualType = GenericsResolver.fromObject(expr.object).resolveType(expr.field.type, true);
-            expr.setActualType(actualType, false, Type.isGeneric(expr.object.actualType));
+            expr.setActualType(actualType, false, TypeHelper.isGeneric(expr.object.actualType));
             return true;
         } else if (expr instanceof InstancePropertyReference) {
             const actualType = GenericsResolver.fromObject(expr.object).resolveType(expr.property.type, true);

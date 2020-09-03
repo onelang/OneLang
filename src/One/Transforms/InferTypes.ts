@@ -90,6 +90,7 @@ export class InferTypes extends AstTransformer {
         } catch (e) {
             this.errorMan.currentNode = expr;
             this.errorMan.throw(`Error while running type transformation phase: ${e}`);
+            return null;
         }
     }
 

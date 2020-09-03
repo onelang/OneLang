@@ -1,14 +1,15 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Property, Lambda, Method, IMethodBase } from "../../Ast/Types";
-import { VoidType, Type, AnyType, LambdaType, ClassType } from "../../Ast/AstTypes";
+import { VoidType, AnyType, LambdaType, ClassType, TypeHelper } from "../../Ast/AstTypes";
 import { Statement, ReturnStatement, ThrowStatement } from "../../Ast/Statements";
 import { ErrorManager } from "../../ErrorManager";
 import { NullLiteral, Expression } from "../../Ast/Expressions";
+import { IType } from "../../Ast/Interfaces";
 
 class ReturnTypeInferer {
     returnsNull = false;
     throws = false;
-    returnTypes: Type[] = [];
+    returnTypes: IType[] = [];
 
     constructor(public errorMan: ErrorManager) { }
 
@@ -22,12 +23,12 @@ class ReturnTypeInferer {
         if (returnType === null)
             throw new Error("Return type cannot be null");
 
-        if (!this.returnTypes.some(x => Type.equals(x, returnType)))
+        if (!this.returnTypes.some(x => TypeHelper.equals(x, returnType)))
             this.returnTypes.push(returnType);
     }
 
-    finish(declaredType: Type, errorContext: string, asyncType: ClassType): Type {
-        let inferredType: Type = null;
+    finish(declaredType: IType, errorContext: string, asyncType: ClassType): IType {
+        let inferredType: IType = null;
 
         if (this.returnTypes.length == 0) {
             if (this.throws)
@@ -42,7 +43,7 @@ class ReturnTypeInferer {
         } else if (this.returnTypes.length == 1) {
             inferredType = this.returnTypes[0];
         } else {
-            if (declaredType !== null && this.returnTypes.every((x, i) => Type.isAssignableTo(x, declaredType)))
+            if (declaredType !== null && this.returnTypes.every((x, i) => TypeHelper.isAssignableTo(x, declaredType)))
                 inferredType = declaredType;
             else {
                 this.errorMan.throw(`${errorContext} returns different types: ${this.returnTypes.map(x => x.repr()).join(", ")}`);
@@ -54,7 +55,7 @@ class ReturnTypeInferer {
         if (checkType !== null && asyncType !== null && checkType instanceof ClassType && checkType.decl === asyncType.decl)
             checkType = checkType.typeArguments[0];
 
-        if (checkType !== null && !Type.isAssignableTo(inferredType, checkType))
+        if (checkType !== null && !TypeHelper.isAssignableTo(inferredType, checkType))
             this.errorMan.throw(`${errorContext} returns different type (${inferredType.repr()}) than expected ${checkType.repr()}`);
 
         this.returnTypes = null;
@@ -73,7 +74,7 @@ export class InferReturnType extends InferTypesPlugin {
         this.returnTypeInfer.push(new ReturnTypeInferer(this.errorMan));
     }
 
-    finish(declaredType: Type, errorContext: string, asyncType: ClassType): Type {
+    finish(declaredType: IType, errorContext: string, asyncType: ClassType): IType {
         return this.returnTypeInfer.pop().finish(declaredType, errorContext, asyncType);
     }
 

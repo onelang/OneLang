@@ -1,9 +1,10 @@
 import { Expression, IMethodCallExpression } from "../../../Ast/Expressions";
-import { ClassType, Type, GenericsType, InterfaceType, LambdaType, EnumType, AnyType } from "../../../Ast/AstTypes";
+import { ClassType, GenericsType, InterfaceType, LambdaType, EnumType, AnyType, TypeHelper } from "../../../Ast/AstTypes";
 import { MethodParameter } from "../../../Ast/Types";
+import { IType } from "../../../Ast/Interfaces";
 
 export class GenericsResolver {
-    resolutionMap = new Map<string, Type>();
+    resolutionMap = new Map<string, IType>();
 
     static fromObject(object: Expression): GenericsResolver {
         const resolver = new GenericsResolver();
@@ -11,9 +12,9 @@ export class GenericsResolver {
         return resolver;
     }
 
-    public addResolution(typeVarName: string, actualType: Type) {
+    public addResolution(typeVarName: string, actualType: IType) {
         const prevRes = this.resolutionMap.get(typeVarName) || null;
-        if (prevRes !== null && !Type.equals(prevRes, actualType))
+        if (prevRes !== null && !TypeHelper.equals(prevRes, actualType))
             throw new Error(`Resolving '${typeVarName}' is ambiguous, ${prevRes.repr()} <> ${actualType.repr()}`);
         this.resolutionMap.set(typeVarName, actualType);
     }
@@ -38,8 +39,8 @@ export class GenericsResolver {
             throw new Error(`Expected ClassType or InterfaceType, got ${actualType !== null ? actualType.repr() : "<null>"}`);
     }
 
-    public collectResolutionsFromActualType(genericType: Type, actualType: Type): boolean {
-        if (!Type.isGeneric(genericType)) return true;
+    public collectResolutionsFromActualType(genericType: IType, actualType: IType): boolean {
+        if (!TypeHelper.isGeneric(genericType)) return true;
         if (genericType instanceof GenericsType) {
             this.addResolution(genericType.typeVarName, actualType);
             return true;
@@ -65,7 +66,7 @@ export class GenericsResolver {
         return false;
     }
 
-    public resolveType(type: Type, mustResolveAllGenerics: boolean): Type {
+    public resolveType(type: IType, mustResolveAllGenerics: boolean): IType {
         if (type instanceof GenericsType) {
             const resolvedType = this.resolutionMap.get(type.typeVarName) || null;
             if (resolvedType === null && mustResolveAllGenerics)

@@ -1,5 +1,5 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
-import { ClassType, Type, InterfaceType, IInterfaceType, AnyType } from "../../Ast/AstTypes";
+import { ClassType, InterfaceType, IInterfaceType, AnyType } from "../../Ast/AstTypes";
 import { Statement, ForeachStatement } from "../../Ast/Statements";
 
 export class InferForeachVarType extends InferTypesPlugin {

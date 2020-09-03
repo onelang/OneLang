@@ -1,6 +1,6 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Expression, BinaryExpression, NullLiteral, NullCoalesceExpression, ArrayLiteral, MapLiteral } from "../../Ast/Expressions";
-import { Type, ClassType } from "../../Ast/AstTypes";
+import { ClassType, TypeHelper } from "../../Ast/AstTypes";
 
 export class TypeScriptNullCoalesce extends InferTypesPlugin {
     constructor() { super("TypeScriptNullCoalesce"); }
@@ -33,7 +33,7 @@ export class TypeScriptNullCoalesce extends InferTypesPlugin {
 
             if (expr.right instanceof NullLiteral) { // something-which-can-be-undefined || null
                 return expr.left;
-            } else if (Type.isAssignableTo(rightType, leftType) && !Type.equals(rightType, this.main.currentFile.literalTypes.boolean)) {
+            } else if (TypeHelper.isAssignableTo(rightType, leftType) && !TypeHelper.equals(rightType, this.main.currentFile.literalTypes.boolean)) {
                 return new NullCoalesceExpression(expr.left, expr.right);
             }
         }

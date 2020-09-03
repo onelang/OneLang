@@ -1,7 +1,8 @@
 import { AstTransformer } from "../AstTransformer";
-import { Type, UnresolvedType, ClassType, InterfaceType, EnumType } from "../Ast/AstTypes";
+import { UnresolvedType, ClassType, InterfaceType, EnumType } from "../Ast/AstTypes";
 import { Class, Interface, Enum } from "../Ast/Types";
 import { Expression, UnresolvedNewExpression, NewExpression } from "../Ast/Expressions";
+import { IType } from "../Ast/Interfaces";
 
 /**
  * Replaces UnresolvedType to either ClassType, InterfaceType or EnumType.
@@ -10,7 +11,7 @@ import { Expression, UnresolvedNewExpression, NewExpression } from "../Ast/Expre
 export class ResolveUnresolvedTypes extends AstTransformer {
     constructor() { super("ResolveUnresolvedTypes"); }
 
-    protected visitType(type: Type): Type {
+    protected visitType(type: IType): IType {
         super.visitType(type);
         if (type instanceof UnresolvedType) {
             const symbol = this.currentFile.availableSymbols.get(type.typeName) || null;

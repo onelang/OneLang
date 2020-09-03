@@ -1,7 +1,8 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Expression, ElementAccessExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, StringLiteral, PropertyAccessExpression, BinaryExpression } from "../../Ast/Expressions";
-import { Type } from "../../Ast/AstTypes";
 import { ResolveMethodCalls } from "./ResolveMethodCalls";
+import { IType } from "../../Ast/Interfaces";
+import { TypeHelper } from "../../Ast/AstTypes";
 
 // converts `someObj[var]` -> `someObj.get(var)`
 // converts `someObj["field-name"]` -> `someObj."field-name"`
@@ -12,8 +13,8 @@ export class ResolveElementAccess extends InferTypesPlugin {
         const isSet = expr instanceof BinaryExpression && expr.left instanceof ElementAccessExpression && expr.operator === "=";
         return expr instanceof ElementAccessExpression || isSet; }
 
-    isMapOrArrayType(type: Type) {
-        return Type.isAssignableTo(type, this.main.currentFile.literalTypes.map) || this.main.currentFile.arrayTypes.some(x => Type.isAssignableTo(type, x));
+    isMapOrArrayType(type: IType) {
+        return TypeHelper.isAssignableTo(type, this.main.currentFile.literalTypes.map) || this.main.currentFile.arrayTypes.some(x => TypeHelper.isAssignableTo(type, x));
     }
 
     transform(expr: Expression): Expression {

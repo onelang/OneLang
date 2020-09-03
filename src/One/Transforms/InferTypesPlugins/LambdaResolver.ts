@@ -1,7 +1,7 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Expression } from "../../Ast/Expressions";
 import { Lambda } from "../../Ast/Types";
-import { LambdaType, Type } from "../../Ast/AstTypes";
+import { LambdaType, TypeHelper } from "../../Ast/AstTypes";
 import { ReturnStatement, Statement } from "../../Ast/Statements";
 
 export class LambdaResolver extends InferTypesPlugin {
@@ -18,7 +18,7 @@ export class LambdaResolver extends InferTypesPlugin {
                 for (let i = 0; i < declParams.length; i++) {
                     if (lambda.parameters[i].type === null)
                         lambda.parameters[i].type = declParams[i].type;
-                    else if (!Type.isAssignableTo(lambda.parameters[i].type, declParams[i].type))
+                    else if (!TypeHelper.isAssignableTo(lambda.parameters[i].type, declParams[i].type))
                         this.errorMan.throw(`Parameter type ${lambda.parameters[i].type.repr()} cannot be assigned to ${declParams[i].type.repr()}.`);
                 }
             }

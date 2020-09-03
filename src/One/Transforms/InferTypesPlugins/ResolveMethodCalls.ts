@@ -1,8 +1,8 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Expression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, StaticMethodCallExpression, IMethodCallExpression } from "../../Ast/Expressions";
-import { ClassType, Type, IInterfaceType, InterfaceType, AnyType } from "../../Ast/AstTypes";
+import { ClassType, InterfaceType, AnyType, TypeHelper } from "../../Ast/AstTypes";
 import { GenericsResolver } from "./Helpers/GenericsResolver";
-import { ClassReference, ThisReference, SuperReference, StaticThisReference } from "../../Ast/References";
+import { ClassReference, StaticThisReference } from "../../Ast/References";
 import { Class, IInterface, Method } from "../../Ast/Types";
 
 export class ResolveMethodCalls extends InferTypesPlugin {
@@ -51,7 +51,7 @@ export class ResolveMethodCalls extends InferTypesPlugin {
             return;
         }
 
-        expr.setActualType(genericsResolver.resolveType(expr.method.returns, true), true, expr instanceof InstanceMethodCallExpression && Type.isGeneric(expr.object.getType()));
+        expr.setActualType(genericsResolver.resolveType(expr.method.returns, true), true, expr instanceof InstanceMethodCallExpression && TypeHelper.isGeneric(expr.object.getType()));
     }
     
     protected transformMethodCall(expr: UnresolvedMethodCallExpression): Expression {

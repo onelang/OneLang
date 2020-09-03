@@ -1,12 +1,12 @@
 import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression, StaticMethodCallExpression, LambdaCallExpression, IMethodCallExpression } from "../One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, TryStatement, Block } from "../One/Ast/Statements";
 import { Class, SourceFile, IVariable, Lambda, Interface, IInterface, MethodParameter, IVariableWithInitializer, Visibility, Package, IHasAttributesAndTrivia } from "../One/Ast/Types";
-import { Type, VoidType, ClassType, InterfaceType, EnumType, AnyType, LambdaType, NullType, GenericsType } from "../One/Ast/AstTypes";
+import { VoidType, ClassType, InterfaceType, EnumType, AnyType, LambdaType, NullType, GenericsType } from "../One/Ast/AstTypes";
 import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference, StaticThisReference, VariableReference } from "../One/Ast/References";
 import { GeneratedFile } from "./GeneratedFile";
 import { NameUtils } from "./NameUtils";
 import { IGenerator } from "./IGenerator";
-import { IExpression } from "../One/Ast/Interfaces";
+import { IExpression, IType } from "../One/Ast/Interfaces";
 
 export class CsharpGenerator implements IGenerator {
     usings: Set<string>;
@@ -50,9 +50,9 @@ export class CsharpGenerator implements IGenerator {
     }
 
     typeArgs(args: string[]): string { return args !== null && args.length > 0 ? `<${args.join(", ")}>` : ""; }
-    typeArgs2(args: Type[]): string { return this.typeArgs(args.map(x => this.type(x))); }
+    typeArgs2(args: IType[]): string { return this.typeArgs(args.map(x => this.type(x))); }
 
-    type(t: Type, mutates = true): string {
+    type(t: IType, mutates = true): string {
         if (t instanceof ClassType) {
             const typeArgs = this.typeArgs(t.typeArguments.map(x => this.type(x)));
             if (t.decl.name === "TsString")
@@ -105,7 +105,7 @@ export class CsharpGenerator implements IGenerator {
         }
     }
 
-    isTsArray(type: Type) { return type instanceof ClassType && type.decl.name == "TsArray"; }
+    isTsArray(type: IType) { return type instanceof ClassType && type.decl.name == "TsArray"; }
 
     vis(v: Visibility) {
         return v === Visibility.Private ? "private" :
@@ -135,7 +135,7 @@ export class CsharpGenerator implements IGenerator {
         return this.varWoInit(v, attrs) + (v.initializer !== null ? ` = ${this.expr(v.initializer)}` : "");
     }
 
-    exprCall(typeArgs: Type[], args: Expression[]) {
+    exprCall(typeArgs: IType[], args: Expression[]) {
         return this.typeArgs2(typeArgs) + `(${args.map(x => this.expr(x)).join(", ")})`;
     }
 
@@ -183,7 +183,7 @@ export class CsharpGenerator implements IGenerator {
         return this.name_(expr.method.name) + this.typeArgs2(expr.typeArgs) + this.callParams(expr.args, expr.method.parameters);
     }
 
-    inferExprNameForType(type: Type): string {
+    inferExprNameForType(type: IType): string {
         if (type instanceof ClassType && type.typeArguments.every((x,_) => x instanceof ClassType)) {
             const fullName = type.typeArguments.map(x => (<ClassType>x).decl.name).join('') + type.decl.name;
             return NameUtils.shortName(fullName);
@@ -499,7 +499,7 @@ export class CsharpGenerator implements IGenerator {
 
         const classes: string[] = [];
         for (const cls of sourceFile.classes) {
-            const baseClasses: Type[] = [];
+            const baseClasses: IType[] = [];
             if (cls.baseClass !== null)
                 baseClasses.push(cls.baseClass);
             for (const intf of cls.baseInterfaces)

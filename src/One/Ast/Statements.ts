@@ -1,7 +1,7 @@
 import { IVariableWithInitializer, IVariable, IHasAttributesAndTrivia, IAstNode, MutabilityInfo } from "./Types";
 import { Expression } from "./Expressions";
-import { Type } from "./AstTypes";
 import { ForVariableReference, ForeachVariableReference, VariableDeclarationReference, IReferencable, Reference, CatchVariableReference } from "./References";
+import { IType } from "./Interfaces";
 
 export class Statement implements IHasAttributesAndTrivia, IAstNode {
     leadingTrivia: string = null;
@@ -40,7 +40,7 @@ export class UnsetStatement extends Statement {
 export class VariableDeclaration extends Statement implements IVariableWithInitializer, IReferencable {
     constructor(
         public name: string,
-        public type: Type,
+        public type: IType,
         public initializer: Expression) { super(); }
 
     /** @creator ResolveIdentifiers */
@@ -65,7 +65,7 @@ export class DoStatement extends Statement {
 
 export class ForeachVariable implements IVariable, IReferencable {
     constructor(public name: string) { }
-    type: Type = null;
+    type: IType = null;
 
     /** @creator ResolveIdentifiers */
     references: ForeachVariableReference[] = [];
@@ -85,7 +85,7 @@ export class ForeachStatement extends Statement {
 export class ForVariable implements IVariableWithInitializer, IReferencable {
     constructor(
         public name: string,
-        public type: Type,
+        public type: IType,
         public initializer: Expression) { }
 
     /** @creator ResolveIdentifiers */
@@ -107,7 +107,7 @@ export class ForStatement extends Statement {
 export class CatchVariable implements IVariable, IReferencable {
     constructor(
         public name: string,
-        public type: Type) { }
+        public type: IType) { }
 
     /** @creator ResolveIdentifiers */
     references: CatchVariableReference[] = [];

@@ -1,7 +1,7 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Expression, CastExpression, ParenthesizedExpression, BooleanLiteral, NumericLiteral, StringLiteral, TemplateString, RegexLiteral, InstanceOfExpression, NullLiteral, UnaryExpression, BinaryExpression, ConditionalExpression, NewExpression, NullCoalesceExpression, LambdaCallExpression, AwaitExpression } from "../../Ast/Expressions";
 import { ThisReference, MethodParameterReference, VariableDeclarationReference, ForeachVariableReference, ForVariableReference, SuperReference, CatchVariableReference } from "../../Ast/References";
-import { ClassType, InterfaceType, Type, AnyType, EnumType, NullType } from "../../Ast/AstTypes";
+import { ClassType, AnyType, EnumType, NullType, TypeHelper } from "../../Ast/AstTypes";
 
 export class BasicTypeInfer extends InferTypesPlugin {
     constructor() { super("BasicTypeInfer"); }
@@ -69,7 +69,7 @@ export class BasicTypeInfer extends InferTypesPlugin {
             const rightType = expr.right.getType();
             const isEqOrNeq = expr.operator === "==" || expr.operator === "!=";
             if (expr.operator === "=") {
-                if (Type.isAssignableTo(rightType, leftType))
+                if (TypeHelper.isAssignableTo(rightType, leftType))
                     expr.setActualType(leftType, false, true);
                 else
                     throw new Error(`Right-side expression (${rightType.repr()}) is not assignable to left-side (${leftType.repr()}).`);
@@ -106,15 +106,15 @@ export class BasicTypeInfer extends InferTypesPlugin {
             const trueType = expr.whenTrue.getType();
             const falseType = expr.whenFalse.getType();
             if (expr.expectedType !== null) {
-                if (!Type.isAssignableTo(trueType, expr.expectedType))
+                if (!TypeHelper.isAssignableTo(trueType, expr.expectedType))
                     throw new Error(`Conditional expression expects ${expr.expectedType.repr()} but got ${trueType.repr()} as true branch`);
-                if (!Type.isAssignableTo(falseType, expr.expectedType))
+                if (!TypeHelper.isAssignableTo(falseType, expr.expectedType))
                     throw new Error(`Conditional expression expects ${expr.expectedType.repr()} but got ${falseType.repr()} as false branch`);
                 expr.setActualType(expr.expectedType);
             } else {
-                if (Type.isAssignableTo(trueType, falseType))
+                if (TypeHelper.isAssignableTo(trueType, falseType))
                     expr.setActualType(falseType);
-                else if (Type.isAssignableTo(falseType, trueType))
+                else if (TypeHelper.isAssignableTo(falseType, trueType))
                     expr.setActualType(trueType);
                 else
                     throw new Error(`Different types in the whenTrue (${trueType.repr()}) and whenFalse (${falseType.repr()}) expressions of a conditional expression`);
@@ -122,7 +122,7 @@ export class BasicTypeInfer extends InferTypesPlugin {
         } else if (expr instanceof NullCoalesceExpression) {
             const defaultType = expr.defaultExpr.getType();
             const ifNullType = expr.exprIfNull.getType();
-            if (!Type.isAssignableTo(ifNullType, defaultType))
+            if (!TypeHelper.isAssignableTo(ifNullType, defaultType))
                 this.errorMan.throw(`Null-coalescing operator tried to assign incompatible type "${ifNullType.repr()}" to "${defaultType.repr()}"`);
             else 
                 expr.setActualType(defaultType);

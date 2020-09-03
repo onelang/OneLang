@@ -1,8 +1,9 @@
 import { Reader } from "./Reader";
 import { NodeManager } from "./NodeManager";
-import { UnresolvedType, Type } from "../../One/Ast/AstTypes";
+import { UnresolvedType } from "../../One/Ast/AstTypes";
 import { Expression, MapLiteral, ArrayLiteral, UnaryType, Identifier, NumericLiteral, StringLiteral, UnresolvedCallExpression, CastExpression, BinaryExpression, UnaryExpression, ParenthesizedExpression, ConditionalExpression, ElementAccessExpression, PropertyAccessExpression, MapLiteralItem } from "../../One/Ast/Expressions";
 import { ArrayHelper } from "../../Utils/ArrayHelper";
+import { IType } from "../../One/Ast/Interfaces";
 
 class Operator {
     constructor(public text: string, public precedence: number, public isBinary: boolean, public isRightAssoc: boolean, public isPostfix: boolean) { }
@@ -58,8 +59,8 @@ export class ExpressionParser {
     operators: string[];
     prefixPrecedence: number;
 
-    stringLiteralType: Type = null;
-    numericLiteralType: Type = null;
+    stringLiteralType: IType = null;
+    numericLiteralType: IType = null;
 
     constructor(public reader: Reader, public hooks: IExpressionParserHooks = null, public nodeManager: NodeManager = null, public config: ExpressionParserConfig = null) {
         if (this.config === null)

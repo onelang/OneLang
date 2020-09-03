@@ -3,6 +3,11 @@ import { ITransformer } from "../ITransform";
 
 export class CollectInheritanceInfo implements ITransformer {
     name = "CollectInheritanceInfo";
+
+    constructor() {
+        // C# fix
+        this.name = "CollectInheritanceInfo";
+    }
     
     visitClass(cls: Class) {
         const allBaseIIntfs = cls.getAllBaseInterfaces();

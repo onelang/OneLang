@@ -1,6 +1,7 @@
 import { AstTransformer } from "../AstTransformer";
-import { Type, UnresolvedType, GenericsType } from "../Ast/AstTypes";
+import { UnresolvedType, GenericsType } from "../Ast/AstTypes";
 import { Class, Method } from "../Ast/Types";
+import { IType } from "../Ast/Interfaces";
 
 /**
  * After parsing an input source code file, it is not known that a "T" is 
@@ -14,7 +15,7 @@ import { Class, Method } from "../Ast/Types";
 export class ResolveGenericTypeIdentifiers extends AstTransformer {
     constructor() { super("ResolveGenericTypeIdentifiers"); }
 
-    protected visitType(type: Type): Type {
+    protected visitType(type: IType): IType {
         super.visitType(type);
 
         //console.log(type && type.constructor.name, JSON.stringify(type));
