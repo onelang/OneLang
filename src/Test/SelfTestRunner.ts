@@ -26,7 +26,7 @@ class CompilerHooks implements ICompilerHooks {
 export class SelfTestRunner {
     constructor(public baseDir: string) { }
 
-    public async runTest(generator: IGenerator): Promise<void> {
+    public async runTest(generator: IGenerator): Promise<boolean> {
         console.log("[-] SelfTestRunner :: START");
         const compiler = new Compiler();
         await compiler.init(`${this.baseDir}packages/`);
@@ -65,5 +65,6 @@ export class SelfTestRunner {
 
         console.log(allMatch ? "[+} SUCCESS! All generated files are the same" : "[!] FAIL! Not all files are the same");
         console.log("[-] SelfTestRunner :: DONE");
+        return allMatch;
     }
 }
