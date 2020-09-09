@@ -4,29 +4,36 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: '[Env] Checkout source repository (recursively)'
+      uses: actions/checkout@v2
       with:
         submodules: recursive
-    - name: Use Node.js
+    - name: '[Env] Setup Node.js (12.x)'
       uses: actions/setup-node@v1
       with:
         node-version: '12.x'
-    - uses: actions/cache@v2
+    - name: '[Env] Cache npm modules'
+      uses: actions/cache@v2
       with:
         path: ~/.npm
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-node-
-    - run: npm install
-    - run: npx tsc -b . test build
-    - run: npx ./test/lib/ProjectTest.js
-    - run: npx ./test/lib/SelfTest.js
-    - name: Set up Python 3.7
+    - name: '[Build] Install OneLang npm dependencies'
+      run: npm install
+    - name: '[Build] Build OneLang TypeScript project'
+      run: npx tsc -b . test build
+    - name: '[Build] Compile OneLang TS into C# & Python'
+      run: npx ./test/lib/ProjectTest.js
+    - name: '[Test] Run SelfTest - TypeScript'
+      run: npx ./test/lib/SelfTest.js
+    - name: '[Env] Setup Python (3.7)'
       uses: actions/setup-python@v2
       with:
         python-version: 3.7
-    - name: Install Python dependencies
+    - name: '[Env] Install Python dependencies'
       run: pip install -r requirements.txt
       working-directory: ./test/artifacts/ProjectTest/OneLang/Python
-    - run: python main.py
+    - name: '[Test] Run SelfTest - Python'
+      run: python main.py
       working-directory: ./test/artifacts/ProjectTest/OneLang/Python
