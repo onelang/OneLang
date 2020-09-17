@@ -133,7 +133,7 @@ export class JsToPython implements IGeneratorPlugin {
 
         const methodName = `${cls.name}.${method.name}`;
         if (!this.unhandledMethods.has(methodName)) {
-            console.error(`Method was not handled: ${cls.name}.${method.name}`);
+            console.error(`[JsToPython] Method was not handled: ${cls.name}.${method.name}`);
             this.unhandledMethods.add(methodName);
         }
         //debugger;
