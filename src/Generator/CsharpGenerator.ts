@@ -474,7 +474,7 @@ export class CsharpGenerator implements IGenerator {
                 `${this.type(method.returns, false)} ` +
                 this.name_(method.name) + this.typeArgs(method.typeArguments) + 
                 `(${method.parameters.map(p => this.var(p, null)).join(", ")})` +
-                (method.body !== null ? ` {\n${this.pad(this.stmts(method.body.statements))}\n}` : ";"));
+                (method.body !== null ? `\n{\n${this.pad(this.stmts(method.body.statements))}\n}` : ";"));
         }
         resList.push(methods.join("\n\n"));
         return this.pad(resList.filter(x => x !== "").join("\n\n"));
