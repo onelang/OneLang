@@ -6,6 +6,7 @@ require("module").Module._initPaths();
 import { readFile, glob, readDir, baseDir, writeFile, exists } from "./TestUtils";
 import { CsharpGenerator } from "@one/Generator/CsharpGenerator";
 import { PythonGenerator } from "@one/Generator/PythonGenerator";
+import { PhpGenerator } from "@one/Generator/PhpGenerator";
 import { Compiler } from "@one/One/Compiler";
 import { PackageStateCapture } from "@one/Test/PackageStateCapture";
 import * as color from "ansi-colors";
@@ -63,13 +64,16 @@ compiler.init(`${baseDir}/packages`).then(() => {
         writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
         //printState();
 
-        const genCsharp = new CsharpGenerator().generate(compiler.projectPkg);
-        for (const file of genCsharp)
-            writeFile(`test/artifacts/ProjectTest/${test.projName}/CSharp/${file.path.replace(".ts", ".cs")}`, file.content);
+        for (const generator of [new CsharpGenerator(), new PythonGenerator(), new PhpGenerator()]) {
+            const langName = generator.getLangName();
+            const ext = generator.getExtension();
+            
+            console.log(`Generating ${langName} code...`);
+            const files = generator.generate(compiler.projectPkg);
+            for (const file of files)
+                writeFile(`test/artifacts/ProjectTest/${test.projName}/${langName}/${file.path.replace(".ts", `.${ext}`)}`, file.content);
+        }
 
-        const genPython = new PythonGenerator().generate(compiler.projectPkg);
-        for (const file of genPython)
-            writeFile(`test/artifacts/ProjectTest/${test.projName}/Python/${file.path.replace(".ts", ".py")}`, file.content);
         console.log("DONE.");
         // return;
         // debugger;

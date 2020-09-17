@@ -9,8 +9,9 @@ import { IGeneratorPlugin } from "./IGeneratorPlugin";
 import { JsToPython } from "./PythonPlugins/JsToPython";
 import { NameUtils } from "./NameUtils";
 import { IExpression, IType } from "../One/Ast/Interfaces";
+import { IGenerator } from "./IGenerator";
 
-export class PythonGenerator {
+export class PythonGenerator implements IGenerator {
     tmplStrLevel = 0;
     package: Package;
     currentFile: SourceFile;
@@ -24,6 +25,9 @@ export class PythonGenerator {
     constructor() {
         this.plugins.push(new JsToPython(this));
     }
+
+    getLangName(): string { return "Python"; }
+    getExtension(): string { return "py"; }
 
     type(type: IType) {
         if (type instanceof ClassType) {
