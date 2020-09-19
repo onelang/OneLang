@@ -44,6 +44,11 @@ export class FillParent extends AstTransformer {
         super.visitClass(cls);
     }
 
+    protected visitGlobalFunction(func: GlobalFunction) {
+        func.parentFile = this.currentFile;
+        super.visitGlobalFunction(func);
+    }
+
     protected visitField(field: Field) {
         field.parentInterface = this.currentInterface;
 

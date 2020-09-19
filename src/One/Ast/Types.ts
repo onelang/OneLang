@@ -195,7 +195,7 @@ export class Import implements IHasAttributesAndTrivia, ISourceFileMember {
     attributes: { [name: string]: string } = null;
 }
 
-export class Enum implements IHasAttributesAndTrivia, IImportable, ISourceFileMember, IReferencable {
+export class Enum implements IHasAttributesAndTrivia, IResolvedImportable, ISourceFileMember, IReferencable {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -241,12 +241,17 @@ export interface IImportable {
     isExported: boolean;
 }
 
+export interface IResolvedImportable extends IImportable {
+    /** @creator FillParent */
+    parentFile: SourceFile;
+}
+
 export class UnresolvedImport implements IImportable {
     constructor(public name: string) { }
     isExported = true;
 }
 
-export class Interface implements IHasAttributesAndTrivia, IInterface, IImportable, ISourceFileMember {
+export class Interface implements IHasAttributesAndTrivia, IInterface, IResolvedImportable, ISourceFileMember {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -272,7 +277,7 @@ export class Interface implements IHasAttributesAndTrivia, IInterface, IImportab
     }
 }
 
-export class Class implements IHasAttributesAndTrivia, IInterface, IImportable, ISourceFileMember, IReferencable {
+export class Class implements IHasAttributesAndTrivia, IInterface, IResolvedImportable, ISourceFileMember, IReferencable {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -433,7 +438,7 @@ export class Method implements IMethodBaseWithTrivia, IHasAttributesAndTrivia, I
     throws: boolean;
 }
 
-export class GlobalFunction implements IMethodBaseWithTrivia, IImportable, IHasAttributesAndTrivia, IReferencable, IMethodBase {
+export class GlobalFunction implements IMethodBaseWithTrivia, IResolvedImportable, IHasAttributesAndTrivia, IReferencable, IMethodBase {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -443,6 +448,9 @@ export class GlobalFunction implements IMethodBaseWithTrivia, IImportable, IHasA
         public isExported: boolean,
         public leadingTrivia: string) { }
     
+    /** @creator FillParent */
+    parentFile: SourceFile = null;
+
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string } = null;
 
