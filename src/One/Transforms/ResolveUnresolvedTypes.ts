@@ -1,5 +1,5 @@
 import { AstTransformer } from "../AstTransformer";
-import { UnresolvedType, ClassType, InterfaceType, EnumType } from "../Ast/AstTypes";
+import { UnresolvedType, ClassType, InterfaceType, EnumType, GenericsType } from "../Ast/AstTypes";
 import { Class, Interface, Enum } from "../Ast/Types";
 import { Expression, UnresolvedNewExpression, NewExpression } from "../Ast/Expressions";
 import { IType } from "../Ast/Interfaces";
@@ -14,6 +14,9 @@ export class ResolveUnresolvedTypes extends AstTransformer {
     protected visitType(type: IType): IType {
         super.visitType(type);
         if (type instanceof UnresolvedType) {
+            if (this.currentInterface !== null && this.currentInterface.typeArguments.includes(type.typeName))
+                return new GenericsType(type.typeName);
+
             const symbol = this.currentFile.availableSymbols.get(type.typeName) || null;
             if (symbol === null) {
                 this.errorMan.throw(`Unresolved type '${type.typeName}' was not found in available symbols`);
