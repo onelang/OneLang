@@ -300,7 +300,9 @@ export class PhpGenerator implements IGenerator {
             res = `new \\OneLang\\RegExp(${JSON.stringify(expr.pattern)})`;
         } else if (expr instanceof Lambda) {
             const params = expr.parameters.map(x => `$${this.name_(x.name)}`);
-            res = `function (${params.join(", ")}) { ${this.rawBlock(expr.body)} }`;
+            // TODO: captures should not be null
+            const uses = expr.captures !== null && expr.captures.length > 0 ? ` use (${expr.captures.map(x => `$${x.name}`).join(", ")})` : "";
+            res = `function (${params.join(", ")})${uses} { ${this.rawBlock(expr.body)} }`;
         } else if (expr instanceof UnaryExpression && expr.unaryType === UnaryType.Prefix) {
             res = `${expr.operator}${this.expr(expr.operand)}`;
         } else if (expr instanceof UnaryExpression && expr.unaryType === UnaryType.Postfix) {

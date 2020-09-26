@@ -116,7 +116,9 @@ export class TSOverviewGenerator {
         } else if (expr instanceof RegexLiteral) {
             res = `/${expr.pattern}/${expr.global ? "g" : ""}${expr.caseInsensitive ? "g" : ""}`;
         } else if (expr instanceof Lambda) {
-            res = `(${expr.parameters.map(x => x.name + (x.type !== null ? ": " + this.type(x.type) : "")).join(", ")}) => { ${this.rawBlock(expr.body)} }`;
+            res = `(${expr.parameters.map(x => x.name + (x.type !== null ? ": " + this.type(x.type) : "")).join(", ")})` +
+                (expr.captures !== null && expr.captures.length > 0 ? ` @captures(${expr.captures.map(x => x.name).join(", ")})` : "") +
+                ` => { ${this.rawBlock(expr.body)} }`;
         } else if (expr instanceof UnaryExpression && expr.unaryType === UnaryType.Prefix) {
             res = `${expr.operator}${this.expr(expr.operand)}`;
         } else if (expr instanceof UnaryExpression && expr.unaryType === UnaryType.Postfix) {

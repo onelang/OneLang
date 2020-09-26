@@ -16,6 +16,7 @@ import { CollectInheritanceInfo } from "./Transforms/CollectInheritanceInfo";
 import { FillMutabilityInfo } from "./Transforms/FillMutabilityInfo";
 import { AstTransformer } from "./AstTransformer";
 import { ITransformer } from "./ITransform";
+import { LambdaCaptureCollector } from "./Transforms/LambdaCaptureCollector";
 
 export interface ICompilerHooks {
     afterStage(stageName: string): void;
@@ -117,6 +118,7 @@ export class Compiler {
         transforms.push(new InferTypes());
         transforms.push(new CollectInheritanceInfo());
         transforms.push(new FillMutabilityInfo());
+        transforms.push(new LambdaCaptureCollector());
         for (const trans of transforms) {
             trans.visitPackage(this.projectPkg);
             if (this.hooks !== null) this.hooks.afterStage(trans.name);

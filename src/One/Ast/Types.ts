@@ -1,6 +1,6 @@
 import { ClassType, GenericsType, EnumType, InterfaceType } from "./AstTypes";
 import { Expression } from "./Expressions";
-import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, StaticFieldReference, EnumMemberReference, InstanceFieldReference, StaticPropertyReference, InstancePropertyReference, IReferencable, Reference, GlobalFunctionReference, StaticThisReference } from "./References";
+import { ClassReference, EnumReference, ThisReference, MethodParameterReference, SuperReference, StaticFieldReference, EnumMemberReference, InstanceFieldReference, StaticPropertyReference, InstancePropertyReference, IReferencable, Reference, GlobalFunctionReference, StaticThisReference, VariableReference } from "./References";
 import { AstHelper } from "./AstHelper";
 import { Block } from "./Statements";
 import { IType } from "./Interfaces";
@@ -468,4 +468,7 @@ export class Lambda extends Expression implements IMethodBase {
 
     returns: IType = null;
     throws: boolean;
+
+    /** @creator LambdaCaptureCollector */
+    captures: IVariable[] = null;
 }
