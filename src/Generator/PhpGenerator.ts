@@ -7,13 +7,20 @@ import { GeneratedFile } from "./GeneratedFile";
 import { NameUtils } from "./NameUtils";
 import { IGenerator } from "./IGenerator";
 import { IExpression, IType } from "../One/Ast/Interfaces";
+import { IGeneratorPlugin } from "./IGeneratorPlugin";
+import { JsToPhp } from "./PhpPlugins/JsToPhp";
 
 export class PhpGenerator implements IGenerator {
     usings: Set<string>;
     currentClass: IInterface;
     reservedWords: string[] = ["Generator", "Array", "List", "Interface", "Class"];
     fieldToMethodHack = ["length"];
+    plugins: IGeneratorPlugin[] = [];
 
+    constructor() {
+        this.plugins.push(new JsToPhp(this));
+    }
+    
     getLangName(): string { return "PHP"; }
     getExtension(): string { return "php"; }
 
@@ -74,7 +81,11 @@ export class PhpGenerator implements IGenerator {
             } else if (t.decl.name === "TsMap") {
                 return `Dictionary`;
             }
-            return this.name_(t.decl.name);
+            
+            if (t.decl.parentFile.exportScope === null)
+                return `\\OneLang\\${this.name_(t.decl.name)}`;
+            else
+                return this.name_(t.decl.name);
         } else if (t instanceof InterfaceType)
             return `${this.name_(t.decl.name)}${this.typeArgs(t.typeArguments.map(x => this.type(x)))}`;
         else if (t instanceof VoidType)
@@ -135,23 +146,23 @@ export class PhpGenerator implements IGenerator {
     }
 
     mutateArg(arg: Expression, shouldBeMutable: boolean) {
-        if (this.isTsArray(arg.actualType)) {
-            if (arg instanceof ArrayLiteral && !shouldBeMutable) {
-                return `Array(${arg.items.map(x => this.expr(x)).join(', ')})`;
-            }
+        // if (this.isTsArray(arg.actualType)) {
+        //     if (arg instanceof ArrayLiteral && !shouldBeMutable) {
+        //         return `Array(${arg.items.map(x => this.expr(x)).join(', ')})`;
+        //     }
 
-            let currentlyMutable = shouldBeMutable;
-            if (arg instanceof VariableReference)
-                currentlyMutable = arg.getVariable().mutability.mutated;
-            else if (arg instanceof InstanceMethodCallExpression || arg instanceof StaticMethodCallExpression)
-                currentlyMutable = false;
+        //     let currentlyMutable = shouldBeMutable;
+        //     if (arg instanceof VariableReference)
+        //         currentlyMutable = arg.getVariable().mutability.mutated;
+        //     else if (arg instanceof InstanceMethodCallExpression || arg instanceof StaticMethodCallExpression)
+        //         currentlyMutable = false;
             
-            if (currentlyMutable && !shouldBeMutable)
-                return `${this.expr(arg)}.ToArray()`;
-            else if (!currentlyMutable && shouldBeMutable) {
-                return `${this.expr(arg)}.ToList()`;
-            }
-        }
+        //     if (currentlyMutable && !shouldBeMutable)
+        //         return `${this.expr(arg)}.ToArray()`;
+        //     else if (!currentlyMutable && shouldBeMutable) {
+        //         return `${this.expr(arg)}.ToList()`;
+        //     }
+        // }
         return this.expr(arg);
     }
 
@@ -184,6 +195,12 @@ export class PhpGenerator implements IGenerator {
     }
 
     expr(expr: IExpression): string {
+        for (const plugin of this.plugins) {
+            const result = plugin.expr(expr);
+            if (result !== null)
+                return result;
+        }
+
         let res = "UNKNOWN-EXPR";
         if (expr instanceof NewExpression) {
             res = `new ${this.type(expr.cls)}${this.callParams(expr.args, expr.cls.decl.constructor_ !== null ? expr.cls.decl.constructor_.parameters : [])}`;
@@ -200,10 +217,14 @@ export class PhpGenerator implements IGenerator {
         } else if (expr instanceof InstanceMethodCallExpression) {
             if (expr.object instanceof SuperReference)
                 res = `parent::${this.methodCall(expr)}`;
-            else
+            else if (expr.object instanceof NewExpression) {
+                res = `(${this.expr(expr.object)})->${this.methodCall(expr)}`;
+            } else
                 res = `${this.expr(expr.object)}->${this.methodCall(expr)}`;
         } else if (expr instanceof StaticMethodCallExpression) {
             res = `${this.name_(expr.method.parentInterface.name)}::${this.methodCall(expr)}`;
+            if (expr.method.parentInterface.parentFile.exportScope === null)
+                res = `\\OneLang\\${res}`;
         } else if (expr instanceof GlobalFunctionCallExpression) {
             res = `Global.${this.name_(expr.func.name)}${this.exprCall([], expr.args)}`;
         } else if (expr instanceof LambdaCallExpression) {
@@ -211,7 +232,7 @@ export class PhpGenerator implements IGenerator {
         } else if (expr instanceof BooleanLiteral) {
             res = `${expr.boolValue ? "true" : "false"}`;
         } else if (expr instanceof StringLiteral) { 
-            res = `${JSON.stringify(expr.stringValue)}`;
+            res = `${JSON.stringify(expr.stringValue).replace(/\$/, "\\$")}`;
         } else if (expr instanceof NumericLiteral) { 
             res = `${expr.valueAsText}`;
         } else if (expr instanceof CharacterLiteral) { 
@@ -221,7 +242,6 @@ export class PhpGenerator implements IGenerator {
         } else if (expr instanceof TemplateString) {
             const parts: string[] = [];
             for (const part of expr.parts) {
-                // parts.push(part.literalText.replace(new RegExp("\\n"), $"\\n").replace(new RegExp("\\r"), $"\\r").replace(new RegExp("\\t"), $"\\t").replace(new RegExp("{"), "{{").replace(new RegExp("}"), "}}").replace(new RegExp("\""), $"\\\""));
                 if (part.isLiteral) {
                     let lit = "";
                     for (let i = 0; i < part.literalText.length; i++) {
@@ -231,8 +251,6 @@ export class PhpGenerator implements IGenerator {
                         else if (chr === '\t') lit += "\\t";
                         else if (chr === '\\') lit += "\\\\";
                         else if (chr === '"')  lit += '\\"';
-                        else if (chr === '{')  lit += "{{";
-                        else if (chr === '}')  lit += "}}";
                         else {
                             const chrCode = chr.charCodeAt(0);
                             if (32 <= chrCode && chrCode <= 126)
@@ -241,31 +259,45 @@ export class PhpGenerator implements IGenerator {
                                 throw new Error(`invalid char in template string (code=${chrCode})`);
                         }
                     }
-                    parts.push(lit);
+                    parts.push(`"${lit}"`);
                 }
                 else {
                     const repr = this.expr(part.expression);
-                    parts.push(part.expression instanceof ConditionalExpression ? `{(${repr})}` : `{${repr}}`);
+                    parts.push(part.expression instanceof ConditionalExpression ? `(${repr})` : repr);
                 }
             }
-            res = `"${parts.join('')}"`;
+            res = parts.join(' . ');
         } else if (expr instanceof BinaryExpression) {
-            res = `${this.expr(expr.left)} ${expr.operator} ${this.mutatedExpr(expr.right, expr.operator === "=" ? expr.left : null)}`;
+            let op = expr.operator;
+            if (op === "==")
+                op = "===";
+            else if (op === "!=")
+                op = "!==";
+            
+            if (expr.left.actualType !== null && expr.left.actualType.repr() === "C:TsString") {
+                if (op === "+")
+                    op = ".";
+                else if (op === "+=")
+                    op = ".=";
+            }
+                
+
+            res = `${this.expr(expr.left)} ${op} ${this.mutatedExpr(expr.right, expr.operator === "=" ? expr.left : null)}`;
         } else if (expr instanceof ArrayLiteral) {
-            if (expr.items.length === 0) {
-                res = `new ${this.type(expr.actualType)}()`;
-            } else
-                res = `new ${this.type(expr.actualType)} { ${expr.items.map(x => this.expr(x)).join(', ')} }`;
+            res = `array(${expr.items.map(x => this.expr(x)).join(', ')})`;
         } else if (expr instanceof CastExpression) {
             res = `${this.expr(expr.expression)}`;
         } else if (expr instanceof ConditionalExpression) {
-            res = `${this.expr(expr.condition)} ? ${this.expr(expr.whenTrue)} : ${this.mutatedExpr(expr.whenFalse, expr.whenTrue)}`;
+            let whenFalseExpr = this.expr(expr.whenFalse);
+            if (expr.whenFalse instanceof ConditionalExpression)
+                whenFalseExpr = `(${whenFalseExpr})`;
+            res = `${this.expr(expr.condition)} ? ${this.expr(expr.whenTrue)} : ${whenFalseExpr}`;
         } else if (expr instanceof InstanceOfExpression) {
             res = `${this.expr(expr.expr)} instanceof ${this.type(expr.checkType)}`;
         } else if (expr instanceof ParenthesizedExpression) {
             res = `(${this.expr(expr.expression)})`;
         } else if (expr instanceof RegexLiteral) {
-            res = `new RegExp(${JSON.stringify(expr.pattern)})`;
+            res = `new \\OneLang\\RegExp(${JSON.stringify(expr.pattern)})`;
         } else if (expr instanceof Lambda) {
             const params = expr.parameters.map(x => `$${this.name_(x.name)}`);
             res = `function (${params.join(", ")}) { ${this.rawBlock(expr.body)} }`;
@@ -305,13 +337,13 @@ export class PhpGenerator implements IGenerator {
         } else if (expr instanceof StaticFieldReference) {
             res = `${this.name_(expr.decl.parentInterface.name)}::$${this.name_(expr.decl.name)}`;
         } else if (expr instanceof StaticPropertyReference) {
-            res = `${this.name_(expr.decl.parentClass.name)}::${this.name_(expr.decl.name)}`;
+            res = `${this.name_(expr.decl.parentClass.name)}::get_${this.name_(expr.decl.name)}()`;
         } else if (expr instanceof InstanceFieldReference) {
             res = `${this.expr(expr.object)}->${this.name_(expr.field.name)}`;
         } else if (expr instanceof InstancePropertyReference) {
-            res = `${this.expr(expr.object)}->${this.name_(expr.property.name)}`;
+            res = `${this.expr(expr.object)}->get_${this.name_(expr.property.name)}()`;
         } else if (expr instanceof EnumMemberReference) {
-            res = `${this.name_(expr.decl.parentEnum.name)}.${this.name_(expr.decl.name)}`;
+            res = `${this.name_(expr.decl.parentEnum.name)}::${this.enumMemberName(expr.decl.name)}`;
         } else if (expr instanceof NullCoalesceExpression) {
             res = `${this.expr(expr.defaultExpr)} ?? ${this.mutatedExpr(expr.exprIfNull, expr.defaultExpr)}`;
         } else debugger;
@@ -324,7 +356,7 @@ export class PhpGenerator implements IGenerator {
             `\n${this.pad(this.rawBlock(block))}` : ` {\n${this.pad(this.rawBlock(block))}\n}`;
     }
 
-    stmt(stmt: Statement): string {
+    stmtDefault(stmt: Statement): string {
         let res = "UNKNOWN-STATEMENT";
         if (stmt.attributes !== null && "csharp" in stmt.attributes) {
             res = stmt.attributes["csharp"];
@@ -340,11 +372,11 @@ export class PhpGenerator implements IGenerator {
             res = `${this.expr(stmt.expression)};`;
         } else if (stmt instanceof VariableDeclaration) {
             if (stmt.initializer instanceof NullLiteral)
-                res = `${this.type(stmt.type, stmt.mutability.mutated)} ${this.name_(stmt.name)} = null;`;
+                res = `$${this.name_(stmt.name)} = null;`;
             else if (stmt.initializer !== null)
                 res = `$${this.name_(stmt.name)} = ${this.mutateArg(stmt.initializer, stmt.mutability.mutated)};`;
             else
-                res = `${this.type(stmt.type)} ${this.name_(stmt.name)};`;
+                res = `/* @var $${this.name_(stmt.name)} */`;
         } else if (stmt instanceof ForeachStatement) {
             res = `foreach (${this.expr(stmt.items)} as $${this.name_(stmt.itemVar.name)})` + this.block(stmt.body);
         } else if (stmt instanceof IfStatement) {
@@ -369,6 +401,24 @@ export class PhpGenerator implements IGenerator {
         } else if (stmt instanceof ContinueStatement) {
             res = `continue;`;
         } else debugger;
+        return res;
+    }
+
+    stmt(stmt: Statement): string {
+        let res: string = null;
+
+        if (stmt.attributes !== null && "php" in stmt.attributes) {
+            res = stmt.attributes["php"];
+        } else {
+            for (const plugin of this.plugins) {
+                res = plugin.stmt(stmt);
+                if (res !== null) break;
+            }
+
+            if (res === null)
+                res = this.stmtDefault(stmt);
+        }
+
         return this.leading(stmt) + res;
     }
 
@@ -404,12 +454,18 @@ export class PhpGenerator implements IGenerator {
             }
             resList.push(fieldReprs.join("\n"));
 
-            resList.push(cls.properties.map(prop => {
-                return `${this.vis(prop.visibility, true)}${this.preIf("static ", prop.isStatic)}` +
-                    this.varWoInit(prop, prop) +
-                    (prop.getter !== null ? ` {\n    get {\n${this.pad(this.block(prop.getter))}\n    }\n}` : "") +
-                    (prop.setter !== null ? ` {\n    set {\n${this.pad(this.block(prop.setter))}\n    }\n}` : "");
-            }).join("\n"));
+            for (const prop of cls.properties) {
+                if (prop.getter !== null)
+                    resList.push(
+                        this.vis(prop.visibility, false) + 
+                        this.preIf("static ", prop.isStatic) +
+                        `function get_${this.name_(prop.name)}()${this.block(prop.getter, false)}`);
+                if (prop.setter !== null)
+                    resList.push(
+                        this.vis(prop.visibility, false) + 
+                        this.preIf("static ", prop.isStatic) +
+                        `function set_${this.name_(prop.name)}($value)${this.block(prop.setter, false)}`);
+            }
 
             if (staticConstructorStmts.length > 0)
                 resList.push(`static function StaticInit()\n{\n${this.pad(this.stmts(staticConstructorStmts))}\n}`);
@@ -434,7 +490,7 @@ export class PhpGenerator implements IGenerator {
                         parentCall +
                         this.stmts(constrFieldInits.concat(complexFieldInits).concat(cls.constructor_.body.statements)))}\n}`);
             } else if (complexFieldInits.length > 0)
-                resList.push(`function ${this.name_(cls.name)}()\n{\n${this.pad(this.stmts(complexFieldInits))}\n}`);
+                resList.push(`function __construct()\n{\n${this.pad(this.stmts(complexFieldInits))}\n}`);
 
         } else if (cls instanceof Interface) {
             //resList.push(cls.fields.map(field => `${this.varWoInit(field, field)} { get; set; }`).join("\n"));
@@ -463,9 +519,9 @@ export class PhpGenerator implements IGenerator {
     pad(str: string): string { return str.split(/\n/g).map(x => `    ${x}`).join('\n'); }
 
     pathToNs(path: string): string {
-        // Generator/ExprLang/ExprLangAst.ts -> Generator.ExprLang
-        const parts = path.split(/\//g);
-        parts.pop();
+        // Generator/ExprLang/ExprLangAst.ts -> Generator\ExprLang\ExprLangAst
+        const parts = path.replace(/\.ts/, "").split(/\//g);
+        //parts.pop();
         return parts.join('\\');
     }
 
@@ -473,34 +529,11 @@ export class PhpGenerator implements IGenerator {
         return enum_.name;
     }
 
-    enumMemberName(name: string) {
+    enumMemberName(name: string): string {
         return this.name_(name).toUpperCase();
     }
 
     genFile(sourceFile: SourceFile): string {
-        const imports: string[] = [];
-        //const importAllScopes = new Set<string>();
-        //imports.add("from OneLangStdLib import *"); // TODO: do not add this globally, just for nativeResolver methods
-        
-        // if (sourceFile.enums.length > 0)
-        //     this.imports.add("from enum import Enum");
-
-        for (const import_ of sourceFile.imports.filter(x => !x.importAll)) {
-            if (import_.attributes["php-ignore"] === "true")
-                continue;
-
-            // if ("php-import-all" in import_.attributes) {
-            //     this.imports.add(`from ${import_.attributes["php-import-all"]} import *`);
-            //     this.importAllScopes.add(import_.exportScope.getId());
-            // } else {
-            //     const alias = this.calcImportAlias(import_.exportScope);
-                // this.imports.add(`import ${this.package.name}.${import_.exportScope.scopeName.replace(/\//g, ".")} as ${alias}`);
-            // }
-            if (import_.exportScope.scopeName === "index") // TODO
-                continue;
-            imports.push(`require_once("${import_.exportScope.scopeName}.php");`);
-        }
-
         this.usings = new Set<string>();
 
         const enums: string[] = [];
@@ -525,7 +558,18 @@ export class PhpGenerator implements IGenerator {
 
         const main = this.rawBlock(sourceFile.mainBlock);
 
-        const usingsSet = new Set<string>(sourceFile.imports.map(x => this.pathToNs(x.exportScope.scopeName)).filter(x => x !== ""));
+        const usingsSet = new Set<string>();
+        for (const imp of sourceFile.imports) {
+            if ("php-use" in imp.attributes)
+                usingsSet.add(imp.attributes["php-use"]);
+            else {
+                const fileNs = this.pathToNs(imp.exportScope.scopeName);
+                if (fileNs === "index") continue;
+                for (const impItem of imp.imports)
+                    usingsSet.add(fileNs + "\\" + this.name_(impItem.name));
+            }
+        }
+
         for (const using of this.usings)
             usingsSet.add(using);
 
@@ -533,9 +577,9 @@ export class PhpGenerator implements IGenerator {
         for (const using of usingsSet)
             usings.push(`use ${using};`);
 
-        let result = [enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), main].filter(x => x !== "").join("\n\n");
-        const nl = "\n"; // Python fix
-        result = `<?php\n\nnamespace ${this.pathToNs(sourceFile.sourcePath.path)};\n\n${imports.join(nl)}\n\n${usings.join(nl)}\n\n${result}\n`;
+        let result = [usings.join("\n"), enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), main].filter(x => x !== "").join("\n\n");
+        const nl = "\n";
+        result = `<?php\n\nnamespace ${this.pathToNs(sourceFile.sourcePath.path)};\n\n${result}\n`;
         return result;
     }
 

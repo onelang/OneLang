@@ -1,4 +1,5 @@
 // @python-import-all OneFile
+// @php-use onepkg\OneFile\OneFile
 import { OneFile } from "One.File-v0.1";
 import { PackageSource, PackageId, PackageBundle, PackageContent, PackageType } from "./PackageManager";
 

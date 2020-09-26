@@ -8,6 +8,9 @@ export class Statement implements IHasAttributesAndTrivia, IAstNode {
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string } = null;
     parentBlock: Block;
+
+    // php-fix
+    constructor() { }
 }
 
 export class IfStatement extends Statement {

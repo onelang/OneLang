@@ -395,7 +395,7 @@ export interface IMethodBase extends IAstNode {
 export interface IMethodBaseWithTrivia extends IMethodBase, IHasAttributesAndTrivia {
 }
 
-export class Constructor implements IMethodBaseWithTrivia, IHasAttributesAndTrivia {
+export class Constructor implements IMethodBaseWithTrivia {
     /** @creator TypeScriptParser2 */
     constructor(
         public parameters: MethodParameter[],
@@ -411,7 +411,7 @@ export class Constructor implements IMethodBaseWithTrivia, IHasAttributesAndTriv
     throws: boolean;
 }
 
-export class Method implements IMethodBaseWithTrivia, IHasAttributesAndTrivia, IClassMember {
+export class Method implements IMethodBaseWithTrivia, IClassMember {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -438,7 +438,7 @@ export class Method implements IMethodBaseWithTrivia, IHasAttributesAndTrivia, I
     throws: boolean;
 }
 
-export class GlobalFunction implements IMethodBaseWithTrivia, IResolvedImportable, IHasAttributesAndTrivia, IReferencable, IMethodBase {
+export class GlobalFunction implements IMethodBaseWithTrivia, IResolvedImportable, IReferencable {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
