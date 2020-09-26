@@ -65,7 +65,7 @@ compiler.init(`${baseDir}/packages`).then(() => {
         writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
         //printState();
 
-        new CircularDependencyDetector(DetectionMode.AllInheritence).processPackage(compiler.projectPkg);
+        new CircularDependencyDetector(DetectionMode.AllImports).processPackage(compiler.projectPkg);
 
         for (const generator of [new CsharpGenerator(), new PythonGenerator(), new PhpGenerator()]) {
             const langName = generator.getLangName();

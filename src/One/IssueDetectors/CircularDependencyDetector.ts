@@ -46,9 +46,11 @@ export class CircularDependencyDetector implements IGraphVisitor<SourceFile> {
     processNode(file: SourceFile) {
         if (this.detectionMode === DetectionMode.AllImports) {
             for (const imp of file.imports)
-                for (const impSym of imp.imports)
-                    if (this.detector.visitNode((<IResolvedImportable>impSym).parentFile))
-                        console.error(`Circular dependency found in file '${file.exportScope.getId()}' via the import '${impSym.name}'`);
+                for (const impSym of imp.imports) {
+                    const impFile = (<IResolvedImportable>impSym).parentFile;
+                    if (this.detector.visitNode(impFile))
+                        console.error(`Circular dependency found in file '${file.exportScope.getId()}' via the import '${impSym.name}' imported from '${impFile.exportScope.getId()}'`);
+                }
         } else if (this.detectionMode === DetectionMode.AllInheritence) {
             this.processIntfs(file, "class", file.classes);
             this.processIntfs(file, "interface", file.interfaces);
