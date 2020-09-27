@@ -511,11 +511,11 @@ export class CsharpGenerator implements IGenerator {
             `public class Program\n{\n    static void Main(string[] args)\n    {\n${this.pad(this.rawBlock(sourceFile.mainBlock))}\n    }\n}` : "";
 
         const usingsSet = new Set<string>(sourceFile.imports.map(x => this.pathToNs(x.exportScope.scopeName)).filter(x => x !== ""));
-        for (const using of this.usings)
+        for (const using of this.usings.values())
             usingsSet.add(using);
 
         const usings: string[] = [];
-        for (const using of usingsSet)
+        for (const using of usingsSet.values())
             usings.push(`using ${using};`);
 
         let result = [enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), main].filter(x => x !== "").join("\n\n");

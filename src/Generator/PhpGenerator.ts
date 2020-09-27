@@ -231,7 +231,7 @@ export class PhpGenerator implements IGenerator {
             res = `${this.expr(expr.method)}(${expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof BooleanLiteral) {
             res = `${expr.boolValue ? "true" : "false"}`;
-        } else if (expr instanceof StringLiteral) { 
+        } else if (expr instanceof StringLiteral) {
             res = `${JSON.stringify(expr.stringValue).replace(/\$/, "\\$")}`;
         } else if (expr instanceof NumericLiteral) { 
             res = `${expr.valueAsText}`;
@@ -396,7 +396,7 @@ export class PhpGenerator implements IGenerator {
             res = "try" + this.block(stmt.tryBody, false);
             if (stmt.catchBody !== null) {
 //                this.usings.add("System");
-                res += ` catch (Exception ${this.name_(stmt.catchVar.name)}) ${this.block(stmt.catchBody, false)}`;
+                res += ` catch (Exception $${this.name_(stmt.catchVar.name)})${this.block(stmt.catchBody, false)}`;
             }
             if (stmt.finallyBody !== null)
                 res += "finally" + this.block(stmt.finallyBody);

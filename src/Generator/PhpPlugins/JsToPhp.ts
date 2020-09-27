@@ -31,13 +31,13 @@ export class JsToPhp implements IGeneratorPlugin {
             } else if (method.name === "pop") {
                 return `array_pop(${objR})`;
             } else if (method.name === "filter") {
-                return `array_filter(${objR}, ${argsR[0]})`;
+                return `array_values(array_filter(${objR}, ${argsR[0]}))`;
             } else if (method.name === "every") {
-                return `ArrayHelper.every(${argsR[0]}, ${objR})`;
+                return `\\OneLang\\ArrayHelper::every(${objR}, ${argsR[0]})`;
             } else if (method.name === "some") {
-                return `ArrayHelper.some(${argsR[0]}, ${objR})`;
+                return `\\OneLang\\ArrayHelper::some(${objR}, ${argsR[0]})`;
             } else if (method.name === "concat") {
-                return `${objR} + ${argsR[0]}`;
+                return `array_merge(${objR}, ${argsR[0]})`;
             } else if (method.name === "shift") {
                 return `array_shift(${objR})`;
             } else if (method.name === "find") {
@@ -61,7 +61,7 @@ export class JsToPhp implements IGeneratorPlugin {
 
                 return `${argsR[0]}.replace(${objR}, ${argsR[1]})`;
             } else if (method.name === "includes") {
-                return `in_array(${argsR[0]}, ${objR})`;
+                return `strpos(${objR}, ${argsR[0]}) !== false`;
             } else if (method.name === "startsWith") {
                 if (argsR.length > 1)
                     return `substr_compare(${objR}, ${argsR[0]}, ${argsR[1]}, strlen(${argsR[0]})) === 0`;
@@ -102,7 +102,7 @@ export class JsToPhp implements IGeneratorPlugin {
             if (method.name === "set") {
                 return `${objR}[${argsR[0]}] = ${argsR[1]}`;
             } else if (method.name === "get") {
-                return `${objR}[${argsR[0]}] ?? null`;
+                return `@${objR}[${argsR[0]}] ?? null`;
             } else if (method.name === "hasKey") {
                 return `array_key_exists(${argsR[0]}, ${objR})`;
             }
@@ -128,12 +128,16 @@ export class JsToPhp implements IGeneratorPlugin {
             if (method.name === "sortBy") {
                 return `\\OneLang\\ArrayHelper::sortBy(${argsR[0]}, ${argsR[1]})`;
             } else if (method.name === "removeLastN") {
-                return `del ${argsR[0]}[-${argsR[1]}:]`;
+                return `array_splice(${argsR[0]}, -${argsR[1]})`;
             }
         } else if (cls.name === "Math") {
             const argsR = args.map(x => this.main.expr(x));
             if (method.name === "floor")
                 return `floor(${argsR[0]})`;
+        } else if (cls.name === "JSON") {
+            const argsR = args.map(x => this.main.expr(x));
+            if (method.name === "stringify")
+                return `json_encode(${argsR[0]}, JSON_UNESCAPED_SLASHES)`;
         } else if (cls.name === "RegExpExecArray") {
             const objR = this.main.expr(obj);
             const argsR = args.map(x => this.main.expr(x));

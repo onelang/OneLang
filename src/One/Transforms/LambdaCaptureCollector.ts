@@ -27,7 +27,7 @@ export class LambdaCaptureCollector extends AstTransformer {
 
         super.visitLambda(lambda);
         lambda.captures = [];
-        for (const capture of this.capturedVars)
+        for (const capture of this.capturedVars.values())
             lambda.captures.push(capture);
         
         this.scopeVars = this.scopeVarStack.pop() || null;

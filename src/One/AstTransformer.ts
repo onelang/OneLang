@@ -210,8 +210,10 @@ export abstract class AstTransformer implements ITransformer {
         } else if (expr instanceof GlobalFunctionReference) {
         } else if (expr instanceof SuperReference) {
         } else if (expr instanceof InstanceFieldReference) {
+            expr.object = this.visitExpression(expr.object) || expr.object;
             return this.visitVariableReference(expr);
         } else if (expr instanceof InstancePropertyReference) {
+            expr.object = this.visitExpression(expr.object) || expr.object;
             return this.visitVariableReference(expr);
         } else if (expr instanceof StaticFieldReference) {
             return this.visitVariableReference(expr);

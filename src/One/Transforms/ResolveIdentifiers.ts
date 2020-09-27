@@ -15,7 +15,7 @@ import { ClassType } from "../Ast/AstTypes";
  */
 class SymbolLookup {
     errorMan: ErrorManager = new ErrorManager();
-    levelSymbols: string[][] = [];
+    levelStack: string[][] = [];
     levelNames: string[] = [];
     currLevel: string[];
     symbols = new Map<string, IReferencable>();
@@ -25,9 +25,9 @@ class SymbolLookup {
     }
 
     pushContext(name: string) {
+        this.levelStack.push(this.currLevel);
         this.levelNames.push(name);
         this.currLevel = [];
-        this.levelSymbols.push(this.currLevel);
     }
 
     addSymbol(name: string, ref: IReferencable) {
@@ -40,9 +40,8 @@ class SymbolLookup {
     popContext() {
         for (const name of this.currLevel)
             this.symbols.delete(name);
-        this.levelSymbols.pop();
         this.levelNames.pop();
-        this.currLevel = this.levelSymbols.length === 0 ? null : this.levelSymbols[this.levelSymbols.length - 1];
+        this.currLevel = this.levelStack.pop();
     }
 
     getSymbol(name: string): IReferencable {
@@ -154,7 +153,7 @@ export class ResolveIdentifiers extends AstTransformer {
 
     public visitSourceFile(sourceFile: SourceFile) {
         this.errorMan.resetContext(this);
-        this.symbolLookup.pushContext(`File: ${sourceFile.sourcePath}`);
+        this.symbolLookup.pushContext(`File: ${sourceFile.sourcePath.toString()}`);
 
         for (const symbol of sourceFile.availableSymbols.values()) {
             if (symbol instanceof Class) {
