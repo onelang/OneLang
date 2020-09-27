@@ -44,6 +44,15 @@ jobs:
     - name: '[Test] Run SelfTest - C#'
       run: dotnet run
       working-directory: ./test/artifacts/ProjectTest/OneLang/CSharp
+    - name: '[Env] Install PHP with YAML'
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+        tools: pecl
+        extensions: yaml
+    - name: '[Test] Run SelfTest - PHP'
+      run: php main.php
+      working-directory: ./test/artifacts/ProjectTest/OneLang/PHP
     - name: '[CI] Slack notification on fail'
       if: failure()
       env:
