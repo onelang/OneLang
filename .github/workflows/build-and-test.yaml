@@ -23,7 +23,7 @@ jobs:
       run: npm install
     - name: '[Build] Build OneLang TypeScript project'
       run: npx tsc -b . test build
-    - name: '[Build] Compile OneLang TS into C# & Python'
+    - name: '[Build] Compile OneLang TS into C# & Python & PHP'
       run: npx ./test/lib/ProjectTest.js
     - name: '[Test] Run SelfTest - TypeScript'
       run: node --unhandled-rejections=strict ./test/lib/SelfTest.js
@@ -50,6 +50,7 @@ jobs:
         php-version: '7.4'
         tools: pecl
         extensions: yaml
+        coverage: none # disable Xdebug which limits call stack length
     - name: '[Test] Run SelfTest - PHP'
       run: php main.php
       working-directory: ./test/artifacts/ProjectTest/OneLang/PHP
