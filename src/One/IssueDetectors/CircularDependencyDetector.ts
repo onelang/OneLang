@@ -20,8 +20,9 @@ export class GraphCycleDetector<TNode> {
     visitNode(node: TNode): boolean {
         if (!this.nodeIsInPath.has(node)) { // untouched node
             this.nodeIsInPath.set(node, true);
-            this.visitor.processNode(node);    
+            this.visitor.processNode(node);
             this.nodeIsInPath.set(node, false);
+            return false;
         } else
             // true = node used in current path = cycle
             // false = node was already scanned previously (not a cycle)

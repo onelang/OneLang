@@ -41,7 +41,7 @@ class SymbolLookup {
         for (const name of this.currLevel)
             this.symbols.delete(name);
         this.levelNames.pop();
-        this.currLevel = this.levelStack.pop();
+        this.currLevel = this.levelStack.length > 0 ? this.levelStack.pop() : null;
     }
 
     getSymbol(name: string): IReferencable {

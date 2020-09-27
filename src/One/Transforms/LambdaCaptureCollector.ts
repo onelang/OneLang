@@ -30,7 +30,7 @@ export class LambdaCaptureCollector extends AstTransformer {
         for (const capture of this.capturedVars.values())
             lambda.captures.push(capture);
         
-        this.scopeVars = this.scopeVarStack.pop() || null;
+        this.scopeVars = this.scopeVarStack.length > 0 ? this.scopeVarStack.pop() : null;
         return null;
     }
 
