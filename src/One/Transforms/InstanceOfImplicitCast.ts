@@ -5,6 +5,13 @@ import { Statement, IfStatement, VariableDeclaration, WhileStatement, Expression
 import { ForeachVariableReference, VariableDeclarationReference, MethodParameterReference, InstanceFieldReference, ThisReference, Reference, StaticThisReference } from "../Ast/References";
 import { ArrayHelper } from "../../Utils/ArrayHelper";
 
+/**
+ * Converts "expr instanceof Type && expr.something" to "expr instanceof Type && ((Type)expr).something".
+ * Also handles cases: 
+ *   - "if/while (expr instanceof Type) { ... every expr is converted to ((Type)expr) here ... }
+ *   - "expr instanceof Type ? ((Type)expr) : expr" (note: expr is not a Type in the false/else branch)
+ * Expr can also be simple property access expressions, so "obj.prop instanceof Type && ((Type)obj.prop).typeProp" also converted.
+ */
 export class InstanceOfImplicitCast extends AstTransformer {
     casts: InstanceOfExpression[] = [];
     castCounts: number[] = [];
