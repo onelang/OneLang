@@ -7,6 +7,7 @@ import { readFile, glob, readDir, baseDir, writeFile, exists } from "./TestUtils
 import { CsharpGenerator } from "@one/Generator/CsharpGenerator";
 import { PythonGenerator } from "@one/Generator/PythonGenerator";
 import { PhpGenerator } from "@one/Generator/PhpGenerator";
+import { JavaGenerator } from "@one/Generator/JavaGenerator";
 import { Compiler } from "@one/One/Compiler";
 import { PackageStateCapture } from "@one/Test/PackageStateCapture";
 import { CircularDependencyDetector, DetectionMode } from "@one/One/IssueDetectors/CircularDependencyDetector";
@@ -67,7 +68,7 @@ compiler.init(`${baseDir}/packages`).then(() => {
 
         new CircularDependencyDetector(DetectionMode.AllImports).processPackage(compiler.projectPkg);
 
-        for (const generator of [new CsharpGenerator(), new PythonGenerator(), new PhpGenerator()]) {
+        for (const generator of [new CsharpGenerator(), new PythonGenerator(), new PhpGenerator(), new JavaGenerator()]) {
             const langName = generator.getLangName();
             const ext = generator.getExtension();
             
