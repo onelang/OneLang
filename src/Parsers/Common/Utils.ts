@@ -17,7 +17,9 @@ export class Utils {
         for (const padLen of lines.map(x => this.getPadLen(x)).filter(x => x !== -1))
             if (padLen < minPadLen)
                 minPadLen = padLen;
-        const newStr = lines.map(x => x.length !== 0 ? x.substr(minPadLen) : x).join("\n");
+        // @java final var minPadLen2 = minPadLen;
+        const minPadLen2 = minPadLen;
+        const newStr = lines.map(x => x.length !== 0 ? x.substr(minPadLen2) : x).join("\n");
         return newStr;
     }
 }

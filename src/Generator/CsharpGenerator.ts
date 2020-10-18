@@ -510,6 +510,7 @@ export class CsharpGenerator implements IGenerator {
         const main = sourceFile.mainBlock.statements.length > 0 ? 
             `public class Program\n{\n    static void Main(string[] args)\n    {\n${this.pad(this.rawBlock(sourceFile.mainBlock))}\n    }\n}` : "";
 
+        // @java var usingsSet = new HashSet<String>(Arrays.stream(sourceFile.imports).map(x -> this.pathToNs(x.exportScope.scopeName)).filter(x -> x != "").collect(Collectors.toList()));
         const usingsSet = new Set<string>(sourceFile.imports.map(x => this.pathToNs(x.exportScope.scopeName)).filter(x => x !== ""));
         for (const using of this.usings.values())
             usingsSet.add(using);

@@ -305,6 +305,7 @@ class CursorPositionSearch {
         let high = this.lineOffsets.length - 1;
 
         while (low <= high) {
+            // @java var middle = (int)Math.floor((low + high) / 2);
             const middle = Math.floor((low + high) / 2);
             const middleOffset = this.lineOffsets[middle];
             if (offset == middleOffset)

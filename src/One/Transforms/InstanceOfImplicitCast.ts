@@ -83,7 +83,9 @@ export class InstanceOfImplicitCast extends AstTransformer {
             this.pushContext();
             result = super.visitExpression(expr) || expr;
             this.popContext();
-            const match = this.casts.find(cast => this.equals(result, cast.expr)) || null;
+            // @java final var result2 = result;
+            const result2 = result;
+            const match = this.casts.find(cast => this.equals(result2, cast.expr)) || null;
             if (match !== null) {
                 const castExpr = new CastExpression(match.checkType, result, match);
                 match.implicitCasts.push(castExpr);
