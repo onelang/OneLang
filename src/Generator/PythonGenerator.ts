@@ -241,7 +241,7 @@ export class PythonGenerator implements IGenerator {
             if (expr.body.statements.length === 1 && expr.body.statements[0] instanceof ReturnStatement)
                 body = this.expr((<ReturnStatement>expr.body.statements[0]).expression);
             else {
-                console.error(`Multi-line lambda is not yet supported for Python: ${TSOverviewGenerator.nodeRepr(expr)}`);
+                console.error(`Multi-line lambda is not yet supported for Python: ${TSOverviewGenerator.preview.nodeRepr(expr)}`);
                 debugger;
             }
 

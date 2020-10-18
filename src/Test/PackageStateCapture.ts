@@ -6,7 +6,7 @@ export class PackageStateCapture {
 
     constructor(public pkg: Package) {
         for (const file of Object.values(pkg.files))
-            this.overviews[file.sourcePath.path] = TSOverviewGenerator.generate(file);
+            this.overviews[file.sourcePath.path] = new TSOverviewGenerator(false, true).generate(file);
     }
 
     getSummary() {
