@@ -31,7 +31,7 @@ declare class TsArray<T> {
     /** @mutates */
     pop(): T;
     filter(predicate: (item: T) => boolean): T[];
-    slice(num: number): T[];
+    slice(start: number, end: number): T[];
     some(predictate: (item: T) => boolean): boolean;
     every(predictate: (item: T, index: number) => boolean): boolean;
     /** @mutates */
