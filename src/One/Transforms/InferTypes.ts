@@ -43,7 +43,15 @@ export class InferTypes extends AstTransformer {
 
     // allow plugins to run AstTransformer methods without running other plugins
     // TODO: should refactor to a private interface exposed only to plugins?
-    public processLambda(lambda: Lambda) { super.visitLambda(lambda); }
+    
+    // WARNING: processLambda intentionally calls visitMethodBase, because if 
+    // it would call super.visitLambda -> that would call this.visitMethodBase
+    // which would check stage, but we should not check stage at this point
+    // (if a lambda is in a field constructor, then the type infer would simple
+    // skip it which we don't want to)
+    // 
+    // TODO: seriously rethink this whole approach, because looks fragile and complicated
+    public processLambda(lambda: Lambda) { super.visitMethodBase(lambda); }
     public processMethodBase(method: IMethodBase) { super.visitMethodBase(method); }
     public processBlock(block: Block) { super.visitBlock(block); }
     public processVariable(variable: IVariable) { super.visitVariable(variable); }
