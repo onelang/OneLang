@@ -1,5 +1,5 @@
 import { SourceFile, IMethodBase, IHasAttributesAndTrivia, Package, IMethodBaseWithTrivia } from "../Ast/Types";
-import { ForeachStatement, ForStatement, IfStatement, Block } from "../Ast/Statements";
+import { ForeachStatement, ForStatement, IfStatement, Block, WhileStatement, DoStatement } from "../Ast/Statements";
 
 /**
  * Extract `@attributeName attribute value` attributes from comments (// and /* style comments)
@@ -30,6 +30,10 @@ export class FillAttributesFromTrivia {
             if (stmt instanceof ForeachStatement)
                 this.processBlock(stmt.body);
             else if (stmt instanceof ForStatement)
+                this.processBlock(stmt.body);
+            else if (stmt instanceof WhileStatement)
+                this.processBlock(stmt.body);
+            else if (stmt instanceof DoStatement)
                 this.processBlock(stmt.body);
             else if (stmt instanceof IfStatement) {
                 this.processBlock(stmt.then);
