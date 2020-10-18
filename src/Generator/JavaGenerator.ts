@@ -7,12 +7,19 @@ import { GeneratedFile } from "./GeneratedFile";
 import { NameUtils } from "./NameUtils";
 import { IGenerator } from "./IGenerator";
 import { IExpression, IType } from "../One/Ast/Interfaces";
+import { IGeneratorPlugin } from "./IGeneratorPlugin";
+import { JsToJava } from "./JavaPlugins/JsToJava";
 
 export class JavaGenerator implements IGenerator {
-    usings: Set<string>;
+    imports = new Set<string>();
     currentClass: IInterface;
     reservedWords: string[] = ["class", "interface", "throws", "package", "throw", "boolean"];
     fieldToMethodHack: string[] = [];
+    plugins: IGeneratorPlugin[] = [];
+
+    constructor() {
+        this.plugins.push(new JsToJava(this));
+    }
 
     getLangName(): string { return "Java"; }
     getExtension(): string { return "java"; }
@@ -53,30 +60,39 @@ export class JavaGenerator implements IGenerator {
     typeArgs(args: string[]): string { return args !== null && args.length > 0 ? `<${args.join(", ")}>` : ""; }
     typeArgs2(args: IType[]): string { return this.typeArgs(args.map(x => this.type(x))); }
 
-    type(t: IType, mutates = true): string {
+    type(t: IType, mutates = true, isNew = false): string {
         if (t instanceof ClassType) {
             const typeArgs = this.typeArgs(t.typeArguments.map(x => this.type(x)));
             if (t.decl.name === "TsString")
                 return "String";
             else if (t.decl.name === "TsBoolean")
-                return "boolean";
+                return "Boolean";
             else if (t.decl.name === "TsNumber")
-                return "int";
+                return "Integer";
             else if (t.decl.name === "TsArray") {
+                const realType = isNew ? "ArrayList" : "List";
                 if (mutates) {
-                    this.usings.add("System.Collections.Generic");
-                    return `List<${this.type(t.typeArguments[0])}>`;
+                    this.imports.add(`java.util.${realType}`);
+                    return `${realType}<${this.type(t.typeArguments[0])}>`;
                 } else
                     return `${this.type(t.typeArguments[0])}[]`;
+            } else if (t.decl.name === "Map") {
+                const realType = isNew ? "HashMap" : "Map";
+                this.imports.add(`java.util.${realType}`);
+                return `${realType}<${this.type(t.typeArguments[0])}, ${this.type(t.typeArguments[1])}>`;
+            } else if (t.decl.name === "Set") {
+                const realType = isNew ? "HashSet" : "Set";
+                this.imports.add(`java.util.${realType}`);
+                return `${realType}<${this.type(t.typeArguments[0])}>`;
             } else if (t.decl.name === "Promise") {
-                this.usings.add("System.Threading.Tasks");
-                return t.typeArguments[0] instanceof VoidType ? "Task"  : `Task${typeArgs}`;
+                return t.typeArguments[0] instanceof VoidType ? "void" : `${this.type(t.typeArguments[0])}`;
             } else if (t.decl.name === "Object") {
-                this.usings.add("System");
-                return `object`;
+                //this.imports.add("System");
+                return `Object`;
             } else if (t.decl.name === "TsMap") {
-                this.usings.add("System.Collections.Generic");
-                return `Dictionary<String, ${this.type(t.typeArguments[0])}>`;
+                const realType = isNew ? "HashMap" : "Map";
+                this.imports.add(`java.util.${realType}`);
+                return `${realType}<String, ${this.type(t.typeArguments[0])}>`;
             }
             return this.name_(t.decl.name) + typeArgs;
         } else if (t instanceof InterfaceType)
@@ -86,7 +102,7 @@ export class JavaGenerator implements IGenerator {
         else if (t instanceof EnumType)
             return `${this.name_(t.decl.name)}`;
         else if (t instanceof AnyType)
-            return `object`;
+            return `Object`;
         else if (t instanceof NullType)
             return `null`;
         else if (t instanceof GenericsType)
@@ -96,8 +112,8 @@ export class JavaGenerator implements IGenerator {
             const paramTypes = t.parameters.map(x => this.type(x.type));
             if (isFunc)
                 paramTypes.push(this.type(t.returnType));
-            this.usings.add("System");
-            return `${isFunc ? "Func" : "Action"}<${paramTypes.join(", ")}>`;
+            this.imports.add("java.util.function." + (isFunc ? "Function" : "Consumer"));
+            return `${isFunc ? "Function" : "Consumer"}<${paramTypes.join(", ")}>`;
         } else if (t === null) {
             return "/* TODO */ object";
         } else {
@@ -121,7 +137,7 @@ export class JavaGenerator implements IGenerator {
             type = attr.attributes["java-type"];
         else if (v.type instanceof ClassType && v.type.decl.name === "TsArray") {
             if (v.mutability.mutated) {
-                this.usings.add("System.Collections.Generic");
+                this.imports.add("java.util.List");
                 type = `List<${this.type(v.type.typeArguments[0])}>`;
             } else {
                 type = `${this.type(v.type.typeArguments[0])}[]`;
@@ -146,8 +162,8 @@ export class JavaGenerator implements IGenerator {
 
     mutateArg(arg: Expression, shouldBeMutable: boolean) {
         if (this.isTsArray(arg.actualType)) {
+            const itemType = (<ClassType>arg.actualType).typeArguments[0];
             if (arg instanceof ArrayLiteral && !shouldBeMutable) {
-                const itemType = (<ClassType>arg.actualType).typeArguments[0];
                 return arg.items.length === 0 && !this.isTsArray(itemType) ? `new ${this.type(itemType)}[0]` : 
                     `new ${this.type(itemType)}[] { ${arg.items.map(x => this.expr(x)).join(', ')} }`;
             }
@@ -159,10 +175,10 @@ export class JavaGenerator implements IGenerator {
                 currentlyMutable = false;
             
             if (currentlyMutable && !shouldBeMutable)
-                return `${this.expr(arg)}.ToArray()`;
+                return `${this.expr(arg)}.toArray(${this.type(itemType)}[]::new)`;
             else if (!currentlyMutable && shouldBeMutable) {
-                this.usings.add("System.Linq");
-                return `${this.expr(arg)}.ToList()`;
+                this.imports.add("java.util.Arrays");
+                return `Arrays.asList(${this.expr(arg)})`;
             }
         }
         return this.expr(arg);
@@ -196,10 +212,20 @@ export class JavaGenerator implements IGenerator {
         return null;
     }
 
+    isSetExpr(varRef: VariableReference): boolean {
+        return varRef.parentNode instanceof BinaryExpression && varRef.parentNode.left === varRef && ["=", "+=", "-="].includes(varRef.parentNode.operator);
+    }
+
     expr(expr: IExpression): string {
+        for (const plugin of this.plugins) {
+            const result = plugin.expr(expr);
+            if (result !== null)
+                return result;
+        }
+
         let res = "UNKNOWN-EXPR";
         if (expr instanceof NewExpression) {
-            res = `new ${this.type(expr.cls)}${this.callParams(expr.args, expr.cls.decl.constructor_ !== null ? expr.cls.decl.constructor_.parameters : [])}`;
+            res = `new ${this.type(expr.cls, true, true)}${this.callParams(expr.args, expr.cls.decl.constructor_ !== null ? expr.cls.decl.constructor_.parameters : [])}`;
         } else if (expr instanceof UnresolvedNewExpression) {
             res = `/* TODO: UnresolvedNewExpression */ new ${this.type(expr.cls)}(${expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof Identifier) {
@@ -217,7 +243,7 @@ export class JavaGenerator implements IGenerator {
         } else if (expr instanceof GlobalFunctionCallExpression) {
             res = `Global.${this.name_(expr.func.name)}${this.exprCall([], expr.args)}`;
         } else if (expr instanceof LambdaCallExpression) {
-            res = `${this.expr(expr.method)}(${expr.args.map(x => this.expr(x)).join(", ")})`;
+            res = `${this.expr(expr.method)}.apply(${expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof BooleanLiteral) {
             res = `${expr.boolValue ? "true" : "false"}`;
         } else if (expr instanceof StringLiteral) { 
@@ -227,7 +253,7 @@ export class JavaGenerator implements IGenerator {
         } else if (expr instanceof CharacterLiteral) { 
             res = `'${expr.charValue}'`;
         } else if (expr instanceof ElementAccessExpression) {
-            res = `${this.expr(expr.object)}[${this.expr(expr.elementExpr)}]`;
+            res = `${this.expr(expr.object)}.get(${this.expr(expr.elementExpr)})`;
         } else if (expr instanceof TemplateString) {
             const parts: string[] = [];
             for (const part of expr.parts) {
@@ -257,12 +283,18 @@ export class JavaGenerator implements IGenerator {
             }
             res = parts.join(' + ');
         } else if (expr instanceof BinaryExpression) {
-            res = `${this.expr(expr.left)} ${expr.operator} ${this.mutatedExpr(expr.right, expr.operator === "=" ? expr.left : null)}`;
+            const modifies = ["=", "+=", "-="].includes(expr.operator);
+            if (modifies && expr.left instanceof InstanceFieldReference && this.useGetterSetter(expr.left))
+                res = `${this.expr(expr.left.object)}.set${this.ucFirst(expr.left.field.name)}(${this.mutatedExpr(expr.right, expr.operator === "=" ? expr.left : null)})`;
+            else
+                res = `${this.expr(expr.left)} ${expr.operator} ${this.mutatedExpr(expr.right, expr.operator === "=" ? expr.left : null)}`;
         } else if (expr instanceof ArrayLiteral) {
             if (expr.items.length === 0) {
-                res = `new ${this.type(expr.actualType)}()`;
-            } else
+                res = `new ${this.type(expr.actualType, true, true)}()`;
+            } else {
+                this.imports.add(`java.util.List`);
                 res = `List.of(${expr.items.map(x => this.expr(x)).join(', ')})`;
+            }
         } else if (expr instanceof CastExpression) {
             res = `((${this.type(expr.newType)})${this.expr(expr.expression)})`;
         } else if (expr instanceof ConditionalExpression) {
@@ -290,8 +322,13 @@ export class JavaGenerator implements IGenerator {
         } else if (expr instanceof MapLiteral) {
             if (expr.items.length > 10)
                 throw new Error("MapLiteral is only supported with maximum of 10 items");
-            const repr = expr.items.map(item => `${JSON.stringify(item.key)}, ${this.expr(item.value)}`).join(", ");
-            res = `Map.of(${repr})`;
+            if (expr.items.length === 0) {
+                res = `new ${this.type(expr.actualType, true, true)}()`;
+            } else {
+                this.imports.add(`java.util.Map`);
+                const repr = expr.items.map(item => `${JSON.stringify(item.key)}, ${this.expr(item.value)}`).join(", ");
+                res = `Map.of(${repr})`;
+            }
         } else if (expr instanceof NullLiteral) {
             res = `null`;
         } else if (expr instanceof AwaitExpression) {
@@ -317,15 +354,19 @@ export class JavaGenerator implements IGenerator {
         } else if (expr instanceof GlobalFunctionReference) {
             res = `${this.name_(expr.decl.name)}`;
         } else if (expr instanceof SuperReference) {
-            res = `base`;
+            res = `super`;
         } else if (expr instanceof StaticFieldReference) {
             res = `${this.name_(expr.decl.parentInterface.name)}.${this.name_(expr.decl.name)}`;
         } else if (expr instanceof StaticPropertyReference) {
             res = `${this.name_(expr.decl.parentClass.name)}.${this.name_(expr.decl.name)}`;
         } else if (expr instanceof InstanceFieldReference) {
-            res = `${this.expr(expr.object)}.${this.name_(expr.field.name)}`;
+            // TODO: unified handling of field -> property conversion?
+            if (this.useGetterSetter(expr))
+                res = `${this.expr(expr.object)}.get${this.ucFirst(expr.field.name)}()`;
+            else
+                res = `${this.expr(expr.object)}.${this.name_(expr.field.name)}`;
         } else if (expr instanceof InstancePropertyReference) {
-            res = `${this.expr(expr.object)}.${this.name_(expr.property.name)}`;
+            res = `${this.expr(expr.object)}.${this.isSetExpr(expr) ? "set" : "get"}${this.ucFirst(expr.property.name)}()`;
         } else if (expr instanceof EnumMemberReference) {
             res = `${this.name_(expr.decl.parentEnum.name)}.${this.name_(expr.decl.name)}`;
         } else if (expr instanceof NullCoalesceExpression) {
@@ -334,17 +375,19 @@ export class JavaGenerator implements IGenerator {
         return res;
     }
 
+    useGetterSetter(fieldRef: InstanceFieldReference): boolean {
+        return fieldRef.object.actualType instanceof InterfaceType || (fieldRef.field.interfaceDeclarations !== null && fieldRef.field.interfaceDeclarations.length > 0);
+    }
+
     block(block: Block, allowOneLiner = true): string {
         const stmtLen = block.statements.length;
-        return stmtLen === 0 ? " { }" : allowOneLiner && stmtLen === 1 && !(block.statements[0] instanceof IfStatement) ? 
+        return stmtLen === 0 ? " { }" : allowOneLiner && stmtLen === 1 && !(block.statements[0] instanceof IfStatement) && !(block.statements[0] instanceof VariableDeclaration) ? 
             `\n${this.pad(this.rawBlock(block))}` : ` {\n${this.pad(this.rawBlock(block))}\n}`;
     }
 
-    stmt(stmt: Statement): string {
+    stmtDefault(stmt: Statement): string {
         let res = "UNKNOWN-STATEMENT";
-        if (stmt.attributes !== null && "csharp" in stmt.attributes) {
-            res = stmt.attributes["csharp"];
-        } else if (stmt instanceof BreakStatement) {
+        if (stmt instanceof BreakStatement) {
             res = "break;";
         } else if (stmt instanceof ReturnStatement) {
             res = stmt.expression === null ? "return;" : `return ${this.mutateArg(stmt.expression, false)};`;
@@ -377,7 +420,7 @@ export class JavaGenerator implements IGenerator {
         } else if (stmt instanceof TryStatement) {
             res = "try" + this.block(stmt.tryBody, false);
             if (stmt.catchBody !== null) {
-                this.usings.add("System");
+                //this.imports.add("System");
                 res += ` catch (Exception ${this.name_(stmt.catchVar.name)}) ${this.block(stmt.catchBody, false)}`;
             }
             if (stmt.finallyBody !== null)
@@ -385,15 +428,60 @@ export class JavaGenerator implements IGenerator {
         } else if (stmt instanceof ContinueStatement) {
             res = `continue;`;
         } else debugger;
+        return res;
+    }
+
+    stmt(stmt: Statement): string {
+        let res: string = null;
+
+        if (stmt.attributes !== null && "java-import" in stmt.attributes)
+            this.imports.add(stmt.attributes["java-import"]);
+
+        if (stmt.attributes !== null && "java" in stmt.attributes) {
+            res = stmt.attributes["java"];
+        } else {
+            for (const plugin of this.plugins) {
+                res = plugin.stmt(stmt);
+                if (res !== null) break;
+            }
+
+            if (res === null)
+                res = this.stmtDefault(stmt);
+        }
+
         return this.leading(stmt) + res;
     }
 
     stmts(stmts: Statement[]): string { return stmts.map(stmt => this.stmt(stmt)).join("\n"); }
     rawBlock(block: Block): string { return this.stmts(block.statements); }
 
+    overloadMethodGen(prefix: string, method: Method, params: MethodParameter[], body: string): string {
+        const methods: string[] = [];
+        methods.push(prefix + 
+            `(${params.map(p => this.varWoInit(p, null)).join(", ")})` + body);
+
+        for (let paramLen = params.length -1; paramLen >= 0; paramLen--) {
+            if (params[paramLen].initializer === null) break;
+
+            const methodParams: string[] = [];
+            const methodArgs: string[] = [];
+            for (let i = 0; i < params.length; i++) {
+                const p = params[i];
+                if (i < paramLen)
+                    methodParams.push(this.varWoInit(p, null));
+                methodArgs.push(i >= paramLen ? this.expr(p.initializer) : p.name);
+            }
+
+            const baseName = `${method !== null && method.isStatic ? this.currentClass.name : "this"}${method !== null ? `.${method.name}` : ""}`;
+            methods.push(`${prefix}(${methodParams.join(", ")}) {\n${this.pad(`${method !== null && !(method.returns instanceof VoidType) ? "return " : ""}${baseName}(${methodArgs.join(', ')});`)}\n}`);
+        }
+
+        return methods.join("\n\n");
+    }
+
     method(method: Method, isCls: boolean): string {
         // TODO: final
-        return (isCls ? this.vis(method.visibility) + " " : "") +
+        const prefix = (isCls ? this.vis(method.visibility) + " " : "") +
             this.preIf("static ", method.isStatic) +
             //this.preIf("virtual ", method.overrides === null && method.overriddenBy.length === 0) + 
             //this.preIf("override ", method.overrides !== null) +
@@ -401,9 +489,9 @@ export class JavaGenerator implements IGenerator {
             this.preIf("/* throws */ ", method.throws) +
             (method.typeArguments.length > 0 ? `<${method.typeArguments.join(', ')}> ` : "") +
             `${this.type(method.returns, false)} ` +
-            this.name_(method.name) + 
-            `(${method.parameters.map(p => this.varWoInit(p, null)).join(", ")})` +
-            (method.body !== null ? `\n{\n${this.pad(this.stmts(method.body.statements))}\n}` : ";");
+            this.name_(method.name);
+        return this.overloadMethodGen(prefix, method, method.parameters,
+            method.body === null ? ";" : `\n{\n${this.pad(this.stmts(method.body.statements))}\n}`);
     }
 
     class(cls: Class) {
@@ -413,6 +501,7 @@ export class JavaGenerator implements IGenerator {
         const staticConstructorStmts: Statement[] = [];
         const complexFieldInits: Statement[] = [];
         const fieldReprs: string[] = [];
+        const propReprs: string[] = [];
         for (const field of cls.fields) {
             const isInitializerComplex = field.initializer !== null && 
                 !(field.initializer instanceof StringLiteral) && 
@@ -420,9 +509,15 @@ export class JavaGenerator implements IGenerator {
                 !(field.initializer instanceof NumericLiteral);
 
             const prefix = `${this.vis(field.visibility)} ${this.preIf("static ", field.isStatic)}`;
-            if (field.interfaceDeclarations.length > 0)
-                fieldReprs.push(`${prefix}${this.varWoInit(field, field)};`);
-            else if (isInitializerComplex) {
+            if (field.interfaceDeclarations.length > 0) {
+                const varType = this.varType(field, field);
+                const name = this.name_(field.name);
+                const pname = this.ucFirst(field.name);
+                propReprs.push(
+                    `${varType} ${name};\n` +
+                    `${prefix}${varType} get${pname}() { return this.${name}; }\n` +
+                    `${prefix}void set${pname}(${varType} value) { this.${name} = value; }`);
+            } else if (isInitializerComplex) {
                 if (field.isStatic)
                     staticConstructorStmts.push(new ExpressionStatement(new BinaryExpression(new StaticFieldReference(field), "=", field.initializer)));
                 else
@@ -433,13 +528,19 @@ export class JavaGenerator implements IGenerator {
                 fieldReprs.push(`${prefix}${this.var(field, field)};`);
         }
         resList.push(fieldReprs.join("\n"));
+        resList.push(propReprs.join("\n\n"));
 
-        resList.push(cls.properties.map(prop => {
-            return `${this.vis(prop.visibility)} ${this.preIf("static ", prop.isStatic)}` + this.varWoInit(prop, prop) + ";";
-        }).join("\n"));
+        for (const prop of cls.properties) {
+            const prefix = `${this.vis(prop.visibility)} ${this.preIf("static ", prop.isStatic)}`;
+            if (prop.getter !== null)
+                resList.push(`${prefix}${this.type(prop.type)} get${this.ucFirst(prop.name)}()${this.block(prop.getter, false)}`);
+
+            if (prop.setter !== null)
+                resList.push(`${prefix}void set${this.ucFirst(prop.name)}(${this.type(prop.type)} value)${this.block(prop.setter, false)}`);
+        }
 
         if (staticConstructorStmts.length > 0)
-            resList.push(`static ${this.name_(cls.name)}()\n{\n${this.pad(this.stmts(staticConstructorStmts))}\n}`);
+            resList.push(`static {\n${this.pad(this.stmts(staticConstructorStmts))}\n}`);
 
         if (cls.constructor_ !== null) {
             const constrFieldInits: Statement[] = [];
@@ -451,13 +552,13 @@ export class JavaGenerator implements IGenerator {
                 constrFieldInits.push(new ExpressionStatement(new BinaryExpression(fieldRef, "=", mpRef)));
             }
 
-            resList.push(
-                "public " +
-                this.preIf("/* throws */ ", cls.constructor_.throws) + 
-                this.name_(cls.name) +
-                `(${cls.constructor_.parameters.map(p => this.varWoInit(p, p)).join(", ")})` +
-                //(cls.constructor_.superCallArgs !== null ? `: base(${cls.constructor_.superCallArgs.map(x => this.expr(x)).join(", ")})` : "") +
-                `\n{\n${this.pad(this.stmts(constrFieldInits.concat(complexFieldInits).concat(cls.constructor_.body.statements)))}\n}`);
+            const superCall = cls.constructor_.superCallArgs !== null ? `super(${cls.constructor_.superCallArgs.map(x => this.expr(x)).join(", ")});\n` : "";
+
+            // TODO: super calls
+            resList.push(this.overloadMethodGen(
+                "public " + this.preIf("/* throws */ ", cls.constructor_.throws) + this.name_(cls.name),
+                null, cls.constructor_.parameters,
+                `\n{\n${this.pad(superCall + this.stmts(constrFieldInits.concat(complexFieldInits).concat(cls.constructor_.body.statements)))}\n}`));
         } else if (complexFieldInits.length > 0)
             resList.push(`public ${this.name_(cls.name)}()\n{\n${this.pad(this.stmts(complexFieldInits))}\n}`);
 
@@ -467,7 +568,7 @@ export class JavaGenerator implements IGenerator {
             methods.push(this.method(method, true));
         }
         resList.push(methods.join("\n\n"));
-        return this.pad(resList.filter(x => x !== "").join("\n\n"));        
+        return this.pad(resList.filter(x => x !== "").join("\n\n"));
     }
 
     ucFirst(str: string): string { return str[0].toUpperCase() + str.substr(1); }
@@ -478,7 +579,8 @@ export class JavaGenerator implements IGenerator {
         const resList: string[] = [];
         for (const field of intf.fields) {
             const varType = this.varType(field, field);
-            resList.push(`${varType} get${this.ucFirst(field.name)}();\nvoid set${this.ucFirst(field.name)}(${varType} value);`);
+            const name = this.ucFirst(field.name);
+            resList.push(`${varType} get${name}();\nvoid set${name}(${varType} value);`);
         }
 
         resList.push(intf.methods.map(method => this.method(method, false)).join("\n"));
@@ -528,6 +630,14 @@ export class JavaGenerator implements IGenerator {
     //     return result;
     // }
 
+    importsHead(): string {
+        const imports: string[] = [];
+        for (const imp of this.imports.values())
+            imports.push(imp);
+        this.imports = new Set<string>();
+        return imports.length === 0 ? "" : imports.map(x => `import ${x};`).join("\n") + "\n\n";
+    }
+
     generate(pkg: Package): GeneratedFile[] {
         const result: GeneratedFile[] = [];
         for (const path of Object.keys(pkg.files)) {
@@ -535,25 +645,22 @@ export class JavaGenerator implements IGenerator {
             const dstDir = `src/main/java/${pkg.name}/${file.sourcePath.path.replace(/\.ts$/, "")}`;
 
             for (const enum_ of file.enums) {
-                this.usings = new Set<string>();
                 result.push(new GeneratedFile(`${dstDir}/${enum_.name}.java`, 
                     `public enum ${this.name_(enum_.name)} { ${enum_.values.map(x => this.name_(x.name)).join(", ")} }`));
             }
 
             for (const intf of file.interfaces) {
-                this.usings = new Set<string>();
-                result.push(new GeneratedFile(`${dstDir}/${intf.name}.java`, 
-                    `public interface ${this.name_(intf.name)}${this.typeArgs(intf.typeArguments)}`+
-                    `${this.preArr(" extends ", intf.baseInterfaces.map(x => this.type(x)))} {\n${this.interface(intf)}\n}`));
+                const res = `public interface ${this.name_(intf.name)}${this.typeArgs(intf.typeArguments)}`+
+                    `${this.preArr(" extends ", intf.baseInterfaces.map(x => this.type(x)))} {\n${this.interface(intf)}\n}`;
+                result.push(new GeneratedFile(`${dstDir}/${intf.name}.java`, this.importsHead() + res));
             }
 
             for (const cls of file.classes) {
-                this.usings = new Set<string>();
-                result.push(new GeneratedFile(`${dstDir}/${cls.name}.java`, 
-                    `public class ${this.name_(cls.name)}${this.typeArgs(cls.typeArguments)}` +
+                const res = `public class ${this.name_(cls.name)}${this.typeArgs(cls.typeArguments)}` +
                     (cls.baseClass !== null ? ` extends ${this.type(cls.baseClass)}` : "") +
                     this.preArr(" implements ", cls.baseInterfaces.map(x => this.type(x))) +
-                    ` {\n${this.class(cls)}\n}`));
+                    ` {\n${this.class(cls)}\n}`;
+                result.push(new GeneratedFile(`${dstDir}/${cls.name}.java`, this.importsHead() + res));
             }
         }
         return result;
