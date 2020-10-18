@@ -20,15 +20,9 @@ export class ErrorManager {
     errors: CompilationError[] = [];
     lastContextInfo: string;
 
-    resetContext(transformer: AstTransformer = null): void {
-        this.transformer = transformer;
-    }
-
-    log(type: LogType, msg: string) {
+    get location() {
         const t = this.transformer;
-
-        let text = (t !== null ? `[${t.name}] ` : "") + msg;
-
+        
         let par = this.currentNode;
         while (par instanceof Expression)
             par = par.parentNode;
@@ -61,14 +55,29 @@ export class ErrorManager {
             }
         }
 
-        if (this.currentNode !== null)
-            text += `\n  Node: ${TSOverviewGenerator.nodeRepr(this.currentNode)}`;
+        return location;
+    }
 
+    get currentNodeRepr() { return TSOverviewGenerator.preview.nodeRepr(this.currentNode); }
+    get currentStatementRepr() { return this.transformer.currentStatement === null ? "<null>" : TSOverviewGenerator.preview.stmt(this.transformer.currentStatement); }
+
+    resetContext(transformer: AstTransformer = null): void {
+        this.transformer = transformer;
+    }
+
+    log(type: LogType, msg: string) {
+        const t = this.transformer;
+        let text = (t !== null ? `[${t.name}] ` : "") + msg;
+
+        if (this.currentNode !== null)
+            text += `\n  Node: ${this.currentNodeRepr}`;
+
+        const location = this.location;
         if (location !== null)
             text += `\n  Location: ${location}`;
 
         if (t !== null && t.currentStatement !== null)
-            text += `\n  Statement: ${TSOverviewGenerator.stmt(t.currentStatement, true)}`;
+            text += `\n  Statement: ${this.currentStatementRepr}`;
 
         if (this.lastContextInfo !== null)
             text += `\n  Context: ${this.lastContextInfo}`;

@@ -79,14 +79,13 @@ export class InferReturnType extends InferTypesPlugin {
     }
 
     handleStatement(stmt: Statement) {
+        if (this.returnTypeInfer.length === 0) return false;
         if (stmt instanceof ReturnStatement && stmt.expression !== null) {
             this.main.processStatement(stmt);
-            if (this.returnTypeInfer.length !== 0)
-                this.current.addReturn(stmt.expression);
+            this.current.addReturn(stmt.expression);
             return true;
         } else if (stmt instanceof ThrowStatement) {
-            if (this.returnTypeInfer.length !== 0)
-                this.current.throws = true;
+            this.current.throws = true;
             return false;
         } else
             return false;

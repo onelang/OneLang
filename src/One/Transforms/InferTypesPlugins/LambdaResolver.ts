@@ -26,9 +26,6 @@ export class LambdaResolver extends InferTypesPlugin {
             this.errorMan.throw("Expected LambdaType as Lambda's type!");
     }
 
-    protected processReturnExpr(returnExpr: Expression) {
-    }
-
     protected visitLambda(lambda: Lambda): void {
         this.setupLambdaParameterTypes(lambda);
         //this.main.visitLambda(lambda);
