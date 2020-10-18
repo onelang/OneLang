@@ -10,7 +10,7 @@ export class ResolveElementAccess extends InferTypesPlugin {
     constructor() { super("ResolveElementAccess"); }
     
     canTransform(expr: Expression) { 
-        const isSet = expr instanceof BinaryExpression && expr.left instanceof ElementAccessExpression && expr.operator === "=";
+        const isSet = expr instanceof BinaryExpression && expr.left instanceof ElementAccessExpression && ["=", "+=", "-="].includes(expr.operator);
         return expr instanceof ElementAccessExpression || isSet; }
 
     isMapOrArrayType(type: IType) {
