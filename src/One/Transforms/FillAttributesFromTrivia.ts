@@ -12,7 +12,10 @@ export class FillAttributesFromTrivia {
             while(true) {
                 const match = regex.exec(trivia) || null;
                 if (match === null) break;
-                result[match[1]] = match[2] || "true";
+                if (match[1] in result)
+                    result[match[1]] += "\n" + match[2];
+                else
+                    result[match[1]] = match[2] || "true";
             }
         }
         return result;
