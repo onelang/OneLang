@@ -9,6 +9,7 @@ import { PythonGenerator } from "@one/Generator/PythonGenerator";
 import { PhpGenerator } from "@one/Generator/PhpGenerator";
 import { JavaGenerator } from "@one/Generator/JavaGenerator";
 import { Compiler } from "@one/One/Compiler";
+import { StatementDebugger } from "@one/Utils/StatementDebugger";
 import { PackageStateCapture } from "@one/Test/PackageStateCapture";
 import { CircularDependencyDetector, DetectionMode } from "@one/One/IssueDetectors/CircularDependencyDetector";
 import * as color from "ansi-colors";
@@ -64,6 +65,8 @@ compiler.init(`${baseDir}/packages`).then(() => {
 
         console.log('writing lastState...');
         writeFile(`test/artifacts/ProjectTest/${test.projName}/lastState.txt`, pkgStates[pkgStates.length - 1].getSummary());
+
+        new StatementDebugger("new .T.C:InterfaceType").visitPackage(compiler.projectPkg);
         //printState();
 
         new CircularDependencyDetector(DetectionMode.AllImports).processPackage(compiler.projectPkg);
