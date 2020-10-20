@@ -13,6 +13,9 @@ export class FillAttributesFromTrivia {
                 const match = regex.exec(trivia) || null;
                 if (match === null) break;
                 if (match[1] in result)
+                    // @php $result[$match[1]] .= "\n" . $match[2];
+                    // @python result[match[1]] += "\n" + match[2]
+                    // @csharp result[match[1]] += "\n" + match[2];
                     result[match[1]] += "\n" + match[2];
                 else
                     result[match[1]] = match[2] || "true";

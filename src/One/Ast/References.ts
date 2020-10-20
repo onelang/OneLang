@@ -2,7 +2,7 @@ import { Class, Enum, MethodParameter, GlobalFunction, Field, Property, Method, 
 import { VariableDeclaration, ForVariable, ForeachVariable, CatchVariable } from "./Statements";
 import { Expression, TypeRestriction } from "./Expressions";
 import { EnumType, ClassType, TypeHelper } from "./AstTypes";
-import { IType } from "./Interfaces";
+import { IExpression, IType } from "./Interfaces";
 
 export interface IReferencable {
     createReference(): Reference;
@@ -98,7 +98,7 @@ export class SuperReference extends Reference {
 export class VariableDeclarationReference extends VariableReference {
     constructor(public decl: VariableDeclaration) { super(); decl.references.push(this); }
     getVariable(): IVariable { return this.decl; }
-    copy() { return new VariableDeclarationReference(this.decl); }
+    copy(): IExpression { return new VariableDeclarationReference(this.decl); }
 }
 
 // has type: yes

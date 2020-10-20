@@ -280,7 +280,9 @@ export class PhpGenerator implements IGenerator {
                 else if (op === "+=")
                     op = ".=";
             }
-                
+
+            // const useParen = expr.left instanceof BinaryExpression && expr.left.operator !== expr.operator;
+            // const leftExpr = this.expr(expr.left);
 
             res = `${this.expr(expr.left)} ${op} ${this.mutatedExpr(expr.right, expr.operator === "=" ? expr.left : null)}`;
         } else if (expr instanceof ArrayLiteral) {

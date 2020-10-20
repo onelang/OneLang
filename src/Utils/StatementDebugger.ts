@@ -7,7 +7,7 @@ import { Field } from "../One/Ast/Types";
 export class StatementDebugger extends AstTransformer {
     constructor(public stmtFilterRegex: string) { super("StatementDebugger"); }
 
-    visitExpression(expr: Expression): Expression {
+    protected visitExpression(expr: Expression): Expression {
         // optimization: no need to process these...
         return null;
     }
@@ -17,7 +17,7 @@ export class StatementDebugger extends AstTransformer {
         super.visitField(field);
     }
 
-    visitStatement(stmt: Statement): Statement {
+    protected visitStatement(stmt: Statement): Statement {
         const stmtRepr = TSOverviewGenerator.preview.stmt(stmt);
         // if (new RegExp(this.stmtFilterRegex).test(stmtRepr))
         //     debugger;
