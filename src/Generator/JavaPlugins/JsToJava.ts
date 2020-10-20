@@ -32,7 +32,7 @@ export class JsToJava implements IGeneratorPlugin {
     }
 
     convertMethod(cls: Class, obj: Expression, method: Method, args: Expression[], returnType: IType): string {
-        const objR = this.main.expr(obj);
+        const objR = obj === null ? null : this.main.expr(obj);
         const argsR = args.map(x => this.main.expr(x));
         if (cls.name === "TsArray") {
             if (method.name === "includes") {
@@ -72,7 +72,7 @@ export class JsToJava implements IGeneratorPlugin {
             if (method.name === "replace") {
                 if (args[0] instanceof RegexLiteral) {
                     this.main.imports.add("java.util.regex.Pattern");
-                    return `${objR}.replaceAll(Pattern.quote(${JSON.stringify((<RegexLiteral>args[0]).pattern)}), ${argsR[1]})`;
+                    return `${objR}.replaceAll(${JSON.stringify((<RegexLiteral>args[0]).pattern)}, ${argsR[1]})`;
                 }
 
                 return `${argsR[0]}.replace(${objR}, ${argsR[1]})`;
@@ -90,7 +90,7 @@ export class JsToJava implements IGeneratorPlugin {
             
             if (method.name === "split" && args[0] instanceof RegexLiteral) {
                 const pattern = (<RegexLiteral>args[0]).pattern;
-                return `${objR}.split(${JSON.stringify(pattern)})`;
+                return `${objR}.split(${JSON.stringify(pattern)}, -1)`;
             }
 
 

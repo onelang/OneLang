@@ -1,7 +1,7 @@
 import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression, StaticMethodCallExpression, LambdaCallExpression, IMethodCallExpression } from "../One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, TryStatement, Block } from "../One/Ast/Statements";
 import { Class, SourceFile, IVariable, Lambda, Interface, IInterface, MethodParameter, IVariableWithInitializer, Visibility, Package, IHasAttributesAndTrivia, Method } from "../One/Ast/Types";
-import { VoidType, ClassType, InterfaceType, EnumType, AnyType, LambdaType, NullType, GenericsType } from "../One/Ast/AstTypes";
+import { VoidType, ClassType, InterfaceType, EnumType, AnyType, LambdaType, NullType, GenericsType, TypeHelper } from "../One/Ast/AstTypes";
 import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference, StaticThisReference, VariableReference } from "../One/Ast/References";
 import { GeneratedFile } from "./GeneratedFile";
 import { NameUtils } from "./NameUtils";
@@ -77,7 +77,7 @@ export class JavaGenerator implements IGenerator {
                 } else
                     return `${this.type(t.typeArguments[0])}[]`;
             } else if (t.decl.name === "Map") {
-                const realType = isNew ? "HashMap" : "Map";
+                const realType = isNew ? "LinkedHashMap" : "Map";
                 this.imports.add(`java.util.${realType}`);
                 return `${realType}<${this.type(t.typeArguments[0])}, ${this.type(t.typeArguments[1])}>`;
             } else if (t.decl.name === "Set") {
@@ -90,7 +90,7 @@ export class JavaGenerator implements IGenerator {
                 //this.imports.add("System");
                 return `Object`;
             } else if (t.decl.name === "TsMap") {
-                const realType = isNew ? "HashMap" : "Map";
+                const realType = isNew ? "LinkedHashMap" : "Map";
                 this.imports.add(`java.util.${realType}`);
                 return `${realType}<String, ${this.type(t.typeArguments[0])}>`;
             }
@@ -178,7 +178,8 @@ export class JavaGenerator implements IGenerator {
                 return `${this.expr(arg)}.toArray(${this.type(itemType)}[]::new)`;
             else if (!currentlyMutable && shouldBeMutable) {
                 this.imports.add("java.util.Arrays");
-                return `Arrays.asList(${this.expr(arg)})`;
+                this.imports.add("java.util.ArrayList");
+                return `new ArrayList<>(Arrays.asList(${this.expr(arg)}))`;
             }
         }
         return this.expr(arg);
@@ -284,16 +285,27 @@ export class JavaGenerator implements IGenerator {
             res = parts.join(' + ');
         } else if (expr instanceof BinaryExpression) {
             const modifies = ["=", "+=", "-="].includes(expr.operator);
-            if (modifies && expr.left instanceof InstanceFieldReference && this.useGetterSetter(expr.left))
+            if (modifies && expr.left instanceof InstanceFieldReference && this.useGetterSetter(expr.left)) {
                 res = `${this.expr(expr.left.object)}.set${this.ucFirst(expr.left.field.name)}(${this.mutatedExpr(expr.right, expr.operator === "=" ? expr.left : null)})`;
-            else
+            } else if (["==", "!="].includes(expr.operator)) {
+                const lit = this.currentClass.parentFile.literalTypes;
+                const leftType = expr.left.getType();
+                const rightType = expr.right.getType();
+                const useEquals = TypeHelper.equals(leftType, lit.string) && rightType !== null && TypeHelper.equals(rightType, lit.string);
+                if (useEquals)
+                    res = `${expr.operator === "!=" ? "!" : ""}${this.expr(expr.left)}.equals(${this.expr(expr.right)})`;
+                else
+                    res = `${this.expr(expr.left)} ${expr.operator} ${this.expr(expr.right)}`;
+            } else {
                 res = `${this.expr(expr.left)} ${expr.operator} ${this.mutatedExpr(expr.right, expr.operator === "=" ? expr.left : null)}`;
+            }
         } else if (expr instanceof ArrayLiteral) {
             if (expr.items.length === 0) {
                 res = `new ${this.type(expr.actualType, true, true)}()`;
             } else {
                 this.imports.add(`java.util.List`);
-                res = `List.of(${expr.items.map(x => this.expr(x)).join(', ')})`;
+                this.imports.add(`java.util.ArrayList`);
+                res = `new ArrayList<>(List.of(${expr.items.map(x => this.expr(x)).join(', ')}))`;
             }
         } else if (expr instanceof CastExpression) {
             res = `((${this.type(expr.newType)})${this.expr(expr.expression)})`;
@@ -458,7 +470,7 @@ export class JavaGenerator implements IGenerator {
     overloadMethodGen(prefix: string, method: Method, params: MethodParameter[], body: string): string {
         const methods: string[] = [];
         methods.push(prefix + 
-            `(${params.map(p => this.varWoInit(p, null)).join(", ")})` + body);
+            `(${params.map(p => this.varWoInit(p, p)).join(", ")})` + body);
 
         for (let paramLen = params.length -1; paramLen >= 0; paramLen--) {
             if (params[paramLen].initializer === null) break;
@@ -490,8 +502,9 @@ export class JavaGenerator implements IGenerator {
             (method.typeArguments.length > 0 ? `<${method.typeArguments.join(', ')}> ` : "") +
             `${this.type(method.returns, false)} ` +
             this.name_(method.name);
+
         return this.overloadMethodGen(prefix, method, method.parameters,
-            method.body === null ? ";" : `\n{\n${this.pad(this.stmts(method.body.statements))}\n}`);
+            method.body === null ? ";" : ` {\n${this.pad(this.stmts(method.body.statements))}\n}`);
     }
 
     class(cls: Class) {
@@ -513,8 +526,9 @@ export class JavaGenerator implements IGenerator {
                 const varType = this.varType(field, field);
                 const name = this.name_(field.name);
                 const pname = this.ucFirst(field.name);
+                const setToFalse = TypeHelper.equals(field.type, this.currentClass.parentFile.literalTypes.boolean);
                 propReprs.push(
-                    `${varType} ${name};\n` +
+                    `${varType} ${name}${setToFalse ? " = false" : field.initializer !== null ? ` = ${this.expr(field.initializer)}` : ""};\n` +
                     `${prefix}${varType} get${pname}() { return this.${name}; }\n` +
                     `${prefix}void set${pname}(${varType} value) { this.${name} = value; }`);
             } else if (isInitializerComplex) {

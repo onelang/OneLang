@@ -33,16 +33,19 @@ export class InterfaceDependency {
     constructor(
         public name: string,
         // @csharp-type double
+        // @java-type Double
         public minver: number) { }
 }
 
 export class InterfaceYaml {
     constructor(
         // @csharp-type double
+        // @java-type Double
         public fileVersion: number,
         public vendor: string,
         public name: string,
         // @csharp-type double
+        // @java-type Double
         public version: number,
         public definitionFile: string,
         public dependencies: InterfaceDependency[]) { }
@@ -67,8 +70,10 @@ export class ImplPkgImplIntf {
     constructor(
         public name: string,
         // @csharp-type double
+        // @java-type Double
         public minver: number,
         // @csharp-type double
+        // @java-type Double
         public maxver: number) { }
 }
 
@@ -83,6 +88,7 @@ export class ImplPkgImplementation {
 export class ImplPackageYaml {
     constructor(
         // @csharp-type double
+        // @java-type Double
         public fileVersion: number,
         public vendor: string,
         public name: string,
