@@ -53,6 +53,11 @@ export class Expression implements IAstNode, IExpression {
     }
 
     getType(): IType { return this.actualType || this.expectedType; }
+    
+    copy(): IExpression { 
+        debugger;
+        throw new Error("Copy is not implemented!");
+    }
 }
 
 export class Identifier extends Expression {
@@ -61,6 +66,7 @@ export class Identifier extends Expression {
 
 export class NumericLiteral extends Expression {
     constructor(public valueAsText: string) { super(); }
+    copy(): IExpression { return new NumericLiteral(this.valueAsText); }
 }
 
 export class BooleanLiteral extends Expression {
@@ -173,6 +179,8 @@ export class ElementAccessExpression extends Expression {
     constructor(
         public object: Expression,
         public elementExpr: Expression) { super(); }
+
+    copy(): IExpression { return new ElementAccessExpression(<Expression>this.object.copy(), <Expression>this.elementExpr.copy()); }
 }
 
 export class UnresolvedCallExpression extends Expression {

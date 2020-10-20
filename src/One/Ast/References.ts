@@ -98,6 +98,7 @@ export class SuperReference extends Reference {
 export class VariableDeclarationReference extends VariableReference {
     constructor(public decl: VariableDeclaration) { super(); decl.references.push(this); }
     getVariable(): IVariable { return this.decl; }
+    copy() { return new VariableDeclarationReference(this.decl); }
 }
 
 // has type: yes

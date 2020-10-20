@@ -20,8 +20,10 @@ export class ResolveElementAccess extends InferTypesPlugin {
     transform(expr: Expression): Expression {
         if (expr instanceof BinaryExpression && expr.left instanceof ElementAccessExpression) {
             expr.left.object = this.main.runPluginsOn(expr.left.object);
-            if (this.isMapOrArrayType(expr.left.object.getType()))
-                return new UnresolvedMethodCallExpression(expr.left.object, "set", [], [expr.left.elementExpr, expr.right]);
+            if (this.isMapOrArrayType(expr.left.object.getType())) {
+                const right = expr.operator === "=" ? expr.right : new BinaryExpression(<Expression>expr.left.copy(), expr.operator === "+=" ? "+" : "-", expr.right);
+                return new UnresolvedMethodCallExpression(expr.left.object, "set", [], [expr.left.elementExpr, right]);
+            }
         } else if (expr instanceof ElementAccessExpression) {
             expr.object = this.main.runPluginsOn(expr.object);
             if (this.isMapOrArrayType(expr.object.getType()))
