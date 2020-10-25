@@ -15,7 +15,7 @@ import { InferTypes } from "./Transforms/InferTypes";
 import { CollectInheritanceInfo } from "./Transforms/CollectInheritanceInfo";
 import { FillMutabilityInfo } from "./Transforms/FillMutabilityInfo";
 import { AstTransformer } from "./AstTransformer";
-import { ITransformer } from "./ITransform";
+import { ITransformer } from "./ITransformer";
 import { LambdaCaptureCollector } from "./Transforms/LambdaCaptureCollector";
 
 export interface ICompilerHooks {

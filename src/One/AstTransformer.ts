@@ -4,7 +4,7 @@ import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, Vari
 import { Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda, IMethodBase, Package, GlobalFunction, IInterface, IAstNode } from "./Ast/Types";
 import { ClassReference, EnumReference, ThisReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, InstanceFieldReference, InstancePropertyReference, StaticPropertyReference, StaticFieldReference, CatchVariableReference, GlobalFunctionReference, EnumMemberReference, StaticThisReference, VariableReference } from "./Ast/References";
 import { ErrorManager } from "./ErrorManager";
-import { ITransformer } from "./ITransform";
+import { ITransformer } from "./ITransformer";
 import { IType } from "./Ast/Interfaces";
 
 export abstract class AstTransformer implements ITransformer {

@@ -1,5 +1,5 @@
 import { Package, Class, Interface } from "../Ast/Types";
-import { ITransformer } from "../ITransform";
+import { ITransformer } from "../ITransformer";
 
 export class CollectInheritanceInfo implements ITransformer {
     name = "CollectInheritanceInfo";
