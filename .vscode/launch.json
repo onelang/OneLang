@@ -73,6 +73,14 @@
             "${workspaceFolder}/test/src/testSuites/CompilationTest.ts"
           ],
           "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+          "type": "node",
+          "request": "launch",
+          "name": "Generate AST helper code",
+          "program": "${workspaceFolder}/build/generate-ast-helper-code.js",
+          "cwd": "${workspaceFolder}",
+          "protocol": "inspector"
         }
     ]
 }
