@@ -193,7 +193,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
             const newType = this.parseType();
             this.reader.expectToken(">");
             const expression = this.parseExpression();
-            return new CastExpression(newType, expression, null);
+            return new CastExpression(newType, expression);
         } else if (this.reader.readToken("/")) {
             let pattern = "";
             while (true) {

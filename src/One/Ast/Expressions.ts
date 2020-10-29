@@ -153,9 +153,11 @@ export class UnaryExpression extends Expression {
 export class CastExpression extends Expression {
     constructor(
         public newType: IType,
-        public expression: Expression,
-        // in case the cast is an implicit cast happening because of an "instanceof" primitive
-        public instanceOfCast: InstanceOfExpression) { super(); }
+        public expression: Expression) { super(); }
+
+    // in case the cast is an implicit cast happening because of an "instanceof" primitive
+    /** @creator InstanceOfImplicitCast */
+    instanceOfCast: InstanceOfExpression;
 }
 
 export class ParenthesizedExpression extends Expression {
