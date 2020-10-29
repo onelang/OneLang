@@ -372,6 +372,9 @@ export class MethodParameter implements IVariableWithInitializer, IReferencable,
         public initializer: Expression,
         public leadingTrivia: string) { }
 
+    /** @creator TypeScriptParser2 */
+    fieldDecl: Field = null;
+
     /** @creator FillParent */
     parentMethod: IMethodBase = null;
 

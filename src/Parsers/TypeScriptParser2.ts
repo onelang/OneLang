@@ -460,8 +460,11 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
 
                 // init should be used as only the constructor's method parameter, but not again as a field initializer too
                 //   (otherwise it would called twice if cloned or cause AST error is just referenced from two separate places)
-                if (isPublic)
-                    fields.push(new Field(paramName, typeAndInit.type, null, Visibility.Public, false, param, param.leadingTrivia));
+                if (isPublic) {
+                    const field = new Field(paramName, typeAndInit.type, null, Visibility.Public, false, param, param.leadingTrivia);
+                    fields.push(field);
+                    param.fieldDecl = field;
+                }
 
                 this.nodeManager.addNode(param, paramStart);
                 this.context.pop();
