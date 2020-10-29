@@ -4,7 +4,7 @@ node_modules/
 test/lib/
 lib/**/*.d.ts
 lib/**/*.js
-lib/**/*.js.map
+**/*.js.map
 ast\.json
 schema\.json
 tmp/
