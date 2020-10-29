@@ -90,7 +90,7 @@ export class RegexLiteral extends Expression {
         public global: boolean) { super(); }
 }
 
-export class TemplateStringPart {
+export class TemplateStringPart implements IAstNode {
     constructor(
         public isLiteral: boolean,
         public literalText: string,
@@ -108,7 +108,7 @@ export class ArrayLiteral extends Expression {
     constructor(public items: Expression[]) { super(); }
 }
 
-export class MapLiteralItem {
+export class MapLiteralItem implements IAstNode {
     constructor(public key: string, public value: Expression) { }
 }
 

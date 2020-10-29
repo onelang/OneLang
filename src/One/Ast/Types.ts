@@ -195,7 +195,7 @@ export class Import implements IHasAttributesAndTrivia, ISourceFileMember {
     attributes: { [name: string]: string } = null;
 }
 
-export class Enum implements IHasAttributesAndTrivia, IResolvedImportable, ISourceFileMember, IReferencable {
+export class Enum implements IAstNode, IHasAttributesAndTrivia, IResolvedImportable, ISourceFileMember, IReferencable {
     /** @creator TypeScriptParser2 */
     constructor(
         public name: string,
@@ -215,7 +215,7 @@ export class Enum implements IHasAttributesAndTrivia, IResolvedImportable, ISour
     type = new EnumType(this);
 }
 
-export class EnumMember {
+export class EnumMember implements IAstNode {
     /** @creator TypeScriptParser2 */
     constructor(public name: string) { }
 
