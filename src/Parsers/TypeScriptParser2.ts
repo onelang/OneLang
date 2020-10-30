@@ -588,9 +588,10 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
             const memberLeadingTrivia = this.reader.readLeadingTrivia();
 
             const memberStart = this.reader.offset;
-            const modifiers = this.reader.readModifiers(["static", "public", "protected", "private", "readonly", "async"]);
+            const modifiers = this.reader.readModifiers(["static", "public", "protected", "private", "readonly", "async", "abstract"]);
             const isStatic = modifiers.includes("static");
             const isAsync = modifiers.includes("async");
+            const isAbstract = modifiers.includes("abstract");
             const visibility = modifiers.includes("private") ? Visibility.Private :
                 modifiers.includes("protected") ? Visibility.Protected : Visibility.Public;
 
@@ -600,7 +601,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
                 const isConstructor = memberName === "constructor";
 
                 let member: IMethodBase;
-                const sig = this.parseMethodSignature(isConstructor, declarationOnly);
+                const sig = this.parseMethodSignature(isConstructor, declarationOnly || isAbstract);
                 if (isConstructor) {
                     member = constructor = new Constructor(sig.params, sig.body, sig.superCallArgs, memberLeadingTrivia);
                     for (const field of sig.fields)
