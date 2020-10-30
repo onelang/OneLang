@@ -12,9 +12,9 @@ export interface IGetMethodBase {
     getMethodBase(): IMethodBase;
 }
 
-export class Reference extends Expression { }
+export abstract class Reference extends Expression { }
 
-export class VariableReference extends Reference {
+export abstract class VariableReference extends Reference {
     getVariable(): IVariable { throw new Error("Abstract method"); }
 }
 
@@ -23,6 +23,9 @@ export class ClassReference extends Reference {
     constructor(public decl: Class) { super(); decl.classReferences.push(this); }
 
     setActualType(type: IType, allowVoid: boolean = false, allowGeneric: boolean = false) { throw new Error("ClassReference cannot have a type!"); }
+
+    // @auto-generated
+    clone() { return new ClassReference(this.decl.clone()); }
 }
 
 // has type: no (requires call, passing functions is not supported yet)
@@ -31,6 +34,9 @@ export class GlobalFunctionReference extends Reference implements IGetMethodBase
 
     setActualType(type: IType, allowVoid: boolean = false, allowGeneric: boolean = false) { throw new Error("GlobalFunctionReference cannot have a type!"); }
     getMethodBase(): IMethodBase { return this.decl; }
+
+    // @auto-generated
+    clone() { return new GlobalFunctionReference(this.decl.clone()); }
 }
 
 // has type: yes (it's a variable)
@@ -46,6 +52,9 @@ export class MethodParameterReference extends VariableReference {
     }
 
     getVariable(): IVariable { return this.decl; }
+
+    // @auto-generated
+    clone() { return new MethodParameterReference(this.decl.clone()); }
 }
 
 // has type: no (only it's values has a value)
@@ -53,6 +62,9 @@ export class EnumReference extends Reference {
     constructor(public decl: Enum) { super(); decl.references.push(this); }
 
     setActualType(type: IType, allowVoid: boolean = false, allowGeneric: boolean = false) { throw new Error("EnumReference cannot have a type!"); }
+
+    // @auto-generated
+    clone() { return new EnumReference(this.decl.clone()); }
 }
 
 // has type: yes
@@ -64,12 +76,18 @@ export class EnumMemberReference extends Reference {
         if (!(type instanceof EnumType)) throw new Error("Expected EnumType!");
         super.setActualType(type);
     }
+
+    // @auto-generated
+    clone() { return new EnumMemberReference(this.decl.clone()); }
 }
 
 export class StaticThisReference extends Reference {
     constructor(public cls: Class) { super(); cls.staticThisReferences.push(this); }
 
     setActualType(type: IType, allowVoid: boolean = false, allowGeneric: boolean = false) { throw new Error("StaticThisReference cannot have a type!"); }
+
+    // @auto-generated
+    clone() { return new StaticThisReference(this.cls.clone()); }
 }
 
 // has type: yes (needs to be passed as variable which requires type checking)
@@ -81,6 +99,9 @@ export class ThisReference extends Reference {
         if (!(type instanceof ClassType)) throw new Error("Expected ClassType!");
         super.setActualType(type, false, this.cls.typeArguments.length > 0);
     }
+
+    // @auto-generated
+    clone() { return new ThisReference(this.cls.clone()); }
 }
 
 // has type: no (only used as `super()` and `super.<methodName>(...)`)
@@ -91,6 +112,9 @@ export class SuperReference extends Reference {
         if (!(type instanceof ClassType)) throw new Error("Expected ClassType!");
         super.setActualType(type, false, this.cls.typeArguments.length > 0);
     }
+
+    // @auto-generated
+    clone() { return new SuperReference(this.cls.clone()); }
 }
 
 // has type: yes
@@ -98,7 +122,9 @@ export class SuperReference extends Reference {
 export class VariableDeclarationReference extends VariableReference {
     constructor(public decl: VariableDeclaration) { super(); decl.references.push(this); }
     getVariable(): IVariable { return this.decl; }
-    copy(): IExpression { return new VariableDeclarationReference(this.decl); }
+
+    // @auto-generated
+    clone() { return new VariableDeclarationReference(this.decl.clone()); }
 }
 
 // has type: yes
@@ -106,6 +132,9 @@ export class VariableDeclarationReference extends VariableReference {
 export class ForVariableReference extends VariableReference {
     constructor(public decl: ForVariable) { super(); decl.references.push(this); }
     getVariable(): IVariable { return this.decl; }
+
+    // @auto-generated
+    clone() { return new ForVariableReference(this.decl.clone()); }
 }
 
 // has type: ???
@@ -113,6 +142,9 @@ export class ForVariableReference extends VariableReference {
 export class CatchVariableReference extends VariableReference {
     constructor(public decl: CatchVariable) { super(); decl.references.push(this); }
     getVariable(): IVariable { return this.decl; }
+
+    // @auto-generated
+    clone() { return new CatchVariableReference(this.decl.clone()); }
 }
 
 // has type: yes
@@ -120,6 +152,9 @@ export class CatchVariableReference extends VariableReference {
 export class ForeachVariableReference extends VariableReference {
     constructor(public decl: ForeachVariable) { super(); decl.references.push(this); }
     getVariable(): IVariable { return this.decl; }
+
+    // @auto-generated
+    clone() { return new ForeachVariableReference(this.decl.clone()); }
 }
 
 // has type: yes
@@ -133,6 +168,9 @@ export class StaticFieldReference extends VariableReference {
     }
 
     getVariable(): IVariable { return this.decl; }
+
+    // @auto-generated
+    clone() { return new StaticFieldReference(this.decl.clone()); }
 }
 
 // has type: yes
@@ -146,6 +184,9 @@ export class StaticPropertyReference extends VariableReference {
     }
 
     getVariable(): IVariable { return this.decl; }
+
+    // @auto-generated
+    clone() { return new StaticPropertyReference(this.decl.clone()); }
 }
 
 // has type: yes
@@ -153,6 +194,9 @@ export class StaticPropertyReference extends VariableReference {
 export class InstanceFieldReference extends VariableReference {
     constructor(public object: Expression, public field: Field) { super(); field.instanceReferences.push(this); }
     getVariable(): IVariable { return this.field; }
+
+    // @auto-generated
+    clone() { return new InstanceFieldReference(this.object.clone(), this.field.clone()); }
 }
 
 // has type: yes
@@ -160,4 +204,7 @@ export class InstanceFieldReference extends VariableReference {
 export class InstancePropertyReference extends VariableReference {
     constructor(public object: Expression, public property: Property) { super(); property.instanceReferences.push(this); }
     getVariable(): IVariable { return this.property; }
+
+    // @auto-generated
+    clone() { return new InstancePropertyReference(this.object.clone(), this.property.clone()); }
 }

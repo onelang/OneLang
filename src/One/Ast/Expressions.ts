@@ -5,7 +5,7 @@ import { IExpression, IType } from "./Interfaces";
 
 export enum TypeRestriction { NoRestriction, ShouldNotHaveType, MustBeGeneric, ShouldNotBeGeneric }
 
-export class Expression implements IAstNode, IExpression {
+export abstract class Expression implements IAstNode, IExpression {
     /** @creator FillParent */
     parentNode: IAstNode = null;
     /** @creator InferTypes */
@@ -53,41 +53,58 @@ export class Expression implements IAstNode, IExpression {
     }
 
     getType(): IType { return this.actualType || this.expectedType; }
-    
-    copy(): IExpression { 
-        debugger;
-        throw new Error("Copy is not implemented!");
-    }
+
+    abstract clone(): Expression;
 }
 
 export class Identifier extends Expression {
     constructor(public text: string) { super(); }
+
+    // @auto-generated
+    clone() { return new Identifier(this.text); }
 }
 
 export class NumericLiteral extends Expression {
     constructor(public valueAsText: string) { super(); }
     copy(): IExpression { return new NumericLiteral(this.valueAsText); }
+
+    // @auto-generated
+    clone() { return new NumericLiteral(this.valueAsText); }
 }
 
 export class BooleanLiteral extends Expression {
     constructor(public boolValue: boolean) { super(); }
+
+    // @auto-generated
+    clone() { return new BooleanLiteral(this.boolValue); }
 }
 
 export class CharacterLiteral extends Expression {
     constructor(public charValue: string) { super(); }
+
+    // @auto-generated
+    clone() { return new CharacterLiteral(this.charValue); }
 }
 
 export class StringLiteral extends Expression {
     constructor(public stringValue: string) { super(); }
+
+    // @auto-generated
+    clone() { return new StringLiteral(this.stringValue); }
 }
 
-export class NullLiteral extends Expression { }
+export class NullLiteral extends Expression {
+    clone() { return new NullLiteral(); }
+}
 
 export class RegexLiteral extends Expression {
     constructor(
         public pattern: string,
         public caseInsensitive: boolean,
         public global: boolean) { super(); }
+
+    // @auto-generated
+    clone() { return new RegexLiteral(this.pattern, this.caseInsensitive, this.global); }
 }
 
 export class TemplateStringPart implements IAstNode {
@@ -98,34 +115,55 @@ export class TemplateStringPart implements IAstNode {
 
     static Literal(literalText: string): TemplateStringPart { return new TemplateStringPart(true, literalText, null); }
     static Expression(expr: Expression): TemplateStringPart { return new TemplateStringPart(false, null, expr); }
+
+    // @auto-generated
+    clone() { return new TemplateStringPart(this.isLiteral, this.literalText, this.expression.clone()); }
 }
 
 export class TemplateString extends Expression {
     constructor(public parts: TemplateStringPart[]) { super(); }
+
+    // @auto-generated
+    clone() { return new TemplateString(this.parts.map(x => x.clone())); }
 }
 
 export class ArrayLiteral extends Expression {
     constructor(public items: Expression[]) { super(); }
+
+    // @auto-generated
+    clone() { return new ArrayLiteral(this.items.map(x => x.clone())); }
 }
 
 export class MapLiteralItem implements IAstNode {
     constructor(public key: string, public value: Expression) { }
+
+    // @auto-generated
+    clone() { return new MapLiteralItem(this.key, this.value.clone()); }
 }
 
 export class MapLiteral extends Expression {
     constructor(public items: MapLiteralItem[]) { super(); }
+
+    // @auto-generated
+    clone() { return new MapLiteral(this.items.map(x => x.clone())); }
 }
 
 export class UnresolvedNewExpression extends Expression {
     constructor(
         public cls: UnresolvedType,
         public args: Expression[]) { super(); }
+
+    // @auto-generated
+    clone() { return new UnresolvedNewExpression(this.cls.clone(), this.args.map(x => x.clone())); }
 }
 
 export class NewExpression extends Expression {
     constructor(
         public cls: ClassType,
         public args: Expression[]) { super(); }
+
+    // @auto-generated
+    clone() { return new NewExpression(this.cls.clone(), this.args.map(x => x.clone())); }
 }
 
 export class BinaryExpression extends Expression {
@@ -133,12 +171,18 @@ export class BinaryExpression extends Expression {
         public left: Expression,
         public operator: string,
         public right: Expression) { super(); }
+
+    // @auto-generated
+    clone() { return new BinaryExpression(this.left.clone(), this.operator, this.right.clone()); }
 }
 
 export class NullCoalesceExpression extends Expression {
     constructor(
         public defaultExpr: Expression,
         public exprIfNull: Expression) { super(); }
+
+    // @auto-generated
+    clone() { return new NullCoalesceExpression(this.defaultExpr.clone(), this.exprIfNull.clone()); }
 }
 
 export enum UnaryType { Postfix, Prefix }
@@ -148,6 +192,9 @@ export class UnaryExpression extends Expression {
         public unaryType: UnaryType,
         public operator: string, // "++" | "--" | "+" | "-" | "~" | "!"
         public operand: Expression) { super(); }
+
+    // @auto-generated
+    clone() { return new UnaryExpression(this.unaryType, this.operator, this.operand.clone()); }
 }
 
 export class CastExpression extends Expression {
@@ -158,10 +205,16 @@ export class CastExpression extends Expression {
     // in case the cast is an implicit cast happening because of an "instanceof" primitive
     /** @creator InstanceOfImplicitCast */
     instanceOfCast: InstanceOfExpression;
+
+    // @auto-generated
+    clone() { return new CastExpression(this.newType.clone(), this.expression.clone()); }
 }
 
 export class ParenthesizedExpression extends Expression {
     constructor(public expression: Expression) { super(); }
+
+    // @auto-generated
+    clone() { return new ParenthesizedExpression(this.expression.clone()); }
 }
 
 export class ConditionalExpression extends Expression {
@@ -169,12 +222,18 @@ export class ConditionalExpression extends Expression {
         public condition: Expression,
         public whenTrue: Expression,
         public whenFalse: Expression) { super(); }
+
+    // @auto-generated
+    clone() { return new ConditionalExpression(this.condition.clone(), this.whenTrue.clone(), this.whenFalse.clone()); }
 }
 
 export class PropertyAccessExpression extends Expression {
     constructor(
         public object: Expression,
         public propertyName: string) { super(); }
+
+    // @auto-generated
+    clone() { return new PropertyAccessExpression(this.object.clone(), this.propertyName); }
 }
 
 export class ElementAccessExpression extends Expression {
@@ -182,7 +241,8 @@ export class ElementAccessExpression extends Expression {
         public object: Expression,
         public elementExpr: Expression) { super(); }
 
-    copy(): IExpression { return new ElementAccessExpression(<Expression>this.object.copy(), <Expression>this.elementExpr.copy()); }
+    // @auto-generated
+    clone() { return new ElementAccessExpression(this.object.clone(), this.elementExpr.clone()); }
 }
 
 export class UnresolvedCallExpression extends Expression {
@@ -190,6 +250,9 @@ export class UnresolvedCallExpression extends Expression {
         public func: Expression,
         public typeArgs: IType[],
         public args: Expression[]) { super(); }
+
+    // @auto-generated
+    clone() { return new UnresolvedCallExpression(this.func.clone(), this.typeArgs.map(x => x.clone()), this.args.map(x => x.clone())); }
 }
 
 export class UnresolvedMethodCallExpression extends Expression {
@@ -198,6 +261,9 @@ export class UnresolvedMethodCallExpression extends Expression {
         public methodName: string,
         public typeArgs: IType[],
         public args: Expression[]) { super(); }
+
+    // @auto-generated
+    clone() { return new UnresolvedMethodCallExpression(this.object.clone(), this.methodName, this.typeArgs.map(x => x.clone()), this.args.map(x => x.clone())); }
 }
 
 export interface IMethodCallExpression extends IExpression {
@@ -212,6 +278,9 @@ export class StaticMethodCallExpression extends Expression implements IMethodCal
         public typeArgs: IType[],
         public args: Expression[],
         public isThisCall: boolean) { super(); }
+
+    // @auto-generated
+    clone() { return new StaticMethodCallExpression(this.method.clone(), this.typeArgs.map(x => x.clone()), this.args.map(x => x.clone()), this.isThisCall); }
 }
 
 export class InstanceMethodCallExpression extends Expression implements IMethodCallExpression {
@@ -220,23 +289,35 @@ export class InstanceMethodCallExpression extends Expression implements IMethodC
         public method: Method,
         public typeArgs: IType[],
         public args: Expression[]) { super(); }
+
+    // @auto-generated
+    clone() { return new InstanceMethodCallExpression(this.object.clone(), this.method.clone(), this.typeArgs.map(x => x.clone()), this.args.map(x => x.clone())); }
 }
 
 export class GlobalFunctionCallExpression extends Expression {
     constructor(
         public func: GlobalFunction,
         public args: Expression[]) { super(); }
+
+    // @auto-generated
+    clone() { return new GlobalFunctionCallExpression(this.func.clone(), this.args.map(x => x.clone())); }
 }
 
 export class LambdaCallExpression extends Expression {
     constructor(
         public method: Expression,
         public args: Expression[]) { super(); }
+
+    // @auto-generated
+    clone() { return new LambdaCallExpression(this.method.clone(), this.args.map(x => x.clone())); }
 }
 
 export class TodoExpression extends Expression {
     constructor(
         public expr: Expression) { super(); }
+
+    // @auto-generated
+    clone() { return new TodoExpression(this.expr.clone()); }
 }
 
 export class InstanceOfExpression extends Expression { 
@@ -249,8 +330,14 @@ export class InstanceOfExpression extends Expression {
     implicitCasts: CastExpression[] = null;
 
     alias: string = null;
+
+    // @auto-generated
+    clone() { return new InstanceOfExpression(this.expr.clone(), this.checkType.clone()); }
 }
 
 export class AwaitExpression extends Expression {
     constructor(public expr: Expression) { super(); }
+
+    // @auto-generated
+    clone() { return new AwaitExpression(this.expr.clone()); }
 }

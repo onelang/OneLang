@@ -78,26 +78,35 @@ export interface IPrimitiveType extends IType { }
 export class VoidType implements IPrimitiveType {
     static instance = new VoidType();
     repr() { return "Void"; }
+    clone() { return VoidType.instance; }
 }
 
 export class AnyType implements IPrimitiveType {
     static instance = new AnyType();
     repr() { return "Any"; }
+    clone() { return AnyType.instance; }
 }
 
 export class NullType implements IPrimitiveType {
     static instance = new NullType();
     repr() { return "Null"; }
+    clone() { return NullType.instance; }
 }
 
 export class GenericsType implements IType {
     constructor(public typeVarName: string) { }
     repr() { return `G:${this.typeVarName}`; }
+
+    // @auto-generated
+    clone() { return new GenericsType(this.typeVarName); }
 }
 
 export class EnumType implements IType {
     constructor(public decl: Enum) { }
     repr() { return `E:${this.decl.name}`; }
+
+    // @auto-generated
+    clone() { return new EnumType(this.decl.clone()); }
 }
 
 export interface IHasTypeArguments {
@@ -113,20 +122,32 @@ export class InterfaceType implements IType, IHasTypeArguments, IInterfaceType {
     constructor(public decl: Interface, public typeArguments: IType[]) { }
     getDecl(): IInterface { return this.decl; }
     repr() { return `I:${this.decl.name}${TypeHelper.argsRepr(this.typeArguments)}`; }
+
+    // @auto-generated
+    clone() { return new InterfaceType(this.decl.clone(), this.typeArguments.map(x => x.clone())); }
 }
 
 export class ClassType implements IType, IHasTypeArguments, IInterfaceType {
     constructor(public decl: Class, public typeArguments: IType[]) { }
     getDecl(): IInterface { return this.decl; }
     repr() { return `C:${this.decl.name}${TypeHelper.argsRepr(this.typeArguments)}`; }
+
+    // @auto-generated
+    clone() { return new ClassType(this.decl.clone(), this.typeArguments.map(x => x.clone())); }
 }
 
 export class UnresolvedType implements IType, IHasTypeArguments {
     constructor(public typeName: string, public typeArguments: IType[]) { }
     repr() { return `X:${this.typeName}${TypeHelper.argsRepr(this.typeArguments)}`; }
+
+    // @auto-generated
+    clone() { return new UnresolvedType(this.typeName, this.typeArguments.map(x => x.clone())); }
 }
 
 export class LambdaType implements IType {
     constructor(public parameters: MethodParameter[], public returnType: IType) { }
     repr() { return `L:(${this.parameters.map(x => x.type.repr()).join(", ")})=>${this.returnType.repr()}`; }
+
+    // @auto-generated
+    clone() { return new LambdaType(this.parameters.map(x => x.clone()), this.returnType.clone()); }
 }
