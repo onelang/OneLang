@@ -4,51 +4,38 @@ import { readFileSync, writeFileSync } from "fs";
 import { UnresolvedType } from '@one/One/Ast/AstTypes';
 import { Package, SourcePath } from '@one/One/Ast/Types';
 
+const baseDir = `${__dirname}/../src`;
 function pad(str: string): string { return str.split(/\n/g).map(x => `    ${x}`).join('\n'); }
 
-const baseDir = `${__dirname}/../src`;
-
-const filesToParse = ["Types", "AstTypes", "Expressions", "Statements"];
-const files = filesToParse.map(fn => TypeScriptParser2.parseFile(readFileSync(`${baseDir}/One/Ast/${fn}.ts`, 'utf-8'), new SourcePath(new Package("@", false), fn)));
-const classes = files.map(x => x.classes).flat();
-const classNames = classes.map(x => x.name);
-
 function conv(type: UnresolvedType, expr: string) {
-    if (["TsString", "TsBoolean", "Visibility"].includes(type.typeName)) {
+    if (["TsString", "TsBoolean", "Visibility", "UnaryType"].includes(type.typeName)) {
         return expr;
     } else if (type.typeName === "TsArray") {
         return `${expr}.map(x => ${conv(<UnresolvedType>type.typeArguments[0], "x")})`;
-    } else if (type.typeName.endsWith("Type")) {
-        return `this.cloneType(${expr})`;
-    } else if (classNames.includes(type.typeName) || ["IImportable"].includes(type.typeName)) {
-        return `this.cloneNode(${expr})`;
     } else {
-        debugger;
-        return expr;
+        return `${expr}.clone()`;
     }
 }
 
-const methodBody = classes.filter(x => x.name !== "Expression").map(cls => {
-    const mps = cls.constructor_ === null ? [] : cls.constructor_.parameters;
-    if (mps.filter(x => x.fieldDecl === null).length > 0)
-        throw new Error("Non-public field found!");
-    return "" + 
-        `if (node instanceof ${cls.name}) {\n` + pad(
-            `return new ${cls.name}(${
-                mps.map(mp => conv(<UnresolvedType>mp.type, `node.${mp.name}`)).join(", ")}` + 
-            `);`) + "\n" +
-        `}`;
-}).join(" else ");
+const filesToParse = ["Types", "AstTypes", "Expressions", "Statements", "References"];
+for (const fn of filesToParse) {
+    const fullFn = `${baseDir}/One/Ast/${fn}.ts`;
+    let fileContent = readFileSync(fullFn, 'utf-8');
+    const file = TypeScriptParser2.parseFile(fileContent, new SourcePath(new Package("@", false), fn));
+    for (const cls of file.classes) {
+        fileContent = fileContent.replace(new RegExp(`(\nexport class ${cls.name} )(.*?)\n}`, "s"), (arg0, head, body) => {
+            body = body.replace(/\n\n    \/\/ @auto-generated\n    clone\([^\n]*\}/gs, "");
 
-const imports = files.map(f => `import { ${f.classes.map(cls => cls.name).join(", ")} } from "./Ast/${f.sourcePath.path}";`);
+            const mps = cls.constructor_ === null ? [] : cls.constructor_.parameters;
+            if (mps.filter(x => x.fieldDecl === null).length > 0)
+                throw new Error("Non-public field found!");
 
-//const genCode = `${imports.join("\n")}\n\nexport class AstCloner {\n${pad(`cloneNode(node: IAstNode) {\n${pad(methodBody)}\n}`)}\n}`;
-//console.log(genCode);
+            const newExpr = `new ${cls.name}(${mps.map(mp => conv(<UnresolvedType>mp.type, `this.${mp.name}`)).join(", ")})`;
+            const noBody = ["Expression"].includes(cls.name) || mps.length === 0;
+            const cloneBody = noBody ? "" : "\n\n" + pad(`// @auto-generated\nclone() { return ${newExpr}; }`);
 
-const destFn = `${baseDir}/One/AstCloner.ts`;
-const currContent = readFileSync(destFn, 'utf-8');
-const newContent = currContent
-    .replace(/(#region Generated_Imports\n).*?(\n[/]+#endregion)/, `\1${imports.join("\n")}\2`)
-    .replace(/(\n    cloneNode[^\n]+).*?(\n    \})/, `\1${pad(pad(methodBody))}\2`);
-writeFileSync(destFn, newContent);
-debugger;
+            return `${head}${body}${cloneBody}\n}`;
+        });
+    }
+    writeFileSync(fullFn, fileContent);
+}
