@@ -3,7 +3,7 @@ import { Expression } from "./Expressions";
 import { ForVariableReference, ForeachVariableReference, VariableDeclarationReference, IReferencable, Reference, CatchVariableReference } from "./References";
 import { IType } from "./Interfaces";
 
-export class Statement implements IHasAttributesAndTrivia, IAstNode {
+export abstract class Statement implements IHasAttributesAndTrivia, IAstNode {
     leadingTrivia: string = null;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string } = null;
@@ -11,6 +11,8 @@ export class Statement implements IHasAttributesAndTrivia, IAstNode {
 
     // php-fix
     constructor() { }
+
+    abstract clone(): Statement;
 }
 
 export class IfStatement extends Statement {
@@ -44,9 +46,13 @@ export class ExpressionStatement extends Statement {
     clone() { return new ExpressionStatement(this.expression.clone()); }
 }
 
-export class BreakStatement extends Statement { }
+export class BreakStatement extends Statement {
+    clone() { return new BreakStatement(); }
+}
 
-export class ContinueStatement extends Statement { }
+export class ContinueStatement extends Statement {
+    clone() { return new ContinueStatement(); }
+}
 
 export class UnsetStatement extends Statement {
     constructor(public expression: Expression) { super(); }
