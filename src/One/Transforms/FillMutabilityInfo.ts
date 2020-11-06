@@ -16,7 +16,7 @@ export class FillMutabilityInfo extends AstTransformer {
 
     protected getVar(varRef: VariableReference) {
         const v = varRef.getVariable();
-        v.mutability = v.mutability || new MutabilityInfo();
+        v.mutability = v.mutability || new MutabilityInfo(true, false, false);
         return v;
     }
 
@@ -45,7 +45,7 @@ export class FillMutabilityInfo extends AstTransformer {
     }
 
     protected visitVariable(variable: IVariable): IVariable {
-        variable.mutability = variable.mutability || new MutabilityInfo();
+        variable.mutability = variable.mutability || new MutabilityInfo(true, false, false);
         return null;
     }
 }

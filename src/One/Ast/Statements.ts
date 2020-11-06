@@ -5,14 +5,22 @@ import { IType } from "./Interfaces";
 
 export abstract class Statement implements IHasAttributesAndTrivia, IAstNode {
     leadingTrivia: string = null;
+
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string } = null;
-    parentBlock: Block;
 
     // php-fix
     constructor() { }
 
     abstract clone(): Statement;
+
+    cloneTo(copy: Statement) { 
+        copy.leadingTrivia = this.leadingTrivia;
+        
+        copy.attributes = {};
+        for (const key of Object.keys(this.attributes))
+            copy.attributes[key] = this.attributes[key];
+    }
 }
 
 export class IfStatement extends Statement {
@@ -21,29 +29,49 @@ export class IfStatement extends Statement {
         public then: Block,
         public else_: Block) { super(); }
 
-    // @auto-generated
-    clone() { return new IfStatement(this.condition.clone(), this.then.clone(), this.else_.clone()); }
+    // #region @auto-generated generate-ast-helper-code
+    clone() {
+        const result = new IfStatement(this.condition.clone(), this.then.clone(), this.else_.clone());
+        this.cloneTo(result);
+        return result;
+    }
+    // #endregion
 }
 
 export class ReturnStatement extends Statement {
     constructor(public expression: Expression) { super(); }
 
-    // @auto-generated
-    clone() { return new ReturnStatement(this.expression.clone()); }
+    // #region @auto-generated generate-ast-helper-code
+    clone() {
+        const result = new ReturnStatement(this.expression.clone());
+        this.cloneTo(result);
+        return result;
+    }
+    // #endregion
 }
 
 export class ThrowStatement extends Statement {
     constructor(public expression: Expression) { super(); }
 
-    // @auto-generated
-    clone() { return new ThrowStatement(this.expression.clone()); }
+    // #region @auto-generated generate-ast-helper-code
+    clone() {
+        const result = new ThrowStatement(this.expression.clone());
+        this.cloneTo(result);
+        return result;
+    }
+    // #endregion
 }
 
 export class ExpressionStatement extends Statement {
     constructor(public expression: Expression) { super(); }
 
-    // @auto-generated
-    clone() { return new ExpressionStatement(this.expression.clone()); }
+    // #region @auto-generated generate-ast-helper-code
+    clone() {
+        const result = new ExpressionStatement(this.expression.clone());
+        this.cloneTo(result);
+        return result;
+    }
+    // #endregion
 }
 
 export class BreakStatement extends Statement {
@@ -57,8 +85,13 @@ export class ContinueStatement extends Statement {
 export class UnsetStatement extends Statement {
     constructor(public expression: Expression) { super(); }
 
-    // @auto-generated
-    clone() { return new UnsetStatement(this.expression.clone()); }
+    // #region @auto-generated generate-ast-helper-code
+    clone() {
+        const result = new UnsetStatement(this.expression.clone());
+        this.cloneTo(result);
+        return result;
+    }
+    // #endregion
 }
 
 export class VariableDeclaration extends Statement implements IVariableWithInitializer, IReferencable {
@@ -74,8 +107,15 @@ export class VariableDeclaration extends Statement implements IVariableWithIniti
     /** @creator FillMutability */
     mutability: MutabilityInfo = null;
 
-    // @auto-generated
-    clone() { return new VariableDeclaration(this.name, this.type.clone(), this.initializer.clone()); }
+    // #region @auto-generated generate-ast-helper-code
+    clone() {
+        const result = new VariableDeclaration(this.name, this.type.clone(), this.initializer.clone());
+        result.references = this.references.map(x => x.clone());
+        result.mutability = this.mutability.clone();
+        this.cloneTo(result);
+        return result;
+    }
+    // #endregion
 }
 
 export class WhileStatement extends Statement {
@@ -83,8 +123,13 @@ export class WhileStatement extends Statement {
         public condition: Expression,
         public body: Block) { super(); }
 
-    // @auto-generated
-    clone() { return new WhileStatement(this.condition.clone(), this.body.clone()); }
+    // #region @auto-generated generate-ast-helper-code
+    clone() {
+        const result = new WhileStatement(this.condition.clone(), this.body.clone());
+        this.cloneTo(result);
+        return result;
+    }
+    // #endregion
 }
 
 export class DoStatement extends Statement {
@@ -92,8 +137,13 @@ export class DoStatement extends Statement {
         public condition: Expression,
         public body: Block) { super(); }
 
-    // @auto-generated
-    clone() { return new DoStatement(this.condition.clone(), this.body.clone()); }
+    // #region @auto-generated generate-ast-helper-code
+    clone() {
+        const result = new DoStatement(this.condition.clone(), this.body.clone());
+        this.cloneTo(result);
+        return result;
+    }
+    // #endregion
 }
 
 export class ForeachVariable implements IVariable, IReferencable {
@@ -107,8 +157,9 @@ export class ForeachVariable implements IVariable, IReferencable {
     /** @creator FillMutability */
     mutability: MutabilityInfo = null;
 
-    // @auto-generated
+    // #region @auto-generated generate-ast-helper-code
     clone() { return new ForeachVariable(this.name); }
+    // #endregion
 }
 
 export class ForeachStatement extends Statement {
@@ -117,8 +168,13 @@ export class ForeachStatement extends Statement {
         public items: Expression,
         public body: Block) { super(); }
 
-    // @auto-generated
-    clone() { return new ForeachStatement(this.itemVar.clone(), this.items.clone(), this.body.clone()); }
+    // #region @auto-generated generate-ast-helper-code
+    clone() {
+        const result = new ForeachStatement(this.itemVar.clone(), this.items.clone(), this.body.clone());
+        this.cloneTo(result);
+        return result;
+    }
+    // #endregion
 }
 
 export class ForVariable implements IVariableWithInitializer, IReferencable {
@@ -134,8 +190,9 @@ export class ForVariable implements IVariableWithInitializer, IReferencable {
     /** @creator FillMutability */
     mutability: MutabilityInfo = null;
 
-    // @auto-generated
+    // #region @auto-generated generate-ast-helper-code
     clone() { return new ForVariable(this.name, this.type.clone(), this.initializer.clone()); }
+    // #endregion
 }
 
 export class ForStatement extends Statement {
@@ -145,8 +202,13 @@ export class ForStatement extends Statement {
         public incrementor: Expression, 
         public body: Block) { super(); }
 
-    // @auto-generated
-    clone() { return new ForStatement(this.itemVar.clone(), this.condition.clone(), this.incrementor.clone(), this.body.clone()); }
+    // #region @auto-generated generate-ast-helper-code
+    clone() {
+        const result = new ForStatement(this.itemVar.clone(), this.condition.clone(), this.incrementor.clone(), this.body.clone());
+        this.cloneTo(result);
+        return result;
+    }
+    // #endregion
 }
 
 export class CatchVariable implements IVariable, IReferencable {
@@ -161,8 +223,9 @@ export class CatchVariable implements IVariable, IReferencable {
     /** @creator FillMutability */
     mutability: MutabilityInfo = null;
 
-    // @auto-generated
+    // #region @auto-generated generate-ast-helper-code
     clone() { return new CatchVariable(this.name, this.type.clone()); }
+    // #endregion
 }
 
 export class TryStatement extends Statement {
@@ -176,14 +239,20 @@ export class TryStatement extends Statement {
                 throw new Error("try without catch and finally is not allowed");
         }
 
-    // @auto-generated
-    clone() { return new TryStatement(this.tryBody.clone(), this.catchVar.clone(), this.catchBody.clone(), this.finallyBody.clone()); }
+    // #region @auto-generated generate-ast-helper-code
+    clone() {
+        const result = new TryStatement(this.tryBody.clone(), this.catchVar.clone(), this.catchBody.clone(), this.finallyBody.clone());
+        this.cloneTo(result);
+        return result;
+    }
+    // #endregion
 }
 
 export class Block {
     /** @creator TypeScriptParser2 */
     constructor(public statements: Statement[]) { }
 
-    // @auto-generated
+    // #region @auto-generated generate-ast-helper-code
     clone() { return new Block(this.statements.map(x => x.clone())); }
+    // #endregion
 }
