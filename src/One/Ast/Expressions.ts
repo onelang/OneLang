@@ -151,7 +151,7 @@ export class CastExpression extends Expression {
 
     // in case the cast is an implicit cast happening because of an "instanceof" primitive
     /** @creator InstanceOfImplicitCast */
-    instanceOfCast: InstanceOfExpression;
+    instanceOfCast: InstanceOfExpression = null;
 }
 
 export class ParenthesizedExpression extends Expression {
