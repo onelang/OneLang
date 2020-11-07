@@ -4,7 +4,7 @@ import { OneFile } from "One.File-v0.1";
 import { Compiler } from "./Compiler";
 
 export class CompilerHelper {
-    static baseDir: string;
+    static baseDir: string = "./";
 
     static async initProject(projectName: string, sourceDir: string, lang: string = "ts", packagesDir: string = null): Promise<Compiler> {
         if (lang !== "ts") throw new Error("Only typescript is supported.");
