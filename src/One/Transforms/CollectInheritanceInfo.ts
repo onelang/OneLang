@@ -1,4 +1,4 @@
-import { Package, Class, Interface } from "../Ast/Types";
+import { Package, Class, Interface, SourceFile } from "../Ast/Types";
 import { ITransformer } from "../ITransformer";
 
 export class CollectInheritanceInfo implements ITransformer {
@@ -25,8 +25,8 @@ export class CollectInheritanceInfo implements ITransformer {
         }
     }
 
-    visitPackage(pkg: Package): void {
-        for (const file of Object.values(pkg.files))
+    visitFiles(files: SourceFile[]) {
+        for (const file of files)
             for (const cls of file.classes)
                 this.visitClass(cls);
     }

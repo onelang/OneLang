@@ -1,6 +1,6 @@
 import { AstTransformer } from "../AstTransformer";
 import { Expression } from "../Ast/Expressions";
-import { Package, Property, Field, IMethodBase, IVariableWithInitializer, Lambda, IVariable, Method, Class } from "../Ast/Types";
+import { Package, Property, Field, IMethodBase, IVariableWithInitializer, Lambda, IVariable, Method, Class, SourceFile } from "../Ast/Types";
 import { BasicTypeInfer } from "./InferTypesPlugins/BasicTypeInfer";
 import { InferTypesPlugin } from "./InferTypesPlugins/Helpers/InferTypesPlugin";
 import { ArrayAndMapLiteralTypeInfer } from "./InferTypesPlugins/ArrayAndMapLiteralTypeInfer";
@@ -194,10 +194,11 @@ export class InferTypes extends AstTransformer {
         super.visitClass(cls);
     }
 
-    public visitPackage(pkg: Package): void {
+    public visitFiles(files: SourceFile[]): void {
         for (const stage of [InferTypesStage.Fields, InferTypesStage.Properties, InferTypesStage.Methods]) {
             this.stage = stage;
-            super.visitPackage(pkg);
+            for (const file of files)
+                this.visitFile(file);
         }
     }
 }

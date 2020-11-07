@@ -83,10 +83,10 @@ export class FillParent extends AstTransformer {
         this.parentNodeStack.pop();
     }
 
-    public visitSourceFile(file: SourceFile): void {
+    public visitFile(file: SourceFile): void {
         for (const imp of file.imports)
             imp.parentFile = file;
 
-        super.visitSourceFile(file);
+        super.visitFile(file);
     }
 }

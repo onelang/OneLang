@@ -35,14 +35,37 @@ export class Compiler {
         await this.pacMan.loadAllCached();
     }
 
+    getTransformers(forDeclarationFile: boolean): ITransformer[] {
+        const transforms: ITransformer[] = [];
+        if (forDeclarationFile) {
+            transforms.push(new FillParent());
+            transforms.push(new FillAttributesFromTrivia());
+            transforms.push(new ResolveGenericTypeIdentifiers());
+            transforms.push(new ResolveUnresolvedTypes());
+            transforms.push(new FillMutabilityInfo());
+        } else {
+            transforms.push(new FillParent());
+            transforms.push(new FillAttributesFromTrivia());
+            transforms.push(new ResolveImports(this.workspace));
+            transforms.push(new ResolveGenericTypeIdentifiers());
+            transforms.push(new ConvertToMethodCall());
+            transforms.push(new ResolveUnresolvedTypes());
+            transforms.push(new ResolveIdentifiers());
+            transforms.push(new InstanceOfImplicitCast());
+            transforms.push(new DetectMethodCalls());
+            transforms.push(new InferTypes());
+            transforms.push(new CollectInheritanceInfo());
+            transforms.push(new FillMutabilityInfo());
+            transforms.push(new LambdaCaptureCollector());
+        }
+        return transforms;
+    }
+
     setupNativeResolver(content: string): void {
         this.nativeFile = TypeScriptParser2.parseFile(content);
         this.nativeExports = Package.collectExportsFromFile(this.nativeFile, true);
-        new FillParent().visitSourceFile(this.nativeFile);
-        FillAttributesFromTrivia.processFile(this.nativeFile);
-        new ResolveGenericTypeIdentifiers().visitSourceFile(this.nativeFile);
-        new ResolveUnresolvedTypes().visitSourceFile(this.nativeFile);
-        new FillMutabilityInfo().visitSourceFile(this.nativeFile);
+        for (const trans of this.getTransformers(true))
+            trans.visitFiles([this.nativeFile]);
     }
 
     newWorkspace(pkgName = "@"): void {
@@ -89,39 +112,18 @@ export class Compiler {
         this.projectPkg.addFile(file);
     }
 
-    processWorkspace(): void {
-        for (const pkg of Object.values(this.workspace.packages).filter(x => x.definitionOnly)) {
-            // sets method's parentInterface property
-            new FillParent().visitPackage(pkg);
-            FillAttributesFromTrivia.processPackage(pkg);
-            new ResolveGenericTypeIdentifiers().visitPackage(pkg);
-            new ResolveUnresolvedTypes().visitPackage(pkg);
-            //if (this.hooks !== null) this.hooks.afterStage("FillAttributesFromTrivia");
-        }
-
-        new FillParent().visitPackage(this.projectPkg);
-        if (this.hooks !== null) this.hooks.afterStage("FillParent");
-
-        FillAttributesFromTrivia.processPackage(this.projectPkg);
-        if (this.hooks !== null) this.hooks.afterStage("FillAttributesFromTrivia");
-
-        ResolveImports.processWorkspace(this.workspace);
-        if (this.hooks !== null) this.hooks.afterStage("ResolveImports");
-
-        const transforms: ITransformer[] = [];
-        transforms.push(new ResolveGenericTypeIdentifiers());
-        transforms.push(new ConvertToMethodCall());
-        transforms.push(new ResolveUnresolvedTypes());
-        transforms.push(new ResolveIdentifiers());
-        transforms.push(new InstanceOfImplicitCast());
-        transforms.push(new DetectMethodCalls());
-        transforms.push(new InferTypes());
-        transforms.push(new CollectInheritanceInfo());
-        transforms.push(new FillMutabilityInfo());
-        transforms.push(new LambdaCaptureCollector());
-        for (const trans of transforms) {
-            trans.visitPackage(this.projectPkg);
+    processFiles(files: SourceFile[]): void {
+        for (const trans of this.getTransformers(false)) {
+            trans.visitFiles(files);
             if (this.hooks !== null) this.hooks.afterStage(trans.name);
         }
+    }
+
+    processWorkspace(): void {
+        for (const pkg of Object.values(this.workspace.packages).filter(x => x.definitionOnly))
+            for (const trans of this.getTransformers(true))
+                trans.visitFiles(Object.values(pkg.files));
+
+        this.processFiles(Object.values(this.projectPkg.files));
     }
 }

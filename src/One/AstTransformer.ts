@@ -1,7 +1,7 @@
 import { IHasTypeArguments, ClassType, InterfaceType, UnresolvedType, LambdaType } from "./Ast/AstTypes";
 import { Identifier, BinaryExpression, ConditionalExpression, NewExpression, TemplateString, ParenthesizedExpression, UnaryExpression, PropertyAccessExpression, ElementAccessExpression, ArrayLiteral, MapLiteral, Expression, CastExpression, UnresolvedCallExpression, InstanceOfExpression, AwaitExpression, StringLiteral, NumericLiteral, NullLiteral, RegexLiteral, BooleanLiteral, StaticMethodCallExpression, InstanceMethodCallExpression, UnresolvedNewExpression, NullCoalesceExpression, UnresolvedMethodCallExpression, GlobalFunctionCallExpression, LambdaCallExpression } from "./Ast/Expressions";
 import { ReturnStatement, ExpressionStatement, IfStatement, ThrowStatement, VariableDeclaration, WhileStatement, ForStatement, ForeachStatement, Statement, UnsetStatement, BreakStatement, ContinueStatement, DoStatement, TryStatement, Block } from "./Ast/Statements";
-import { Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda, IMethodBase, Package, GlobalFunction, IInterface, IAstNode } from "./Ast/Types";
+import { Method, Constructor, Field, Property, Interface, Class, Enum, EnumMember, SourceFile, IVariable, IVariableWithInitializer, MethodParameter, Lambda, IMethodBase, Package, GlobalFunction, IInterface, IAstNode, IHasAttributesAndTrivia, Import } from "./Ast/Types";
 import { ClassReference, EnumReference, ThisReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, InstanceFieldReference, InstancePropertyReference, StaticPropertyReference, StaticFieldReference, CatchVariableReference, GlobalFunctionReference, EnumMemberReference, StaticThisReference, VariableReference } from "./Ast/References";
 import { ErrorManager } from "./ErrorManager";
 import { ITransformer } from "./ITransformer";
@@ -15,6 +15,8 @@ export abstract class AstTransformer implements ITransformer {
     currentStatement: Statement = null;
 
     constructor(public name: string) { }
+
+    protected visitAttributesAndTrivia(node: IHasAttributesAndTrivia) { }
 
     protected visitType(type: IType): IType {
         if (type instanceof ClassType || type instanceof InterfaceType || type instanceof UnresolvedType) {
@@ -57,6 +59,7 @@ export abstract class AstTransformer implements ITransformer {
 
     protected visitStatement(stmt: Statement): Statement {
         this.currentStatement = stmt;
+        this.visitAttributesAndTrivia(stmt);
         if (stmt instanceof ReturnStatement) {
             if (stmt.expression !== null)
                 stmt.expression = this.visitExpression(stmt.expression) || stmt.expression;
@@ -238,6 +241,7 @@ export abstract class AstTransformer implements ITransformer {
     }
 
     protected visitMethodParameter(methodParameter: MethodParameter): void {
+        this.visitAttributesAndTrivia(methodParameter);
         this.visitVariableWithInitializer(methodParameter);
     }
 
@@ -251,6 +255,7 @@ export abstract class AstTransformer implements ITransformer {
 
     protected visitMethod(method: Method) {
         this.currentMethod = method;
+        this.visitAttributesAndTrivia(method);
         this.visitMethodBase(method);
         method.returns = this.visitType(method.returns) || method.returns;
         this.currentMethod = null;
@@ -263,15 +268,18 @@ export abstract class AstTransformer implements ITransformer {
  
     protected visitConstructor(constructor: Constructor) {
         this.currentMethod = constructor;
+        this.visitAttributesAndTrivia(constructor);
         this.visitMethodBase(constructor);
         this.currentMethod = null;
     }
  
     protected visitField(field: Field) {
+        this.visitAttributesAndTrivia(field);
         this.visitVariableWithInitializer(field);
     }
  
     protected visitProperty(prop: Property) {
+        this.visitAttributesAndTrivia(prop);
         this.visitVariable(prop);
         if (prop.getter !== null)
             prop.getter = this.visitBlock(prop.getter) || prop.getter;
@@ -281,6 +289,7 @@ export abstract class AstTransformer implements ITransformer {
 
     protected visitInterface(intf: Interface) {
         this.currentInterface = intf;
+        this.visitAttributesAndTrivia(intf);
         intf.baseInterfaces = intf.baseInterfaces.map(x => this.visitType(x) || x);
         for (const field of intf.fields)
             this.visitField(field);
@@ -291,6 +300,7 @@ export abstract class AstTransformer implements ITransformer {
 
     protected visitClass(cls: Class) {
         this.currentInterface = cls;
+        this.visitAttributesAndTrivia(cls);
         if (cls.constructor_ !== null)
             this.visitConstructor(cls.constructor_);
 
@@ -306,6 +316,7 @@ export abstract class AstTransformer implements ITransformer {
     }
  
     protected visitEnum(enum_: Enum) {
+        this.visitAttributesAndTrivia(enum_);
         for (const value of enum_.values)
             this.visitEnumMember(value);
     }
@@ -313,9 +324,15 @@ export abstract class AstTransformer implements ITransformer {
     protected visitEnumMember(enumMember: EnumMember): void {
     }
 
-    public visitSourceFile(sourceFile: SourceFile): void {
+    protected visitImport(imp: Import): void {
+        this.visitAttributesAndTrivia(imp);
+    }
+
+    public visitFile(sourceFile: SourceFile): void {
         this.errorMan.resetContext(this);
         this.currentFile = sourceFile;
+        for (const imp of sourceFile.imports)
+            this.visitImport(imp);
         for (const enum_ of sourceFile.enums)
             this.visitEnum(enum_);
         for (const intf of sourceFile.interfaces)
@@ -328,8 +345,12 @@ export abstract class AstTransformer implements ITransformer {
         this.currentFile = null;
     }
 
+    public visitFiles(files: SourceFile[]): void {
+        for (const file of files)
+            this.visitFile(file);
+    }
+
     public visitPackage(pkg: Package) {
-        for (const file of Object.values(pkg.files))
-            this.visitSourceFile(file);
+        this.visitFiles(Object.values(pkg.files));
     }
 }

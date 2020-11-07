@@ -12,11 +12,11 @@ import { InstanceFieldReference, InstancePropertyReference, StaticFieldReference
  *   not variables declared within the lambda.
  */
 export class LambdaCaptureCollector extends AstTransformer {
-    constructor() { super("LambdaCaptureCollector"); }
-
     scopeVarStack: Set<IVariable>[] = [];
     scopeVars: Set<IVariable> = null;
     capturedVars: Set<IVariable> = null;
+
+    constructor() { super("LambdaCaptureCollector"); }
 
     protected visitLambda(lambda: Lambda): Lambda {
         if (this.scopeVars !== null)

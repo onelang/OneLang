@@ -1,6 +1,6 @@
-import { Package } from "./Ast/Types";
+import { SourceFile } from "./Ast/Types";
 
 export interface ITransformer {
     name: string;
-    visitPackage(pkg: Package): void;
+    visitFiles(files: SourceFile[]): void;
 }
