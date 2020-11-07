@@ -53,93 +53,35 @@ export abstract class Expression implements IAstNode, IExpression {
     }
 
     getType(): IType { return this.actualType || this.expectedType; }
-
-    abstract clone(): Expression;
-
-    cloneTo(expr: Expression) { 
-        expr.actualType = this.actualType.clone();
-        expr.expectedType = this.expectedType.clone();
-    }
 }
 
 export class Identifier extends Expression {
     constructor(public text: string) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new Identifier(this.text);
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class NumericLiteral extends Expression {
     constructor(public valueAsText: string) { super(); }
-    copy(): IExpression { return new NumericLiteral(this.valueAsText); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new NumericLiteral(this.valueAsText);
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class BooleanLiteral extends Expression {
     constructor(public boolValue: boolean) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new BooleanLiteral(this.boolValue);
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class CharacterLiteral extends Expression {
     constructor(public charValue: string) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new CharacterLiteral(this.charValue);
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class StringLiteral extends Expression {
     constructor(public stringValue: string) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new StringLiteral(this.stringValue);
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
-export class NullLiteral extends Expression {
-    clone() { return new NullLiteral(); }
-}
+export class NullLiteral extends Expression { }
 
 export class RegexLiteral extends Expression {
     constructor(
         public pattern: string,
         public caseInsensitive: boolean,
         public global: boolean) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new RegexLiteral(this.pattern, this.caseInsensitive, this.global);
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class TemplateStringPart implements IAstNode {
@@ -150,82 +92,34 @@ export class TemplateStringPart implements IAstNode {
 
     static Literal(literalText: string): TemplateStringPart { return new TemplateStringPart(true, literalText, null); }
     static Expression(expr: Expression): TemplateStringPart { return new TemplateStringPart(false, null, expr); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new TemplateStringPart(this.isLiteral, this.literalText, this.expression.clone()); }
-    // #endregion
 }
 
 export class TemplateString extends Expression {
     constructor(public parts: TemplateStringPart[]) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new TemplateString(this.parts.map(x => x.clone()));
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class ArrayLiteral extends Expression {
     constructor(public items: Expression[]) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new ArrayLiteral(this.items.map(x => x.clone()));
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class MapLiteralItem implements IAstNode {
     constructor(public key: string, public value: Expression) { }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new MapLiteralItem(this.key, this.value.clone()); }
-    // #endregion
 }
 
 export class MapLiteral extends Expression {
     constructor(public items: MapLiteralItem[]) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new MapLiteral(this.items.map(x => x.clone()));
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class UnresolvedNewExpression extends Expression {
     constructor(
         public cls: UnresolvedType,
         public args: Expression[]) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new UnresolvedNewExpression(this.cls.clone(), this.args.map(x => x.clone()));
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class NewExpression extends Expression {
     constructor(
         public cls: ClassType,
         public args: Expression[]) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new NewExpression(this.cls.clone(), this.args.map(x => x.clone()));
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class BinaryExpression extends Expression {
@@ -233,28 +127,12 @@ export class BinaryExpression extends Expression {
         public left: Expression,
         public operator: string,
         public right: Expression) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new BinaryExpression(this.left.clone(), this.operator, this.right.clone());
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class NullCoalesceExpression extends Expression {
     constructor(
         public defaultExpr: Expression,
         public exprIfNull: Expression) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new NullCoalesceExpression(this.defaultExpr.clone(), this.exprIfNull.clone());
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export enum UnaryType { Postfix, Prefix }
@@ -264,14 +142,6 @@ export class UnaryExpression extends Expression {
         public unaryType: UnaryType,
         public operator: string, // "++" | "--" | "+" | "-" | "~" | "!"
         public operand: Expression) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new UnaryExpression(this.unaryType, this.operator, this.operand.clone());
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class CastExpression extends Expression {
@@ -282,27 +152,10 @@ export class CastExpression extends Expression {
     // in case the cast is an implicit cast happening because of an "instanceof" primitive
     /** @creator InstanceOfImplicitCast */
     instanceOfCast: InstanceOfExpression;
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new CastExpression(this.newType.clone(), this.expression.clone());
-        result.instanceOfCast = this.instanceOfCast.clone();
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class ParenthesizedExpression extends Expression {
     constructor(public expression: Expression) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new ParenthesizedExpression(this.expression.clone());
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class ConditionalExpression extends Expression {
@@ -310,42 +163,18 @@ export class ConditionalExpression extends Expression {
         public condition: Expression,
         public whenTrue: Expression,
         public whenFalse: Expression) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new ConditionalExpression(this.condition.clone(), this.whenTrue.clone(), this.whenFalse.clone());
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class PropertyAccessExpression extends Expression {
     constructor(
         public object: Expression,
         public propertyName: string) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new PropertyAccessExpression(this.object.clone(), this.propertyName);
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class ElementAccessExpression extends Expression {
     constructor(
         public object: Expression,
         public elementExpr: Expression) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new ElementAccessExpression(this.object.clone(), this.elementExpr.clone());
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class UnresolvedCallExpression extends Expression {
@@ -353,14 +182,6 @@ export class UnresolvedCallExpression extends Expression {
         public func: Expression,
         public typeArgs: IType[],
         public args: Expression[]) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new UnresolvedCallExpression(this.func.clone(), this.typeArgs.map(x => x.clone()), this.args.map(x => x.clone()));
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class UnresolvedMethodCallExpression extends Expression {
@@ -369,14 +190,6 @@ export class UnresolvedMethodCallExpression extends Expression {
         public methodName: string,
         public typeArgs: IType[],
         public args: Expression[]) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new UnresolvedMethodCallExpression(this.object.clone(), this.methodName, this.typeArgs.map(x => x.clone()), this.args.map(x => x.clone()));
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export interface IMethodCallExpression extends IExpression {
@@ -391,14 +204,6 @@ export class StaticMethodCallExpression extends Expression implements IMethodCal
         public typeArgs: IType[],
         public args: Expression[],
         public isThisCall: boolean) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new StaticMethodCallExpression(this.method.clone(), this.typeArgs.map(x => x.clone()), this.args.map(x => x.clone()), this.isThisCall);
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class InstanceMethodCallExpression extends Expression implements IMethodCallExpression {
@@ -407,55 +212,23 @@ export class InstanceMethodCallExpression extends Expression implements IMethodC
         public method: Method,
         public typeArgs: IType[],
         public args: Expression[]) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new InstanceMethodCallExpression(this.object.clone(), this.method.clone(), this.typeArgs.map(x => x.clone()), this.args.map(x => x.clone()));
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class GlobalFunctionCallExpression extends Expression {
     constructor(
         public func: GlobalFunction,
         public args: Expression[]) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new GlobalFunctionCallExpression(this.func.clone(), this.args.map(x => x.clone()));
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class LambdaCallExpression extends Expression {
     constructor(
         public method: Expression,
         public args: Expression[]) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new LambdaCallExpression(this.method.clone(), this.args.map(x => x.clone()));
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class TodoExpression extends Expression {
     constructor(
         public expr: Expression) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new TodoExpression(this.expr.clone());
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class InstanceOfExpression extends Expression { 
@@ -468,26 +241,8 @@ export class InstanceOfExpression extends Expression {
     implicitCasts: CastExpression[] = null;
 
     alias: string = null;
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new InstanceOfExpression(this.expr.clone(), this.checkType.clone());
-        result.implicitCasts = this.implicitCasts.map(x => x.clone());
-        result.alias = this.alias;
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
 
 export class AwaitExpression extends Expression {
     constructor(public expr: Expression) { super(); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new AwaitExpression(this.expr.clone());
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }

@@ -11,10 +11,6 @@ export enum Visibility { Public, Protected, Private }
 
 export class MutabilityInfo {
     constructor(public unused: boolean, public reassigned: boolean, public mutated: boolean) { }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new MutabilityInfo(this.unused, this.reassigned, this.mutated); }
-    // #endregion
 }
 
 /// types: ForeachVariable, Property
@@ -23,7 +19,6 @@ export interface IVariable {
     name: string;
     type: IType;
     mutability: MutabilityInfo;
-    clone();
 }
 
 export interface IClassMember {
@@ -104,10 +99,6 @@ export class Package {
             throw new Error(`Scope "${name}" was not found in package "${this.name}"`);
         return scope;
     }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new Package(this.name, this.definitionOnly); }
-    // #endregion
 }
 
 export class Workspace {
@@ -131,10 +122,6 @@ export class SourcePath {
         public path: string) { }
 
     toString() { return `${this.pkg.name}/${this.path}`; }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new SourcePath(this.pkg.clone(), this.path); }
-    // #endregion
 }
 
 export class LiteralTypes {
@@ -147,10 +134,6 @@ export class LiteralTypes {
         public map: ClassType,
         public error: ClassType,
         public promise: ClassType) { }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new LiteralTypes(this.boolean.clone(), this.numeric.clone(), this.string.clone(), this.regex.clone(), this.array.clone(), this.map.clone(), this.error.clone(), this.promise.clone()); }
-    // #endregion
 }
 
 export class SourceFile {
@@ -178,10 +161,6 @@ export class SourceFile {
 
     literalTypes: LiteralTypes;
     arrayTypes: ClassType[] = [];
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new SourceFile(this.imports.map(x => x.clone()), this.interfaces.map(x => x.clone()), this.classes.map(x => x.clone()), this.enums.map(x => x.clone()), this.funcs.map(x => x.clone()), this.mainBlock.clone(), this.sourcePath.clone(), this.exportScope.clone()); }
-    // #endregion
 }
 
 export class ExportScopeRef {
@@ -190,10 +169,6 @@ export class ExportScopeRef {
         public scopeName: string) { }
 
     getId(): string { return `${this.packageName}.${this.scopeName}`; }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new ExportScopeRef(this.packageName, this.scopeName); }
-    // #endregion
 }
 
 /**
@@ -216,10 +191,6 @@ export class Import implements IHasAttributesAndTrivia, ISourceFileMember {
     parentFile: SourceFile = null;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string } = null;
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new Import(this.exportScope.clone(), this.importAll, this.imports.map(x => x.clone()), this.importAs, this.leadingTrivia); }
-    // #endregion
 }
 
 export class Enum implements IAstNode, IHasAttributesAndTrivia, IResolvedImportable, ISourceFileMember, IReferencable {
@@ -240,10 +211,6 @@ export class Enum implements IAstNode, IHasAttributesAndTrivia, IResolvedImporta
     createReference(): Reference { return new EnumReference(this); }
 
     type = new EnumType(this);
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new Enum(this.name, this.values.map(x => x.clone()), this.isExported, this.leadingTrivia); }
-    // #endregion
 }
 
 export class EnumMember implements IAstNode {
@@ -254,10 +221,6 @@ export class EnumMember implements IAstNode {
     parentEnum: Enum;
     /** @creator ResolveEnumMemberAccess */
     references: EnumMemberReference[] = [];
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new EnumMember(this.name); }
-    // #endregion
 }
 
 export interface IInterface {
@@ -274,7 +237,6 @@ export interface IInterface {
 export interface IImportable {
     name: string;
     isExported: boolean;
-    clone(): IImportable;
 }
 
 export interface IResolvedImportable extends IImportable {
@@ -285,10 +247,6 @@ export interface IResolvedImportable extends IImportable {
 export class UnresolvedImport implements IImportable {
     constructor(public name: string) { }
     isExported = true;
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new UnresolvedImport(this.name); }
-    // #endregion
 }
 
 export class Interface implements IHasAttributesAndTrivia, IInterface, IResolvedImportable, ISourceFileMember {
@@ -315,10 +273,6 @@ export class Interface implements IHasAttributesAndTrivia, IInterface, IResolved
             this._baseInterfaceCache = AstHelper.collectAllBaseInterfaces(this);
         return this._baseInterfaceCache;
     }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new Interface(this.name, this.typeArguments.map(x => x), this.baseInterfaces.map(x => x.clone()), this.fields.map(x => x.clone()), this.methods.map(x => x.clone()), this.isExported, this.leadingTrivia); }
-    // #endregion
 }
 
 export class Class implements IHasAttributesAndTrivia, IInterface, IResolvedImportable, ISourceFileMember, IReferencable {
@@ -358,10 +312,6 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IResolvedImpo
             this._baseInterfaceCache = AstHelper.collectAllBaseInterfaces(this);
         return this._baseInterfaceCache;
     }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new Class(this.name, this.typeArguments.map(x => x), this.baseClass.clone(), this.baseInterfaces.map(x => x.clone()), this.fields.map(x => x.clone()), this.properties.map(x => x.clone()), this.constructor_.clone(), this.methods.map(x => x.clone()), this.isExported, this.leadingTrivia); }
-    // #endregion
 }
 
 export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia, IClassMember, IAstNode {
@@ -387,10 +337,6 @@ export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia,
     interfaceDeclarations: Field[] = null;
     /** @creator FillMutability */
     mutability: MutabilityInfo = null;
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new Field(this.name, this.type.clone(), this.initializer.clone(), this.visibility, this.isStatic, this.constructorParam.clone(), this.leadingTrivia); }
-    // #endregion
 }
 
 export class Property implements IVariable, IHasAttributesAndTrivia, IClassMember, IAstNode {
@@ -414,10 +360,6 @@ export class Property implements IVariable, IHasAttributesAndTrivia, IClassMembe
     instanceReferences: InstancePropertyReference[] = [];
     /** @creator FillMutability */
     mutability: MutabilityInfo = null;
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new Property(this.name, this.type.clone(), this.getter.clone(), this.setter.clone(), this.visibility, this.isStatic, this.leadingTrivia); }
-    // #endregion
 }
 
 export class MethodParameter implements IVariableWithInitializer, IReferencable, IHasAttributesAndTrivia {
@@ -443,10 +385,6 @@ export class MethodParameter implements IVariableWithInitializer, IReferencable,
 
     /** @creator FillMutability */
     mutability: MutabilityInfo = null;
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new MethodParameter(this.name, this.type.clone(), this.initializer.clone(), this.leadingTrivia); }
-    // #endregion
 }
 
 export interface IMethodBase extends IAstNode {
@@ -472,10 +410,6 @@ export class Constructor implements IMethodBaseWithTrivia {
     attributes: { [name: string]: string } = null;
 
     throws: boolean;
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new Constructor(this.parameters.map(x => x.clone()), this.body.clone(), this.superCallArgs.map(x => x.clone()), this.leadingTrivia); }
-    // #endregion
 }
 
 export class Method implements IMethodBaseWithTrivia, IClassMember {
@@ -503,10 +437,6 @@ export class Method implements IMethodBaseWithTrivia, IClassMember {
     overriddenBy: Method[] = [];
 
     throws: boolean;
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new Method(this.name, this.typeArguments.map(x => x), this.parameters.map(x => x.clone()), this.body.clone(), this.visibility, this.isStatic, this.returns.clone(), this.async, this.leadingTrivia); }
-    // #endregion
 }
 
 export class GlobalFunction implements IMethodBaseWithTrivia, IResolvedImportable, IReferencable {
@@ -530,10 +460,6 @@ export class GlobalFunction implements IMethodBaseWithTrivia, IResolvedImportabl
     /** @creator ResolveIdentifiers */
     references: GlobalFunctionReference[] = [];
     createReference(): Reference { return new GlobalFunctionReference(this); }
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() { return new GlobalFunction(this.name, this.parameters.map(x => x.clone()), this.body.clone(), this.returns.clone(), this.isExported, this.leadingTrivia); }
-    // #endregion
 }
 
 export class Lambda extends Expression implements IMethodBase {
@@ -546,15 +472,4 @@ export class Lambda extends Expression implements IMethodBase {
 
     /** @creator LambdaCaptureCollector */
     captures: IVariable[] = null;
-
-    // #region @auto-generated generate-ast-helper-code
-    clone() {
-        const result = new Lambda(this.parameters.map(x => x.clone()), this.body.clone());
-        result.returns = this.returns.clone();
-        result.throws = this.throws;
-        result.captures = this.captures.map(x => x.clone());
-        this.cloneTo(result);
-        return result;
-    }
-    // #endregion
 }
