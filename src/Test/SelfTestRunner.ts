@@ -1,6 +1,7 @@
 // @python-import-all OneFile
 // @php-use onepkg\OneFile\OneFile
 import { OneFile } from "One.File-v0.1";
+import { CompilerHelper } from "../One/CompilerHelper";
 import { IGenerator } from "../Generator/IGenerator";
 import { Compiler, ICompilerHooks } from "../One/Compiler";
 import { PackageStateCapture } from "./PackageStateCapture";
@@ -25,21 +26,13 @@ class CompilerHooks implements ICompilerHooks {
 }
 
 export class SelfTestRunner {
-    constructor(public baseDir: string) { }
+    constructor(public baseDir: string) {
+        CompilerHelper.baseDir = baseDir;
+    }
 
     public async runTest(generator: IGenerator): Promise<boolean> {
         console.log("[-] SelfTestRunner :: START");
-        const compiler = new Compiler();
-        await compiler.init(`${this.baseDir}packages/`);
-        compiler.setupNativeResolver(OneFile.readText(`${this.baseDir}langs/NativeResolvers/typescript.ts`));
-        compiler.newWorkspace("OneLang");
-
-        const projDir = `${this.baseDir}src/`;
-        for (const file of OneFile.listFiles(projDir, true).filter(x => x.endsWith(".ts")))
-            compiler.addProjectFile(file, OneFile.readText(`${projDir}/${file}`));
-
-        compiler.hooks = new CompilerHooks(compiler, this.baseDir);
-
+        const compiler = await CompilerHelper.initProject("OneLang", `${this.baseDir}src/`);
         compiler.processWorkspace();
         const generated = generator.generate(compiler.projectPkg);
         
