@@ -1,5 +1,7 @@
+// @python-import-all OneFile
+// @php-use onepkg\OneFile\OneFile
 import { OneFile } from "One.File-v0.1";
-import { Compiler, ICompilerHooks } from "./Compiler";
+import { Compiler } from "./Compiler";
 
 export class CompilerHelper {
     static baseDir: string;
