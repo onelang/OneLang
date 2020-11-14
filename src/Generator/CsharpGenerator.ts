@@ -12,7 +12,7 @@ export class CsharpGenerator implements IGenerator {
     usings: Set<string>;
     currentClass: IInterface;
     reservedWords = ["object", "else", "operator", "class", "enum", "void", "string", "implicit", "Type", "Enum", "params", "using", "throw", "ref", "base", "virtual", "interface", "int", "const"];
-    fieldToMethodHack = ["length"];
+    fieldToMethodHack = ["length", "size"];
     instanceOfIds: { [name: string]: number } = {};
 
     getLangName(): string { return "CSharp"; }

@@ -3,12 +3,12 @@ import { IType } from "../Ast/Interfaces";
 import { Class, LiteralTypes, Package } from "../Ast/Types";
 import { ReflectedValue } from "One.Reflect-v0.1";
 
-function pad(str: string): string { return str.split(/\n/g).map(x => `    ${x}`).join('\n'); }
-
 export class JsonSerializer {
     circleDetector = new Map<any, string>();
 
     constructor(public litTypes: LiteralTypes) { }
+
+    pad(str: string): string { return str.split(/\n/g).map(x => `    ${x}`).join('\n'); }
 
     serialize(obj: ReflectedValue): string {
         const declType = <IType>obj.getDeclaredType();
@@ -22,14 +22,14 @@ export class JsonSerializer {
             const items: string[] = [];
             for (const item of obj.getArrayItems())
                 items.push(this.serialize(item));
-            return items.length === 0 ? "[]" : `[\n${pad(items.join(",\n"))}\n]`;
+            return items.length === 0 ? "[]" : `[\n${this.pad(items.join(",\n"))}\n]`;
         } else if (TypeHelper.isAssignableTo(declType, this.litTypes.map)) {
             const items: string[] = [];
             for (const key of obj.getMapKeys()) {
                 const value = obj.getMapValue(key);
                 items.push(`"${key}": ${this.serialize(value)}`);
             }
-            return items.length === 0 ? "{}" : `{\n${pad(items.join(",\n"))}\n}`;
+            return items.length === 0 ? "{}" : `{\n${this.pad(items.join(",\n"))}\n}`;
         } else if (declType instanceof ClassType || declType instanceof InterfaceType) {
             const rawValue = obj.getUniqueIdentifier();
             if (this.circleDetector.has(rawValue)) {
@@ -56,7 +56,7 @@ export class JsonSerializer {
                 if (!["[]", "{}", "null", "false", '""'].includes(serializedValue))
                     members.push(`"${field.name}": ${serializedValue}`);
             }
-            return members.length === 0 ? "{}" : `{\n${pad(members.join(",\n"))}\n}`;
+            return members.length === 0 ? "{}" : `{\n${this.pad(members.join(",\n"))}\n}`;
         } else if (declType instanceof EnumType) {
             return `"${obj.getEnumValueAsString()}"`;
         }

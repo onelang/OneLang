@@ -52,6 +52,7 @@ declare class IterableIterator<T> {
 }
 
 declare class Map<K, V> {
+    size: number;
     get(key: K): V;
     set(key: K, value: V): void;
     delete(key: K): void;
