@@ -1,8 +1,6 @@
 file-version: 1
 vendor: One
-name: Reflect
+name: Ast
 version: 0.1
 definition-file: index.d.ts
-dependencies:
-  - name: One.Ast
-    minver: 0.1
+

@@ -96,7 +96,10 @@ export class GenericsType implements IType {
 }
 
 export class EnumType implements IType {
-    constructor(public decl: Enum) { }
+    constructor(
+        // @json-ignore
+        public decl: Enum) { }
+
     repr() { return `E:${this.decl.name}`; }
 }
 
@@ -110,13 +113,21 @@ export interface IInterfaceType extends IType {
 }
 
 export class InterfaceType implements IType, IHasTypeArguments, IInterfaceType {
-    constructor(public decl: Interface, public typeArguments: IType[]) { }
+    constructor(
+        // @json-ignore
+        public decl: Interface,
+        public typeArguments: IType[]) { }
+
     getDecl(): IInterface { return this.decl; }
     repr() { return `I:${this.decl.name}${TypeHelper.argsRepr(this.typeArguments)}`; }
 }
 
 export class ClassType implements IType, IHasTypeArguments, IInterfaceType {
-    constructor(public decl: Class, public typeArguments: IType[]) { }
+    constructor(
+        // @json-ignore
+        public decl: Class, 
+        public typeArguments: IType[]) { }
+
     getDecl(): IInterface { return this.decl; }
     repr() { return `C:${this.decl.name}${TypeHelper.argsRepr(this.typeArguments)}`; }
 }

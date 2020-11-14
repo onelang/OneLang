@@ -40,6 +40,7 @@ export class Compiler {
         if (forDeclarationFile) {
             transforms.push(new FillParent());
             transforms.push(new FillAttributesFromTrivia());
+            transforms.push(new ResolveImports(this.workspace));
             transforms.push(new ResolveGenericTypeIdentifiers());
             transforms.push(new ResolveUnresolvedTypes());
             transforms.push(new FillMutabilityInfo());

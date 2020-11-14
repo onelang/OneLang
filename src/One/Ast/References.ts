@@ -36,7 +36,12 @@ export class GlobalFunctionReference extends Reference implements IGetMethodBase
 // has type: yes (it's a variable)
 // is generic: should be (if the class is `List<T>` then method param should be `T`, and not `string` - but we cannot check this)
 export class MethodParameterReference extends VariableReference {
-    constructor(public decl: MethodParameter) { super(); decl.references.push(this); }
+    constructor(
+        // @json-ignore
+        public decl: MethodParameter) { 
+            super();
+            decl.references.push(this);
+        }
 
     setActualType(type: IType, allowVoid: boolean = false, allowGeneric: boolean = false): void {
         super.setActualType(type, false,
@@ -150,13 +155,23 @@ export class StaticPropertyReference extends VariableReference {
 // has type: yes
 // is generic: can be
 export class InstanceFieldReference extends VariableReference {
-    constructor(public object: Expression, public field: Field) { super(); field.instanceReferences.push(this); }
+    constructor(
+        public object: Expression,
+        // @json-ignore
+        public field: Field) { 
+            super();
+            field.instanceReferences.push(this);
+        }
+
     getVariable(): IVariable { return this.field; }
 }
 
 // has type: yes
 // is generic: can be
 export class InstancePropertyReference extends VariableReference {
-    constructor(public object: Expression, public property: Property) { super(); property.instanceReferences.push(this); }
+    constructor(
+        public object: Expression,
+        // @json-ignore
+        public property: Property) { super(); property.instanceReferences.push(this); }
     getVariable(): IVariable { return this.property; }
 }

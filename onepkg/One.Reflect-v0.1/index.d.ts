@@ -13,3 +13,9 @@ export declare class ReflectedValue {
     getValueType(): IType;
     getDeclaredType(): IType;
 }
+
+export declare class Reflection {
+    static registerClass(cls: any, type: IType);
+    static getClassType(cls: any);
+    static wrap(value: any, declaredType: IType);
+}

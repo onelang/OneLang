@@ -9,11 +9,15 @@ import { PythonGenerator } from "@one/Generator/PythonGenerator";
 import { PhpGenerator } from "@one/Generator/PhpGenerator";
 import { JavaGenerator } from "@one/Generator/JavaGenerator";
 import { Compiler, ICompilerHooks } from "@one/One/Compiler";
+import { JsonSerializer } from "@one/One/Serialization/JsonSerializer";
 import { StatementDebugger } from "@one/Utils/StatementDebugger";
 import { PackageStateCapture } from "@one/Test/PackageStateCapture";
 import { CircularDependencyDetector, DetectionMode } from "@one/One/IssueDetectors/CircularDependencyDetector";
 import * as color from "ansi-colors";
 import { CompilerHelper } from '@one/One/CompilerHelper';
+import { OneFile } from 'One.File-v0.1';
+import { Reflection } from 'One.Reflect-v0.1';
+import { Package } from '@one/One/Ast/Types';
 
 function head(text: string) { 
     const x = "~".repeat(text.length+4);
@@ -52,6 +56,12 @@ async function compileProject(projName: string, projDir: string) {
     stateHandler.saveState();
     console.log('writing lastState...');
     writeFile(`test/artifacts/ProjectTest/${projName}/lastState.txt`, stateHandler.lastState.getSummary());
+
+    const pkgType = compiler.projectPkg.files["One/Ast/Types.ts"].classes.find(x => x.name === "Package").type;
+    //Reflection.registerClass(Package, pkgType);
+    const serializer = new JsonSerializer(Object.values(compiler.projectPkg.files)[0].literalTypes);
+    const projJson = serializer.serialize(Reflection.wrap(compiler.projectPkg, pkgType));
+    writeFile(`test/artifacts/ProjectTest/${projName}/ast.json`, projJson);
 
     //new StatementDebugger("new .T.C:InterfaceType").visitPackage(compiler.projectPkg);
     //new CircularDependencyDetector(DetectionMode.AllImports).processPackage(compiler.projectPkg);

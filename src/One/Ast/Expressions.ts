@@ -7,9 +7,12 @@ export enum TypeRestriction { NoRestriction, ShouldNotHaveType, MustBeGeneric, S
 
 export abstract class Expression implements IAstNode, IExpression {
     /** @creator FillParent */
+    // @json-ignore
     parentNode: IAstNode = null;
+
     /** @creator InferTypes */
     expectedType: IType = null;
+    
     /** @creator InferTypes */
     actualType: IType = null;
 

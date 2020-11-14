@@ -118,6 +118,7 @@ export class Workspace {
 
 export class SourcePath {
     constructor(
+        // @json-ignore
         public pkg: Package,
         public path: string) { }
 
@@ -159,7 +160,9 @@ export class SourceFile {
             this.availableSymbols.set(item.name, item);
     }
 
+    // @json-ignore
     literalTypes: LiteralTypes;
+    // @json-ignore
     arrayTypes: ClassType[] = [];
 }
 
@@ -180,6 +183,7 @@ export class Import implements IHasAttributesAndTrivia, ISourceFileMember {
         /** module and filename in TS, namespace in C#, package name in Go, etc */
         public exportScope: ExportScopeRef,
         public importAll: boolean,
+        // @json-ignore
         public imports: IImportable[],
         public importAs: string,
         public leadingTrivia: string) {
@@ -188,7 +192,9 @@ export class Import implements IHasAttributesAndTrivia, ISourceFileMember {
         }
     
     /** @creator FillParent */
+    // @json-ignore
     parentFile: SourceFile = null;
+
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string } = null;
 }
@@ -290,22 +296,30 @@ export class Class implements IHasAttributesAndTrivia, IInterface, IResolvedImpo
         public leadingTrivia: string) { }
 
     /** @creator FillParent */
+    // @json-ignore
     parentFile: SourceFile = null;
+
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string } = null;
 
     /** @creator ResolveIdentifiers */
+    // @json-ignore
     classReferences: ClassReference[] = [];
     /** @creator ResolveIdentifiers */
+    // @json-ignore
     thisReferences: ThisReference[] = [];
     /** @creator ResolveIdentifiers */
+    // @json-ignore
     staticThisReferences: StaticThisReference[] = [];
     /** @creator ResolveIdentifiers */
+    // @json-ignore
     superReferences: SuperReference[] = [];
     createReference(): Reference { return new ClassReference(this); }
 
+    // @json-ignore
     type = new ClassType(this, this.typeArguments.map(x => new GenericsType(x)));
 
+    // @json-ignore
     _baseInterfaceCache: IInterface[] = null;
     getAllBaseInterfaces(): IInterface[] {
         if (this._baseInterfaceCache === null)
@@ -322,19 +336,29 @@ export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia,
         public initializer: Expression,
         public visibility: Visibility,
         public isStatic: boolean,
+        // @json-ignore
         public constructorParam: MethodParameter,
         public leadingTrivia: string) { }
 
     /** @creator FillParent */
+    // @json-ignore
     parentInterface: IInterface = null;
+
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string } = null;
+
     /** @creator ResolveFieldAndPropertyAccess */
+    // @json-ignore
     staticReferences: StaticFieldReference[] = [];
+
     /** @creator ResolveFieldAndPropertyAccess */
+    // @json-ignore
     instanceReferences: InstanceFieldReference[] = [];
+
     /** @creator CollectInheritanceInfo */
+    // @json-ignore
     interfaceDeclarations: Field[] = null;
+
     /** @creator FillMutability */
     mutability: MutabilityInfo = null;
 }
@@ -351,13 +375,20 @@ export class Property implements IVariable, IHasAttributesAndTrivia, IClassMembe
         public leadingTrivia: string) { }
 
     /** @creator FillParent */
+    // @json-ignore
     parentClass: Class = null;
+
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string } = null;
+
     /** @creator ResolveFieldAndPropertyAccess */
+    // @json-ignore
     staticReferences: StaticPropertyReference[] = [];
+
     /** @creator ResolveFieldAndPropertyAccess */
+    // @json-ignore
     instanceReferences: InstancePropertyReference[] = [];
+    
     /** @creator FillMutability */
     mutability: MutabilityInfo = null;
 }
@@ -371,15 +402,18 @@ export class MethodParameter implements IVariableWithInitializer, IReferencable,
         public leadingTrivia: string) { }
 
     /** @creator TypeScriptParser2 */
+    // @json-ignore
     fieldDecl: Field = null;
 
     /** @creator FillParent */
+    // @json-ignore
     parentMethod: IMethodBase = null;
 
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string } = null;
 
     /** @creator ResolveIdentifiers */
+    // @json-ignore
     references: MethodParameterReference[] = [];
     createReference(): Reference { return new MethodParameterReference(this); }
 
@@ -405,6 +439,7 @@ export class Constructor implements IMethodBaseWithTrivia {
         public leadingTrivia: string) { }
 
     /** @creator FillParent */
+    // @json-ignore
     parentClass: Class = null;
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string } = null;
@@ -426,14 +461,22 @@ export class Method implements IMethodBaseWithTrivia, IClassMember {
         public leadingTrivia: string) { }
     
     /** @creator FillParent */
+    // @json-ignore
     parentInterface: IInterface = null;
+
     /** @creator FillAttributesFromTrivia */
     attributes: { [name: string]: string } = null;
+
     /** @creator CollectInheritanceInfo */
+    // @json-ignore
     interfaceDeclarations: Method[] = null;
+
     /** @creator CollectInheritanceInfo */
+    // @json-ignore
     overrides: Method = null;
+
     /** @creator CollectInheritanceInfo */
+    // @json-ignore
     overriddenBy: Method[] = [];
 
     throws: boolean;
