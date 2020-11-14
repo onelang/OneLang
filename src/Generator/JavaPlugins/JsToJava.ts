@@ -198,10 +198,11 @@ export class JsToJava implements IGeneratorPlugin {
                 return `${this.main.expr(expr.object)}.length()`;
             if (expr.property.parentClass.name === "TsArray" && expr.property.name === "length")
                 return `${this.main.expr(expr.object)}.${this.isArray(expr.object) ? "length" : "size()"}`;
-                //return `${this.main.expr(expr.object)}.${expr.getVariable().mutability.mutated ? "size" : "length"}()`;
         } else if (expr instanceof InstanceFieldReference && expr.object.actualType instanceof ClassType) {
             if (expr.field.parentInterface.name === "RegExpExecArray" && expr.field.name === "length")
                 return `${this.main.expr(expr.object)}.length`;
+            if (expr.field.parentInterface.name === "Map" && expr.field.name === "size")
+                return `${this.main.expr(expr.object)}.size()`;
         } else if (expr instanceof StaticMethodCallExpression && expr.method.parentInterface instanceof Class) {
             return this.convertMethod(expr.method.parentInterface, null, expr.method, expr.args, expr.actualType);
         }
