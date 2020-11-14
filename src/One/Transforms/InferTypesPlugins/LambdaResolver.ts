@@ -2,7 +2,6 @@ import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
 import { Expression } from "../../Ast/Expressions";
 import { Lambda } from "../../Ast/Types";
 import { LambdaType, TypeHelper } from "../../Ast/AstTypes";
-import { ReturnStatement, Statement } from "../../Ast/Statements";
 
 export class LambdaResolver extends InferTypesPlugin {
     constructor() { super("LambdaResolver"); }

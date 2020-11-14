@@ -1,7 +1,6 @@
 import { AstTransformer } from "../AstTransformer";
-import { ErrorManager } from "../ErrorManager";
 import { InstanceOfExpression, BinaryExpression, Expression, CastExpression, ConditionalExpression, PropertyAccessExpression } from "../Ast/Expressions";
-import { Statement, IfStatement, VariableDeclaration, WhileStatement, ExpressionStatement, ReturnStatement } from "../Ast/Statements";
+import { Statement, IfStatement, WhileStatement } from "../Ast/Statements";
 import { ForeachVariableReference, VariableDeclarationReference, MethodParameterReference, InstanceFieldReference, ThisReference, Reference, StaticThisReference } from "../Ast/References";
 import { ArrayHelper } from "../../Utils/ArrayHelper";
 
