@@ -12,6 +12,7 @@ export abstract class AstTransformer implements ITransformer {
     currentFile: SourceFile = null;
     currentInterface: IInterface = null;
     currentMethod: IMethodBase = null;
+    currentClosure: IMethodBase = null;
     currentStatement: Statement = null;
 
     constructor(public name: string) { }
@@ -130,7 +131,10 @@ export abstract class AstTransformer implements ITransformer {
     }
 
     protected visitLambda(lambda: Lambda): Lambda {
+        const prevClosure = this.currentClosure;
+        this.currentClosure = lambda;
         this.visitMethodBase(lambda);
+        this.currentClosure = prevClosure;
         return null;
     }
 
@@ -255,9 +259,11 @@ export abstract class AstTransformer implements ITransformer {
 
     protected visitMethod(method: Method) {
         this.currentMethod = method;
+        this.currentClosure = method;
         this.visitAttributesAndTrivia(method);
         this.visitMethodBase(method);
         method.returns = this.visitType(method.returns) || method.returns;
+        this.currentClosure = null;
         this.currentMethod = null;
     }
  
@@ -268,8 +274,10 @@ export abstract class AstTransformer implements ITransformer {
  
     protected visitConstructor(constructor: Constructor) {
         this.currentMethod = constructor;
+        this.currentClosure = constructor;
         this.visitAttributesAndTrivia(constructor);
         this.visitMethodBase(constructor);
+        this.currentClosure = null;
         this.currentMethod = null;
     }
  

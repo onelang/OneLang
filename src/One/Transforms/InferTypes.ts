@@ -7,7 +7,7 @@ import { ArrayAndMapLiteralTypeInfer } from "./InferTypesPlugins/ArrayAndMapLite
 import { ResolveFieldAndPropertyAccess } from "./InferTypesPlugins/ResolveFieldAndPropertyAccess";
 import { ResolveMethodCalls } from "./InferTypesPlugins/ResolveMethodCalls";
 import { LambdaResolver } from "./InferTypesPlugins/LambdaResolver";
-import { Statement, Block } from "../Ast/Statements";
+import { Statement, Block, ReturnStatement } from "../Ast/Statements";
 import { ResolveEnumMemberAccess } from "./InferTypesPlugins/ResolveEnumMemberAccess";
 import { InferReturnType } from "./InferTypesPlugins/InferReturnType";
 import { TypeScriptNullCoalesce } from "./InferTypesPlugins/TypeScriptNullCoalesce";
@@ -16,6 +16,7 @@ import { ResolveFuncCalls } from "./InferTypesPlugins/ResolveFuncCalls";
 import { NullabilityCheckWithNot } from "./InferTypesPlugins/NullabilityCheckWithNot";
 import { ResolveNewCalls } from "./InferTypesPlugins/ResolveNewCall";
 import { ResolveElementAccess } from "./InferTypesPlugins/ResolveElementAccess";
+import { ClassType } from "../Ast/AstTypes";
 
 enum InferTypesStage { Invalid, Fields, Properties, Methods }
 
@@ -145,6 +146,13 @@ export class InferTypes extends AstTransformer {
     protected visitStatement(stmt: Statement) {
         this.currentStatement = stmt;
 
+        if (stmt instanceof ReturnStatement && stmt.expression !== null && this.currentClosure instanceof Method && this.currentClosure.returns !== null) {
+            let returnType = this.currentClosure.returns;
+            if (returnType instanceof ClassType && returnType.decl === this.currentFile.literalTypes.promise.decl && this.currentClosure.async)
+                returnType = returnType.typeArguments[0];
+            stmt.expression.setExpectedType(returnType);
+        }
+
         for (const plugin of this.plugins)
             if (plugin.handleStatement(stmt))
                 return null;
@@ -180,11 +188,16 @@ export class InferTypes extends AstTransformer {
     protected visitLambda(lambda: Lambda) {
         if (lambda.actualType !== null) return null;
 
+        const prevClosure = this.currentClosure;
+        this.currentClosure = lambda;
+
         for (const plugin of this.plugins)
             if (plugin.handleLambda(lambda))
                 return lambda;
 
-        return super.visitLambda(lambda);
+        this.currentClosure = prevClosure;
+        super.visitMethodBase(lambda);
+        return null;
     }
 
     public runPluginsOn(expr: Expression) { return this.visitExpression(expr); }

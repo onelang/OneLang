@@ -1,4 +1,4 @@
-import { SourceFile, IInterface, IMethodBase, Method, IAstNode, Field, Property, Constructor } from "./Ast/Types";
+import { SourceFile, IInterface, IMethodBase, Method, IAstNode, Field, Property, Constructor, Lambda } from "./Ast/Types";
 import { AstTransformer } from "./AstTransformer";
 import { Statement } from "./Ast/Statements";
 import { TSOverviewGenerator } from "../Utils/TSOverviewGenerator";
@@ -49,6 +49,8 @@ export class ErrorManager {
                     location += `::${t.currentMethod.name}`;
                 else if (t.currentMethod instanceof Constructor)
                     location += `::constructor`;
+                else if (t.currentMethod instanceof Lambda)
+                    location += `::<lambda>`;
                 else if (t.currentMethod === null) { }
                 else
                     debugger;
