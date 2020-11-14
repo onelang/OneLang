@@ -9,6 +9,7 @@ import { IGenerator } from "./IGenerator";
 import { IExpression, IType } from "../One/Ast/Interfaces";
 import { IGeneratorPlugin } from "./IGeneratorPlugin";
 import { JsToPhp } from "./PhpPlugins/JsToPhp";
+import { ITransformer } from "../One/ITransformer";
 
 export class PhpGenerator implements IGenerator {
     usings: Set<string>;
@@ -23,7 +24,8 @@ export class PhpGenerator implements IGenerator {
     
     getLangName(): string { return "PHP"; }
     getExtension(): string { return "php"; }
-
+    getTransforms(): ITransformer[] { return []; }
+    
     name_(name: string) {
         if (this.reservedWords.includes(name)) name += "_";
         if (this.fieldToMethodHack.includes(name)) name += "()";

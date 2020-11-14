@@ -47,6 +47,14 @@ class StateHandler implements ICompilerHooks {
     }
 }
 
+function generateReflection(projName: string, compiler: Compiler) {
+    const pkgType = compiler.projectPkg.files["One/Ast/Types.ts"].classes.find(x => x.name === "Package").type;
+    //Reflection.registerClass(Package, pkgType);
+    const serializer = new JsonSerializer(Object.values(compiler.projectPkg.files)[0].literalTypes);
+    const projJson = serializer.serialize(Reflection.wrap(compiler.projectPkg, pkgType));
+    writeFile(`test/artifacts/ProjectTest/${projName}/ast.json`, projJson);
+}
+
 async function compileProject(projName: string, projDir: string) {
     const compiler = await CompilerHelper.initProject(projName, projDir, "ts", null);
     const stateHandler = new StateHandler(compiler);
@@ -57,16 +65,17 @@ async function compileProject(projName: string, projDir: string) {
     console.log('writing lastState...');
     writeFile(`test/artifacts/ProjectTest/${projName}/lastState.txt`, stateHandler.lastState.getSummary());
 
-    const pkgType = compiler.projectPkg.files["One/Ast/Types.ts"].classes.find(x => x.name === "Package").type;
-    //Reflection.registerClass(Package, pkgType);
-    const serializer = new JsonSerializer(Object.values(compiler.projectPkg.files)[0].literalTypes);
-    const projJson = serializer.serialize(Reflection.wrap(compiler.projectPkg, pkgType));
-    writeFile(`test/artifacts/ProjectTest/${projName}/ast.json`, projJson);
-
-    //new StatementDebugger("new .T.C:InterfaceType").visitPackage(compiler.projectPkg);
-    //new CircularDependencyDetector(DetectionMode.AllImports).processPackage(compiler.projectPkg);
-
     for (const generator of [new CsharpGenerator(), new PythonGenerator(), new PhpGenerator(), new JavaGenerator()]) {
+        const compiler = await CompilerHelper.initProject(projName, projDir, "ts", null);
+        compiler.processWorkspace();
+
+        for (const trans of generator.getTransforms())
+            trans.visitFiles(Object.values(compiler.projectPkg.files));
+
+        //generateReflection(projName, compiler);
+        //new StatementDebugger("new .T.C:InterfaceType").visitPackage(compiler.projectPkg);
+        //new CircularDependencyDetector(DetectionMode.AllImports).processPackage(compiler.projectPkg);
+
         const langName = generator.getLangName();
         const ext = generator.getExtension();
         

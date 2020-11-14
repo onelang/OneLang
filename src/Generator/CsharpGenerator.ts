@@ -7,6 +7,7 @@ import { GeneratedFile } from "./GeneratedFile";
 import { NameUtils } from "./NameUtils";
 import { IGenerator } from "./IGenerator";
 import { IExpression, IType } from "../One/Ast/Interfaces";
+import { ITransformer } from "../One/ITransformer";
 
 export class CsharpGenerator implements IGenerator {
     usings: Set<string>;
@@ -17,6 +18,7 @@ export class CsharpGenerator implements IGenerator {
 
     getLangName(): string { return "CSharp"; }
     getExtension(): string { return "cs"; }
+    getTransforms(): ITransformer[] { return []; }
 
     name_(name: string) {
         if (this.reservedWords.includes(name)) name += "_";

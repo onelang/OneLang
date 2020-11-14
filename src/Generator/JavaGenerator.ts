@@ -9,6 +9,7 @@ import { IGenerator } from "./IGenerator";
 import { IExpression, IType } from "../One/Ast/Interfaces";
 import { IGeneratorPlugin } from "./IGeneratorPlugin";
 import { JsToJava } from "./JavaPlugins/JsToJava";
+import { ITransformer } from "../One/ITransformer";
 
 export class JavaGenerator implements IGenerator {
     imports = new Set<string>();
@@ -23,7 +24,8 @@ export class JavaGenerator implements IGenerator {
 
     getLangName(): string { return "Java"; }
     getExtension(): string { return "java"; }
-
+    getTransforms(): ITransformer[] { return []; }
+    
     name_(name: string) {
         if (this.reservedWords.includes(name)) name += "_";
         if (this.fieldToMethodHack.includes(name)) name += "()";

@@ -10,6 +10,7 @@ import { JsToPython } from "./PythonPlugins/JsToPython";
 import { NameUtils } from "./NameUtils";
 import { IExpression, IType } from "../One/Ast/Interfaces";
 import { IGenerator } from "./IGenerator";
+import { ITransformer } from "../One/ITransformer";
 
 export class PythonGenerator implements IGenerator {
     tmplStrLevel = 0;
@@ -28,7 +29,8 @@ export class PythonGenerator implements IGenerator {
 
     getLangName(): string { return "Python"; }
     getExtension(): string { return "py"; }
-
+    getTransforms(): ITransformer[] { return []; }
+    
     type(type: IType) {
         if (type instanceof ClassType) {
             if (type.decl.name === "TsString")       return "str";
