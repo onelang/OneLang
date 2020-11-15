@@ -7,7 +7,7 @@ Priority list:
 | #  | Name         | Status |
 | -- | -----------  | :----: |
 | 1  | Python       |  DONE  |
-| 2  | Java         |**TODO**|
+| 2  | Java         |  DONE  |
 | 3  | JavaScript   |  DONE  |
 | 4  | C++          |**TODO**|
 | 5  | C#           |  DONE  |
