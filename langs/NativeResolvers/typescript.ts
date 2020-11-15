@@ -36,7 +36,7 @@ declare class TsArray<T> {
     every(predictate: (item: T, index: number) => boolean): boolean;
     /** @mutates */
     splice(start: number, deleteCount: number): void;
-    sort(func: (a: T, b: T) => number): T[];
+    sort(func: (a: T, b: T) => number = null): T[];
     reduce<TAcc>(func: (acc: TAcc, val: T) => TAcc, initVal: TAcc): TAcc;
 }
 
