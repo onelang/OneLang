@@ -19,7 +19,7 @@ export class FillAttributesFromTrivia extends AstTransformer {
     static processTrivia(trivia: string): { [name: string]: string } {
         const result: { [name: string]: string } = {};
         if (trivia !== null && trivia !== "") {
-            const regex = /(?:\n|^)\s*(?:\/\/|#|\/\*\*?)\s*@([a-z0-9_.-]+) ?((?!\n|\*\/|$).+)?/g;
+            const regex = /(?:\n|^)\s*(?:\/\/|#|\/\*\*?)\s*@([A-Za-z0-9_.-]+) ?((?!\n|\*\/|$).+)?/g;
             while(true) {
                 const match = regex.exec(trivia) || null;
                 if (match === null) break;

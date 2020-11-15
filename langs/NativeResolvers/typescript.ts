@@ -141,6 +141,7 @@ declare class Set<T> extends IterableIterator<T> {
     add(item: T): void;
     has(item: T): boolean;
     values(): IterableIterator<T>;
+    // @UseDefaultCallArgsExplicitly disable
     constructor(values: T[]);
 }
 

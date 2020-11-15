@@ -11,6 +11,7 @@ import { IGeneratorPlugin } from "./IGeneratorPlugin";
 import { JsToJava } from "./JavaPlugins/JsToJava";
 import { ITransformer } from "../One/ITransformer";
 import { ConvertNullCoalesce } from "../One/Transforms/ConvertNullCoalesce";
+import { UseDefaultCallArgsExplicitly } from "../One/Transforms/UseDefaultCallArgsExplicitly";
 
 export class JavaGenerator implements IGenerator {
     imports = new Set<string>();
@@ -25,7 +26,7 @@ export class JavaGenerator implements IGenerator {
 
     getLangName(): string { return "Java"; }
     getExtension(): string { return "java"; }
-    getTransforms(): ITransformer[] { return [new ConvertNullCoalesce()]; }
+    getTransforms(): ITransformer[] { return [<ITransformer>new ConvertNullCoalesce(), <ITransformer>new UseDefaultCallArgsExplicitly()]; }
     
     name_(name: string) {
         if (this.reservedWords.includes(name)) name += "_";
@@ -478,28 +479,8 @@ export class JavaGenerator implements IGenerator {
     stmts(stmts: Statement[]): string { return stmts.map(stmt => this.stmt(stmt)).join("\n"); }
     rawBlock(block: Block): string { return this.stmts(block.statements); }
 
-    overloadMethodGen(prefix: string, method: Method, params: MethodParameter[], body: string): string {
-        const methods: string[] = [];
-        methods.push(prefix + 
-            `(${params.map(p => this.varWoInit(p, p)).join(", ")})` + body);
-
-        for (let paramLen = params.length -1; paramLen >= 0; paramLen--) {
-            if (params[paramLen].initializer === null) break;
-
-            const methodParams: string[] = [];
-            const methodArgs: string[] = [];
-            for (let i = 0; i < params.length; i++) {
-                const p = params[i];
-                if (i < paramLen)
-                    methodParams.push(this.varWoInit(p, null));
-                methodArgs.push(i >= paramLen ? this.expr(p.initializer) : p.name);
-            }
-
-            const baseName = `${method !== null && method.isStatic ? this.currentClass.name : "this"}${method !== null ? `.${method.name}` : ""}`;
-            methods.push(`${prefix}(${methodParams.join(", ")}) {\n${this.pad(`${method !== null && !(method.returns instanceof VoidType) ? "return " : ""}${baseName}(${methodArgs.join(', ')});`)}\n}`);
-        }
-
-        return methods.join("\n\n");
+    methodGen(prefix: string, params: MethodParameter[], body: string): string {
+        return `${prefix}(${params.map(p => this.varWoInit(p, p)).join(", ")})${body}`;
     }
 
     method(method: Method, isCls: boolean): string {
@@ -514,7 +495,7 @@ export class JavaGenerator implements IGenerator {
             `${this.type(method.returns, false)} ` +
             this.name_(method.name);
 
-        return this.overloadMethodGen(prefix, method, method.parameters,
+        return this.methodGen(prefix, method.parameters,
             method.body === null ? ";" : ` {\n${this.pad(this.stmts(method.body.statements))}\n}`);
     }
 
@@ -580,9 +561,9 @@ export class JavaGenerator implements IGenerator {
             const superCall = cls.constructor_.superCallArgs !== null ? `super(${cls.constructor_.superCallArgs.map(x => this.expr(x)).join(", ")});\n` : "";
 
             // TODO: super calls
-            resList.push(this.overloadMethodGen(
+            resList.push(this.methodGen(
                 "public " + this.preIf("/* throws */ ", cls.constructor_.throws) + this.name_(cls.name),
-                null, cls.constructor_.parameters,
+                cls.constructor_.parameters,
                 `\n{\n${this.pad(superCall + this.stmts(constrFieldInits.concat(complexFieldInits).concat(cls.constructor_.body.statements)))}\n}`));
         } else if (complexFieldInits.length > 0)
             resList.push(`public ${this.name_(cls.name)}()\n{\n${this.pad(this.stmts(complexFieldInits))}\n}`);
