@@ -65,7 +65,7 @@ async function compileProject(projName: string, projDir: string) {
     console.log('writing lastState...');
     writeFile(`test/artifacts/ProjectTest/${projName}/lastState.txt`, stateHandler.lastState.getSummary());
 
-    for (const generator of [new CsharpGenerator(), new PythonGenerator(), new PhpGenerator(), new JavaGenerator()]) {
+    for (const generator of [new JavaGenerator(), new CsharpGenerator(), new PythonGenerator(), new PhpGenerator()]) {
         const compiler = await CompilerHelper.initProject(projName, projDir, "ts", null);
         compiler.processWorkspace();
 

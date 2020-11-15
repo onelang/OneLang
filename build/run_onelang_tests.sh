@@ -1,10 +1,6 @@
-faketty() {
-    script -q /dev/null $(printf "%q " "$@")
-}
-
 run() {
     set -o pipefail
-    script -q /dev/null $(printf "%q " "$@") | grep -v matches
+    script -q /dev/null $(printf "%q " "$@") | grep -v "matches\|passed"
 }
 
 cd ..

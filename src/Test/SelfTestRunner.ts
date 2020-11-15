@@ -33,6 +33,7 @@ export class SelfTestRunner {
     public async runTest(generator: IGenerator): Promise<boolean> {
         console.log("[-] SelfTestRunner :: START");
         const compiler = await CompilerHelper.initProject("OneLang", `${this.baseDir}src/`);
+        compiler.hooks = new CompilerHooks(compiler, this.baseDir);
         compiler.processWorkspace();
         const generated = generator.generate(compiler.projectPkg);
         
