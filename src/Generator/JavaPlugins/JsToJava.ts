@@ -57,6 +57,7 @@ export class JsToJava implements IGeneratorPlugin {
             } else if (method.name === "filter") {
                 return `${this.arrayStream(obj)}.filter(${argsR[0]}).${this.toArray(returnType)}`;
             } else if (method.name === "every") {
+                this.main.imports.add("OneStd.StdArrayHelper");
                 return `StdArrayHelper.allMatch(${objR}, ${argsR[0]})`;
             } else if (method.name === "some") {
                 return `${this.arrayStream(obj)}.anyMatch(${argsR[0]})`;
@@ -177,6 +178,9 @@ export class JsToJava implements IGeneratorPlugin {
             if (method.name === "get") {
                 return `${objR}[${argsR[0]}]`;
             }
+        } else if (["JSON", "console", "RegExp"].includes(cls.name)) {
+            this.main.imports.add(`OneStd.${cls.name}`);
+            return null;
         } else {
             return null;
         }

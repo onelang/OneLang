@@ -1,7 +1,7 @@
 import { NewExpression, Identifier, TemplateString, ArrayLiteral, CastExpression, BooleanLiteral, StringLiteral, NumericLiteral, CharacterLiteral, PropertyAccessExpression, Expression, ElementAccessExpression, BinaryExpression, UnresolvedCallExpression, ConditionalExpression, InstanceOfExpression, ParenthesizedExpression, RegexLiteral, UnaryExpression, UnaryType, MapLiteral, NullLiteral, AwaitExpression, UnresolvedNewExpression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, NullCoalesceExpression, GlobalFunctionCallExpression, StaticMethodCallExpression, LambdaCallExpression, IMethodCallExpression } from "../One/Ast/Expressions";
 import { Statement, ReturnStatement, UnsetStatement, ThrowStatement, ExpressionStatement, VariableDeclaration, BreakStatement, ForeachStatement, IfStatement, WhileStatement, ForStatement, DoStatement, ContinueStatement, TryStatement, Block } from "../One/Ast/Statements";
-import { Class, SourceFile, IVariable, Lambda, Interface, IInterface, MethodParameter, IVariableWithInitializer, Visibility, Package, IHasAttributesAndTrivia, Method } from "../One/Ast/Types";
-import { VoidType, ClassType, InterfaceType, EnumType, AnyType, LambdaType, NullType, GenericsType, TypeHelper } from "../One/Ast/AstTypes";
+import { Class, SourceFile, IVariable, Lambda, Interface, IInterface, MethodParameter, IVariableWithInitializer, Visibility, Package, IHasAttributesAndTrivia, Method, ExportScopeRef } from "../One/Ast/Types";
+import { VoidType, ClassType, InterfaceType, EnumType, AnyType, LambdaType, NullType, GenericsType, TypeHelper, IInterfaceType } from "../One/Ast/AstTypes";
 import { ThisReference, EnumReference, ClassReference, MethodParameterReference, VariableDeclarationReference, ForVariableReference, ForeachVariableReference, SuperReference, StaticFieldReference, StaticPropertyReference, InstanceFieldReference, InstancePropertyReference, EnumMemberReference, CatchVariableReference, GlobalFunctionReference, StaticThisReference, VariableReference } from "../One/Ast/References";
 import { GeneratedFile } from "./GeneratedFile";
 import { NameUtils } from "./NameUtils";
@@ -64,6 +64,12 @@ export class JavaGenerator implements IGenerator {
     typeArgs2(args: IType[]): string { return this.typeArgs(args.map(x => this.type(x))); }
 
     type(t: IType, mutates = true, isNew = false): string {
+        if (t instanceof ClassType || t instanceof InterfaceType) {
+            const decl = (<IInterfaceType>t).getDecl();
+            if (decl.parentFile.exportScope !== null)
+                this.imports.add(this.toImport(decl.parentFile.exportScope) + "." + decl.name);
+        }
+
         if (t instanceof ClassType) {
             const typeArgs = this.typeArgs(t.typeArguments.map(x => this.type(x)));
             if (t.decl.name === "TsString")
@@ -319,6 +325,7 @@ export class JavaGenerator implements IGenerator {
         } else if (expr instanceof ParenthesizedExpression) {
             res = `(${this.expr(expr.expression)})`;
         } else if (expr instanceof RegexLiteral) {
+            this.imports.add(`OneStd.RegExp`);
             res = `new RegExp(${JSON.stringify(expr.pattern)})`;
         } else if (expr instanceof Lambda) {
             let body: string;
@@ -655,21 +662,37 @@ export class JavaGenerator implements IGenerator {
         return imports.length === 0 ? "" : imports.map(x => `import ${x};`).join("\n") + "\n\n";
     }
 
+    toImport(scope: ExportScopeRef): string {
+        return scope.scopeName === "index" ? `OneStd` : 
+            `${scope.packageName}.${scope.scopeName.replace(/\.ts$/, "").replace(/\//g, ".")}`;
+    }
+
     generate(pkg: Package): GeneratedFile[] {
         const result: GeneratedFile[] = [];
         for (const path of Object.keys(pkg.files)) {
             const file = pkg.files[path];
-            const dstDir = `src/main/java/${pkg.name}/${file.sourcePath.path.replace(/\.ts$/, "")}`;
+            const packagePath = `${pkg.name}/${file.sourcePath.path.replace(/\.ts$/, "")}`;
+            const dstDir = `src/main/java/${packagePath}`;
+            const packageName = packagePath.replace(/\//g, ".");
+            
+            const imports = new Set<string>();
+            for (const impList of file.imports) {
+                const impPkg = this.toImport(impList.exportScope);
+                for (const imp of impList.imports)
+                    imports.add(`${impPkg}.${imp.name}`);
+            }
+
+            const head = `package ${packageName};\n\n${Array.from(imports.values()).map(x => `import ${x};`).join("\n")}\n\n`;
 
             for (const enum_ of file.enums) {
                 result.push(new GeneratedFile(`${dstDir}/${enum_.name}.java`, 
-                    `public enum ${this.name_(enum_.name)} { ${enum_.values.map(x => this.name_(x.name)).join(", ")} }`));
+                    `${head}public enum ${this.name_(enum_.name)} { ${enum_.values.map(x => this.name_(x.name)).join(", ")} }`));
             }
 
             for (const intf of file.interfaces) {
                 const res = `public interface ${this.name_(intf.name)}${this.typeArgs(intf.typeArguments)}`+
                     `${this.preArr(" extends ", intf.baseInterfaces.map(x => this.type(x)))} {\n${this.interface(intf)}\n}`;
-                result.push(new GeneratedFile(`${dstDir}/${intf.name}.java`, this.importsHead() + res));
+                result.push(new GeneratedFile(`${dstDir}/${intf.name}.java`, `${head}${this.importsHead()}${res}`));
             }
 
             for (const cls of file.classes) {
@@ -677,7 +700,7 @@ export class JavaGenerator implements IGenerator {
                     (cls.baseClass !== null ? ` extends ${this.type(cls.baseClass)}` : "") +
                     this.preArr(" implements ", cls.baseInterfaces.map(x => this.type(x))) +
                     ` {\n${this.class(cls)}\n}`;
-                result.push(new GeneratedFile(`${dstDir}/${cls.name}.java`, this.importsHead() + res));
+                result.push(new GeneratedFile(`${dstDir}/${cls.name}.java`, `${head}${this.importsHead()}${res}`));
             }
         }
         return result;
