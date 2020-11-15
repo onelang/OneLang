@@ -331,13 +331,13 @@ export class JavaGenerator implements IGenerator {
         } else if (expr instanceof Lambda) {
             let body: string;
             if (expr.body.statements.length === 1 && expr.body.statements[0] instanceof ReturnStatement)
-                body = this.expr((<ReturnStatement>expr.body.statements[0]).expression);
+                body = " " + this.expr((<ReturnStatement>expr.body.statements[0]).expression);
             else
-                body = `{ ${this.rawBlock(expr.body)} }`;
+                body = this.block(expr.body, false);
 
             const params = expr.parameters.map(x => this.name_(x.name));
 
-            res = `${params.length === 1 ? params[0] : `(${params.join(", ")})`} -> ${body}`;
+            res = `${params.length === 1 ? params[0] : `(${params.join(", ")})`} ->${body}`;
         } else if (expr instanceof UnaryExpression && expr.unaryType === UnaryType.Prefix) {
             res = `${expr.operator}${this.expr(expr.operand)}`;
         } else if (expr instanceof UnaryExpression && expr.unaryType === UnaryType.Postfix) {
