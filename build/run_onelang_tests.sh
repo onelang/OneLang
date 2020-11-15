@@ -31,4 +31,11 @@ PYTHON=$?
 popd > /dev/null
 echo
 
-echo JS = $JS, PHP = $PHP, C# = $CS, PYTHON = $PYTHON
+echo ======================= JAVA =======================
+pushd ./test/artifacts/ProjectTest/OneLang/Java > /dev/null
+run ./gradlew run
+JAVA=$?
+popd > /dev/null
+echo
+
+echo JS = $JS, PHP = $PHP, C# = $CS, PYTHON = $PYTHON, JAVA = $JAVA
