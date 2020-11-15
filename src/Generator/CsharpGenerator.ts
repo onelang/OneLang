@@ -449,13 +449,16 @@ export class CsharpGenerator implements IGenerator {
                     constrFieldInits.push(new ExpressionStatement(new BinaryExpression(fieldRef, "=", mpRef)));
                 }
 
+                // @java var stmts = Stream.concat(Stream.concat(constrFieldInits.stream(), complexFieldInits.stream()), ((Class)cls).constructor_.getBody().statements.stream()).toArray(Statement[]::new);
+                // @java-import java.util.stream.Stream
+                const stmts = constrFieldInits.concat(complexFieldInits).concat(cls.constructor_.body.statements);
                 resList.push(
                     "public " +
                     this.preIf("/* throws */ ", cls.constructor_.throws) + 
                     this.name_(cls.name) +
                     `(${cls.constructor_.parameters.map(p => this.var(p, p)).join(", ")})` +
                     (cls.constructor_.superCallArgs !== null ? `: base(${cls.constructor_.superCallArgs.map(x => this.expr(x)).join(", ")})` : "") +
-                    `\n{\n${this.pad(this.stmts(constrFieldInits.concat(complexFieldInits).concat(cls.constructor_.body.statements)))}\n}`);
+                    `\n{\n${this.pad(this.stmts(stmts))}\n}`);
             } else if (complexFieldInits.length > 0)
                 resList.push(`public ${this.name_(cls.name)}()\n{\n${this.pad(this.stmts(complexFieldInits))}\n}`);
 
@@ -512,7 +515,8 @@ export class CsharpGenerator implements IGenerator {
         const main = sourceFile.mainBlock.statements.length > 0 ? 
             `public class Program\n{\n    static void Main(string[] args)\n    {\n${this.pad(this.rawBlock(sourceFile.mainBlock))}\n    }\n}` : "";
 
-        // @java var usingsSet = new HashSet<String>(Arrays.stream(sourceFile.imports).map(x -> this.pathToNs(x.exportScope.scopeName)).filter(x -> x != "").collect(Collectors.toList()));
+        // @java var usingsSet = new LinkedHashSet<String>(Arrays.stream(sourceFile.imports).map(x -> this.pathToNs(x.exportScope.scopeName)).filter(x -> x != "").collect(Collectors.toList()));
+        // @java-import java.util.LinkedHashSet
         const usingsSet = new Set<string>(sourceFile.imports.map(x => this.pathToNs(x.exportScope.scopeName)).filter(x => x !== ""));
         for (const using of this.usings.values())
             usingsSet.add(using);
@@ -520,6 +524,7 @@ export class CsharpGenerator implements IGenerator {
         const usings: string[] = [];
         for (const using of usingsSet.values())
             usings.push(`using ${using};`);
+        usings.sort();
 
         let result = [enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), main].filter(x => x !== "").join("\n\n");
         const nl = "\n"; // Python fix

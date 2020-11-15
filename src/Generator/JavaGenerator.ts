@@ -91,7 +91,7 @@ export class JavaGenerator implements IGenerator {
                 this.imports.add(`java.util.${realType}`);
                 return `${realType}<${this.type(t.typeArguments[0])}, ${this.type(t.typeArguments[1])}>`;
             } else if (t.decl.name === "Set") {
-                const realType = isNew ? "HashSet" : "Set";
+                const realType = isNew ? "LinkedHashSet" : "Set";
                 this.imports.add(`java.util.${realType}`);
                 return `${realType}<${this.type(t.typeArguments[0])}>`;
             } else if (t.decl.name === "Promise") {
@@ -601,40 +601,6 @@ export class JavaGenerator implements IGenerator {
         parts.pop();
         return parts.join('.');
     }
-
-    // genFile(sourceFile: SourceFile): string {
-    //     this.usings = new Set<string>();
-    //     const enums = sourceFile.enums.map(enum_ => `public enum ${this.name_(enum_.name)} { ${enum_.values.map(x => this.name_(x.name)).join(", ")} }`);
-
-    //     const intfs = sourceFile.interfaces.map(intf => `public interface ${this.name_(intf.name)}${this.typeArgs(intf.typeArguments)}`+
-    //         `${this.preArr(" : ", intf.baseInterfaces.map(x => this.type(x)))} {\n${this.classLike(intf)}\n}`);
-
-    //     const classes: string[] = [];
-    //     for (const cls of sourceFile.classes) {
-    //         const baseClasses: IType[] = [];
-    //         if (cls.baseClass !== null)
-    //             baseClasses.push(cls.baseClass);
-    //         for (const intf of cls.baseInterfaces)
-    //             baseClasses.push(intf);
-    //         classes.push(`public class ${this.name_(cls.name)}${this.typeArgs(cls.typeArguments)}${this.preArr(" : ", baseClasses.map(x => this.type(x)))} {\n${this.classLike(cls)}\n}`);
-    //     }
-
-    //     const main = sourceFile.mainBlock.statements.length > 0 ? 
-    //         `public class Program\n{\n    static void Main(string[] args)\n    {\n${this.pad(this.rawBlock(sourceFile.mainBlock))}\n    }\n}` : "";
-
-    //     const usingsSet = new Set<string>(sourceFile.imports.map(x => this.pathToNs(x.exportScope.scopeName)).filter(x => x !== ""));
-    //     for (const using of this.usings.values())
-    //         usingsSet.add(using);
-
-    //     const usings: string[] = [];
-    //     for (const using of usingsSet.values())
-    //         usings.push(`using ${using};`);
-
-    //     let result = [enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), main].filter(x => x !== "").join("\n\n");
-    //     const nl = "\n"; // Python fix
-    //     result = `${usings.join(nl)}\n\nnamespace ${this.pathToNs(sourceFile.sourcePath.path)}\n{\n${this.pad(result)}\n}`;
-    //     return result;
-    // }
 
     importsHead(): string {
         const imports: string[] = [];

@@ -127,7 +127,9 @@ export class InferTypes extends AstTransformer {
             transformedExpr = newExpr;
         }
         // if the plugin did not handle the expression, we use the default visit method
-        const expr2 = transformedExpr !== null ? transformedExpr : super.visitExpression(expr) || expr;
+        let expr2 = transformedExpr;
+        if (expr2 === null)
+            expr2 = super.visitExpression(expr) || expr;
 
         if (expr2.actualType !== null) return expr2;
 
