@@ -20,7 +20,7 @@ export class ResolveUnresolvedTypes extends AstTransformer {
             const symbol = this.currentFile.availableSymbols.get(type.typeName) || null;
             if (symbol === null) {
                 this.errorMan.throw(`Unresolved type '${type.typeName}' was not found in available symbols`);
-                return null;
+                return type;
             }
     
             if (symbol instanceof Class)
@@ -31,11 +31,11 @@ export class ResolveUnresolvedTypes extends AstTransformer {
                 return new EnumType(symbol);
             else {
                 this.errorMan.throw(`Unknown symbol type: ${symbol}`);
-                return null;
+                return type;
             }
         }
         else 
-            return null;
+            return type;
     }
 
     protected visitExpression(expr: Expression): Expression {
@@ -48,7 +48,7 @@ export class ResolveUnresolvedTypes extends AstTransformer {
                 return newExpr;
             } else {
                 this.errorMan.throw(`Excepted ClassType, but got ${clsType}`);
-                return null;
+                return expr;
             }
         } else {
             return super.visitExpression(expr);

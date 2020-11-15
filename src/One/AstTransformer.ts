@@ -22,40 +22,40 @@ export abstract class AstTransformer implements ITransformer {
     protected visitType(type: IType): IType {
         if (type instanceof ClassType || type instanceof InterfaceType || type instanceof UnresolvedType) {
             const type2 = <IHasTypeArguments> type;
-            type2.typeArguments = type2.typeArguments.map(x => this.visitType(x) || x);
+            type2.typeArguments = type2.typeArguments.map(x => this.visitType(x));
         } else if (type instanceof LambdaType) {
             for (const mp of type.parameters)
                 this.visitMethodParameter(mp);
-            type.returnType = this.visitType(type.returnType) || type.returnType;
+            type.returnType = this.visitType(type.returnType);
         }
-        return null;
+        return type;
     }
  
     protected visitIdentifier(id: Identifier): Expression { 
-        return null;
+        return id;
     }
 
     protected visitVariable(variable: IVariable): IVariable {
         if (variable.type !== null)
-            variable.type = this.visitType(variable.type) || variable.type;
-        return null;
+            variable.type = this.visitType(variable.type);
+        return variable;
     }
 
     protected visitVariableWithInitializer(variable: IVariableWithInitializer): IVariableWithInitializer {
         this.visitVariable(variable);
         if (variable.initializer !== null)
-            variable.initializer = this.visitExpression(variable.initializer) || variable.initializer;
-        return null;
+            variable.initializer = this.visitExpression(variable.initializer);
+        return variable;
     }
 
     protected visitVariableDeclaration(stmt: VariableDeclaration): VariableDeclaration {
         this.visitVariableWithInitializer(stmt);
-        return null;
+        return stmt;
     }
 
     protected visitUnknownStatement(stmt: Statement): Statement {
         this.errorMan.throw(`Unknown statement type`);
-        return null;
+        return stmt;
     }
 
     protected visitStatement(stmt: Statement): Statement {
@@ -63,71 +63,71 @@ export abstract class AstTransformer implements ITransformer {
         this.visitAttributesAndTrivia(stmt);
         if (stmt instanceof ReturnStatement) {
             if (stmt.expression !== null)
-                stmt.expression = this.visitExpression(stmt.expression) || stmt.expression;
+                stmt.expression = this.visitExpression(stmt.expression);
         } else if (stmt instanceof ExpressionStatement) {
-            stmt.expression = this.visitExpression(stmt.expression) || stmt.expression;
+            stmt.expression = this.visitExpression(stmt.expression);
         } else if (stmt instanceof IfStatement) {
-            stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
-            stmt.then = this.visitBlock(stmt.then) || stmt.then;
+            stmt.condition = this.visitExpression(stmt.condition);
+            stmt.then = this.visitBlock(stmt.then);
             if (stmt.else_ !== null)
-                stmt.else_ = this.visitBlock(stmt.else_) || stmt.else_;
+                stmt.else_ = this.visitBlock(stmt.else_);
         } else if (stmt instanceof ThrowStatement) {
-            stmt.expression = this.visitExpression(stmt.expression) || stmt.expression;
+            stmt.expression = this.visitExpression(stmt.expression);
         } else if (stmt instanceof VariableDeclaration) {
             return this.visitVariableDeclaration(stmt);
         } else if (stmt instanceof WhileStatement) {
-            stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
-            stmt.body = this.visitBlock(stmt.body) || stmt.body;    
+            stmt.condition = this.visitExpression(stmt.condition);
+            stmt.body = this.visitBlock(stmt.body);
         } else if (stmt instanceof DoStatement) {
-            stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
-            stmt.body = this.visitBlock(stmt.body) || stmt.body;    
+            stmt.condition = this.visitExpression(stmt.condition);
+            stmt.body = this.visitBlock(stmt.body);    
         } else if (stmt instanceof ForStatement) {
             if (stmt.itemVar !== null)
                 this.visitVariableWithInitializer(stmt.itemVar);
-            stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
-            stmt.incrementor = this.visitExpression(stmt.incrementor) || stmt.incrementor;
-            stmt.body = this.visitBlock(stmt.body) || stmt.body;
+            stmt.condition = this.visitExpression(stmt.condition);
+            stmt.incrementor = this.visitExpression(stmt.incrementor);
+            stmt.body = this.visitBlock(stmt.body);
         } else if (stmt instanceof ForeachStatement) {
             this.visitVariable(stmt.itemVar);
-            stmt.items = this.visitExpression(stmt.items) || stmt.items;
-            stmt.body = this.visitBlock(stmt.body) || stmt.body;
+            stmt.items = this.visitExpression(stmt.items);
+            stmt.body = this.visitBlock(stmt.body);
         } else if (stmt instanceof TryStatement) {
-            stmt.tryBody = this.visitBlock(stmt.tryBody) || stmt.tryBody;
+            stmt.tryBody = this.visitBlock(stmt.tryBody);
             if (stmt.catchBody !== null) {
                 this.visitVariable(stmt.catchVar);
-                stmt.catchBody = this.visitBlock(stmt.catchBody) || stmt.catchBody;
+                stmt.catchBody = this.visitBlock(stmt.catchBody);
             }
             if (stmt.finallyBody !== null)
-                stmt.finallyBody = this.visitBlock(stmt.finallyBody) || stmt.finallyBody;
+                stmt.finallyBody = this.visitBlock(stmt.finallyBody);
         } else if (stmt instanceof BreakStatement) {
             // ...
         } else if (stmt instanceof UnsetStatement) {
-            stmt.expression = this.visitExpression(stmt.expression) || stmt.expression;
+            stmt.expression = this.visitExpression(stmt.expression);
         } else if (stmt instanceof ContinueStatement) {
             // ...
         } else {
             return this.visitUnknownStatement(stmt);
         }
-        return null;
+        return stmt;
     }
 
     protected visitBlock(block: Block): Block {
-        block.statements = block.statements.map(x => this.visitStatement(x) || x);
-        return null;
+        block.statements = block.statements.map(x => this.visitStatement(x));
+        return block;
     }
 
     protected visitTemplateString(expr: TemplateString): TemplateString {
         for (let i = 0; i < expr.parts.length; i++) {
             const part = expr.parts[i];
             if(!part.isLiteral)
-                part.expression = this.visitExpression(part.expression) || part.expression;
+                part.expression = this.visitExpression(part.expression);
         }
-        return null;
+        return expr;
     }
     
     protected visitUnknownExpression(expr: Expression): Expression {
         this.errorMan.throw(`Unknown expression type`);
-        return null;
+        return expr;
     }
 
     protected visitLambda(lambda: Lambda): Lambda {
@@ -135,69 +135,69 @@ export abstract class AstTransformer implements ITransformer {
         this.currentClosure = lambda;
         this.visitMethodBase(lambda);
         this.currentClosure = prevClosure;
-        return null;
+        return lambda;
     }
 
     protected visitVariableReference(varRef: VariableReference): VariableReference {
-        return null;
+        return varRef;
     }
 
     protected visitExpression(expr: Expression): Expression {
         if (expr instanceof BinaryExpression) {
-            expr.left = this.visitExpression(expr.left) || expr.left;
-            expr.right = this.visitExpression(expr.right) || expr.right;
+            expr.left = this.visitExpression(expr.left);
+            expr.right = this.visitExpression(expr.right);
         } else if (expr instanceof NullCoalesceExpression) {
-            expr.defaultExpr = this.visitExpression(expr.defaultExpr) || expr.defaultExpr;
-            expr.exprIfNull = this.visitExpression(expr.exprIfNull) || expr.exprIfNull;
+            expr.defaultExpr = this.visitExpression(expr.defaultExpr);
+            expr.exprIfNull = this.visitExpression(expr.exprIfNull);
         } else if (expr instanceof UnresolvedCallExpression) {
-            expr.func = this.visitExpression(expr.func) || expr.func;
-            expr.typeArgs = expr.typeArgs.map(x => this.visitType(x) || x);
-            expr.args = expr.args.map(x => this.visitExpression(x) || x);
+            expr.func = this.visitExpression(expr.func);
+            expr.typeArgs = expr.typeArgs.map(x => this.visitType(x));
+            expr.args = expr.args.map(x => this.visitExpression(x));
         } else if (expr instanceof UnresolvedMethodCallExpression) {
-            expr.object = this.visitExpression(expr.object) || expr.object;
-            expr.typeArgs = expr.typeArgs.map(x => this.visitType(x) || x);
-            expr.args = expr.args.map(x => this.visitExpression(x) || x);
+            expr.object = this.visitExpression(expr.object);
+            expr.typeArgs = expr.typeArgs.map(x => this.visitType(x));
+            expr.args = expr.args.map(x => this.visitExpression(x));
         } else if (expr instanceof ConditionalExpression) {
-            expr.condition = this.visitExpression(expr.condition) || expr.condition;
-            expr.whenTrue = this.visitExpression(expr.whenTrue) || expr.whenTrue;
-            expr.whenFalse = this.visitExpression(expr.whenFalse) || expr.whenFalse;
+            expr.condition = this.visitExpression(expr.condition);
+            expr.whenTrue = this.visitExpression(expr.whenTrue);
+            expr.whenFalse = this.visitExpression(expr.whenFalse);
         } else if (expr instanceof Identifier) {
             return this.visitIdentifier(expr);
         } else if (expr instanceof UnresolvedNewExpression) {
             this.visitType(expr.cls);
-            expr.args = expr.args.map(x => this.visitExpression(x) || x);
+            expr.args = expr.args.map(x => this.visitExpression(x));
         } else if (expr instanceof NewExpression) {
             this.visitType(expr.cls);
-            expr.args = expr.args.map(x => this.visitExpression(x) || x);
+            expr.args = expr.args.map(x => this.visitExpression(x));
         } else if (expr instanceof TemplateString) {
             return this.visitTemplateString(expr);
         } else if (expr instanceof ParenthesizedExpression) {
-            expr.expression = this.visitExpression(expr.expression) || expr.expression;
+            expr.expression = this.visitExpression(expr.expression);
         } else if (expr instanceof UnaryExpression) {
-            expr.operand = this.visitExpression(expr.operand) || expr.operand;
+            expr.operand = this.visitExpression(expr.operand);
         } else if (expr instanceof PropertyAccessExpression) {
-            expr.object = this.visitExpression(expr.object) || expr.object;
+            expr.object = this.visitExpression(expr.object);
         } else if (expr instanceof ElementAccessExpression) {
-            expr.object = this.visitExpression(expr.object) || expr.object;
-            expr.elementExpr = this.visitExpression(expr.elementExpr) || expr.elementExpr;
+            expr.object = this.visitExpression(expr.object);
+            expr.elementExpr = this.visitExpression(expr.elementExpr);
         } else if (expr instanceof ArrayLiteral) {
-            expr.items = expr.items.map(x => this.visitExpression(x) || x);
+            expr.items = expr.items.map(x => this.visitExpression(x));
         } else if (expr instanceof MapLiteral) {
             for (const item of expr.items)
-                item.value = this.visitExpression(item.value) || item.value;
+                item.value = this.visitExpression(item.value);
         } else if (expr instanceof StringLiteral) {
         } else if (expr instanceof BooleanLiteral) {
         } else if (expr instanceof NumericLiteral) {
         } else if (expr instanceof NullLiteral) {
         } else if (expr instanceof RegexLiteral) {
         } else if (expr instanceof CastExpression) {
-            expr.newType = this.visitType(expr.newType) || expr.newType;
-            expr.expression = this.visitExpression(expr.expression) || expr.expression;
+            expr.newType = this.visitType(expr.newType);
+            expr.expression = this.visitExpression(expr.expression);
         } else if (expr instanceof InstanceOfExpression) {
-            expr.expr = this.visitExpression(expr.expr) || expr.expr;
-            expr.checkType = this.visitType(expr.checkType) || expr.checkType;
+            expr.expr = this.visitExpression(expr.expr);
+            expr.checkType = this.visitType(expr.checkType);
         } else if (expr instanceof AwaitExpression) {
-            expr.expr = this.visitExpression(expr.expr) || expr.expr;
+            expr.expr = this.visitExpression(expr.expr);
         } else if (expr instanceof Lambda) {
             return this.visitLambda(expr);
         } else if (expr instanceof ClassReference) {
@@ -217,10 +217,10 @@ export abstract class AstTransformer implements ITransformer {
         } else if (expr instanceof GlobalFunctionReference) {
         } else if (expr instanceof SuperReference) {
         } else if (expr instanceof InstanceFieldReference) {
-            expr.object = this.visitExpression(expr.object) || expr.object;
+            expr.object = this.visitExpression(expr.object);
             return this.visitVariableReference(expr);
         } else if (expr instanceof InstancePropertyReference) {
-            expr.object = this.visitExpression(expr.object) || expr.object;
+            expr.object = this.visitExpression(expr.object);
             return this.visitVariableReference(expr);
         } else if (expr instanceof StaticFieldReference) {
             return this.visitVariableReference(expr);
@@ -228,20 +228,20 @@ export abstract class AstTransformer implements ITransformer {
             return this.visitVariableReference(expr);
         } else if (expr instanceof EnumMemberReference) {
         } else if (expr instanceof StaticMethodCallExpression) {
-            expr.typeArgs = expr.typeArgs.map(x => this.visitType(x) || x);
-            expr.args = expr.args.map(x => this.visitExpression(x) || x);
+            expr.typeArgs = expr.typeArgs.map(x => this.visitType(x));
+            expr.args = expr.args.map(x => this.visitExpression(x));
         } else if (expr instanceof GlobalFunctionCallExpression) {
-            expr.args = expr.args.map(x => this.visitExpression(x) || x);
+            expr.args = expr.args.map(x => this.visitExpression(x));
         } else if (expr instanceof InstanceMethodCallExpression) {
-            expr.object = this.visitExpression(expr.object) || expr.object;
-            expr.typeArgs = expr.typeArgs.map(x => this.visitType(x) || x);
-            expr.args = expr.args.map(x => this.visitExpression(x) || x);
+            expr.object = this.visitExpression(expr.object);
+            expr.typeArgs = expr.typeArgs.map(x => this.visitType(x));
+            expr.args = expr.args.map(x => this.visitExpression(x));
         } else if (expr instanceof LambdaCallExpression) {
-            expr.args = expr.args.map(x => this.visitExpression(x) || x);
+            expr.args = expr.args.map(x => this.visitExpression(x));
         } else {
             return this.visitUnknownExpression(expr);
         }
-        return null;
+        return expr;
     }
 
     protected visitMethodParameter(methodParameter: MethodParameter): void {
@@ -254,7 +254,7 @@ export abstract class AstTransformer implements ITransformer {
             this.visitMethodParameter(item);
 
         if (method.body !== null)
-            method.body = this.visitBlock(method.body) || method.body;
+            method.body = this.visitBlock(method.body);
     }
 
     protected visitMethod(method: Method) {
@@ -262,14 +262,14 @@ export abstract class AstTransformer implements ITransformer {
         this.currentClosure = method;
         this.visitAttributesAndTrivia(method);
         this.visitMethodBase(method);
-        method.returns = this.visitType(method.returns) || method.returns;
+        method.returns = this.visitType(method.returns);
         this.currentClosure = null;
         this.currentMethod = null;
     }
  
     protected visitGlobalFunction(func: GlobalFunction) {
         this.visitMethodBase(func);
-        func.returns = this.visitType(func.returns) || func.returns;
+        func.returns = this.visitType(func.returns);
     }
  
     protected visitConstructor(constructor: Constructor) {
@@ -290,15 +290,15 @@ export abstract class AstTransformer implements ITransformer {
         this.visitAttributesAndTrivia(prop);
         this.visitVariable(prop);
         if (prop.getter !== null)
-            prop.getter = this.visitBlock(prop.getter) || prop.getter;
+            prop.getter = this.visitBlock(prop.getter);
         if (prop.setter !== null)
-            prop.setter = this.visitBlock(prop.setter) || prop.setter;
+            prop.setter = this.visitBlock(prop.setter);
     }
 
     protected visitInterface(intf: Interface) {
         this.currentInterface = intf;
         this.visitAttributesAndTrivia(intf);
-        intf.baseInterfaces = intf.baseInterfaces.map(x => this.visitType(x) || x);
+        intf.baseInterfaces = intf.baseInterfaces.map(x => this.visitType(x));
         for (const field of intf.fields)
             this.visitField(field);
         for (const method of intf.methods)
@@ -312,8 +312,8 @@ export abstract class AstTransformer implements ITransformer {
         if (cls.constructor_ !== null)
             this.visitConstructor(cls.constructor_);
 
-        cls.baseClass = this.visitType(cls.baseClass) || cls.baseClass;
-        cls.baseInterfaces = cls.baseInterfaces.map(x => this.visitType(x) || x);
+        cls.baseClass = this.visitType(cls.baseClass);
+        cls.baseInterfaces = cls.baseInterfaces.map(x => this.visitType(x));
         for (const field of cls.fields)
             this.visitField(field);
         for (const prop of cls.properties)
@@ -349,7 +349,7 @@ export abstract class AstTransformer implements ITransformer {
             this.visitClass(cls);
         for (const func of sourceFile.funcs)
             this.visitGlobalFunction(func);
-        sourceFile.mainBlock = this.visitBlock(sourceFile.mainBlock) || sourceFile.mainBlock;
+        sourceFile.mainBlock = this.visitBlock(sourceFile.mainBlock);
         this.currentFile = null;
     }
 

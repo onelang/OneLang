@@ -11,7 +11,7 @@ export class TypeScriptNullCoalesce extends InferTypesPlugin {
         if (expr instanceof BinaryExpression && expr.operator === "||") {
             const litTypes = this.main.currentFile.literalTypes;
             
-            expr.left = this.main.runPluginsOn(expr.left) || expr.left;
+            expr.left = this.main.runPluginsOn(expr.left);
             const leftType = expr.left.getType();
 
             if (expr.right instanceof ArrayLiteral && expr.right.items.length === 0) {
@@ -28,7 +28,7 @@ export class TypeScriptNullCoalesce extends InferTypesPlugin {
                 }
             }
 
-            expr.right = this.main.runPluginsOn(expr.right) || expr.right;
+            expr.right = this.main.runPluginsOn(expr.right);
             const rightType = expr.right.getType();
 
             if (expr.right instanceof NullLiteral) { // something-which-can-be-undefined || null
@@ -37,6 +37,6 @@ export class TypeScriptNullCoalesce extends InferTypesPlugin {
                 return new NullCoalesceExpression(expr.left, expr.right);
             }
         }
-        return null;
+        return expr;
     }
 }

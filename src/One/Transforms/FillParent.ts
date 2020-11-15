@@ -17,14 +17,14 @@ export class FillParent extends AstTransformer {
         this.parentNodeStack.push(expr);
         super.visitExpression(expr);
         this.parentNodeStack.pop();
-        return null;
+        return expr;
     }
 
     protected visitStatement(stmt: Statement): Statement {
         this.parentNodeStack.push(stmt);
         super.visitStatement(stmt);
         this.parentNodeStack.pop();
-        return null;
+        return stmt;
     }
 
     protected visitEnum(enum_: Enum) {

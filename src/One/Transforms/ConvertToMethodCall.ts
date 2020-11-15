@@ -10,7 +10,7 @@ export class ConvertToMethodCall extends AstTransformer {
     protected visitExpression(expr: Expression) {
         const origExpr = expr;
 
-        expr = super.visitExpression(expr) || expr;
+        expr = super.visitExpression(expr);
 
         if (expr instanceof BinaryExpression && expr.operator === "in")
             expr = new UnresolvedCallExpression(new PropertyAccessExpression(expr.right, "hasKey"), [], [expr.left]);

@@ -13,7 +13,7 @@ export class InferTypesPlugin {
     canTransform(expr: Expression): boolean { return false; }
     canDetectType(expr: Expression): boolean { return false; }
 
-    transform(expr: Expression): Expression { return null; }
+    transform(expr: Expression): Expression { return expr; }
     detectType(expr: Expression): boolean { return false; }
 
     handleProperty(prop: Property): boolean { return false; }

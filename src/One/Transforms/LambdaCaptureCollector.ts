@@ -31,24 +31,26 @@ export class LambdaCaptureCollector extends AstTransformer {
             lambda.captures.push(capture);
         
         this.scopeVars = this.scopeVarStack.length > 0 ? this.scopeVarStack.pop() : null;
-        return null;
+        return lambda;
     }
 
     protected visitVariable(variable: IVariable): IVariable {
-        if (this.scopeVars === null) return null;
-        this.scopeVars.add(variable);
-        return null;
+        if (this.scopeVars !== null)
+            this.scopeVars.add(variable);
+        return variable;
     }
 
     protected visitVariableReference(varRef: VariableReference): VariableReference {
         if (varRef instanceof StaticFieldReference ||
             varRef instanceof InstanceFieldReference ||
             varRef instanceof StaticPropertyReference ||
-            varRef instanceof InstancePropertyReference) return null;
-        if (this.scopeVars === null) return null;
+            varRef instanceof InstancePropertyReference ||
+            this.scopeVars === null) return varRef;
+
         const vari = varRef.getVariable();
         if (!this.scopeVars.has(vari))
             this.capturedVars.add(vari);
-        return null;
+
+        return varRef;
     }
 }

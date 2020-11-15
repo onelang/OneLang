@@ -69,23 +69,23 @@ export class InferTypes extends AstTransformer {
         if (variable.type !== null && variable.initializer !== null)
             variable.initializer.setExpectedType(variable.type);
 
-        super.visitVariableWithInitializer(variable);
+        variable = super.visitVariableWithInitializer(variable);
 
         if (variable.type === null && variable.initializer !== null)
             variable.type = variable.initializer.getType();
 
-        return null;
+        return variable;
     }
 
     protected runTransformRound(expr: Expression): Expression {
-        if (expr.actualType !== null) return null;
+        if (expr.actualType !== null) return expr;
 
         this.errorMan.currentNode = expr;
 
         const transformers = this.plugins.filter(x => x.canTransform(expr));
         if (transformers.length > 1)
             this.errorMan.throw(`Multiple transformers found: ${transformers.map(x => x.name).join(', ')}`);
-        if (transformers.length !== 1) return null;
+        if (transformers.length !== 1) return expr;
 
         const plugin = transformers[0];
         this.contextInfoIdx++;
@@ -99,7 +99,7 @@ export class InferTypes extends AstTransformer {
         } catch (e) {
             this.errorMan.currentNode = expr;
             this.errorMan.throw(`Error while running type transformation phase: ${e}`);
-            return null;
+            return expr;
         }
     }
 
@@ -120,29 +120,29 @@ export class InferTypes extends AstTransformer {
     }
 
     protected visitExpression(expr: Expression): Expression {
-        let transformedExpr: Expression = null;
+        let transExpr: Expression = expr;
         while (true) {
-            const newExpr = this.runTransformRound(transformedExpr || expr);
-            if (newExpr === null || newExpr === transformedExpr) break;
-            transformedExpr = newExpr;
+            const newExpr = this.runTransformRound(transExpr);
+            if (newExpr === transExpr) break;
+            transExpr = newExpr;
         }
+
         // if the plugin did not handle the expression, we use the default visit method
-        let expr2 = transformedExpr;
-        if (expr2 === null)
-            expr2 = super.visitExpression(expr) || expr;
+        if (transExpr === expr)
+            transExpr = super.visitExpression(expr);
 
-        if (expr2.actualType !== null) return expr2;
+        if (transExpr.actualType !== null) return transExpr;
 
-        const detectSuccess = this.detectType(expr2);
+        const detectSuccess = this.detectType(transExpr);
 
-        if (expr2.actualType === null) {
+        if (transExpr.actualType === null) {
             if (detectSuccess)
                 this.errorMan.throw("Type detection failed, although plugin tried to handle it");
             else
                 this.errorMan.throw("Type detection failed: none of the plugins could resolve the type");
         }
 
-        return expr2;
+        return transExpr;
     }
 
     protected visitStatement(stmt: Statement) {
@@ -157,7 +157,7 @@ export class InferTypes extends AstTransformer {
 
         for (const plugin of this.plugins)
             if (plugin.handleStatement(stmt))
-                return null;
+                return stmt;
 
         return super.visitStatement(stmt);
     }
@@ -188,7 +188,7 @@ export class InferTypes extends AstTransformer {
     }
 
     protected visitLambda(lambda: Lambda) {
-        if (lambda.actualType !== null) return null;
+        if (lambda.actualType !== null) return lambda;
 
         const prevClosure = this.currentClosure;
         this.currentClosure = lambda;
@@ -199,7 +199,7 @@ export class InferTypes extends AstTransformer {
 
         this.currentClosure = prevClosure;
         super.visitMethodBase(lambda);
-        return null;
+        return lambda;
     }
 
     public runPluginsOn(expr: Expression) { return this.visitExpression(expr); }

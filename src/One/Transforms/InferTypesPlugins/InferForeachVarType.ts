@@ -7,7 +7,7 @@ export class InferForeachVarType extends InferTypesPlugin {
 
     handleStatement(stmt: Statement) { 
         if (stmt instanceof ForeachStatement) {
-            stmt.items = this.main.runPluginsOn(stmt.items) || stmt.items;
+            stmt.items = this.main.runPluginsOn(stmt.items);
             const arrayType = stmt.items.getType();
             let found = false;
             if (arrayType instanceof ClassType || arrayType instanceof InterfaceType) {

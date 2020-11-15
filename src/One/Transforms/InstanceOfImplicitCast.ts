@@ -62,25 +62,25 @@ export class InstanceOfImplicitCast extends AstTransformer {
     }
     
     protected visitExpression(expr: Expression): Expression {
-        let result: Expression = null;
+        let result: Expression = expr;
         if (expr instanceof InstanceOfExpression) {
             this.visitExpression(expr.expr);
             this.addCast(expr);
         } else if (expr instanceof BinaryExpression && expr.operator === "&&") {
-            expr.left = this.visitExpression(expr.left) || expr.left;
-            expr.right = this.visitExpression(expr.right) || expr.right;
+            expr.left = this.visitExpression(expr.left);
+            expr.right = this.visitExpression(expr.right);
         } else if (expr instanceof ConditionalExpression) {
             this.pushContext();
-            expr.condition = this.visitExpression(expr.condition) || expr.condition;
-            expr.whenTrue = this.visitExpression(expr.whenTrue) || expr.whenTrue;
+            expr.condition = this.visitExpression(expr.condition);
+            expr.whenTrue = this.visitExpression(expr.whenTrue);
             this.popContext();
 
-            expr.whenFalse = this.visitExpression(expr.whenFalse) || expr.whenFalse;
+            expr.whenFalse = this.visitExpression(expr.whenFalse);
         } else if (expr instanceof Reference && expr.parentNode instanceof BinaryExpression && expr.parentNode.operator === "=" && expr.parentNode.left === expr) {
             // we should not cast the left-side of an assignment operator
         } else {
             this.pushContext();
-            result = super.visitExpression(expr) || expr;
+            result = super.visitExpression(expr);
             this.popContext();
             // @java final var result2 = result;
             const result2 = result;
@@ -100,7 +100,7 @@ export class InstanceOfImplicitCast extends AstTransformer {
 
         if (stmt instanceof IfStatement) {
             this.pushContext();
-            stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
+            stmt.condition = this.visitExpression(stmt.condition);
             this.visitBlock(stmt.then);
             this.popContext();
 
@@ -108,7 +108,7 @@ export class InstanceOfImplicitCast extends AstTransformer {
                 this.visitBlock(stmt.else_);
         } else if (stmt instanceof WhileStatement) {
             this.pushContext();
-            stmt.condition = this.visitExpression(stmt.condition) || stmt.condition;
+            stmt.condition = this.visitExpression(stmt.condition);
             this.visitBlock(stmt.body);
             this.popContext();
         } else {
@@ -117,6 +117,6 @@ export class InstanceOfImplicitCast extends AstTransformer {
             this.popContext();
         }
 
-        return null;
+        return stmt;
     }
 }

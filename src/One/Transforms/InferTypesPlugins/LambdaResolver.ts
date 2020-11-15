@@ -35,6 +35,6 @@ export class LambdaResolver extends InferTypesPlugin {
     transform(expr: Expression): Expression {
         this.visitLambda(<Lambda> expr);
         // does not transform actually
-        return null;
+        return expr;
     }
 }

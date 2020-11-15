@@ -62,7 +62,7 @@ export class ResolveMethodCalls extends InferTypesPlugin {
             this.resolveReturnType(result, new GenericsResolver());
             return result;
         } else {
-            const resolvedObject = expr.object.actualType !== null ? expr.object : this.main.runPluginsOn(expr.object) || expr.object;
+            const resolvedObject = expr.object.actualType !== null ? expr.object : this.main.runPluginsOn(expr.object);
             const objectType = resolvedObject.getType();
             const intfType: IInterface = objectType instanceof ClassType ? <IInterface>objectType.decl : objectType 
                 instanceof InterfaceType ? objectType.decl : null;

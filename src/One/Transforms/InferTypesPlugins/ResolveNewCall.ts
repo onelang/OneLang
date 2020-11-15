@@ -11,7 +11,7 @@ export class ResolveNewCalls extends InferTypesPlugin {
         const newExpr = <NewExpression> expr;
         for (let i = 0; i < newExpr.args.length; i++) {
             newExpr.args[i].setExpectedType(newExpr.cls.decl.constructor_.parameters[i].type);
-            newExpr.args[i] = this.main.runPluginsOn(newExpr.args[i]) || newExpr.args[i];
+            newExpr.args[i] = this.main.runPluginsOn(newExpr.args[i]);
         }
         expr.setActualType(newExpr.cls);
         return expr;

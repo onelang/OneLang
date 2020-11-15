@@ -24,6 +24,6 @@ export class ResolveGenericTypeIdentifiers extends AstTransformer {
             (this.currentMethod instanceof Method && this.currentMethod.typeArguments.includes(type.typeName))))
             return new GenericsType(type.typeName);
         
-        return null;
+        return type;
     }
 }

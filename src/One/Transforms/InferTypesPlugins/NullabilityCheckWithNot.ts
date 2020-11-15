@@ -18,6 +18,6 @@ export class NullabilityCheckWithNot extends InferTypesPlugin {
                 return new BinaryExpression(unaryExpr.operand, "==", new NullLiteral());
         }
 
-        return null;
+        return expr;
     }
 }

@@ -14,7 +14,7 @@ export class ResolveFuncCalls extends InferTypesPlugin {
         const callExpr = <UnresolvedCallExpression> expr;
         if (callExpr.func instanceof GlobalFunctionReference) {
             const newExpr = new GlobalFunctionCallExpression(callExpr.func.decl, callExpr.args);
-            callExpr.args = callExpr.args.map(arg => this.main.runPluginsOn(arg) || arg);
+            callExpr.args = callExpr.args.map(arg => this.main.runPluginsOn(arg));
             newExpr.setActualType(callExpr.func.decl.returns);
             return newExpr;
         } else {

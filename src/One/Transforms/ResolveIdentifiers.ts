@@ -62,7 +62,7 @@ export class ResolveIdentifiers extends AstTransformer {
         const symbol = this.symbolLookup.getSymbol(id.text);
         if (symbol === null) {
             this.errorMan.throw(`Identifier '${id.text}' was not found in available symbols`);
-            return null;
+            return id;
         }
 
         let ref: Reference = null;
@@ -73,6 +73,8 @@ export class ResolveIdentifiers extends AstTransformer {
             ref = new SuperReference(symbol);
         } else {
             ref = symbol.createReference();
+            if (ref === null)
+                this.errorMan.throw("createReference() should not return null!");
         }
         ref.parentNode = id.parentNode;
         return ref;
@@ -103,7 +105,7 @@ export class ResolveIdentifiers extends AstTransformer {
         } else {
             return super.visitStatement(stmt);
         }
-        return null;
+        return stmt;
     }
 
     protected visitLambda(lambda: Lambda): Lambda {
@@ -112,14 +114,14 @@ export class ResolveIdentifiers extends AstTransformer {
             this.symbolLookup.addSymbol(param.name, param);
         super.visitBlock(lambda.body); // directly process method's body without opening a new scope again
         this.symbolLookup.popContext();
-        return null;
+        return lambda;
     }
 
     protected visitBlock(block: Block): Block {
         this.symbolLookup.pushContext("block");
         super.visitBlock(block);
         this.symbolLookup.popContext();
-        return null;
+        return block;
     }
 
     protected visitVariableDeclaration(stmt: VariableDeclaration): VariableDeclaration {

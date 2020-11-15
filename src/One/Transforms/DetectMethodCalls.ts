@@ -8,9 +8,9 @@ export class DetectMethodCalls extends AstTransformer {
     constructor() { super("DetectMethodCalls"); }
 
     protected visitExpression(expr: Expression): Expression {
-        super.visitExpression(expr);
+        expr = super.visitExpression(expr);
         if (expr instanceof UnresolvedCallExpression && expr.func instanceof PropertyAccessExpression)
             return new UnresolvedMethodCallExpression(expr.func.object, expr.func.propertyName, expr.typeArgs, expr.args);
-        return null;
+        return expr;
     }
 }

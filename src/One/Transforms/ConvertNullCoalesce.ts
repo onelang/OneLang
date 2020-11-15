@@ -58,17 +58,17 @@ export class ConvertNullCoalesce extends AstTransformer {
         const prevStatements = this.statements;
         this.statements = [];
         for (const stmt of block.statements)
-            this.statements.push(this.visitStatement(stmt) || stmt);
+            this.statements.push(this.visitStatement(stmt));
         block.statements = this.statements;
         this.statements = prevStatements;
-        return null;
+        return block;
     }
 
     protected visitExpression(expr: Expression): Expression {
-        expr = super.visitExpression(expr) || expr;
+        expr = super.visitExpression(expr);
         if (expr instanceof NullCoalesceExpression) {
             if (expr.defaultExpr instanceof InstanceFieldReference || expr.defaultExpr instanceof StaticFieldReference)
-                return null;
+                return expr;
 
             const varName = this.varNames.useName(this.exprNaming.getNameFor(expr.defaultExpr));
 

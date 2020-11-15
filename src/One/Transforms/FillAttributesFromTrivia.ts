@@ -14,7 +14,7 @@ export class FillAttributesFromTrivia extends AstTransformer {
     }
 
     // optimization
-    protected visitExpression(expr: Expression): Expression { return null; }
+    protected visitExpression(expr: Expression): Expression { return expr; }
 
     static processTrivia(trivia: string): { [name: string]: string } {
         const result: { [name: string]: string } = {};

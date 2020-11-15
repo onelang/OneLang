@@ -13,7 +13,7 @@ export class ResolveEnumMemberAccess extends InferTypesPlugin {
         const member = enumMemberRef.decl.values.find(x => x.name ===  pa.propertyName) || null;
         if (member === null) {
             this.errorMan.throw(`Enum member was not found: ${enumMemberRef.decl.name}::${pa.propertyName}`);
-            return null;
+            return expr;
         }
         return new EnumMemberReference(member);
     }

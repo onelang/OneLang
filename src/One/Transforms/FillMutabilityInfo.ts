@@ -16,13 +16,14 @@ export class FillMutabilityInfo extends AstTransformer {
 
     protected getVar(varRef: VariableReference) {
         const v = varRef.getVariable();
-        v.mutability = v.mutability || new MutabilityInfo(true, false, false);
+        if (v.mutability === null)
+            v.mutability = new MutabilityInfo(true, false, false);
         return v;
     }
 
     protected visitVariableReference(varRef: VariableReference): VariableReference {
         this.getVar(varRef).mutability.unused = false;
-        return null;
+        return varRef;
     }
 
     protected visitVariableDeclaration(stmt: VariableDeclaration): VariableDeclaration {
@@ -30,22 +31,23 @@ export class FillMutabilityInfo extends AstTransformer {
         if (stmt.attributes !== null && stmt.attributes["mutated"] === "true") {
             stmt.mutability.mutated = true;
         }
-        return null;
+        return stmt;
     }
 
     protected visitExpression(expr: Expression): Expression {
-        super.visitExpression(expr);
+        expr = super.visitExpression(expr);
 
         if (expr instanceof BinaryExpression && expr.left instanceof VariableReference && expr.operator === "=") {
             this.getVar(expr.left).mutability.reassigned = true;
         } else if (expr instanceof InstanceMethodCallExpression && expr.object instanceof VariableReference && "mutates" in expr.method.attributes) {
             this.getVar(expr.object).mutability.mutated = true;
         }
-        return null;
+        return expr;
     }
 
     protected visitVariable(variable: IVariable): IVariable {
-        variable.mutability = variable.mutability || new MutabilityInfo(true, false, false);
-        return null;
+        if (variable.mutability === null)
+            variable.mutability = new MutabilityInfo(true, false, false);
+        return variable;
     }
 }

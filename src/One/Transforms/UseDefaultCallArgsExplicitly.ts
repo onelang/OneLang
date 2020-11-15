@@ -29,6 +29,6 @@ export class UseDefaultCallArgsExplicitly extends AstTransformer {
             expr.args = this.getNewArgs(expr.args, expr.method);
             else if (expr instanceof StaticMethodCallExpression)
             expr.args = this.getNewArgs(expr.args, expr.method);
-        return null;
+        return expr;
     }
 }
