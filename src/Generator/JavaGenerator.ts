@@ -301,9 +301,10 @@ export class JavaGenerator implements IGenerator {
                 const leftType = expr.left.getType();
                 const rightType = expr.right.getType();
                 const useEquals = TypeHelper.equals(leftType, lit.string) && rightType !== null && TypeHelper.equals(rightType, lit.string);
-                if (useEquals)
-                    res = `${expr.operator === "!=" ? "!" : ""}${this.expr(expr.left)}.equals(${this.expr(expr.right)})`;
-                else
+                if (useEquals) {
+                    this.imports.add("OneStd.Objects");
+                    res = `${expr.operator === "!=" ? "!" : ""}Objects.equals(${this.expr(expr.left)}, ${this.expr(expr.right)})`;
+                } else
                     res = `${this.expr(expr.left)} ${expr.operator} ${this.expr(expr.right)}`;
             } else {
                 res = `${this.expr(expr.left)} ${expr.operator} ${this.mutatedExpr(expr.right, expr.operator === "=" ? expr.left : null)}`;
