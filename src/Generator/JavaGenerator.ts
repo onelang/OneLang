@@ -10,6 +10,7 @@ import { IExpression, IType } from "../One/Ast/Interfaces";
 import { IGeneratorPlugin } from "./IGeneratorPlugin";
 import { JsToJava } from "./JavaPlugins/JsToJava";
 import { ITransformer } from "../One/ITransformer";
+import { ConvertNullCoalesce } from "../One/Transforms/ConvertNullCoalesce";
 
 export class JavaGenerator implements IGenerator {
     imports = new Set<string>();
@@ -24,7 +25,7 @@ export class JavaGenerator implements IGenerator {
 
     getLangName(): string { return "Java"; }
     getExtension(): string { return "java"; }
-    getTransforms(): ITransformer[] { return []; }
+    getTransforms(): ITransformer[] { return [new ConvertNullCoalesce()]; }
     
     name_(name: string) {
         if (this.reservedWords.includes(name)) name += "_";
