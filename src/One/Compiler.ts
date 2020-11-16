@@ -1,5 +1,5 @@
 import { Workspace, Package, SourcePath, SourceFile, ExportedScope, LiteralTypes, Class, ExportScopeRef } from "./Ast/Types";
-import { TypeScriptParser2 } from "../Parsers/TypeScriptParser2";
+import { TypeScriptParser2 } from "../Parsers/TypeScriptParser";
 import { PackageManager } from "../StdLib/PackageManager";
 import { PackagesFolderSource } from "../StdLib/PackagesFolderSource";
 import { FillParent } from "./Transforms/FillParent";

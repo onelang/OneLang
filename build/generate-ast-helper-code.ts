@@ -1,5 +1,5 @@
 import 'module-alias/register';
-import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser2";
+import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser";
 import { readFileSync, writeFileSync } from "fs";
 import { UnresolvedType } from '@one/One/Ast/AstTypes';
 import { Package, SourcePath } from '@one/One/Ast/Types';

@@ -1,5 +1,5 @@
 import 'module-alias/register';
-import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser2";
+import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser";
 
 function exprToJson(exprStr: string) {
     const expr = new TypeScriptParser2(exprStr).parseExpression();

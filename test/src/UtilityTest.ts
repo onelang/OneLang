@@ -1,4 +1,4 @@
-import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser2";
+import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser";
 import * as assert from "assert";
 
 function it2(fn: Mocha.Func) {

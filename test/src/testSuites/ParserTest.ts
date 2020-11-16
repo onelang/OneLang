@@ -1,5 +1,5 @@
 import { glob, readFile } from '../TestUtils';
-import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser2";
+import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser";
 
 function testFolder(folder: string) {
     const files = glob(folder).filter(x => x.endsWith(".ts"));
