@@ -44,7 +44,7 @@ export class SelfTestRunner {
         for (const genFile of generated) {
             const fn = genFile.path.replace(/\.ts$/, ext);
             const projBase = `${this.baseDir}test/artifacts/ProjectTest/OneLang`;
-            const tsGenPath = `${projBase}/${langName}/${fn}`;
+            const tsGenPath = `${this.baseDir}/xcompiled/${langName}/${fn}`;
             const reGenPath = `${projBase}/${langName}_Regen/${fn}`;
             const tsGenContent = OneFile.readText(tsGenPath);
             const reGenContent = genFile.content;

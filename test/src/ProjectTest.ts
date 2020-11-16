@@ -55,7 +55,9 @@ function generateReflection(projName: string, compiler: Compiler) {
     writeFile(`test/artifacts/ProjectTest/${projName}/ast.json`, projJson);
 }
 
-async function compileProject(projName: string, projDir: string) {
+async function compileProject(projName: string, projDir: string, dstDir: string = null) {
+    dstDir = dstDir || `test/artifacts/ProjectTest/${projName}`;
+
     const compiler = await CompilerHelper.initProject(projName, projDir, "ts", null);
     const stateHandler = new StateHandler(compiler);
     compiler.hooks = stateHandler;
@@ -82,7 +84,7 @@ async function compileProject(projName: string, projDir: string) {
         console.log(`Generating ${langName} code...`);
         const files = generator.generate(compiler.projectPkg);
         for (const file of files)
-            writeFile(`test/artifacts/ProjectTest/${projName}/${langName}/${file.path.replace(".ts", `.${ext}`)}`, file.content);
+            writeFile(`${dstDir}/${langName}/${file.path.replace(".ts", `.${ext}`)}`, file.content);
     }
 }
 
@@ -96,4 +98,4 @@ async function compileTests() {
 
 CompilerHelper.baseDir = `${baseDir}/`;
 //compileTests().then(() => console.log("DONE (Tests)."));
-compileProject("OneLang", `${baseDir}/src`).then(() => console.log("DONE (OneLang compilation)."));
+compileProject("OneLang", `${baseDir}/src`, `xcompiled`).then(() => console.log("DONE (OneLang compilation)."));

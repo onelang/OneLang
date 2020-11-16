@@ -1,3 +1,6 @@
 [submodule "test/artifacts"]
 	path = test/artifacts
 	url = https://github.com/onelang/TestArtifacts
+[submodule "xcompiled"]
+	path = xcompiled
+	url = git@github.com:onelang/OneLang-CrossCompiled.git
