@@ -36,7 +36,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
         this.reader.hooks = this;
         this.nodeManager = new NodeManager(this.reader);
         this.expressionParser = this.createExpressionParser(this.reader, this.nodeManager);
-        this.exportScope = this.path !== null ? new ExportScopeRef(this.path.pkg.name, this.path.path !== null ? this.path.path.replace(/.ts$/, "") : null) : null;
+        this.exportScope = this.path !== null ? new ExportScopeRef(this.path.pkg.name, this.path.path !== null ? this.path.path.replace(/\.ts$/, "") : null) : null;
     }
 
     createExpressionParser(reader: Reader, nodeManager: NodeManager = null): ExpressionParser {

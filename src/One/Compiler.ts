@@ -108,7 +108,7 @@ export class Compiler {
     }
 
     addProjectFile(fn: string, content: string): void {
-        const file = TypeScriptParser2.parseFile(content, new SourcePath(this.projectPkg, fn));
+        const file = TypeScriptParser2.parseFile(content, new SourcePath(this.projectPkg, fn.replace(/\.ts$/, "")));
         this.setupFile(file);
         this.projectPkg.addFile(file);
     }

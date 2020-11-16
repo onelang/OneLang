@@ -612,14 +612,14 @@ export class JavaGenerator implements IGenerator {
 
     toImport(scope: ExportScopeRef): string {
         return scope.scopeName === "index" ? `OneStd` : 
-            `${scope.packageName}.${scope.scopeName.replace(/\.ts$/, "").replace(/\//g, ".")}`;
+            `${scope.packageName}.${scope.scopeName.replace(/\//g, ".")}`;
     }
 
     generate(pkg: Package): GeneratedFile[] {
         const result: GeneratedFile[] = [];
         for (const path of Object.keys(pkg.files)) {
             const file = pkg.files[path];
-            const packagePath = `${pkg.name}/${file.sourcePath.path.replace(/\.ts$/, "")}`;
+            const packagePath = `${pkg.name}/${file.sourcePath.path}`;
             const dstDir = `src/main/java/${packagePath}`;
             const packageName = packagePath.replace(/\//g, ".");
             

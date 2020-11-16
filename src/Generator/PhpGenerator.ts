@@ -525,8 +525,8 @@ export class PhpGenerator implements IGenerator {
     pad(str: string): string { return str.split(/\n/g).map(x => `    ${x}`).join('\n'); }
 
     pathToNs(path: string): string {
-        // Generator/ExprLang/ExprLangAst.ts -> Generator\ExprLang\ExprLangAst
-        const parts = path.replace(/\.ts/, "").split(/\//g);
+        // Generator/ExprLang/ExprLangAst -> Generator\ExprLang\ExprLangAst
+        const parts = path.split(/\//g);
         //parts.pop();
         return parts.join('\\');
     }
@@ -592,7 +592,7 @@ export class PhpGenerator implements IGenerator {
     generate(pkg: Package): GeneratedFile[] {
         const result: GeneratedFile[] = [];
         for (const path of Object.keys(pkg.files))
-            result.push(new GeneratedFile(path, this.genFile(pkg.files[path])));
+            result.push(new GeneratedFile(`${path}.php`, this.genFile(pkg.files[path])));
         return result;
     }
 }

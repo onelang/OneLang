@@ -505,7 +505,7 @@ export class PythonGenerator implements IGenerator {
         this.package = pkg;
         const result: GeneratedFile[] = [];
         for (const path of Object.keys(pkg.files))
-            result.push(new GeneratedFile(`${pkg.name}/${path}`, this.genFile(pkg.files[path])));
+            result.push(new GeneratedFile(`${pkg.name}/${path}.py`, this.genFile(pkg.files[path])));
         return result;
     }
 }

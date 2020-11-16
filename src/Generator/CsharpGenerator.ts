@@ -535,7 +535,7 @@ export class CsharpGenerator implements IGenerator {
     generate(pkg: Package): GeneratedFile[] {
         const result: GeneratedFile[] = [];
         for (const path of Object.keys(pkg.files))
-            result.push(new GeneratedFile(path, this.genFile(pkg.files[path])));
+            result.push(new GeneratedFile(`${path}.cs`, this.genFile(pkg.files[path])));
         return result;
     }
 }
