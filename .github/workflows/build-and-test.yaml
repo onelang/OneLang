@@ -8,6 +8,9 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: '[Env] Cleanup generated code'
+      working-directory: ./xcompiled/_scripts
+      run: ./cleanup_generated_code.sh
     - name: '[Env] Setup Node.js (12.x)'
       uses: actions/setup-node@v1
       with:
