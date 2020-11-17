@@ -14,12 +14,7 @@ rm -rf Java/.gradle
 rm -rf Java/bin
 rm -rf Java/build
 
-rm -rf PHP/Generator
-rm -rf PHP/One
-rm -rf PHP/Parsers
-rm -rf PHP/StdLib
-rm -rf PHP/Test
-rm -rf PHP/Utils
+rm -rf PHP/src
 
 rm -rf Python/OneLang/Generator
 rm -rf Python/OneLang/One
