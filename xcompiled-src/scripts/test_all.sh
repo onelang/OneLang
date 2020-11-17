@@ -3,36 +3,36 @@ run() {
     script -q /dev/null $(printf "%q " "$@") | grep -v "matches\|passed"
 }
 
-cd ..
+cd ../../xcompiled
 
 echo ======================= JAVASCRIPT =======================
-run node --unhandled-rejections=strict ./test/lib/SelfTest.js
+run node --unhandled-rejections=strict ../test/lib/SelfTest.js
 JS=$?
 echo
 
 echo ======================= PHP =======================
-pushd ./test/artifacts/ProjectTest/OneLang/PHP > /dev/null
+pushd PHP > /dev/null
 run php main.php
 PHP=$?
 popd > /dev/null
 echo
 
 echo ======================= C# =======================
-pushd ./test/artifacts/ProjectTest/OneLang/CSharp > /dev/null
+pushd CSharp > /dev/null
 run dotnet run
 CS=$?
 popd > /dev/null
 echo
 
 echo ======================= PYTHON =======================
-pushd ./test/artifacts/ProjectTest/OneLang/Python > /dev/null
+pushd Python > /dev/null
 run python3 main.py
 PYTHON=$?
 popd > /dev/null
 echo
 
 echo ======================= JAVA =======================
-pushd ./test/artifacts/ProjectTest/OneLang/Java > /dev/null
+pushd Java > /dev/null
 run ./gradlew run
 JAVA=$?
 popd > /dev/null
