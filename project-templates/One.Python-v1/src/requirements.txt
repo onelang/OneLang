@@ -1,0 +1,3 @@
+{{for dep of dependencies}}
+  {{dep.name}}=={{dep.version}}
+{{/for}}

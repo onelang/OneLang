@@ -1,0 +1,13 @@
+apply plugin: 'java'
+apply plugin: 'application'
+mainClassName = 'Main'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    {{for dep of dependencies}}
+        implementation '{{dep.id}}:{{dep.version}}'
+    {{/for}}
+}

@@ -1,0 +1,2 @@
+language: python
+template-files: [requirements.txt]

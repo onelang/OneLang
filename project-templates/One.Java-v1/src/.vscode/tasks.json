@@ -1,0 +1,77 @@
+{
+	"version": "2.0.0",
+	"echoCommand": true,
+	"command": "./gradlew",
+	"presentation": {
+	  "echo": true,
+	  "reveal": "always",
+	  "focus": false,
+	  "panel": "shared"
+	},
+	"tasks": [
+	  {
+		"label": "compileJava",
+		"type": "shell"
+	  },
+	  {
+		"label": "processResources",
+		"type": "shell"
+	  },
+	  {
+		"label": "classes",
+		"type": "shell"
+	  },
+	  {
+		"label": "processTestResources",
+		"type": "shell"
+	  },
+	  {
+		"label": "jar",
+		"type": "shell"
+	  },
+	  {
+		"label": "javadoc",
+		"type": "shell"
+	  },
+	  {
+		"label": "test",
+		"type": "shell",
+		"group": {
+		  "kind": "test",
+		  "isDefault": true
+		}
+	  },
+	  {
+		"label": "uploadArchibes",
+		"type": "shell"
+	  },
+	  {
+		"label": "clean",
+		"type": "shell"
+	  },
+	  {
+		"label": "assemble",
+		"type": "shell"
+	  },
+	  {
+		"label": "check",
+		"type": "shell"
+	  },
+	  {
+		"label": "build",
+		"type": "shell",
+		"group": {
+		  "kind": "build",
+		  "isDefault": true
+		}
+	  },
+	  {
+		"label": "buildNeeded",
+		"type": "shell"
+	  },
+	  {
+		"label": "buildDependents",
+		"type": "shell"
+	  }
+	]
+  }

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    {{for dep of dependencies}}
+      <PackageReference Include="{{dep.id}}" Version="{{dep.version}}" />
+    {{/for}}
+  </ItemGroup>
+
+</Project>

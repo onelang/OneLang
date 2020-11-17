@@ -1,0 +1,9 @@
+{
+    "autoload": {
+        "psr-4": {
+            {{for pkg of onepackages}}
+                "{{pkg.name}}\\": "onepkg/{{pkg.name}}",
+            {{/for}}
+        }
+    }
+}
