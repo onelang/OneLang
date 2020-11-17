@@ -1,5 +1,5 @@
 // @python-import-all OneYaml
-// @php-use onepkg\OneYaml\OneYaml
+// @php-use OneYaml\OneYaml
 import { OneYaml, YamlValue } from "One.Yaml-v0.1";
 
 export enum PackageType { Interface, Implementation }

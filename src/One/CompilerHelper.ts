@@ -1,5 +1,5 @@
 // @python-import-all OneFile
-// @php-use onepkg\OneFile\OneFile
+// @php-use OneFile\OneFile
 import { OneFile } from "One.File-v0.1";
 import { Compiler } from "./Compiler";
 

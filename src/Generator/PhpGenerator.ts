@@ -85,7 +85,7 @@ export class PhpGenerator implements IGenerator {
             }
             
             if (t.decl.parentFile.exportScope === null)
-                return `\\OneLang\\${this.name_(t.decl.name)}`;
+                return `\\OneCore\\${this.name_(t.decl.name)}`;
             else
                 return this.name_(t.decl.name);
         } else if (t instanceof InterfaceType)
@@ -226,7 +226,7 @@ export class PhpGenerator implements IGenerator {
         } else if (expr instanceof StaticMethodCallExpression) {
             res = `${this.name_(expr.method.parentInterface.name)}::${this.methodCall(expr)}`;
             if (expr.method.parentInterface.parentFile.exportScope === null)
-                res = `\\OneLang\\${res}`;
+                res = `\\OneCore\\${res}`;
         } else if (expr instanceof GlobalFunctionCallExpression) {
             res = `Global.${this.name_(expr.func.name)}${this.exprCall([], expr.args)}`;
         } else if (expr instanceof LambdaCallExpression) {
@@ -301,7 +301,7 @@ export class PhpGenerator implements IGenerator {
         } else if (expr instanceof ParenthesizedExpression) {
             res = `(${this.expr(expr.expression)})`;
         } else if (expr instanceof RegexLiteral) {
-            res = `new \\OneLang\\RegExp(${JSON.stringify(expr.pattern)})`;
+            res = `new \\OneCore\\RegExp(${JSON.stringify(expr.pattern)})`;
         } else if (expr instanceof Lambda) {
             const params = expr.parameters.map(x => `$${this.name_(x.name)}`);
             // TODO: captures should not be null
@@ -539,7 +539,7 @@ export class PhpGenerator implements IGenerator {
         return this.name_(name).toUpperCase();
     }
 
-    genFile(sourceFile: SourceFile): string {
+    genFile(projName: string, sourceFile: SourceFile): string {
         this.usings = new Set<string>();
 
         const enums: string[] = [];
@@ -572,7 +572,7 @@ export class PhpGenerator implements IGenerator {
                 const fileNs = this.pathToNs(imp.exportScope.scopeName);
                 if (fileNs === "index") continue;
                 for (const impItem of imp.imports)
-                    usingsSet.add(fileNs + "\\" + this.name_(impItem.name));
+                    usingsSet.add(`${imp.exportScope.packageName}\\${fileNs}\\${this.name_(impItem.name)}`);
             }
         }
 
@@ -584,15 +584,14 @@ export class PhpGenerator implements IGenerator {
             usings.push(`use ${using};`);
 
         let result = [usings.join("\n"), enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), main].filter(x => x !== "").join("\n\n");
-        const nl = "\n";
-        result = `<?php\n\nnamespace ${this.pathToNs(sourceFile.sourcePath.path)};\n\n${result}\n`;
+        result = `<?php\n\nnamespace ${projName}\\${this.pathToNs(sourceFile.sourcePath.path)};\n\n${result}\n`;
         return result;
     }
 
     generate(pkg: Package): GeneratedFile[] {
         const result: GeneratedFile[] = [];
         for (const path of Object.keys(pkg.files))
-            result.push(new GeneratedFile(`${path}.php`, this.genFile(pkg.files[path])));
+            result.push(new GeneratedFile(`src/${pkg.name}/${path}.php`, this.genFile(pkg.name, pkg.files[path])));
         return result;
     }
 }
