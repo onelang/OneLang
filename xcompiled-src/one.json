@@ -1,0 +1,12 @@
+{
+    "name": "OneLang",
+    "dependencies": [
+        { "name": "OneLang-File" },
+        { "name": "OneLang-Json" },
+        { "name": "OneLang-Yaml" }
+    ],
+    "sourceDir": "../src",
+    "sourceLang": "ts",
+    "outputDir": "../xcompiled",
+    "projectTemplates": ["One.CSharp-v1", "One.Java-v1", "One.PHP-v1", "One.Python-v1"]
+}

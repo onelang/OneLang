@@ -591,7 +591,7 @@ export class PhpGenerator implements IGenerator {
     generate(pkg: Package): GeneratedFile[] {
         const result: GeneratedFile[] = [];
         for (const path of Object.keys(pkg.files))
-            result.push(new GeneratedFile(`src/${pkg.name}/${path}.php`, this.genFile(pkg.name, pkg.files[path])));
+            result.push(new GeneratedFile(`${pkg.name}/${path}.php`, this.genFile(pkg.name, pkg.files[path])));
         return result;
     }
 }

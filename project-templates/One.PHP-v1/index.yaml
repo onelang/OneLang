@@ -1,2 +1,3 @@
 language: php
+destination-dir: src
 template-files: [composer.json]

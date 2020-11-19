@@ -8,6 +8,6 @@ repositories {
 
 dependencies {
     {{for dep of dependencies}}
-        implementation '{{dep.id}}:{{dep.version}}'
+        implementation '{{dep.name}}:{{dep.version}}'
     {{/for}}
 }

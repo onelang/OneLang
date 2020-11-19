@@ -7,7 +7,7 @@
 
   <ItemGroup>
     {{for dep of dependencies}}
-      <PackageReference Include="{{dep.id}}" Version="{{dep.version}}" />
+      <PackageReference Include="{{dep.name}}" Version="{{dep.version}}" />
     {{/for}}
   </ItemGroup>
 

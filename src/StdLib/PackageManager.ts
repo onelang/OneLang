@@ -75,6 +75,10 @@ export class ImplPkgImplIntf {
         // @csharp-type double
         // @java-type Double
         public maxver: number) { }
+
+    static fromYaml(obj: YamlValue) {
+        return new ImplPkgImplIntf(obj.str("name"), obj.dbl("minver"), obj.dbl("maxver"));
+    }
 }
 
 export class ImplPkgImplementation {
@@ -83,6 +87,32 @@ export class ImplPkgImplementation {
         public language: string,
         public nativeIncludes: string[],
         public nativeIncludeDir: string) { }
+
+    static fromYaml(obj: YamlValue) {
+        return new ImplPkgImplementation(ImplPkgImplIntf.fromYaml(obj.obj("interface")),
+            obj.str("language"), obj.strArr("native-includes"), obj.str("native-include-dir"));
+    }
+}
+
+export class ImplPkgNativeDependency {
+    constructor(
+        public name: string,
+        public version: string) { }
+
+    static fromYaml(obj: YamlValue) {
+        return new ImplPkgNativeDependency(obj.str("name"), obj.str("version"));
+    }
+}
+
+export class ImplPkgLanguage {
+    constructor(
+        public id: string,
+        public nativeDependencies: ImplPkgNativeDependency[]) { }
+
+    static fromYaml(obj: YamlValue) {
+        return new ImplPkgLanguage(obj.str("id"),
+            obj.arr("native-dependencies").map(impl => ImplPkgNativeDependency.fromYaml(impl)));
+    }
 }
 
 export class ImplPackageYaml {
@@ -95,13 +125,13 @@ export class ImplPackageYaml {
         public description: string,
         public version: string,
         public includes: string[],
-        public implements_: ImplPkgImplementation[]) { }
+        public implements_: ImplPkgImplementation[],
+        public languages: ImplPkgLanguage[]) { }
     
     static fromYaml(obj: YamlValue) {
         return new ImplPackageYaml(obj.dbl("file-version"), obj.str("vendor"), obj.str("name"), obj.str("description"), obj.str("version"), obj.strArr("includes"),
-            obj.arr("implements").map(impl => new ImplPkgImplementation(
-                new ImplPkgImplIntf(impl.obj("interface").str("name"), impl.obj("interface").dbl("minver"), impl.obj("interface").dbl("maxver")),
-                impl.str("language"), impl.strArr("native-includes"), impl.str("native-include-dir"))));
+            obj.arr("implements").map(impl => ImplPkgImplementation.fromYaml(impl)),
+            obj.arr("languages").map(impl => ImplPkgLanguage.fromYaml(impl)));
     }
 }
 

@@ -3,26 +3,13 @@ import 'module-alias/register';
 process.env.NODE_PATH = `${__dirname}/../../onepkg`;
 require("module").Module._initPaths();
 
-import { glob, readDir, baseDir, writeFile } from "./TestUtils";
-import { CsharpGenerator } from "@one/Generator/CsharpGenerator";
-import { PythonGenerator } from "@one/Generator/PythonGenerator";
-import { PhpGenerator } from "@one/Generator/PhpGenerator";
-import { JavaGenerator } from "@one/Generator/JavaGenerator";
+import { readDir, baseDir, writeFile } from "./TestUtils";
+import { ProjectGenerator } from "@one/Generator/ProjectGenerator";
 import { Compiler, ICompilerHooks } from "@one/One/Compiler";
 import { JsonSerializer } from "@one/One/Serialization/JsonSerializer";
-import { StatementDebugger } from "@one/Utils/StatementDebugger";
 import { PackageStateCapture } from "@one/Test/PackageStateCapture";
-import { CircularDependencyDetector, DetectionMode } from "@one/One/IssueDetectors/CircularDependencyDetector";
-import * as color from "ansi-colors";
 import { CompilerHelper } from '@one/One/CompilerHelper';
-import { OneFile } from 'One.File-v0.1';
 import { Reflection } from 'One.Reflect-v0.1';
-import { Package } from '@one/One/Ast/Types';
-
-function head(text: string) { 
-    const x = "~".repeat(text.length+4);
-    console.log(color.bgRed(` ~~~~~~~~${x}~~~~~~~~ \n ~~~~~~~~  ${text}  ~~~~~~~~ \n ~~~~~~~~${x}~~~~~~~~ `));
-}
 
 class StateHandler implements ICompilerHooks {
     stage = 0;
@@ -55,47 +42,27 @@ function generateReflection(projName: string, compiler: Compiler) {
     writeFile(`test/artifacts/ProjectTest/${projName}/ast.json`, projJson);
 }
 
-async function compileProject(projName: string, projDir: string, dstDir: string = null) {
-    dstDir = dstDir || `test/artifacts/ProjectTest/${projName}`;
+async function compileProject(projDir: string) {
+    const projGen = new ProjectGenerator(baseDir, projDir);
 
-    const compiler = await CompilerHelper.initProject(projName, projDir, "ts", null);
+    const compiler = await CompilerHelper.initProject(projGen.projectFile.name, projGen.srcDir, projGen.projectFile.sourceLang, null);
     const stateHandler = new StateHandler(compiler);
     compiler.hooks = stateHandler;
     compiler.processWorkspace();
 
     stateHandler.saveState();
     console.log('writing lastState...');
-    writeFile(`test/artifacts/ProjectTest/${projName}/lastState.txt`, stateHandler.lastState.getSummary());
+    writeFile(`test/artifacts/ProjectTest/${projGen.projectFile.name}/lastState.txt`, stateHandler.lastState.getSummary());
 
-    for (const generator of [new JavaGenerator(), new CsharpGenerator(), new PythonGenerator(), new PhpGenerator()]) {
-        const compiler = await CompilerHelper.initProject(projName, projDir, "ts", null);
-        compiler.processWorkspace();
-
-        for (const trans of generator.getTransforms())
-            trans.visitFiles(Object.values(compiler.projectPkg.files));
-
-        //generateReflection(projName, compiler);
-        //new StatementDebugger("new .T.C:InterfaceType").visitPackage(compiler.projectPkg);
-        //new CircularDependencyDetector(DetectionMode.AllImports).processPackage(compiler.projectPkg);
-
-        const langName = generator.getLangName();
-        const ext = generator.getExtension();
-        
-        console.log(`Generating ${langName} code...`);
-        const files = generator.generate(compiler.projectPkg);
-        for (const file of files)
-            writeFile(`${dstDir}/${langName}/${file.path.replace(".ts", `.${ext}`)}`, file.content);
-    }
+    await projGen.generate();
 }
 
 async function compileTests() {
     const testsDir = "test/testSuites/ProjectTest";
     for (const projName of readDir(testsDir))
-        await compileProject(projName, `${testsDir}/${projName}/src`);
-
-    await compileProject("OneLang", `${baseDir}/src`);
+        await compileProject(`${testsDir}/${projName}`);
 }
 
 CompilerHelper.baseDir = `${baseDir}/`;
 //compileTests().then(() => console.log("DONE (Tests)."));
-compileProject("OneLang", `${baseDir}/src`, `xcompiled`).then(() => console.log("DONE (OneLang compilation)."));
+compileProject(`${baseDir}/xcompiled-src`).then(() => console.log("DONE (OneLang compilation)."));

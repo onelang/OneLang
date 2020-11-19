@@ -88,6 +88,21 @@ export class Reader {
         return true;
     }
 
+    readUntil(token: string, orToEnd: boolean = false): string {
+        const index = this.input.indexOf(token, this.offset);
+        if (index === -1) {
+            if (!orToEnd) return null;
+            
+            const result = this.input.substr(this.offset);
+            this.wsOffset = this.offset = this.input.length;
+            return result;
+       } else {
+           const result = this.input.substring(this.offset, index);
+           this.wsOffset = this.offset = index;
+           return result;
+       }
+    }
+
     skipLine() {
         if(!this.skipUntil("\n"))
             this.offset = this.input.length;

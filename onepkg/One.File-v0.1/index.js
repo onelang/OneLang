@@ -7,11 +7,15 @@ class OneFile {
         return fs.readFileSync(fn, 'utf8');
     }
 
-    static writeText(fn, content) {
+    static providePath(fn) {
         const dir = path.dirname(fn);
         if (!fs.existsSync(dir))
             fs.mkdirSync(dir, { recursive: true });
-        return fs.writeFileSync(fn, content, 'utf8');
+        return fn;
+    }
+
+    static writeText(fn, content) {
+        return fs.writeFileSync(this.providePath(fn), content, 'utf8');
     }
 
     static listFiles(dir, recursive) {
@@ -22,6 +26,9 @@ class OneFile {
         return files;
     }
     
+    static copy(srcFn, dstFn) {
+        fs.copyFileSync(srcFn, this.providePath(dstFn));
+    }
 }
 
 exports.OneFile = OneFile;
