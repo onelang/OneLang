@@ -14,8 +14,8 @@ export class PackagesFolderSource implements PackageSource {
         const packages: { [id: string]: PackageContent } = {};
         const allFiles: string[] = OneFile.listFiles(this.packagesDir, true);
         for (let fn of allFiles) {
-            if (fn === "bundle.json") continue; // TODO: hack
             const pathParts = fn.split(/\//g); // [0]=implementations/interfaces, [1]=package-name, [2:]=path
+            if (pathParts.length < 3) continue;
             const type = pathParts.shift();
             const pkgDir = pathParts.shift();
             if (type !== "implementations" && type !== "interfaces") continue; // skip e.g. bundle.json

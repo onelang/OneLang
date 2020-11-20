@@ -1,9 +1,10 @@
 {
     "name": "OneLang",
     "dependencies": [
-        { "name": "OneLang-File" },
-        { "name": "OneLang-Json" },
-        { "name": "OneLang-Yaml" }
+        { "name": "OneLang-Core", "version": "0.1" },
+        { "name": "OneLang-File", "version": "0.1" },
+        { "name": "OneLang-Json", "version": "0.1" },
+        { "name": "OneLang-Yaml", "version": "0.1" }
     ],
     "sourceDir": "../src",
     "sourceLang": "ts",

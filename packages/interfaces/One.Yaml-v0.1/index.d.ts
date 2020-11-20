@@ -3,6 +3,7 @@ declare class YamlValue {
     dbl(key: string): number;
     str(key: string): string;
     arr(key: string): YamlValue[];
+    dict(key: string): { [name: string]: YamlValue };
     strArr(key: string): string[];
 }
 

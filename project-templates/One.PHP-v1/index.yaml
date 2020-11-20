@@ -1,3 +1,4 @@
 language: php
 destination-dir: src
+package-dir: onepkg
 template-files: [composer.json]

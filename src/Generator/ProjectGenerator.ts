@@ -22,12 +22,21 @@ import { CsharpGenerator } from "./CsharpGenerator";
 import { PythonGenerator } from "./PythonGenerator";
 import { PhpGenerator } from "./PhpGenerator";
 import { CompilerHelper } from "../One/CompilerHelper";
+import { ImplementationPackage } from "../StdLib/PackageManager";
 
 export class ProjectTemplateMeta {
-    constructor(public language: string, public destionationDir: string, public templateFiles: string[]) { }
+    constructor(
+        public language: string,
+        public destinationDir: string,
+        public packageDir: string,
+        public templateFiles: string[]) { }
 
     static fromYaml(obj: YamlValue) {
-        return new ProjectTemplateMeta(obj.str("language"), obj.str("destination-dir"), obj.strArr("template-files"));
+        return new ProjectTemplateMeta(
+            obj.str("language"), 
+            obj.str("destination-dir"),
+            obj.str("package-dir"),
+            obj.strArr("template-files"));
     }
 }
 
@@ -142,7 +151,7 @@ export class TemplateParser {
                 }
             } else {
                 let literal = this.reader.readUntil("{{", true);
-                if (literal.endsWith("\\"))
+                if (literal.endsWith("\\") && !literal.endsWith("\\\\"))
                     literal = literal.substring(0, literal.length - 1) + "{{";
                 if (literal !== "")
                     items.push(new LiteralNode(literal));
@@ -192,7 +201,7 @@ export class ProjectTemplate {
 }
 
 export class ProjectDependency {
-    constructor(public name: string) { }
+    constructor(public name: string, public version: string) { }
 }
 
 export class OneProjectFile {
@@ -208,7 +217,7 @@ export class OneProjectFile {
         return new OneProjectFile(
             json.get("name").asString(),
             json.get("dependencies").getArrayItems().map(dep => dep.asObject()).map(
-                dep => new ProjectDependency(dep.get("name").asString())),
+                dep => new ProjectDependency(dep.get("name").asString(), dep.get("version").asString())),
             json.get("sourceDir").asString(),
             json.get("sourceLang").asString(),
             json.get("outputDir").asString(),
@@ -241,35 +250,45 @@ export class ProjectGenerator {
             for (const trans of generator.getTransforms())
                 trans.visitFiles(Object.values(compiler.projectPkg.files));
     
+            const outDir = `${this.outDir}/${langName}`;
             console.log(`Generating ${langName} code...`);
             const files = generator.generate(compiler.projectPkg);
             for (const file of files)
-                OneFile.writeText(`${this.outDir}/${langName}/${projTemplate.meta.destionationDir||""}/${file.path}`, file.content);
+                OneFile.writeText(`${outDir}/${projTemplate.meta.destinationDir||""}/${file.path}`, file.content);
 
+            const oneDeps: ImplementationPackage[] = [];
             const nativeDeps: { [name: string]: string } = {};
             for (const dep of this.projectFile.dependencies) {
                 const impl = compiler.pacMan.implementationPkgs.find(x => x.content.id.name === dep.name);
-                const langData = impl.implementationYaml.languages.find(x => x.id === langId) || null;
+                oneDeps.push(impl);
+                const langData = impl.implementationYaml.languages[langId] || null;
                 if (langData === null) continue;
+
                 for (const natDep of langData.nativeDependencies || [])
                     nativeDeps[natDep.name] = natDep.version;
+
+                if (langData.nativeSrcDir !== null) {
+                    if (projTemplate.meta.packageDir === null) throw new Error("Package directory is empty in project template!");
+                    const srcDir = langData.nativeSrcDir + (langData.nativeSrcDir.endsWith("/") ? "" : "/");
+                    const dstDir = `${outDir}/${projTemplate.meta.packageDir}/${impl.content.id.name}`;
+                    const depFiles = Object.keys(impl.content.files).filter(x => x.startsWith(srcDir)).map(x => x.substr(srcDir.length));
+                    for (const fn of depFiles)
+                        OneFile.writeText(`${dstDir}/${fn}`, impl.content.files[`${srcDir}${fn}`]);
+                }
             }
 
-            const oneDeps = new Set<string>();
-            oneDeps.add("OneCore");
-            for (const file of Object.values(compiler.projectPkg.files))
-                for (const imp of file.imports.filter(x => x.exportScope.packageName !== compiler.projectPkg.name))
-                    oneDeps.add(imp.exportScope.packageName.split(/-/g)[0].replace(/\./g, ""));
-
             const model = new ObjectValue({
-                "dependencies": new ArrayValue(Object.keys(nativeDeps).map(
-                    name => new ObjectValue({ name: new StringValue(name), version: new StringValue(nativeDeps[name]) }))),
-                "onepackages": new ArrayValue(Array.from(oneDeps.values()).map(
-                    dep => new ObjectValue({ name: new StringValue(dep) })))
+                "dependencies": <IVMValue>new ArrayValue(Object.keys(nativeDeps).map(
+                    name => new ObjectValue({ name: <IVMValue>new StringValue(name), version: <IVMValue>new StringValue(nativeDeps[name]) }))),
+                "onepackages": <IVMValue>new ArrayValue(oneDeps.map(
+                    dep => {
+                        return new ObjectValue({ 
+                            vendor: <IVMValue>new StringValue(dep.implementationYaml.vendor),
+                            id: <IVMValue>new StringValue(dep.implementationYaml.name)
+                        });
+                    }))
             });
-            projTemplate.generate(`${this.outDir}/${langName}`, model);
-
-            // TODO: copy implementation native files to output
+            projTemplate.generate(`${outDir}`, model);
         }
     }
 }

@@ -107,10 +107,13 @@ export class ImplPkgNativeDependency {
 export class ImplPkgLanguage {
     constructor(
         public id: string,
+        public nativeSrcDir: string,
         public nativeDependencies: ImplPkgNativeDependency[]) { }
 
     static fromYaml(obj: YamlValue) {
-        return new ImplPkgLanguage(obj.str("id"),
+        return new ImplPkgLanguage(
+            obj.str("id"),
+            obj.str("native-src-dir"),
             obj.arr("native-dependencies").map(impl => ImplPkgNativeDependency.fromYaml(impl)));
     }
 }
@@ -126,12 +129,17 @@ export class ImplPackageYaml {
         public version: string,
         public includes: string[],
         public implements_: ImplPkgImplementation[],
-        public languages: ImplPkgLanguage[]) { }
+        public languages: { [name: string]: ImplPkgLanguage }) { }
     
     static fromYaml(obj: YamlValue) {
+        const languages: { [name: string]: ImplPkgLanguage } = {};
+        const langDict = obj.dict("languages");
+        if (langDict !== null)
+            for (const langName of Object.keys(langDict))
+                languages[langName] = ImplPkgLanguage.fromYaml(langDict[langName]);
+        
         return new ImplPackageYaml(obj.dbl("file-version"), obj.str("vendor"), obj.str("name"), obj.str("description"), obj.str("version"), obj.strArr("includes"),
-            obj.arr("implements").map(impl => ImplPkgImplementation.fromYaml(impl)),
-            obj.arr("languages").map(impl => ImplPkgLanguage.fromYaml(impl)));
+            obj.arr("implements").map(impl => ImplPkgImplementation.fromYaml(impl)), languages);
     }
 }
 
