@@ -105,7 +105,7 @@ export class ExpressionNode implements ITemplateNode {
 }
 
 export class ForNode implements ITemplateNode {
-    constructor(public variableName: string, public itemsExpr: Expression, public body: TemplateBlock) { }
+    constructor(public variableName: string, public itemsExpr: Expression, public body: TemplateBlock, public joiner: string) { }
 
     format(model: ObjectValue): string {
         const items = new ExprVM(model).evaluate(this.itemsExpr);
@@ -114,6 +114,9 @@ export class ForNode implements ITemplateNode {
         
         let result = "";
         for (const item of (<ArrayValue>items).items) {
+            if (this.joiner !== null && result !== "")
+                result += this.joiner;
+
             model.props[this.variableName] = item;
             result += this.body.format(model);
         }
@@ -131,6 +134,16 @@ export class TemplateParser {
         this.exprParser = new ExpressionParser(this.reader);
     }
 
+    parseAttributes() {
+        const result: { [name: string]: string } = {};
+        while (this.reader.readToken(",")) {
+            const key = this.reader.expectIdentifier();
+            const value = this.reader.readToken("=") ? this.reader.expectString() : null;
+            result[key] = value;
+        }
+        return result;
+    }
+
     parseBlock(): TemplateBlock {
         const items: ITemplateNode[] = [];
         while (!this.reader.eof) {
@@ -140,10 +153,11 @@ export class TemplateParser {
                     const varName = this.reader.readIdentifier();
                     this.reader.expectToken("of");
                     const itemsExpr = this.exprParser.parse();
+                    const attrs = this.parseAttributes();
                     this.reader.expectToken("}}");
                     const body = this.parseBlock();
                     this.reader.expectToken("{{/for}}");
-                    items.push(new ForNode(varName, itemsExpr, body));
+                    items.push(new ForNode(varName, itemsExpr, body, attrs["joiner"]||null));
                 } else {
                     const expr = this.exprParser.parse();
                     items.push(new ExpressionNode(expr));

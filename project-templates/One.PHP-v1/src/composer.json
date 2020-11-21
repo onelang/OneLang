@@ -1,8 +1,8 @@
 {
     "autoload": {
         "psr-4": {
-            {{for pkg of onepackages}}
-                "{{pkg.vendor}}\\{{pkg.id}}\\": "onepkg/{{pkg.vendor}}-{{pkg.id}}",
+            {{for pkg of onepackages, joiner=","}}
+                "{{pkg.vendor}}\\{{pkg.id}}\\": "onepkg/{{pkg.vendor}}-{{pkg.id}}"
             {{/for}}
         }
     }
