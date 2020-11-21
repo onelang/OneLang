@@ -1,12 +1,12 @@
-// @python-import-all OneFile
+// @python-import-all onelang_file
 // @php-use OneLang\File\OneFile
 import { OneFile } from "One.File-v0.1";
 
-// @python-import-all OneYaml
+// @python-import-all onelang_yaml
 // @php-use OneLang\Yaml\OneYaml
 import { OneYaml, YamlValue } from "One.Yaml-v0.1";
 
-// @python-import-all OneJson
+// @python-import-all onelang_json
 // @php-use OneLang\Json\OneJson
 import { OneJObject, OneJson, OneJValue } from "One.Json-v0.1";
 
@@ -293,7 +293,7 @@ export class ProjectGenerator {
                 if (langData.nativeSrcDir !== null) {
                     if (projTemplate.meta.packageDir === null) throw new Error("Package directory is empty in project template!");
                     const srcDir = langData.nativeSrcDir + (langData.nativeSrcDir.endsWith("/") ? "" : "/");
-                    const dstDir = `${outDir}/${projTemplate.meta.packageDir}/${impl.content.id.name}`;
+                    const dstDir = `${outDir}/${projTemplate.meta.packageDir}/${langData.packageDir || impl.content.id.name}`;
                     const depFiles = Object.keys(impl.content.files).filter(x => x.startsWith(srcDir)).map(x => x.substr(srcDir.length));
                     for (const fn of depFiles)
                         OneFile.writeText(`${dstDir}/${fn}`, impl.content.files[`${srcDir}${fn}`]);

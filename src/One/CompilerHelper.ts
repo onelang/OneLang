@@ -1,4 +1,4 @@
-// @python-import-all OneFile
+// @python-import-all onelang_file
 // @php-use OneLang\File\OneFile
 import { OneFile } from "One.File-v0.1";
 import { Compiler } from "./Compiler";

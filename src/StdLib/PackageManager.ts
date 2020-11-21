@@ -1,4 +1,4 @@
-// @python-import-all OneYaml
+// @python-import-all onelang_yaml
 // @php-use OneLang\Yaml\OneYaml
 import { OneYaml, YamlValue } from "One.Yaml-v0.1";
 
@@ -107,12 +107,14 @@ export class ImplPkgNativeDependency {
 export class ImplPkgLanguage {
     constructor(
         public id: string,
+        public packageDir: string,
         public nativeSrcDir: string,
         public nativeDependencies: ImplPkgNativeDependency[]) { }
 
     static fromYaml(obj: YamlValue) {
         return new ImplPkgLanguage(
             obj.str("id"),
+            obj.str("package-dir"),
             obj.str("native-src-dir"),
             obj.arr("native-dependencies").map(impl => ImplPkgNativeDependency.fromYaml(impl)));
     }

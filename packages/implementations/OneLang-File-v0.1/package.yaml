@@ -19,3 +19,6 @@ languages:
     native-src-dir: PHP/src
   csharp:
     native-src-dir: CSharp/src
+  python:
+    package-dir: onelang_file
+    native-src-dir: Python/src

@@ -1,2 +1,3 @@
 language: python
+package-dir: onepkg
 template-files: [requirements.txt]

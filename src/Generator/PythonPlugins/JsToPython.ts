@@ -106,6 +106,12 @@ export class JsToPython implements IGeneratorPlugin {
             } else if (method.name === "values") {
                 return `${argsR[0]}.values()`;
             }
+        } else if (cls.name === "JSON") {
+            const argsR = args.map(x => this.main.expr(x));
+            if (method.name === "stringify") {
+                this.main.imports.add("import json");
+                return `json.dumps(${argsR[0]})`;
+            }
         } else if (cls.name === "Set") {
             const objR = this.main.expr(obj);
             const argsR = args.map(x => this.main.expr(x));
