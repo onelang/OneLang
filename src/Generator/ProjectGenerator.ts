@@ -253,6 +253,11 @@ export class ProjectGenerator {
     }
 
     async generate() {
+        // copy native source codes from one project
+        const nativeSrcDir = `${this.projDir}/${this.projectFile.nativeSourceDir}`;
+        for (const fn of OneFile.listFiles(nativeSrcDir, true))
+            OneFile.copy(`${nativeSrcDir}/${fn}`, `${this.outDir}/${fn}`);
+
         const generators = [<IGenerator> new JavaGenerator(), <IGenerator> new CsharpGenerator(), <IGenerator> new PythonGenerator(), <IGenerator> new PhpGenerator()];
         for (const tmplName of this.projectFile.projectTemplates) {
             const compiler = await CompilerHelper.initProject(this.projectFile.name, this.srcDir, this.projectFile.sourceLang, null);
@@ -308,11 +313,6 @@ export class ProjectGenerator {
                     }))
             });
             projTemplate.generate(`${outDir}`, model);
-
-            // copy native source codes from one project
-            const nativeSrcDir = `${this.projDir}/${this.projectFile.nativeSourceDir}/${langName}`;
-            for (const fn of OneFile.listFiles(nativeSrcDir, true))
-                OneFile.copy(`${nativeSrcDir}/${fn}`, `${outDir}/${fn}`);
         }
     }
 }
