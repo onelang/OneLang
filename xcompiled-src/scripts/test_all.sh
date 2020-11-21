@@ -12,6 +12,7 @@ echo
 
 echo ======================= PHP =======================
 pushd PHP > /dev/null
+composer dump-autoload
 run php main.php
 PHP=$?
 popd > /dev/null
