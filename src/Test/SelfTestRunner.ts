@@ -1,5 +1,5 @@
 // @python-import-all OneFile
-// @php-use OneFile\OneFile
+// @php-use OneLang\File\OneFile
 import { OneFile } from "One.File-v0.1";
 import { CompilerHelper } from "../One/CompilerHelper";
 import { IGenerator } from "../Generator/IGenerator";

@@ -1,6 +1,6 @@
 <?php
 
-namespace OneFile;
+namespace OneLang\File;
 
 class OneFile {
     static function listFiles($dir, $recursive) {

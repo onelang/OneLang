@@ -1,6 +1,6 @@
 <?php
 
-namespace OneYaml;
+namespace OneLang\Yaml;
 
 class YamlValue {
     function __construct($value) {
@@ -12,6 +12,7 @@ class YamlValue {
     function str($key) { return @$this->value[$key] ?? null; }
     function strArr($key) { return $this->value[$key] ?? []; }
     function arr($key) { return array_map(function($x) { return new YamlValue($x); }, $this->value[$key] ?? []); }
+    function dict($key) { return $this->arr($key); }
     function obj($key) { return new YamlValue($this->value[$key]); }
 }
 

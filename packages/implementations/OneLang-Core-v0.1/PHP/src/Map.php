@@ -1,6 +1,6 @@
 <?php
 
-namespace OneCore;
+namespace OneLang\Core;
 
 class Map {
     public $arr = array();

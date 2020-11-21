@@ -1,6 +1,6 @@
 <?php
 
-namespace OneCore;
+namespace OneLang\Core;
 
 class ArrayHelper {
     static function sortBy($arr, $func) {

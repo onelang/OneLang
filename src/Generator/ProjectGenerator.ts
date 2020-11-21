@@ -1,13 +1,13 @@
 // @python-import-all OneFile
-// @php-use OneFile\OneFile
+// @php-use OneLang\File\OneFile
 import { OneFile } from "One.File-v0.1";
 
 // @python-import-all OneYaml
-// @php-use OneYaml\OneYaml
+// @php-use OneLang\Yaml\OneYaml
 import { OneYaml, YamlValue } from "One.Yaml-v0.1";
 
 // @python-import-all OneJson
-// @php-use OneJson\OneJson
+// @php-use OneLang\Json\OneJson
 import { OneJObject, OneJson, OneJValue } from "One.Json-v0.1";
 
 import { Reader } from "../Parsers/Common/Reader";

@@ -85,7 +85,7 @@ export class PhpGenerator implements IGenerator {
             }
             
             if (t.decl.parentFile.exportScope === null)
-                return `\\OneCore\\${this.name_(t.decl.name)}`;
+                return `\\OneLang\\Core\\${this.name_(t.decl.name)}`;
             else
                 return this.name_(t.decl.name);
         } else if (t instanceof InterfaceType)
@@ -226,7 +226,7 @@ export class PhpGenerator implements IGenerator {
         } else if (expr instanceof StaticMethodCallExpression) {
             res = `${this.name_(expr.method.parentInterface.name)}::${this.methodCall(expr)}`;
             if (expr.method.parentInterface.parentFile.exportScope === null)
-                res = `\\OneCore\\${res}`;
+                res = `\\OneLang\\Core\\${res}`;
         } else if (expr instanceof GlobalFunctionCallExpression) {
             res = `Global.${this.name_(expr.func.name)}${this.exprCall([], expr.args)}`;
         } else if (expr instanceof LambdaCallExpression) {
@@ -301,7 +301,7 @@ export class PhpGenerator implements IGenerator {
         } else if (expr instanceof ParenthesizedExpression) {
             res = `(${this.expr(expr.expression)})`;
         } else if (expr instanceof RegexLiteral) {
-            res = `new \\OneCore\\RegExp(${JSON.stringify(expr.pattern)})`;
+            res = `new \\OneLang\\Core\\RegExp(${JSON.stringify(expr.pattern)})`;
         } else if (expr instanceof Lambda) {
             const params = expr.parameters.map(x => `$${this.name_(x.name)}`);
             // TODO: captures should not be null

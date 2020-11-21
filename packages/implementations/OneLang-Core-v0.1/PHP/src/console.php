@@ -1,6 +1,6 @@
 <?php
 
-namespace OneCore;
+namespace OneLang\Core;
 
 class console {
     static function log($data) {

@@ -1,5 +1,5 @@
 <?php
 
-namespace OneCore;
+namespace OneLang\Core;
 
 class Error extends \Exception { }

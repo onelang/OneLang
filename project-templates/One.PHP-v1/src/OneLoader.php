@@ -1,6 +1,6 @@
 <?php
 
-namespace OneLang;
+namespace OneLang\Loader;
 
 class OneLoader {
     static function init() {
@@ -9,7 +9,7 @@ class OneLoader {
             $clsName = array_pop($path);
             $fileName = "src/" . implode("/", $path);
             if (!file_exists("$fileName.php"))
-                print("[OneLangAutoLoader] Class NOT FOUND: $class -> $fileName.php\n");
+                print("[OneLoader] Class NOT FOUND: $class -> $fileName.php\n");
             else
                 require_once("$fileName.php");
         });
