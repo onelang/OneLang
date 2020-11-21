@@ -8,6 +8,7 @@
     ],
     "sourceDir": "../src",
     "sourceLang": "ts",
+    "nativeSourceDir": "native",
     "outputDir": "../xcompiled",
     "projectTemplates": ["One.CSharp-v1", "One.Java-v1", "One.PHP-v1", "One.Python-v1"]
 }

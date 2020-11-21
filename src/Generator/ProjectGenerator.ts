@@ -210,6 +210,7 @@ export class OneProjectFile {
         public dependencies: ProjectDependency[],
         public sourceDir: string,
         public sourceLang: string,
+        public nativeSourceDir: string,
         public outputDir: string,
         public projectTemplates: string[]) { }
 
@@ -220,6 +221,7 @@ export class OneProjectFile {
                 dep => new ProjectDependency(dep.get("name").asString(), dep.get("version").asString())),
             json.get("sourceDir").asString(),
             json.get("sourceLang").asString(),
+            json.get("nativeSourceDir").asString(),
             json.get("outputDir").asString(),
             json.get("projectTemplates").getArrayItems().map(x => x.asString()));
     }
@@ -250,12 +252,14 @@ export class ProjectGenerator {
             for (const trans of generator.getTransforms())
                 trans.visitFiles(Object.values(compiler.projectPkg.files));
     
+            // generate cross compiled source code
             const outDir = `${this.outDir}/${langName}`;
             console.log(`Generating ${langName} code...`);
             const files = generator.generate(compiler.projectPkg);
             for (const file of files)
                 OneFile.writeText(`${outDir}/${projTemplate.meta.destinationDir||""}/${file.path}`, file.content);
 
+            // copy implementation native sources
             const oneDeps: ImplementationPackage[] = [];
             const nativeDeps: { [name: string]: string } = {};
             for (const dep of this.projectFile.dependencies) {
@@ -277,6 +281,7 @@ export class ProjectGenerator {
                 }
             }
 
+            // generate files from project template
             const model = new ObjectValue({
                 "dependencies": <IVMValue>new ArrayValue(Object.keys(nativeDeps).map(
                     name => new ObjectValue({ name: <IVMValue>new StringValue(name), version: <IVMValue>new StringValue(nativeDeps[name]) }))),
@@ -289,6 +294,11 @@ export class ProjectGenerator {
                     }))
             });
             projTemplate.generate(`${outDir}`, model);
+
+            // copy native source codes from one project
+            const nativeSrcDir = `${this.projDir}/${this.projectFile.nativeSourceDir}/${langName}`;
+            for (const fn of OneFile.listFiles(nativeSrcDir, true))
+                OneFile.copy(`${nativeSrcDir}/${fn}`, `${outDir}/${fn}`);
         }
     }
 }

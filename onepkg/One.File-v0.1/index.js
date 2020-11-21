@@ -21,7 +21,7 @@ class OneFile {
     static listFiles(dir, recursive) {
         if (!recursive)
             throw new Error("Not supported!");
-        const files = glob.sync("**/*", { cwd: dir, nodir: true });
+        const files = glob.sync("**/*", { cwd: dir, nodir: true, dot: true });
         files.sort();
         return files;
     }
