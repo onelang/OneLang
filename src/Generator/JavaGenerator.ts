@@ -303,7 +303,7 @@ export class JavaGenerator implements IGenerator {
                 const rightType = expr.right.getType();
                 const useEquals = TypeHelper.equals(leftType, lit.string) && rightType !== null && TypeHelper.equals(rightType, lit.string);
                 if (useEquals) {
-                    this.imports.add("OneStd.Objects");
+                    this.imports.add("io.onelang.std.core.Objects");
                     res = `${expr.operator === "!=" ? "!" : ""}Objects.equals(${this.expr(expr.left)}, ${this.expr(expr.right)})`;
                 } else
                     res = `${this.expr(expr.left)} ${expr.operator} ${this.expr(expr.right)}`;
@@ -327,7 +327,7 @@ export class JavaGenerator implements IGenerator {
         } else if (expr instanceof ParenthesizedExpression) {
             res = `(${this.expr(expr.expression)})`;
         } else if (expr instanceof RegexLiteral) {
-            this.imports.add(`OneStd.RegExp`);
+            this.imports.add(`io.onelang.std.core.RegExp`);
             res = `new RegExp(${JSON.stringify(expr.pattern)})`;
         } else if (expr instanceof Lambda) {
             let body: string;
@@ -611,8 +611,10 @@ export class JavaGenerator implements IGenerator {
     }
 
     toImport(scope: ExportScopeRef): string {
-        return scope.scopeName === "index" ? `OneStd` : 
-            `${scope.packageName}.${scope.scopeName.replace(/\//g, ".")}`;
+        // TODO: hack
+        if (scope.scopeName === "index")
+            return `io.onelang.std.${scope.packageName.split(/-/g)[0].replace(/One\./g, "").toLowerCase()}`;
+        return `${scope.packageName}.${scope.scopeName.replace(/\//g, ".")}`;
     }
 
     generate(pkg: Package): GeneratedFile[] {

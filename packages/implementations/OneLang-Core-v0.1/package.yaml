@@ -22,3 +22,6 @@ languages:
   python:
     package-dir: onelang_core
     native-src-dir: Python/src
+  java:
+    package-dir: core
+    native-src-dir: Java/src

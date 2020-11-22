@@ -17,3 +17,6 @@ includes:
 languages:
   csharp:
     native-src-dir: CSharp/src
+  java:
+    package-dir: reflect
+    native-src-dir: Java/src
