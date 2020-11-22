@@ -22,7 +22,7 @@ export class Utils {
 
         // @java final var minPadLen2 = minPadLen;
         const minPadLen2 = minPadLen;
-        const newStr = lines.map(x => x.length !== 0 ? x.substr(minPadLen2) : x).join("\n");
+        const newStr = lines.map(x => x.length >= minPadLen2 ? x.substr(minPadLen2) : x).join("\n");
         return newStr;
     }
 }
