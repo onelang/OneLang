@@ -36,8 +36,10 @@ export class JsToJava implements IGeneratorPlugin {
         const argsR = args.map(x => this.main.expr(x));
         if (cls.name === "TsArray") {
             if (method.name === "includes") {
+                // TsArray.includes(value): ${toStream(this)}.anyMatch($value}::equals)
                 return `${this.arrayStream(obj)}.anyMatch(${argsR[0]}::equals)`;
             } else if (method.name === "set") {
+                // TsArray.set(key, value): $this[$key] = $value
                 if (this.isArray(obj))
                     return `${objR}[${argsR[0]}] = ${argsR[1]}`;
                 else
@@ -96,47 +98,6 @@ export class JsToJava implements IGeneratorPlugin {
                 const pattern = (<RegexLiteral>args[0]).pattern;
                 return `${objR}.split(${JSON.stringify(pattern)}, -1)`;
             }
-
-
-            // if (method.name === "split") {
-            //     if (args[0] instanceof RegexLiteral) {
-            //         const pattern = (<RegexLiteral>args[0]).pattern;
-            //         if (!pattern.startsWith("^")) {
-            //             //return `${objR}.split(${JSON.stringify(pattern)})`;
-            //             this.main.imports.add("import re");
-            //             return `re.split(${JSON.stringify(pattern)}, ${objR})`;
-            //         }
-            //     }
-
-            //     return `${argsR[0]}.split(${objR})`;
-            // } else if (method.name === "replace") {
-            //     if (args[0] instanceof RegexLiteral) {
-            //         this.main.imports.add("import re");
-            //         return `re.sub(${JSON.stringify((<RegexLiteral>args[0]).pattern)}, ${argsR[1]}, ${objR})`;
-            //     }
-
-            //     return `${argsR[0]}.replace(${objR}, ${argsR[1]})`;
-            // } else if (method.name === "startsWith") {
-            //     return `${objR}.startswith(${argsR.join(", ")})`;
-            // } else if (method.name === "indexOf") {
-            //     return `${objR}.find(${argsR[0]}, ${argsR[1]})`;
-            // } else if (method.name === "lastIndexOf") {
-            //     return `${objR}.rfind(${argsR[0]}, 0, ${argsR[1]})`;
-            // } else if (method.name === "substr") {
-            //     return argsR.length === 1 ? `${objR}[${argsR[0]}:]` : `${objR}[${argsR[0]}:${argsR[0]} + ${argsR[1]}]`;
-            // } else if (method.name === "substring") {
-            //     return `${objR}[${argsR[0]}:${argsR[1]}]`;
-            // } else if (method.name === "repeat") {
-            //     return `${objR} * (${argsR[0]})`;
-            // } else if (method.name === "toUpperCase") {
-            //     return `${objR}.upper()`;
-            // } else if (method.name === "toLowerCase") {
-            //     return `${objR}.lower()`;
-            // } else if (method.name === "endsWith") {
-            //     return `${objR}.endswith(${argsR[0]})`;
-            // } else if (method.name === "get") {
-            //     return `${objR}[${argsR[0]}]`;
-            // }
         } else if (cls.name === "TsMap" || cls.name === "Map") {
             if (method.name === "set") {
                 return `${objR}.put(${argsR[0]}, ${argsR[1]})`;
@@ -164,11 +125,6 @@ export class JsToJava implements IGeneratorPlugin {
                 return `${objR}.add(${argsR[0]})`;
             }
         } else if (cls.name === "ArrayHelper") {
-            // if (method.name === "sortBy") {
-            //     return `sorted(${argsR[0]}, key=${argsR[1]})`;
-            // } else if (method.name === "removeLastN") {
-            //     return `del ${argsR[0]}[-${argsR[1]}:]`;
-            // }
         } else if (cls.name === "Array") {
             if (method.name === "from") {
                 return `${argsR[0]}`;
