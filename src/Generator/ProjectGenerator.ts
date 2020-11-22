@@ -8,21 +8,17 @@ import { OneYaml, YamlValue } from "One.Yaml-v0.1";
 
 // @python-import-all onelang_json
 // @php-use OneLang\Json\OneJson
-import { OneJObject, OneJson, OneJValue } from "One.Json-v0.1";
+import { OneJObject, OneJson } from "One.Json-v0.1";
 
-import { Reader } from "../Parsers/Common/Reader";
-import { Expression, Identifier, PropertyAccessExpression } from "../One/Ast/Expressions";
-
-import { Compiler } from "../One/Compiler";
 import { IGenerator } from "./IGenerator";
-import { ExpressionParser } from "../Parsers/Common/ExpressionParser";
-import { TSOverviewGenerator } from "../Utils/TSOverviewGenerator";
 import { JavaGenerator } from "./JavaGenerator";
 import { CsharpGenerator } from "./CsharpGenerator";
 import { PythonGenerator } from "./PythonGenerator";
 import { PhpGenerator } from "./PhpGenerator";
 import { CompilerHelper } from "../One/CompilerHelper";
 import { ImplementationPackage } from "../StdLib/PackageManager";
+import { ArrayValue, IVMValue, ObjectValue, StringValue } from "../VM/Values";
+import { TemplateParser } from "../Template/TemplateParser";
 
 export class ProjectTemplateMeta {
     constructor(
@@ -40,157 +36,6 @@ export class ProjectTemplateMeta {
     }
 }
 
-export interface IVMValue { }
-
-export class ObjectValue implements IVMValue {
-    constructor(public props: { [name: string]: IVMValue }) { }
-}
-
-export class StringValue implements IVMValue {
-    constructor(public value: string) { }
-}
-
-export class ArrayValue implements IVMValue {
-    constructor(public items: IVMValue[]) { }
-}
-
-export interface ITemplateNode {
-    format(model: ObjectValue): string;
-}
-
-export class TemplateBlock implements ITemplateNode {
-    constructor(public items: ITemplateNode[]) { }
-
-    format(model: ObjectValue): string { 
-        return this.items.map(x => x.format(model)).join("");
-    }
-}
-
-export class LiteralNode implements ITemplateNode {
-    constructor(public value: string) { }
-
-    format(model: ObjectValue): string { return this.value; }
-}
-
-export class ExprVM {
-    constructor(public model: ObjectValue) { }
-
-    static propAccess(obj: IVMValue, propName: string): IVMValue { 
-        if (!(obj instanceof ObjectValue)) throw new Error("You can only access a property of an object!");
-        if (!(propName in (<ObjectValue>obj).props)) throw new Error(`Property '${propName}' does not exists on this object!`);
-        return (<ObjectValue>obj).props[propName];
-    }
-
-    evaluate(expr: Expression): IVMValue {
-        if (expr instanceof Identifier) {
-            return ExprVM.propAccess(this.model, expr.text);
-        } else if (expr instanceof PropertyAccessExpression) {
-            const objValue = this.evaluate(expr.object);
-            return ExprVM.propAccess(objValue, expr.propertyName);
-        } else 
-            throw new Error("Unsupported expression!");
-    }
-}
-
-export class ExpressionNode implements ITemplateNode {
-    constructor(public expr: Expression) { }
-
-    format(model: ObjectValue): string {
-        const result = new ExprVM(model).evaluate(this.expr);
-        if (result instanceof StringValue)
-            return result.value;
-        else
-            throw new Error(`ExpressionNode (${TSOverviewGenerator.preview.expr(this.expr)}) return a non-string result!`);
-    }
-}
-
-export class ForNode implements ITemplateNode {
-    constructor(public variableName: string, public itemsExpr: Expression, public body: TemplateBlock, public joiner: string) { }
-
-    format(model: ObjectValue): string {
-        const items = new ExprVM(model).evaluate(this.itemsExpr);
-        if (!(items instanceof ArrayValue))
-            throw new Error(`ForNode items (${TSOverviewGenerator.preview.expr(this.itemsExpr)}) return a non-array result!`);
-        
-        let result = "";
-        for (const item of (<ArrayValue>items).items) {
-            if (this.joiner !== null && result !== "")
-                result += this.joiner;
-
-            model.props[this.variableName] = item;
-            result += this.body.format(model);
-        }
-        delete model.props[this.variableName];
-        return result;
-    }
-}
-
-export class TemplateParser {
-    reader: Reader;
-    exprParser: ExpressionParser;
-
-    constructor(public template: string) {
-        this.reader = new Reader(template);
-        this.exprParser = new ExpressionParser(this.reader);
-    }
-
-    parseAttributes() {
-        const result: { [name: string]: string } = {};
-        while (this.reader.readToken(",")) {
-            const key = this.reader.expectIdentifier();
-            const value = this.reader.readToken("=") ? this.reader.expectString() : null;
-            result[key] = value;
-        }
-        return result;
-    }
-
-    parseBlock(): TemplateBlock {
-        const items: ITemplateNode[] = [];
-        while (!this.reader.eof) {
-            if (this.reader.peekToken("{{/")) break;
-            if (this.reader.readToken("{{")) {
-                if (this.reader.readToken("for")) {
-                    const varName = this.reader.readIdentifier();
-                    this.reader.expectToken("of");
-                    const itemsExpr = this.exprParser.parse();
-                    const attrs = this.parseAttributes();
-                    this.reader.expectToken("}}");
-                    const body = this.parseBlock();
-                    this.reader.expectToken("{{/for}}");
-                    items.push(new ForNode(varName, itemsExpr, body, attrs["joiner"]||null));
-                } else {
-                    const expr = this.exprParser.parse();
-                    items.push(new ExpressionNode(expr));
-                    this.reader.expectToken("}}");
-                }
-            } else {
-                let literal = this.reader.readUntil("{{", true);
-                if (literal.endsWith("\\") && !literal.endsWith("\\\\"))
-                    literal = literal.substring(0, literal.length - 1) + "{{";
-                if (literal !== "")
-                    items.push(new LiteralNode(literal));
-            }
-        }
-        return new TemplateBlock(items);
-    }
-
-    parse(): TemplateBlock {
-        return this.parseBlock();
-    }
-}
-
-export class TemplateFile {
-    main: TemplateBlock;
-
-    constructor(public template: string) {
-        this.main = new TemplateParser(template).parse();
-    }
-
-    format(model: ObjectValue): string {
-        return this.main.format(model);
-    }
-}
-
 export class ProjectTemplate {
     meta: ProjectTemplateMeta;
     srcFiles: string[];
@@ -205,8 +50,8 @@ export class ProjectTemplate {
             const srcFn = `${this.templateDir}/src/${fn}`;
             const dstFn = `${dstDir}/${fn}`;
             if (this.meta.templateFiles.includes(fn)) {
-                const tmplFile = new TemplateFile(OneFile.readText(srcFn));
-                const dstFile = tmplFile.format(model);
+                const tmpl = new TemplateParser(OneFile.readText(srcFn)).parse();
+                const dstFile = tmpl.format(model);
                 OneFile.writeText(dstFn, dstFile);
             } else
                 OneFile.copy(srcFn, dstFn);
