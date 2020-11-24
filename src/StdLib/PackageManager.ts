@@ -108,6 +108,7 @@ export class ImplPkgLanguage {
     constructor(
         public id: string,
         public packageDir: string,
+        public generatorPlugins: string[],
         public nativeSrcDir: string,
         public nativeDependencies: ImplPkgNativeDependency[]) { }
 
@@ -115,6 +116,7 @@ export class ImplPkgLanguage {
         return new ImplPkgLanguage(
             obj.str("id"),
             obj.str("package-dir"),
+            obj.strArr("generator-plugins"),
             obj.str("native-src-dir"),
             obj.arr("native-dependencies").map(impl => ImplPkgNativeDependency.fromYaml(impl)));
     }

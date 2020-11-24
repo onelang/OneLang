@@ -19,6 +19,8 @@ import { CompilerHelper } from "../One/CompilerHelper";
 import { ImplementationPackage } from "../StdLib/PackageManager";
 import { ArrayValue, IVMValue, ObjectValue, StringValue } from "../VM/Values";
 import { TemplateParser } from "../Template/TemplateParser";
+import { TemplateFileGeneratorPlugin } from "./TemplateFileGeneratorPlugin";
+import { TemplateContext } from "../Template/Nodes";
 
 export class ProjectTemplateMeta {
     constructor(
@@ -51,7 +53,7 @@ export class ProjectTemplate {
             const dstFn = `${dstDir}/${fn}`;
             if (this.meta.templateFiles.includes(fn)) {
                 const tmpl = new TemplateParser(OneFile.readText(srcFn)).parse();
-                const dstFile = tmpl.format(model);
+                const dstFile = tmpl.format(new TemplateContext(model));
                 OneFile.writeText(dstFn, dstFile);
             } else
                 OneFile.copy(srcFn, dstFn);
@@ -112,17 +114,11 @@ export class ProjectGenerator {
             const langId = projTemplate.meta.language;
             const generator = generators.find(x => x.getLangName().toLowerCase() == langId);
             const langName = generator.getLangName();
+            const outDir = `${this.outDir}/${langName}`;
     
             for (const trans of generator.getTransforms())
                 trans.visitFiles(Object.values(compiler.projectPkg.files));
     
-            // generate cross compiled source code
-            const outDir = `${this.outDir}/${langName}`;
-            console.log(`Generating ${langName} code...`);
-            const files = generator.generate(compiler.projectPkg);
-            for (const file of files)
-                OneFile.writeText(`${outDir}/${projTemplate.meta.destinationDir||""}/${file.path}`, file.content);
-
             // copy implementation native sources
             const oneDeps: ImplementationPackage[] = [];
             const nativeDeps: { [name: string]: string } = {};
@@ -143,7 +139,17 @@ export class ProjectGenerator {
                     for (const fn of depFiles)
                         OneFile.writeText(`${dstDir}/${fn}`, impl.content.files[`${srcDir}${fn}`]);
                 }
+
+                if (langData.generatorPlugins !== null)
+                    for (const genPlugFn of langData.generatorPlugins)
+                        generator.addPlugin(new TemplateFileGeneratorPlugin(generator, impl.content.files[genPlugFn]));
             }
+
+            // generate cross compiled source code
+            console.log(`Generating ${langName} code...`);
+            const files = generator.generate(compiler.projectPkg);
+            for (const file of files)
+                OneFile.writeText(`${outDir}/${projTemplate.meta.destinationDir||""}/${file.path}`, file.content);
 
             // generate files from project template
             const model = new ObjectValue({
