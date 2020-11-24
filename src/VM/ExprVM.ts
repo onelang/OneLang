@@ -1,5 +1,5 @@
-import { Expression, Identifier, PropertyAccessExpression } from "../One/Ast/Expressions";
-import { IVMValue, ObjectValue } from "./Values";
+import { Expression, Identifier, PropertyAccessExpression, StringLiteral, UnresolvedCallExpression } from "../One/Ast/Expressions";
+import { ICallableValue, IVMValue, ObjectValue, StringValue } from "./Values";
 
 export class ExprVM {
     constructor(public model: ObjectValue) { }
@@ -16,6 +16,13 @@ export class ExprVM {
         } else if (expr instanceof PropertyAccessExpression) {
             const objValue = this.evaluate(expr.object);
             return ExprVM.propAccess(objValue, expr.propertyName);
+        } else if (expr instanceof UnresolvedCallExpression) {
+            const func = <ICallableValue> this.evaluate(expr.func);
+            const args = expr.args.map(x => this.evaluate(x));
+            const result = func.call(args);
+            return result;
+        } else if (expr instanceof StringLiteral) {
+            return new StringValue(expr.stringValue);
         } else 
             throw new Error("Unsupported expression!");
     }

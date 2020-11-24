@@ -1,5 +1,9 @@
 export interface IVMValue { }
 
+export interface ICallableValue extends IVMValue {
+    call(args: IVMValue[]): IVMValue;
+}
+
 export class ObjectValue implements IVMValue {
     constructor(public props: { [name: string]: IVMValue }) { }
 }
