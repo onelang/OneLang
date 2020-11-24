@@ -152,9 +152,13 @@ export class StaticPropertyReference extends VariableReference {
     getVariable(): IVariable { return this.decl; }
 }
 
+export interface IInstanceMemberReference { 
+    object: Expression;
+}
+
 // has type: yes
 // is generic: can be
-export class InstanceFieldReference extends VariableReference {
+export class InstanceFieldReference extends VariableReference implements IInstanceMemberReference {
     constructor(
         public object: Expression,
         // @json-ignore
@@ -168,7 +172,7 @@ export class InstanceFieldReference extends VariableReference {
 
 // has type: yes
 // is generic: can be
-export class InstancePropertyReference extends VariableReference {
+export class InstancePropertyReference extends VariableReference implements IInstanceMemberReference {
     constructor(
         public object: Expression,
         // @json-ignore

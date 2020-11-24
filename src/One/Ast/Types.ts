@@ -22,8 +22,10 @@ export interface IVariable {
 }
 
 export interface IClassMember {
+    name: string;
     visibility: Visibility;
     isStatic: boolean;
+    getParentInterface(): IInterface;
 }
 
 /// types: VariableDeclaration, ForVariable, Field, MethodParameter
@@ -361,6 +363,8 @@ export class Field implements IVariableWithInitializer, IHasAttributesAndTrivia,
 
     /** @creator FillMutability */
     mutability: MutabilityInfo = null;
+
+    getParentInterface(): IInterface { return this.parentInterface; }
 }
 
 export class Property implements IVariable, IHasAttributesAndTrivia, IClassMember, IAstNode {
@@ -391,6 +395,8 @@ export class Property implements IVariable, IHasAttributesAndTrivia, IClassMembe
     
     /** @creator FillMutability */
     mutability: MutabilityInfo = null;
+
+    getParentInterface(): IInterface { return this.parentClass; }
 }
 
 export class MethodParameter implements IVariableWithInitializer, IReferencable, IHasAttributesAndTrivia {
@@ -480,6 +486,8 @@ export class Method implements IMethodBaseWithTrivia, IClassMember {
     overriddenBy: Method[] = [];
 
     throws: boolean;
+
+    getParentInterface(): IInterface { return this.parentInterface; }
 }
 
 export class GlobalFunction implements IMethodBaseWithTrivia, IResolvedImportable, IReferencable {
