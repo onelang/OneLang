@@ -1,8 +1,8 @@
 import { InferTypesPlugin } from "./Helpers/InferTypesPlugin";
-import { Expression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, StaticMethodCallExpression, IMethodCallExpression } from "../../Ast/Expressions";
-import { ClassType, InterfaceType, AnyType, TypeHelper } from "../../Ast/AstTypes";
+import { Expression, UnresolvedMethodCallExpression, InstanceMethodCallExpression, StaticMethodCallExpression, IMethodCallExpression, LambdaCallExpression } from "../../Ast/Expressions";
+import { ClassType, InterfaceType, AnyType, TypeHelper, LambdaType } from "../../Ast/AstTypes";
 import { GenericsResolver } from "./Helpers/GenericsResolver";
-import { ClassReference, StaticThisReference } from "../../Ast/References";
+import { ClassReference, InstanceFieldReference, StaticThisReference } from "../../Ast/References";
 import { Class, IInterface, Method } from "../../Ast/Types";
 
 export class ResolveMethodCalls extends InferTypesPlugin {
@@ -68,6 +68,13 @@ export class ResolveMethodCalls extends InferTypesPlugin {
                 instanceof InterfaceType ? objectType.decl : null;
 
             if (intfType !== null) {
+                const lambdaField = intfType.fields.find(x => x.name === expr.methodName && x.type instanceof LambdaType && x.type.parameters.length === expr.args.length) || null;
+                if (lambdaField !== null) {
+                    const lambdaCall = new LambdaCallExpression(new InstanceFieldReference(expr.object, lambdaField), expr.args);
+                    lambdaCall.setActualType((<LambdaType>lambdaField.type).returnType);
+                    return lambdaCall;
+                }
+        
                 const method = this.findMethod(intfType, expr.methodName, false, expr.args);
                 const result = new InstanceMethodCallExpression(resolvedObject, method, expr.typeArgs, expr.args);
                 this.resolveReturnType(result, GenericsResolver.fromObject(resolvedObject));
