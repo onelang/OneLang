@@ -12,6 +12,8 @@ import { JsToJava } from "./JavaPlugins/JsToJava";
 import { ITransformer } from "../One/ITransformer";
 import { ConvertNullCoalesce } from "../One/Transforms/ConvertNullCoalesce";
 import { UseDefaultCallArgsExplicitly } from "../One/Transforms/UseDefaultCallArgsExplicitly";
+import { ExpressionValue, LambdaValue, TemplateFileGeneratorPlugin } from "./TemplateFileGeneratorPlugin";
+import { StringValue } from "../VM/Values";
 
 export class JavaGenerator implements IGenerator {
     imports = new Set<string>();
@@ -28,9 +30,35 @@ export class JavaGenerator implements IGenerator {
     getExtension(): string { return "java"; }
     getTransforms(): ITransformer[] { return [<ITransformer>new ConvertNullCoalesce(), <ITransformer>new UseDefaultCallArgsExplicitly()]; }
     addInclude(include: string): void { this.imports.add(include); }
-    
+
+    isArray(arrayExpr: Expression) {
+        // TODO: InstanceMethodCallExpression is a hack, we should introduce real stream handling
+        return arrayExpr instanceof VariableReference && !arrayExpr.getVariable().mutability.mutated ||
+            arrayExpr instanceof StaticMethodCallExpression || arrayExpr instanceof InstanceMethodCallExpression;
+    }
+
+    arrayStream(arrayExpr: Expression) {
+        const isArray = this.isArray(arrayExpr);
+        const objR = this.expr(arrayExpr);
+        if (isArray)
+            this.imports.add("java.util.Arrays");
+        return isArray ? `Arrays.stream(${objR})` : `${objR}.stream()`;
+    }
+
+    toArray(arrayType: IType, typeArgIdx: number = 0) {
+        const type = (<ClassType>arrayType).typeArguments[typeArgIdx];
+        return `toArray(${this.type(type)}[]::new)`;
+    }
+
     addPlugin(plugin: IGeneratorPlugin) {
         this.plugins.push(plugin);
+
+        // TODO: hack?
+        if (plugin instanceof TemplateFileGeneratorPlugin) {
+            plugin.modelGlobals["toStream"] = new LambdaValue(args => {
+                return new StringValue(this.arrayStream((<ExpressionValue>args[0]).value));
+            });
+        }
     }
     
     name_(name: string) {

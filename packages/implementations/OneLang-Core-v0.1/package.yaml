@@ -25,3 +25,4 @@ languages:
   java:
     package-dir: core
     native-src-dir: Java/src
+    generator-plugins: [Java/JsToJava.yaml]

@@ -46,9 +46,9 @@ export class JsToJava implements IGeneratorPlugin {
                     return `${objR}.set(${argsR[0]}, ${argsR[1]})`;
             } else if (method.name === "get") {
                 return this.isArray(obj) ? `${objR}[${argsR[0]}]` : `${objR}.get(${argsR[0]})`;
-            } else if (method.name === "join") {
-                this.main.imports.add("java.util.stream.Collectors");
-                return `${this.arrayStream(obj)}.collect(Collectors.joining(${argsR[0]}))`;
+            // } else if (method.name === "join") {
+            //     this.main.imports.add("java.util.stream.Collectors");
+            //     return `${this.arrayStream(obj)}.collect(Collectors.joining(${argsR[0]}))`;
             } else if (method.name === "map") {
                 //if (returnType.repr() !== "C:TsArray<C:TsString>") debugger;
                 return `${this.arrayStream(obj)}.map(${argsR[0]}).${this.toArray(returnType)}`;

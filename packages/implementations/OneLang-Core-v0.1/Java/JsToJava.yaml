@@ -1,0 +1,13 @@
+expressions:
+  TsArray.includes(value): ${toStream(this)}.anyMatch($value::equals)
+  TsArray.set(key, value): $this[$key] = $value
+  TsArray.get(key): '${isArray ? `$this[$key]` : `$this.get($key)`}'
+  TsArray.join(separator):
+    includes: [java.util.stream.Collectors]
+    template: ${toStream(this)}.collect(Collectors.joining($separator))
+  TsArray.map(selector): ${toStream(this)}.map($selector).${toArray(returnType)}
+  TsArray.push(item): $this.add($item)
+  TsString.length: $this.length()
+  TsArray.length: '$this.${isArray ? "length" : "size()"}'
+  RegExpExecArray.length: $this.length
+  Map.size: $this.size()
