@@ -97,9 +97,9 @@ export class CsharpGenerator implements IGenerator {
             return `${t.typeVarName}`;
         else if (t instanceof LambdaType) {
             const isFunc = !(t.returnType instanceof VoidType);
-            const paramTypes = t.parameters.map(x => this.type(x.type));
+            const paramTypes = t.parameters.map(x => this.type(x.type, false));
             if (isFunc)
-                paramTypes.push(this.type(t.returnType));
+                paramTypes.push(this.type(t.returnType, false));
             this.usings.add("System");
             return `${isFunc ? "Func" : "Action"}<${paramTypes.join(", ")}>`;
         } else if (t === null) {

@@ -124,9 +124,9 @@ export class JavaGenerator implements IGenerator {
             return `${t.typeVarName}`;
         else if (t instanceof LambdaType) {
             const isFunc = !(t.returnType instanceof VoidType);
-            const paramTypes = t.parameters.map(x => this.type(x.type));
+            const paramTypes = t.parameters.map(x => this.type(x.type, false));
             if (isFunc)
-                paramTypes.push(this.type(t.returnType));
+                paramTypes.push(this.type(t.returnType, false));
             this.imports.add("java.util.function." + (isFunc ? "Function" : "Consumer"));
             return `${isFunc ? "Function" : "Consumer"}<${paramTypes.join(", ")}>`;
         } else if (t === null) {
