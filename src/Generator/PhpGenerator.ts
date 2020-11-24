@@ -25,7 +25,9 @@ export class PhpGenerator implements IGenerator {
     getLangName(): string { return "PHP"; }
     getExtension(): string { return "php"; }
     getTransforms(): ITransformer[] { return []; }
-    
+    addPlugin(plugin: IGeneratorPlugin) { this.plugins.push(plugin); }
+    addInclude(include: string): void { this.usings.add(include); }
+
     name_(name: string) {
         if (this.reservedWords.includes(name)) name += "_";
         if (this.fieldToMethodHack.includes(name)) name += "()";

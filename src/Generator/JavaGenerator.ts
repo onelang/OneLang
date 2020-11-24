@@ -27,6 +27,11 @@ export class JavaGenerator implements IGenerator {
     getLangName(): string { return "Java"; }
     getExtension(): string { return "java"; }
     getTransforms(): ITransformer[] { return [<ITransformer>new ConvertNullCoalesce(), <ITransformer>new UseDefaultCallArgsExplicitly()]; }
+    addInclude(include: string): void { this.imports.add(include); }
+    
+    addPlugin(plugin: IGeneratorPlugin) {
+        this.plugins.push(plugin);
+    }
     
     name_(name: string) {
         if (this.reservedWords.includes(name)) name += "_";

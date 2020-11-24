@@ -8,6 +8,7 @@ import { NameUtils } from "./NameUtils";
 import { IGenerator } from "./IGenerator";
 import { IExpression, IType } from "../One/Ast/Interfaces";
 import { ITransformer } from "../One/ITransformer";
+import { IGeneratorPlugin } from "./IGeneratorPlugin";
 
 export class CsharpGenerator implements IGenerator {
     usings: Set<string>;
@@ -19,6 +20,8 @@ export class CsharpGenerator implements IGenerator {
     getLangName(): string { return "CSharp"; }
     getExtension(): string { return "cs"; }
     getTransforms(): ITransformer[] { return []; }
+    addPlugin(plugin: IGeneratorPlugin) { /* TODO */ }
+    addInclude(include: string): void { this.usings.add(include); }
 
     name_(name: string) {
         if (this.reservedWords.includes(name)) name += "_";

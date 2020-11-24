@@ -30,6 +30,8 @@ export class PythonGenerator implements IGenerator {
     getLangName(): string { return "Python"; }
     getExtension(): string { return "py"; }
     getTransforms(): ITransformer[] { return []; }
+    addPlugin(plugin: IGeneratorPlugin) { this.plugins.push(plugin); }
+    addInclude(include: string): void { this.imports.add(include); }
     
     type(type: IType) {
         if (type instanceof ClassType) {
