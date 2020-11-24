@@ -1,4 +1,9 @@
-declare class YamlValue {
+export declare enum ValueType { Null, Boolean, Number, String, Array, Object }
+
+export declare class YamlValue {
+    type(): ValueType;
+    asStr(): string;
+
     obj(key: string): YamlValue;
     dbl(key: string): number;
     str(key: string): string;
@@ -7,6 +12,6 @@ declare class YamlValue {
     strArr(key: string): string[];
 }
 
-declare class OneYaml {
+export declare class OneYaml {
     static load(content: string): YamlValue;
 }

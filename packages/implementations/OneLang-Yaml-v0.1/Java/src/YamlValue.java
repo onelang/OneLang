@@ -12,6 +12,9 @@ public class YamlValue {
         this.map = map;
     }
 
+    public ValueType type() { return ValueType.Null; }
+    public String asStr() { return null; }
+
     public YamlValue obj(String key) {
         return new YamlValue((Map<String, Object>) this.map.get(key));
     }
