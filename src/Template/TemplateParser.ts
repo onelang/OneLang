@@ -1,6 +1,7 @@
 import { Reader } from "../Parsers/Common/Reader";
 import { ExpressionParser } from "../Parsers/Common/ExpressionParser";
 import { ExpressionNode, ForNode, ITemplateNode, LiteralNode, TemplateBlock } from "./Nodes";
+import { Identifier } from "../One/Ast/Expressions";
 
 export class TemplateParser {
     reader: Reader;
@@ -25,7 +26,14 @@ export class TemplateParser {
         const items: ITemplateNode[] = [];
         while (!this.reader.eof) {
             if (this.reader.peekToken("{{/")) break;
-            if (this.reader.readToken("{{")) {
+            if (this.reader.readToken("${")) {
+                const expr = this.exprParser.parse();
+                items.push(new ExpressionNode(expr));
+                this.reader.expectToken("}");
+            } else if (this.reader.readToken("$")) {
+                const id = this.reader.readIdentifier();
+                items.push(new ExpressionNode(new Identifier(id)));
+            } else if (this.reader.readToken("{{")) {
                 if (this.reader.readToken("for")) {
                     const varName = this.reader.readIdentifier();
                     this.reader.expectToken("of");
@@ -41,11 +49,9 @@ export class TemplateParser {
                     this.reader.expectToken("}}");
                 }
             } else {
-                let literal = this.reader.readUntil("{{", true);
-                if (literal.endsWith("\\") && !literal.endsWith("\\\\"))
-                    literal = literal.substring(0, literal.length - 1) + "{{";
-                if (literal !== "")
-                    items.push(new LiteralNode(literal));
+                let literal = this.reader.readRegex("([^\\\\]\\\\(\\{\\{|\\$)|\r|\n|(?!\\{\\{|\\$\\{|\\$).)*")[0];
+                if (literal === "") throw new Error("This should not happen!");
+                items.push(new LiteralNode(literal));
             }
         }
         return new TemplateBlock(items);
