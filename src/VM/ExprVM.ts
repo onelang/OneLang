@@ -1,5 +1,5 @@
-import { ConditionalExpression, Expression, Identifier, PropertyAccessExpression, StringLiteral, TemplateString, UnresolvedCallExpression } from "../One/Ast/Expressions";
-import { BooleanValue, ICallableValue, IVMValue, ObjectValue, StringValue } from "./Values";
+import { ConditionalExpression, Expression, Identifier, NumericLiteral, PropertyAccessExpression, StringLiteral, TemplateString, UnresolvedCallExpression } from "../One/Ast/Expressions";
+import { BooleanValue, ICallableValue, IVMValue, NumericValue, ObjectValue, StringValue } from "./Values";
 
 export interface IVMHooks {
     stringifyValue(value: IVMValue): string;
@@ -31,6 +31,8 @@ export class ExprVM {
             return result;
         } else if (expr instanceof StringLiteral) {
             return new StringValue(expr.stringValue);
+        } else if (expr instanceof NumericLiteral) {
+            return new NumericValue(parseInt(expr.valueAsText));
         } else if (expr instanceof ConditionalExpression) {
             const condResult = this.evaluate(expr.condition);
             const result = this.evaluate((<BooleanValue>condResult).value ? expr.whenTrue : expr.whenFalse);

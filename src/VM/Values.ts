@@ -12,6 +12,10 @@ export class StringValue implements IVMValue {
     constructor(public value: string) { }
 }
 
+export class NumericValue implements IVMValue {
+    constructor(public value: number) { }
+}
+
 export class BooleanValue implements IVMValue {
     constructor(public value: boolean) { }
 }
