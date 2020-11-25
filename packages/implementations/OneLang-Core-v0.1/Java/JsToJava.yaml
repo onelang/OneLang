@@ -1,13 +1,34 @@
 expressions:
+  TsArray.length: '$this.${isArray(this) ? "length" : "size()"}'
   TsArray.includes(value): ${toStream(this)}.anyMatch($value::equals)
-  TsArray.set(key, value): $this[$key] = $value
+  TsArray.set(key, value): '${isArray(this) ? `$this[$key] = $value` : `$this.set($key, $value)`}'
   TsArray.get(key): '${isArray(this) ? `$this[$key]` : `$this.get($key)`}'
+  TsArray.pop(): $this.remove($this.size() - 1)
+  TsArray.filter(predicate): ${toStream(this)}.filter($predicate).${toArray(type)}
+  TsArray.every(predicate):
+    includes: [io.onelang.std.core.StdArrayHelper]
+    template: StdArrayHelper.allMatch($this, $predicate)
+  TsArray.some(predicate): ${toStream(this)}.anyMatch($predicate)
+  TsArray.concat(other):
+    includes: [java.util.stream.Stream]
+    template: Stream.of($this, $other).flatMap(Stream::of).${toArray(type)}
   TsArray.join(separator):
     includes: [java.util.stream.Collectors]
     template: ${toStream(this)}.collect(Collectors.joining($separator))
   TsArray.map(selector): ${toStream(this)}.map($selector).${toArray(type)}
   TsArray.push(item): $this.add($item)
+  TsArray.shift(): $this.remove(0)
+  TsArray.find(predicate): ${toStream(this)}.filter($predicate).findFirst().orElse(null)
+  TsArray.sort():
+    includes: [java.util.Collections]
+    template: Collections.sort($this)
   TsString.length: $this.length()
-  TsArray.length: '$this.${isArray(this) ? "length" : "size()"}'
+  TsString.charCodeAt(idx): (int)$this.charAt($idx)
+  TsString.includes(substr): $this.contains($substr)
+  TsString.get(idx): $this.substring($idx, $idx + 1)
+  TsString.substr(start): $this.substring($start)
+  TsString.substr(start, length): $this.substring($start, $start + $length)
+  TsString.substring(start, end): $this.substring($start, $end)
+  TsString.split(pattern): $this.split(${escape(pattern)}, -1)
   RegExpExecArray.length: $this.length
   Map.size: $this.size()

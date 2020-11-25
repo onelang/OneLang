@@ -57,7 +57,7 @@ export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, IVMHooks {
             this.addExprTemplate(exprStr, tmpl);
         }
     }
-    
+
     stringifyValue(value: IVMValue): string {
         if (value instanceof ExpressionValue) {
             const result = this.generator.expr(value.value);

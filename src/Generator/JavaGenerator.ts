@@ -13,7 +13,7 @@ import { ITransformer } from "../One/ITransformer";
 import { ConvertNullCoalesce } from "../One/Transforms/ConvertNullCoalesce";
 import { UseDefaultCallArgsExplicitly } from "../One/Transforms/UseDefaultCallArgsExplicitly";
 import { ExpressionValue, LambdaValue, TemplateFileGeneratorPlugin, TypeValue } from "./TemplateFileGeneratorPlugin";
-import { BooleanValue, StringValue } from "../VM/Values";
+import { BooleanValue, IVMValue, StringValue } from "../VM/Values";
 
 export class JavaGenerator implements IGenerator {
     imports = new Set<string>();
@@ -50,6 +50,14 @@ export class JavaGenerator implements IGenerator {
         return `toArray(${this.type(type)}[]::new)`;
     }
 
+    escape(value: IVMValue): string {
+        if (value instanceof ExpressionValue && value.value instanceof RegexLiteral)
+            return JSON.stringify(value.value.pattern);
+        else if (value instanceof StringValue)
+            return JSON.stringify(value.value);
+        throw new Error(`Not supported VMValue for escape()`);
+    }
+
     addPlugin(plugin: IGeneratorPlugin) {
         this.plugins.push(plugin);
 
@@ -61,6 +69,8 @@ export class JavaGenerator implements IGenerator {
                 new BooleanValue(this.isArray((<ExpressionValue>args[0]).value)));
             plugin.modelGlobals["toArray"] = new LambdaValue(args => 
                 new StringValue(this.toArray((<TypeValue>args[0]).type)));
+            plugin.modelGlobals["escape"] = new LambdaValue(args => 
+                new StringValue(this.escape(args[0])));
         }
     }
     
