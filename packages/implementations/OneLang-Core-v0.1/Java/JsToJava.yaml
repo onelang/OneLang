@@ -30,5 +30,26 @@ expressions:
   TsString.substr(start, length): $this.substring($start, $start + $length)
   TsString.substring(start, end): $this.substring($start, $end)
   TsString.split(pattern): $this.split(${escape(pattern)}, -1)
+  Map.set(key, value): $this.put($key, $value)
+  Map.get(key): $this.get($key)
+  Map.hasKey(key): $this.containsKey($key)
+  Map.has(key): $this.containsKey($key)
+  Map.delete(key): $this.remove($key)
+  Map.values(): $this.values().${toArray(type, 1)}
+  TsMap.set(key, value): $this.put($key, $value)
+  TsMap.get(key): $this.get($key)
+  TsMap.hasKey(key): $this.containsKey($key)
+  TsMap.has(key): $this.containsKey($key)
+  TsMap.delete(key): $this.remove($key)
+  TsMap.values(): $this.values().${toArray(type, 1)}
+  Object.keys(map): $map.keySet().toArray(String[]::new)
+  Object.values(map): $map.values().${toArray(type)}
+  Set.values(): $this.${toArray(type)}
+  Set.has(item): $this.contains($item)
+  Set.add(item): $this.add($item)
+  Array.from(items): $items
+  Promise.resolve(value): $value
+  RegExpExecArray.get(idx): $this[$idx]
   RegExpExecArray.length: $this.length
   Map.size: $this.size()
+  parseInt(str): Integer.parseInt($str)
