@@ -20,7 +20,7 @@ import { ImplementationPackage } from "../StdLib/PackageManager";
 import { ArrayValue, IVMValue, ObjectValue, StringValue } from "../VM/Values";
 import { TemplateParser } from "../Template/TemplateParser";
 import { TemplateFileGeneratorPlugin } from "./TemplateFileGeneratorPlugin";
-import { TemplateContext } from "../Template/Nodes";
+import { VMContext } from "../VM/ExprVM";
 
 export class ProjectTemplateMeta {
     constructor(
@@ -53,7 +53,7 @@ export class ProjectTemplate {
             const dstFn = `${dstDir}/${fn}`;
             if (this.meta.templateFiles.includes(fn)) {
                 const tmpl = new TemplateParser(OneFile.readText(srcFn)).parse();
-                const dstFile = tmpl.format(new TemplateContext(model));
+                const dstFile = tmpl.format(new VMContext(model));
                 OneFile.writeText(dstFn, dstFile);
             } else
                 OneFile.copy(srcFn, dstFn);

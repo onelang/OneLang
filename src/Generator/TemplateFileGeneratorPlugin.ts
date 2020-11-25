@@ -10,7 +10,7 @@ import { IInstanceMemberReference, InstanceFieldReference, InstancePropertyRefer
 import { IClassMember } from "../One/Ast/Types";
 import { TemplateParser } from "../Template/TemplateParser";
 import { IGenerator } from "./IGenerator";
-import { ITemplateFormatHooks, TemplateContext } from "../Template/Nodes";
+import { IVMHooks, VMContext } from "../VM/ExprVM";
 
 export class CodeTemplate {
     constructor(public template: string, public includes: string[]) { }
@@ -34,7 +34,7 @@ export class LambdaValue implements ICallableValue {
     call(args: IVMValue[]): IVMValue { return this.callback(args); }
 }
 
-export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, ITemplateFormatHooks {
+export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, IVMHooks {
     methods: { [name: string]: MethodCallTemplate } = {};
     fields: { [name: string]: FieldAccessTemplate } = {};
     modelGlobals: { [name: string]: IVMValue } = {};
@@ -52,7 +52,8 @@ export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, ITemplateF
             this.addExprTemplate(exprStr, tmpl);
         }
     }
-    formatValue(value: IVMValue): string {
+    
+    stringifyValue(value: IVMValue): string {
         if (value instanceof ExpressionValue) {
             const result = this.generator.expr(value.value);
             return result;
@@ -109,7 +110,7 @@ export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, ITemplateF
             this.generator.addInclude(inc);
 
         const tmpl = new TemplateParser(codeTmpl.template).parse();
-        const result = tmpl.format(new TemplateContext(new ObjectValue(model), this));
+        const result = tmpl.format(new VMContext(new ObjectValue(model), this));
         return result;
     }
 

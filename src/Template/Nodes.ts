@@ -1,25 +1,16 @@
-import { ExpressionValue } from "../Generator/TemplateFileGeneratorPlugin";
-import { Expression, StringLiteral } from "../One/Ast/Expressions";
+import { Expression } from "../One/Ast/Expressions";
 import { TSOverviewGenerator } from "../Utils/TSOverviewGenerator";
-import { ExprVM } from "../VM/ExprVM";
-import { ArrayValue, IVMValue, ObjectValue, StringValue } from "../VM/Values";
+import { ExprVM, VMContext } from "../VM/ExprVM";
+import { ArrayValue, StringValue } from "../VM/Values";
 
 export interface ITemplateNode {
-    format(context: TemplateContext): string;
-}
-
-export interface ITemplateFormatHooks {
-    formatValue(value: IVMValue): string;
-}
-
-export class TemplateContext {
-    constructor(public model: ObjectValue, public hooks: ITemplateFormatHooks = null) { }
+    format(context: VMContext): string;
 }
 
 export class TemplateBlock implements ITemplateNode {
     constructor(public items: ITemplateNode[]) { }
 
-    format(context: TemplateContext): string { 
+    format(context: VMContext): string { 
         return this.items.map(x => x.format(context)).join("");
     }
 }
@@ -27,18 +18,18 @@ export class TemplateBlock implements ITemplateNode {
 export class LiteralNode implements ITemplateNode {
     constructor(public value: string) { }
 
-    format(context: TemplateContext): string { return this.value; }
+    format(context: VMContext): string { return this.value; }
 }
 
 export class ExpressionNode implements ITemplateNode {
     constructor(public expr: Expression) { }
 
-    format(context: TemplateContext): string {
-        const value = new ExprVM(context.model).evaluate(this.expr);
+    format(context: VMContext): string {
+        const value = new ExprVM(context).evaluate(this.expr);
         if (value instanceof StringValue) return value.value;
 
         if (context.hooks !== null) {
-            const result = context.hooks.formatValue(value);
+            const result = context.hooks.stringifyValue(value);
             if (result !== null)
                 return result;
         }
@@ -50,8 +41,8 @@ export class ExpressionNode implements ITemplateNode {
 export class ForNode implements ITemplateNode {
     constructor(public variableName: string, public itemsExpr: Expression, public body: TemplateBlock, public joiner: string) { }
 
-    format(context: TemplateContext): string {
-        const items = new ExprVM(context.model).evaluate(this.itemsExpr);
+    format(context: VMContext): string {
+        const items = new ExprVM(context).evaluate(this.itemsExpr);
         if (!(items instanceof ArrayValue))
             throw new Error(`ForNode items (${TSOverviewGenerator.preview.expr(this.itemsExpr)}) return a non-array result!`);
         

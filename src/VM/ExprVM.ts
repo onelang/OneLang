@@ -1,8 +1,16 @@
-import { Expression, Identifier, PropertyAccessExpression, StringLiteral, UnresolvedCallExpression } from "../One/Ast/Expressions";
-import { ICallableValue, IVMValue, ObjectValue, StringValue } from "./Values";
+import { ConditionalExpression, Expression, Identifier, PropertyAccessExpression, StringLiteral, TemplateString, UnresolvedCallExpression } from "../One/Ast/Expressions";
+import { BooleanValue, ICallableValue, IVMValue, ObjectValue, StringValue } from "./Values";
+
+export interface IVMHooks {
+    stringifyValue(value: IVMValue): string;
+}
+
+export class VMContext {
+    constructor(public model: ObjectValue, public hooks: IVMHooks = null) { }
+}
 
 export class ExprVM {
-    constructor(public model: ObjectValue) { }
+    constructor(public context: VMContext) { }
 
     static propAccess(obj: IVMValue, propName: string): IVMValue { 
         if (!(obj instanceof ObjectValue)) throw new Error("You can only access a property of an object!");
@@ -12,7 +20,7 @@ export class ExprVM {
 
     evaluate(expr: Expression): IVMValue {
         if (expr instanceof Identifier) {
-            return ExprVM.propAccess(this.model, expr.text);
+            return ExprVM.propAccess(this.context.model, expr.text);
         } else if (expr instanceof PropertyAccessExpression) {
             const objValue = this.evaluate(expr.object);
             return ExprVM.propAccess(objValue, expr.propertyName);
@@ -23,6 +31,21 @@ export class ExprVM {
             return result;
         } else if (expr instanceof StringLiteral) {
             return new StringValue(expr.stringValue);
+        } else if (expr instanceof ConditionalExpression) {
+            const condResult = this.evaluate(expr.condition);
+            const result = this.evaluate((<BooleanValue>condResult).value ? expr.whenTrue : expr.whenFalse);
+            return result;
+        } else if (expr instanceof TemplateString) {
+            let result = "";
+            for (const part of expr.parts) {
+                if (part.isLiteral) {
+                    result += part.literalText;
+                } else {
+                    const value = this.evaluate(part.expression);
+                    result += value instanceof StringValue ? value.value : this.context.hooks.stringifyValue(value);
+                }
+            }
+            return new StringValue(result);
         } else 
             throw new Error("Unsupported expression!");
     }
