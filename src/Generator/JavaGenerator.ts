@@ -12,8 +12,8 @@ import { JsToJava } from "./JavaPlugins/JsToJava";
 import { ITransformer } from "../One/ITransformer";
 import { ConvertNullCoalesce } from "../One/Transforms/ConvertNullCoalesce";
 import { UseDefaultCallArgsExplicitly } from "../One/Transforms/UseDefaultCallArgsExplicitly";
-import { ExpressionValue, LambdaValue, TemplateFileGeneratorPlugin } from "./TemplateFileGeneratorPlugin";
-import { StringValue } from "../VM/Values";
+import { ExpressionValue, LambdaValue, TemplateFileGeneratorPlugin, TypeValue } from "./TemplateFileGeneratorPlugin";
+import { BooleanValue, StringValue } from "../VM/Values";
 
 export class JavaGenerator implements IGenerator {
     imports = new Set<string>();
@@ -55,9 +55,12 @@ export class JavaGenerator implements IGenerator {
 
         // TODO: hack?
         if (plugin instanceof TemplateFileGeneratorPlugin) {
-            plugin.modelGlobals["toStream"] = new LambdaValue(args => {
-                return new StringValue(this.arrayStream((<ExpressionValue>args[0]).value));
-            });
+            plugin.modelGlobals["toStream"] = new LambdaValue(args => 
+                new StringValue(this.arrayStream((<ExpressionValue>args[0]).value)));
+            plugin.modelGlobals["isArray"] = new LambdaValue(args => 
+                new BooleanValue(this.isArray((<ExpressionValue>args[0]).value)));
+            plugin.modelGlobals["toArray"] = new LambdaValue(args => 
+                new StringValue(this.toArray((<TypeValue>args[0]).type)));
         }
     }
     

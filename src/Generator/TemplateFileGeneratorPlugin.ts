@@ -1,7 +1,7 @@
 import { OneYaml, ValueType, YamlValue } from "One.Yaml-v0.1";
 import { ExpressionParser } from "../Parsers/Common/ExpressionParser";
 import { Expression, Identifier, IMethodCallExpression, InstanceMethodCallExpression, PropertyAccessExpression, StaticMethodCallExpression, UnresolvedCallExpression } from "../One/Ast/Expressions";
-import { IExpression } from "../One/Ast/Interfaces";
+import { IExpression, IType } from "../One/Ast/Interfaces";
 import { Statement } from "../One/Ast/Statements";
 import { IGeneratorPlugin } from "./IGeneratorPlugin";
 import { Reader } from "../Parsers/Common/Reader";
@@ -27,6 +27,11 @@ export class FieldAccessTemplate {
 
 export class ExpressionValue implements IVMValue {
     constructor(public value: Expression) { }
+}
+
+// make this any type instead?
+export class TypeValue implements IVMValue {
+    constructor(public type: IType) { }
 }
 
 export class LambdaValue implements ICallableValue {
@@ -103,6 +108,7 @@ export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, IVMHooks {
         } else
             return null;
 
+        model["type"] = new TypeValue(expr.getType());
         for (const name of Object.keys(this.modelGlobals))
             model[name] = this.modelGlobals[name];
 
