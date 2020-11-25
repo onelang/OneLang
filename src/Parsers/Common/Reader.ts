@@ -122,6 +122,10 @@ export class Reader {
         return false;
     }
 
+    peekExactly(what: string): boolean {
+        return this.input.startsWith(what, this.offset);
+    }
+
     readChar(): string {
         // TODO: should we move wsOffset?
         this.offset++;

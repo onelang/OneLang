@@ -27,17 +27,17 @@ export class TemplateParser {
     parseBlock(): TemplateBlock {
         const items: ITemplateNode[] = [];
         while (!this.reader.eof) {
-            if (this.reader.peekToken("{{/")) break;
-            if (this.reader.readToken("${")) {
+            if (this.reader.peekExactly("{{/")) break;
+            if (this.reader.readExactly("${")) {
                 const expr = this.parser.parseExpression();
                 items.push(new ExpressionNode(expr));
                 this.reader.expectToken("}");
-            } else if (this.reader.readToken("$")) {
-                const id = this.reader.readIdentifier();
+            } else if (this.reader.readExactly("$")) {
+                const id = this.reader.expectIdentifier();
                 items.push(new ExpressionNode(new Identifier(id)));
-            } else if (this.reader.readToken("{{")) {
+            } else if (this.reader.readExactly("{{")) {
                 if (this.reader.readToken("for")) {
-                    const varName = this.reader.readIdentifier();
+                    const varName = this.reader.expectIdentifier();
                     this.reader.expectToken("of");
                     const itemsExpr = this.parser.parseExpression();
                     const attrs = this.parseAttributes();
