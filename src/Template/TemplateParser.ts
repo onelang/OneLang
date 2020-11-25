@@ -2,14 +2,16 @@ import { Reader } from "../Parsers/Common/Reader";
 import { ExpressionParser } from "../Parsers/Common/ExpressionParser";
 import { ExpressionNode, ForNode, ITemplateNode, LiteralNode, TemplateBlock } from "./Nodes";
 import { Identifier } from "../One/Ast/Expressions";
+import { TypeScriptParser2 } from "../Parsers/TypeScriptParser";
 
 export class TemplateParser {
     reader: Reader;
-    exprParser: ExpressionParser;
+    parser: TypeScriptParser2;
 
     constructor(public template: string) {
-        this.reader = new Reader(template);
-        this.exprParser = new ExpressionParser(this.reader);
+        this.parser = new TypeScriptParser2(template);
+        this.parser.allowDollarIds = true;
+        this.reader = this.parser.reader;
     }
 
     parseAttributes() {
@@ -27,7 +29,7 @@ export class TemplateParser {
         while (!this.reader.eof) {
             if (this.reader.peekToken("{{/")) break;
             if (this.reader.readToken("${")) {
-                const expr = this.exprParser.parse();
+                const expr = this.parser.parseExpression();
                 items.push(new ExpressionNode(expr));
                 this.reader.expectToken("}");
             } else if (this.reader.readToken("$")) {
@@ -37,14 +39,14 @@ export class TemplateParser {
                 if (this.reader.readToken("for")) {
                     const varName = this.reader.readIdentifier();
                     this.reader.expectToken("of");
-                    const itemsExpr = this.exprParser.parse();
+                    const itemsExpr = this.parser.parseExpression();
                     const attrs = this.parseAttributes();
                     this.reader.expectToken("}}");
                     const body = this.parseBlock();
                     this.reader.expectToken("{{/for}}");
                     items.push(new ForNode(varName, itemsExpr, body, attrs["joiner"]||null));
                 } else {
-                    const expr = this.exprParser.parse();
+                    const expr = this.parser.parseExpression();
                     items.push(new ExpressionNode(expr));
                     this.reader.expectToken("}}");
                 }

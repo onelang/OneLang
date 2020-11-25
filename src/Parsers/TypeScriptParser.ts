@@ -30,6 +30,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
     nodeManager: NodeManager;
     exportScope: ExportScopeRef;
     missingReturnTypeIsVoid = false;
+    allowDollarIds = false; // TODO: hack to support templates
 
     constructor(source: string, public path: SourcePath = null) {
         this.reader = new Reader(source);
@@ -162,6 +163,14 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
                     const expr = this.parseExpression();
                     parts.push(TemplateStringPart.Expression(expr));
                     this.reader.expectToken("}");
+                } else if (this.allowDollarIds && this.reader.readExactly("$")) {
+                    if (litPart !== "") {
+                        parts.push(TemplateStringPart.Literal(litPart));
+                        litPart = "";
+                    }
+
+                    const id = this.reader.readIdentifier();
+                    parts.push(TemplateStringPart.Expression(new Identifier(id)));
                 } else if (this.reader.readExactly("\\")) {
                     const chr = this.reader.readChar();
                     if (chr === "n")      litPart += "\n";
