@@ -1,6 +1,6 @@
 import { OneYaml, ValueType, YamlValue } from "One.Yaml-v0.1";
 import { ExpressionParser } from "../Parsers/Common/ExpressionParser";
-import { Expression, Identifier, IMethodCallExpression, InstanceMethodCallExpression, PropertyAccessExpression, StaticMethodCallExpression, UnresolvedCallExpression } from "../One/Ast/Expressions";
+import { Expression, GlobalFunctionCallExpression, ICallExpression, Identifier, IMethodCallExpression, InstanceMethodCallExpression, PropertyAccessExpression, StaticMethodCallExpression, UnresolvedCallExpression } from "../One/Ast/Expressions";
 import { IExpression, IType } from "../One/Ast/Interfaces";
 import { Statement } from "../One/Ast/Statements";
 import { IGeneratorPlugin } from "./IGeneratorPlugin";
@@ -16,7 +16,7 @@ export class CodeTemplate {
     constructor(public template: string, public includes: string[]) { }
 }
 
-export class MethodCallTemplate {
+export class CallTemplate {
     constructor(public className: string, public methodName: string, 
         public args: string[], public template: CodeTemplate) { }
 }
@@ -40,7 +40,7 @@ export class LambdaValue implements ICallableValue {
 }
 
 export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, IVMHooks {
-    methods: { [name: string]: MethodCallTemplate } = {};
+    methods: { [name: string]: CallTemplate } = {};
     fields: { [name: string]: FieldAccessTemplate } = {};
     modelGlobals: { [name: string]: IVMValue } = {};
 
@@ -71,9 +71,13 @@ export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, IVMHooks {
         if (expr instanceof UnresolvedCallExpression
               && expr.func instanceof PropertyAccessExpression
               && expr.func.object instanceof Identifier) {
-            const callTmpl = new MethodCallTemplate(expr.func.object.text, 
+            const callTmpl = new CallTemplate(expr.func.object.text, 
                 expr.func.propertyName, expr.args.map(x => (<Identifier>x).text), tmpl);
             this.methods[`${callTmpl.className}.${callTmpl.methodName}@${callTmpl.args.length}`] = callTmpl;
+        } else if (expr instanceof UnresolvedCallExpression
+              && expr.func instanceof Identifier) {
+            const callTmpl = new CallTemplate(null, expr.func.text, expr.args.map(x => (<Identifier>x).text), tmpl);
+            this.methods[`${callTmpl.methodName}@${callTmpl.args.length}`] = callTmpl;
         } else if (expr instanceof PropertyAccessExpression && expr.object instanceof Identifier) {
             const fieldTmpl = new FieldAccessTemplate(expr.object.text, expr.propertyName, tmpl);
             this.fields[`${fieldTmpl.className}.${fieldTmpl.fieldName}`] = fieldTmpl;
@@ -85,9 +89,10 @@ export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, IVMHooks {
         var codeTmpl: CodeTemplate = null;
         var model: { [name: string]: IVMValue } = {};
 
-        if (expr instanceof StaticMethodCallExpression || expr instanceof InstanceMethodCallExpression) {
-            const call = <IMethodCallExpression>expr;
-            const methodName = `${call.method.parentInterface.name}.${call.method.name}@${call.args.length}`;
+        if (expr instanceof StaticMethodCallExpression || expr instanceof InstanceMethodCallExpression || expr instanceof GlobalFunctionCallExpression) {
+            const call = <ICallExpression>expr;
+            const parentIntf = call.getParentInterface();
+            const methodName = `${parentIntf === null ? "" : `${parentIntf.name}.`}${call.getName()}@${call.args.length}`;
             const callTmpl = this.methods[methodName]||null;
             if (callTmpl === null) return null;
 

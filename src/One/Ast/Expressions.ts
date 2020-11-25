@@ -1,6 +1,6 @@
 import { VoidType, UnresolvedType, ClassType, TypeHelper } from "./AstTypes";
 // @python-ignore
-import { Method, GlobalFunction, IAstNode } from "./Types";
+import { Method, GlobalFunction, IAstNode, IInterface } from "./Types";
 import { IExpression, IType } from "./Interfaces";
 
 export enum TypeRestriction { NoRestriction, ShouldNotHaveType, MustBeGeneric, ShouldNotBeGeneric }
@@ -195,10 +195,16 @@ export class UnresolvedMethodCallExpression extends Expression {
         public args: Expression[]) { super(); }
 }
 
-export interface IMethodCallExpression extends IExpression {
-    method: Method;
+export interface ICallExpression extends IExpression {
     typeArgs: IType[];
     args: Expression[];
+
+    getName(): string;
+    getParentInterface(): IInterface;
+}
+
+export interface IMethodCallExpression extends IExpression, ICallExpression {
+    method: Method;
 }
 
 export class StaticMethodCallExpression extends Expression implements IMethodCallExpression {
@@ -207,6 +213,9 @@ export class StaticMethodCallExpression extends Expression implements IMethodCal
         public typeArgs: IType[],
         public args: Expression[],
         public isThisCall: boolean) { super(); }
+
+    getName(): string { return this.method.name; }
+    getParentInterface(): IInterface { return this.method.parentInterface; }
 }
 
 export class InstanceMethodCallExpression extends Expression implements IMethodCallExpression {
@@ -215,12 +224,18 @@ export class InstanceMethodCallExpression extends Expression implements IMethodC
         public method: Method,
         public typeArgs: IType[],
         public args: Expression[]) { super(); }
+
+    getName(): string { return this.method.name; }
+    getParentInterface(): IInterface { return this.method.parentInterface; }
 }
 
 export class GlobalFunctionCallExpression extends Expression {
     constructor(
         public func: GlobalFunction,
         public args: Expression[]) { super(); }
+
+    getName(): string { return this.func.name; }
+    getParentInterface(): IInterface { return null; }
 }
 
 export class LambdaCallExpression extends Expression {
