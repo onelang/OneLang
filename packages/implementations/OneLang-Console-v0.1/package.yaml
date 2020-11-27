@@ -95,3 +95,6 @@ implements:
         OneConsole:
           methods:
             print: "console.log({{str}})"
+languages:
+  java:
+    generator-plugins: [Java/JsToJava.yaml]

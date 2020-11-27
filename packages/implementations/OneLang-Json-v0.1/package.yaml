@@ -18,6 +18,7 @@ languages:
     native-src-dir: Java/src
     native-dependencies:
       - { name: com.google.code.gson:gson, version: 2.8.6 }
+    generator-plugins: [Java/JsToJava.yaml]
   csharp:
     native-src-dir: CSharp/src
     native-dependencies:

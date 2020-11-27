@@ -1,0 +1,6 @@
+expressions:
+  JSON.stringify(obj):
+    #includes: [com.google.gson.*]
+    #template: new GsonBuilder().disableHtmlEscaping().create().toJson($obj)
+    includes: [io.onelang.std.json.JSON]
+    template: JSON.stringify($obj)

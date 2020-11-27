@@ -1,0 +1,3 @@
+expressions:
+  console.log(obj): System.out.println($obj)
+  console.error(obj): System.err.println($obj)

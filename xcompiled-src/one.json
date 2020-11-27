@@ -2,6 +2,7 @@
     "name": "OneLang",
     "dependencies": [
         { "name": "OneLang-Core", "version": "0.1" },
+        { "name": "OneLang-Console", "version": "0.1" },
         { "name": "OneLang-File", "version": "0.1" },
         { "name": "OneLang-Json", "version": "0.1" },
         { "name": "OneLang-Yaml", "version": "0.1" },

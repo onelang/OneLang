@@ -8,7 +8,6 @@ import { NameUtils } from "./NameUtils";
 import { IGenerator } from "./IGenerator";
 import { IExpression, IType } from "../One/Ast/Interfaces";
 import { IGeneratorPlugin } from "./IGeneratorPlugin";
-import { JsToJava } from "./JavaPlugins/JsToJava";
 import { ITransformer } from "../One/ITransformer";
 import { ConvertNullCoalesce } from "../One/Transforms/ConvertNullCoalesce";
 import { UseDefaultCallArgsExplicitly } from "../One/Transforms/UseDefaultCallArgsExplicitly";
@@ -23,7 +22,6 @@ export class JavaGenerator implements IGenerator {
     plugins: IGeneratorPlugin[] = [];
 
     constructor() {
-        this.plugins.push(new JsToJava(this));
     }
 
     getLangName(): string { return "Java"; }

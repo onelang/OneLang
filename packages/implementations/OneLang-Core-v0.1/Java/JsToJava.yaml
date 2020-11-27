@@ -30,6 +30,13 @@ expressions:
   TsString.substr(start, length): $this.substring($start, $start + $length)
   TsString.substring(start, end): $this.substring($start, $end)
   TsString.split(pattern): $this.split(${escape(pattern)}, -1)
+  TsString.replace(pattern, replacement):
+    if: pattern.type.name == "RegExp"
+    includes: [java.util.regex.Pattern]
+    template: $this.replaceAll(${escape(pattern)}, $replacement)
+  TsString.replace(what, replacement):
+    if: pattern.type.name == "TsString"
+    template: $this.replace($what, $replacement)
   Map.set(key, value): $this.put($key, $value)
   Map.get(key): $this.get($key)
   Map.hasKey(key): $this.containsKey($key)
