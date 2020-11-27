@@ -232,12 +232,12 @@ export class InstanceMethodCallExpression extends Expression implements IMethodC
     getParentInterface(): IInterface { return this.method.parentInterface; }
 }
 
-export class GlobalFunctionCallExpression extends Expression {
+export class GlobalFunctionCallExpression extends Expression implements ICallExpression {
     constructor(
         public func: GlobalFunction,
         public args: Expression[]) { super(); }
 
-    getName(): string { return this.func.name; }
+    getMethodName(): string { return this.func.name; }
     getParentInterface(): IInterface { return null; }
 }
 
