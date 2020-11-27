@@ -27,15 +27,24 @@ export class FieldAccessTemplate {
 
 export class ExpressionValue implements IVMValue {
     constructor(public value: Expression) { }
+    
+    equals(other: IVMValue): boolean {
+        return other instanceof ExpressionValue && other.value === this.value;
+    }
 }
 
 // make this any type instead?
 export class TypeValue implements IVMValue {
     constructor(public type: IType) { }
+
+    equals(other: IVMValue): boolean {
+        return other instanceof TypeValue && TypeHelper.equals(other.type, this.type);
+    }
 }
 
 export class LambdaValue implements ICallableValue {
     constructor(public callback: (args: IVMValue[]) => IVMValue) { }
+    equals(other: IVMValue): boolean { return false; }
     call(args: IVMValue[]): IVMValue { return this.callback(args); }
 }
 

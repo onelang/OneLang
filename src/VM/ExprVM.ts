@@ -48,6 +48,15 @@ export class ExprVM {
                 }
             }
             return new StringValue(result);
+        } else if (expr instanceof BinaryExpression) {
+            const left = this.evaluate(expr.left);
+            const right = this.evaluate(expr.right);
+            if (expr.operator === "==" || expr.operator === "===")
+                return new BooleanValue(left.equals(right));
+            else if (expr.operator === "!=" || expr.operator === "!==")
+                return new BooleanValue(!left.equals(right));
+            else
+                throw new Error(`Unsupported binary operator: ${expr.operator}`);
         } else 
             throw new Error("Unsupported expression!");
     }
