@@ -1,6 +1,6 @@
 import { OneYaml, ValueType, YamlValue } from "One.Yaml-v0.1";
 import { ExpressionParser } from "../Parsers/Common/ExpressionParser";
-import { Expression, GlobalFunctionCallExpression, ICallExpression, Identifier, IMethodCallExpression, InstanceMethodCallExpression, PropertyAccessExpression, StaticMethodCallExpression, UnresolvedCallExpression } from "../One/Ast/Expressions";
+import { Expression, GlobalFunctionCallExpression, ICallExpression, Identifier, IMethodCallExpression, InstanceMethodCallExpression, NewExpression, PropertyAccessExpression, StaticMethodCallExpression, UnresolvedCallExpression, UnresolvedNewExpression } from "../One/Ast/Expressions";
 import { IExpression, IType } from "../One/Ast/Interfaces";
 import { Statement } from "../One/Ast/Statements";
 import { IGeneratorPlugin } from "./IGeneratorPlugin";
@@ -12,7 +12,7 @@ import { TemplateParser } from "../Template/TemplateParser";
 import { IGenerator } from "./IGenerator";
 import { ExprVM, IVMHooks, VMContext } from "../VM/ExprVM";
 import { TypeScriptParser2 } from "../Parsers/TypeScriptParser";
-import { ClassType, TypeHelper } from "../One/Ast/AstTypes";
+import { ClassType, TypeHelper, UnresolvedType } from "../One/Ast/AstTypes";
 
 export class CodeTemplate {
     constructor(public template: string, public includes: string[], public ifExpr: Expression) { }
@@ -93,7 +93,7 @@ export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, IVMHooks {
     }
 
     addExprTemplate(exprStr: string, tmpl: CodeTemplate): void {
-        const expr = new ExpressionParser(new Reader(exprStr)).parse();
+        const expr = new TypeScriptParser2(exprStr, null).parseExpression();
         if (expr instanceof UnresolvedCallExpression
               && expr.func instanceof PropertyAccessExpression
               && expr.func.object instanceof Identifier) {
@@ -107,12 +107,16 @@ export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, IVMHooks {
         } else if (expr instanceof PropertyAccessExpression && expr.object instanceof Identifier) {
             const fieldTmpl = new FieldAccessTemplate(expr.object.text, expr.propertyName, tmpl);
             this.fields[`${fieldTmpl.className}.${fieldTmpl.fieldName}`] = fieldTmpl;
+        } else if (expr instanceof UnresolvedNewExpression && expr.cls instanceof UnresolvedType) {
+            const callTmpl = new CallTemplate(expr.cls.typeName, "constructor", expr.args.map(x => (<Identifier>x).text), tmpl);
+            this.addMethod(`${callTmpl.className}.${callTmpl.methodName}@${callTmpl.args.length}`, callTmpl);
         } else
             throw new Error(`This expression template format is not supported: '${exprStr}'`);
     }
 
     expr(expr: IExpression): string {
-        const isCallExpr = expr instanceof StaticMethodCallExpression || expr instanceof InstanceMethodCallExpression || expr instanceof GlobalFunctionCallExpression;
+        const isCallExpr = expr instanceof StaticMethodCallExpression || expr instanceof InstanceMethodCallExpression || 
+            expr instanceof GlobalFunctionCallExpression || expr instanceof NewExpression;
         const isFieldRef = expr instanceof StaticFieldReference || expr instanceof StaticPropertyReference ||
             expr instanceof InstanceFieldReference || expr instanceof InstancePropertyReference;
 
@@ -129,7 +133,7 @@ export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, IVMHooks {
         if (isCallExpr) {
             const call = <ICallExpression>expr;
             const parentIntf = call.getParentInterface();
-            const methodName = `${parentIntf === null ? "" : `${parentIntf.name}.`}${call.getName()}@${call.args.length}`;
+            const methodName = `${parentIntf === null ? "" : `${parentIntf.name}.`}${call.getMethodName()}@${call.args.length}`;
             const callTmpls = this.methods[methodName]||null;
             if (callTmpls === null) return null;
 

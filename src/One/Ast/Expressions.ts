@@ -119,10 +119,13 @@ export class UnresolvedNewExpression extends Expression {
         public args: Expression[]) { super(); }
 }
 
-export class NewExpression extends Expression {
+export class NewExpression extends Expression implements ICallExpression {
     constructor(
         public cls: ClassType,
         public args: Expression[]) { super(); }
+
+    getMethodName(): string { return "constructor"; }
+    getParentInterface(): IInterface { return this.cls.decl; }
 }
 
 export class BinaryExpression extends Expression {
@@ -196,14 +199,14 @@ export class UnresolvedMethodCallExpression extends Expression {
 }
 
 export interface ICallExpression extends IExpression {
-    typeArgs: IType[];
     args: Expression[];
 
-    getName(): string;
+    getMethodName(): string;
     getParentInterface(): IInterface;
 }
 
 export interface IMethodCallExpression extends IExpression, ICallExpression {
+    typeArgs: IType[];
     method: Method;
 }
 
@@ -214,7 +217,7 @@ export class StaticMethodCallExpression extends Expression implements IMethodCal
         public args: Expression[],
         public isThisCall: boolean) { super(); }
 
-    getName(): string { return this.method.name; }
+    getMethodName(): string { return this.method.name; }
     getParentInterface(): IInterface { return this.method.parentInterface; }
 }
 
@@ -225,7 +228,7 @@ export class InstanceMethodCallExpression extends Expression implements IMethodC
         public typeArgs: IType[],
         public args: Expression[]) { super(); }
 
-    getName(): string { return this.method.name; }
+    getMethodName(): string { return this.method.name; }
     getParentInterface(): IInterface { return this.method.parentInterface; }
 }
 

@@ -60,3 +60,6 @@ expressions:
   RegExpExecArray.length: $this.length
   Map.size: $this.size()
   parseInt(str): Integer.parseInt($str)
+  new RegExp(pattern, modifiers):
+    includes: [io.onelang.std.core.RegExp]
+    template: new RegExp($pattern, $modifiers)
