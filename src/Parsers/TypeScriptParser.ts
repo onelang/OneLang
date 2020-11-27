@@ -132,7 +132,7 @@ export class TypeScriptParser2 implements IParser, IExpressionParserHooks, IRead
         return type;
     }
 
-    parseExpression() {
+    parseExpression(): Expression {
         return this.expressionParser.parse();
     }
 

@@ -36,14 +36,16 @@ export class ArrayAndMapLiteralTypeInfer extends InferTypesPlugin {
     canDetectType(expr: Expression) { return expr instanceof ArrayLiteral || expr instanceof MapLiteral; }
 
     detectType(expr: Expression) {
-        // make this work: `<{ [name: string]: SomeObject }> {}`
-        if (expr.parentNode instanceof CastExpression)
-            expr.setExpectedType(expr.parentNode.newType);
-        // make this work: `let someMap: { [name: string]: SomeObject } = {};`
-        else if (expr.parentNode instanceof BinaryExpression && expr.parentNode.operator === "=" && expr.parentNode.right === expr)
-            expr.setExpectedType(expr.parentNode.left.actualType);
-        else if (expr.parentNode instanceof ConditionalExpression && (expr.parentNode.whenTrue === expr || expr.parentNode.whenFalse === expr))
-            expr.setExpectedType(expr.parentNode.whenTrue === expr ? expr.parentNode.whenFalse.actualType : expr.parentNode.whenTrue.actualType);
+        if (expr.expectedType === null) {
+            // make this work: `<{ [name: string]: SomeObject }> {}`
+            if (expr.parentNode instanceof CastExpression)
+                expr.setExpectedType(expr.parentNode.newType);
+            // make this work: `let someMap: { [name: string]: SomeObject } = {};`
+            else if (expr.parentNode instanceof BinaryExpression && expr.parentNode.operator === "=" && expr.parentNode.right === expr)
+                expr.setExpectedType(expr.parentNode.left.actualType);
+            else if (expr.parentNode instanceof ConditionalExpression && (expr.parentNode.whenTrue === expr || expr.parentNode.whenFalse === expr))
+                expr.setExpectedType(expr.parentNode.whenTrue === expr ? expr.parentNode.whenFalse.actualType : expr.parentNode.whenTrue.actualType);
+        }
 
         if (expr instanceof ArrayLiteral) {
             const itemType = this.inferArrayOrMapItemType(expr.items, expr.expectedType, false);
