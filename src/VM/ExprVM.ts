@@ -1,7 +1,8 @@
-import { ConditionalExpression, Expression, Identifier, NumericLiteral, PropertyAccessExpression, StringLiteral, TemplateString, UnresolvedCallExpression } from "../One/Ast/Expressions";
+import { BinaryExpression, ConditionalExpression, Expression, Identifier, InstanceOfExpression, NumericLiteral, PropertyAccessExpression, StringLiteral, TemplateString, UnresolvedCallExpression } from "../One/Ast/Expressions";
 import { BooleanValue, ICallableValue, IVMValue, NumericValue, ObjectValue, StringValue } from "./Values";
 
 export interface IVMHooks {
+    propAccess(obj: IVMValue, propName: string): IVMValue;
     stringifyValue(value: IVMValue): string;
 }
 
@@ -12,7 +13,12 @@ export class VMContext {
 export class ExprVM {
     constructor(public context: VMContext) { }
 
-    static propAccess(obj: IVMValue, propName: string): IVMValue { 
+    propAccess(obj: IVMValue, propName: string): IVMValue {
+        if (this.context.hooks !== null) {
+            const value = this.context.hooks.propAccess(obj, propName);
+            if (value !== null) return value;
+        }
+
         if (!(obj instanceof ObjectValue)) throw new Error("You can only access a property of an object!");
         if (!(propName in (<ObjectValue>obj).props)) throw new Error(`Property '${propName}' does not exists on this object!`);
         return (<ObjectValue>obj).props[propName];
@@ -20,10 +26,10 @@ export class ExprVM {
 
     evaluate(expr: Expression): IVMValue {
         if (expr instanceof Identifier) {
-            return ExprVM.propAccess(this.context.model, expr.text);
+            return this.propAccess(this.context.model, expr.text);
         } else if (expr instanceof PropertyAccessExpression) {
             const objValue = this.evaluate(expr.object);
-            return ExprVM.propAccess(objValue, expr.propertyName);
+            return this.propAccess(objValue, expr.propertyName);
         } else if (expr instanceof UnresolvedCallExpression) {
             const func = <ICallableValue> this.evaluate(expr.func);
             const args = expr.args.map(x => this.evaluate(x));

@@ -67,6 +67,14 @@ export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, IVMHooks {
         }
     }
 
+    propAccess(obj: IVMValue, propName: string): IVMValue {
+        if (obj instanceof ExpressionValue && propName === "type")
+            return new TypeValue(obj.value.getType());
+        if (obj instanceof TypeValue && propName === "name" && obj.type instanceof ClassType)
+            return new StringValue(obj.type.decl.name);
+        return null;
+    }
+
     stringifyValue(value: IVMValue): string {
         if (value instanceof ExpressionValue) {
             const result = this.generator.expr(value.value);
