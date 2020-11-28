@@ -25,3 +25,5 @@ languages:
       - { name: Newtonsoft.Json, version: 12.0.3 }
   php:
     generator-plugins: [PHP/JsToPhp.yaml]
+  python:
+    generator-plugins: [Python/JsToPython.yaml]

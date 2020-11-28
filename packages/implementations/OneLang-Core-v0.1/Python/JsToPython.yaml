@@ -1,0 +1,56 @@
+expressions:
+  TsArray.length: len($this)
+  TsArray.includes(key): $key in $this
+  TsArray.set(key, value): $this[$key] = $value
+  TsArray.get(key): $this[$key]
+  TsArray.join(separator): $separator.join($this)
+  TsArray.map(selector): list(map($selector, $this))
+  TsArray.push(item): $this.append($item)
+  TsArray.pop(): $this.pop()
+  TsArray.filter(predicate): list(filter($predicate, $this))
+  TsArray.every(predicate): ArrayHelper.every($predicate, $this)
+  TsArray.some(predicate): ArrayHelper.some($predicate, $this)
+  TsArray.concat(otherArray): $this + $otherArray
+  TsArray.shift(): $this.pop(0)
+  TsArray.find(predicate): next(filter($predicate, $this), None)
+  TsString.length: len($this)
+  TsString.split(pattern):
+    if: pattern.type.name == "RegExp"
+    includes: [re]
+    template: re.split(${escape(pattern)}, $this)
+  TsString.split(separator):
+    if: separator.type.name == "TsString"
+    template: $separator.split($this)
+  TsString.replace(pattern, replacement):
+    if: pattern.type.name == "RegExp"
+    includes: [re]
+    template: re.sub(${escape(pattern)}, $replacement, $this)
+  TsString.replace(what, replacement):
+    if: what.type.name == "TsString"
+    template: $this.replace($what, $replacement)
+  TsString.includes(what): $what in $this
+  TsString.startsWith(what): $this.startswith($what)
+  TsString.startsWith(what, start): $this.startswith($what, $start)
+  TsString.indexOf(substr, start): $this.find($substr, $start)
+  TsString.lastIndexOf(substr, start): $this.rfind($substr, 0, $start)
+  TsString.substr(start): $this[$start:]
+  TsString.substr(start, length): $this[$start:$start + $length]
+  TsString.substring(start, end): $this[$start:$end]
+  TsString.repeat(count): $this * $count
+  TsString.toUpperCase(): $this.upper()
+  TsString.toLowerCase(): $this.lower()
+  TsString.endsWith(what): $this.endswith($what)
+  TsString.get(index): $this[$index]
+  TsString.charCodeAt(index): ord($this[$index])
+  TsMap.set(key, value): $this[$key] = $value
+  TsMap.get(key): $this[$key]
+  TsMap.hasKey(key): $key in $this
+  Object.keys(map): $map.keys()
+  Object.values(map): $map.values()
+  Set.values(): $this.keys()
+  Set.has(key): $key in $this
+  Set.add(item): $this[$item] = None
+  ArrayHelper.sortBy(items, selector): sorted($items, key=$selector)
+  ArrayHelper.removeLastN(items, count): del $items[-$count:]
+  RegExpExecArray.length: len($this)
+  RegExpExecArray.get(index): $this[$index]

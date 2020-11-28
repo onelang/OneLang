@@ -6,7 +6,6 @@ import { ThisReference, EnumReference, ClassReference, MethodParameterReference,
 import { GeneratedFile } from "./GeneratedFile";
 import { TSOverviewGenerator } from "../Utils/TSOverviewGenerator";
 import { IGeneratorPlugin } from "./IGeneratorPlugin";
-import { JsToPython } from "./PythonPlugins/JsToPython";
 import { NameUtils } from "./NameUtils";
 import { IExpression, IType } from "../One/Ast/Interfaces";
 import { IGenerator } from "./IGenerator";
@@ -24,7 +23,6 @@ export class PythonGenerator implements IGenerator {
     plugins: IGeneratorPlugin[] = [];
 
     constructor() {
-        this.plugins.push(new JsToPython(this));
     }
 
     getLangName(): string { return "Python"; }

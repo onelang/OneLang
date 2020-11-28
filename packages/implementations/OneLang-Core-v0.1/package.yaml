@@ -23,6 +23,7 @@ languages:
   python:
     package-dir: onelang_core
     native-src-dir: Python/src
+    generator-plugins: [Python/JsToPython.yaml]
   java:
     package-dir: core
     native-src-dir: Java/src
