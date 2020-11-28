@@ -3,6 +3,7 @@ export class ArrayHelper {
         // @java-import java.util.Arrays
         // @java Arrays.sort(items, (a, b) -> keySelector.apply(a) - keySelector.apply(b));
         // @java return items;
+        // @php return sort(items);
         return items.sort((a: T, b: T) => keySelector(a) - keySelector(b));
     }
 

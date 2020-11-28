@@ -17,6 +17,7 @@ includes:
 languages:
   php:
     native-src-dir: PHP/src
+    generator-plugins: [PHP/JsToPhp.yaml]
   csharp:
     native-src-dir: CSharp/src
   python:

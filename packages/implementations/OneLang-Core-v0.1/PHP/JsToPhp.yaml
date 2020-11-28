@@ -1,0 +1,54 @@
+expressions:
+  TsArray.length: count($this)
+  TsArray.includes(item): in_array($item, $this)
+  TsArray.set(key, value): $this[$key] = $value
+  TsArray.get(key): $this[$key]
+  TsArray.join(separator): implode($separator, $this)
+  TsArray.map(selector): array_map($selector, $this)
+  TsArray.push(item): $this[] = $item
+  TsArray.pop(): array_pop($this)
+  TsArray.filter(predicate): array_values(array_filter($this, $predicate))
+  TsArray.every(predicate): \OneLang\Core\ArrayHelper::every($this, $predicate)
+  TsArray.some(predicate): \OneLang\Core\ArrayHelper::some($this, $predicate)
+  TsArray.concat(otherArray): array_merge($this, $otherArray)
+  TsArray.shift(): array_shift($this)
+  TsArray.find(predicate): \OneLang\Core\ArrayHelper::find($this, $predicate)
+  TsArray.sort(): sort($this)
+  TsString.length: strlen($this)
+  TsString.split(pattern):
+    if: pattern.type.name == "RegExp"
+    template: preg_split(${escape(pattern)}, $this)
+  TsString.split(separator):
+    if: separator.type.name == "TsString"
+    template: explode($separator, $this)
+  TsString.replace(pattern, replacement):
+    if: pattern.type.name == "RegExp"
+    template: preg_replace(${escape(pattern)}, $replacement, $this)
+  TsString.replace(what, replacement):
+    if: what.type.name == "TsString"
+    template: str_replace($what, $replacement, $this)
+  TsString.includes(what): strpos($this, $what) !== false
+  TsString.startsWith(what): substr_compare($this, $what, 0, strlen($what)) === 0
+  TsString.startsWith(what, position): substr_compare($this, $what, $position, strlen($what)) === 0
+  TsString.endsWith(what): substr_compare($this, $what, strlen($this) - strlen($what), strlen($what)) === 0
+  TsString.endsWith(what, position): substr_compare($this, $what, $position - strlen($what), strlen($what)) === 0
+  TsString.indexOf(what, start): strpos($this, $what, $start)
+  TsString.lastIndexOf(what, start): strrpos($this, $what, $start - strlen($this))
+  TsString.substr(start): substr($this, $start)
+  TsString.substr(start, length): substr($this, $start, $length)
+  TsString.substring(start, end): substr($this, $start, $end - ($start))
+  TsString.repeat(count): str_repeat($this, $count)
+  TsString.toUpperCase(): strtoupper($this)
+  TsString.toLowerCase(): strtolower($this)
+  TsString.get(index): $this[$index]
+  TsString.charCodeAt(index): ord($this[$index])
+  TsMap.set(key, value): $this[$key] = $value
+  TsMap.get(key): "@$this[$key] ?? null"
+  TsMap.hasKey(key): array_key_exists($key, $this)
+  Object.keys(obj): array_keys($obj)
+  Object.values(obj): array_values($obj)
+  ArrayHelper.sortBy(array, selector): \OneLang\Core\ArrayHelper::sortBy($array, $selector)
+  ArrayHelper.removeLastN(array, count): array_splice($array, -$count)
+  Math.floor(num): floor($num)
+  RegExpExecArray.length: count($this)
+  RegExpExecArray.get(index): $this[$index]

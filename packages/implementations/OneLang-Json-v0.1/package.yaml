@@ -23,4 +23,5 @@ languages:
     native-src-dir: CSharp/src
     native-dependencies:
       - { name: Newtonsoft.Json, version: 12.0.3 }
-
+  php:
+    generator-plugins: [PHP/JsToPhp.yaml]

@@ -8,8 +8,9 @@ import { NameUtils } from "./NameUtils";
 import { IGenerator } from "./IGenerator";
 import { IExpression, IType } from "../One/Ast/Interfaces";
 import { IGeneratorPlugin } from "./IGeneratorPlugin";
-import { JsToPhp } from "./PhpPlugins/JsToPhp";
 import { ITransformer } from "../One/ITransformer";
+import { ExpressionValue, LambdaValue, TemplateFileGeneratorPlugin } from "./TemplateFileGeneratorPlugin";
+import { IVMValue, StringValue } from "../VM/Values";
 
 export class PhpGenerator implements IGenerator {
     usings: Set<string>;
@@ -18,15 +19,28 @@ export class PhpGenerator implements IGenerator {
     fieldToMethodHack = ["length"];
     plugins: IGeneratorPlugin[] = [];
 
-    constructor() {
-        this.plugins.push(new JsToPhp(this));
-    }
-    
     getLangName(): string { return "PHP"; }
     getExtension(): string { return "php"; }
     getTransforms(): ITransformer[] { return []; }
-    addPlugin(plugin: IGeneratorPlugin) { this.plugins.push(plugin); }
     addInclude(include: string): void { this.usings.add(include); }
+
+    addPlugin(plugin: IGeneratorPlugin) {
+        this.plugins.push(plugin);
+
+        // TODO: hack?
+        if (plugin instanceof TemplateFileGeneratorPlugin) {
+            plugin.modelGlobals["escape"] = new LambdaValue(args => 
+                new StringValue(this.escape(args[0])));
+        }
+    }
+
+    escape(value: IVMValue): string {
+        if (value instanceof ExpressionValue && value.value instanceof RegexLiteral)
+            return JSON.stringify("/" + value.value.pattern.replace(/\//g, "\\/") + "/");
+        else if (value instanceof StringValue)
+            return JSON.stringify(value.value);
+        throw new Error(`Not supported VMValue for escape()`);
+    }
 
     name_(name: string) {
         if (this.reservedWords.includes(name)) name += "_";

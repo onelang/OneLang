@@ -1,0 +1,2 @@
+expressions:
+  JSON.stringify(obj): json_encode($obj, JSON_UNESCAPED_SLASHES)
