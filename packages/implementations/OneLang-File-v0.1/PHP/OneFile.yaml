@@ -1,0 +1,2 @@
+expressions:
+  #OneFile.copy(src, dst): copy($src, $dst)
