@@ -244,13 +244,13 @@ export class PhpGenerator implements IGenerator {
             if (expr.method.parentInterface.parentFile.exportScope === null)
                 res = `\\OneLang\\Core\\${res}`;
         } else if (expr instanceof GlobalFunctionCallExpression) {
-            res = `Global.${this.name_(expr.func.name)}${this.exprCall([], expr.args)}`;
+            res = `${this.name_(expr.func.name)}${this.exprCall([], expr.args)}`;
         } else if (expr instanceof LambdaCallExpression) {
-            res = `${this.expr(expr.method)}(${expr.args.map(x => this.expr(x)).join(", ")})`;
+            res = `call_user_func(${this.expr(expr.method)}, ${expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof BooleanLiteral) {
             res = `${expr.boolValue ? "true" : "false"}`;
         } else if (expr instanceof StringLiteral) {
-            res = `${JSON.stringify(expr.stringValue).replace(/\$/, "\\$")}`;
+            res = `${JSON.stringify(expr.stringValue.replace(/\$/, "\\$"))}`;
         } else if (expr instanceof NumericLiteral) { 
             res = `${expr.valueAsText}`;
         } else if (expr instanceof CharacterLiteral) { 
@@ -267,6 +267,7 @@ export class PhpGenerator implements IGenerator {
                         if (chr === '\n')      lit += "\\n";
                         else if (chr === '\r') lit += "\\r";
                         else if (chr === '\t') lit += "\\t";
+                        else if (chr === '$') lit += "\\$";
                         else if (chr === '\\') lit += "\\\\";
                         else if (chr === '"')  lit += '\\"';
                         else {
@@ -281,7 +282,10 @@ export class PhpGenerator implements IGenerator {
                 }
                 else {
                     const repr = this.expr(part.expression);
-                    parts.push(part.expression instanceof ConditionalExpression ? `(${repr})` : repr);
+                    const isComplex = part.expression instanceof ConditionalExpression ||
+                        part.expression instanceof BinaryExpression ||
+                        part.expression instanceof NullCoalesceExpression;
+                    parts.push(isComplex ? `(${repr})` : repr);
                 }
             }
             res = parts.join(' . ');
@@ -583,7 +587,8 @@ export class PhpGenerator implements IGenerator {
         const usingsSet = new Set<string>();
         for (const imp of sourceFile.imports) {
             if ("php-use" in imp.attributes)
-                usingsSet.add(imp.attributes["php-use"]);
+                for (const item of imp.attributes["php-use"].split(/\n/g))
+                    usingsSet.add(item);
             else {
                 const fileNs = this.pathToNs(imp.exportScope.scopeName);
                 if (fileNs === "index") continue;
@@ -592,11 +597,11 @@ export class PhpGenerator implements IGenerator {
             }
         }
 
-        for (const using of this.usings)
+        for (const using of this.usings.values())
             usingsSet.add(using);
 
         const usings: string[] = [];
-        for (const using of usingsSet)
+        for (const using of usingsSet.values())
             usings.push(`use ${using};`);
 
         let result = [usings.join("\n"), enums.join("\n"), intfs.join("\n\n"), classes.join("\n\n"), main].filter(x => x !== "").join("\n\n");

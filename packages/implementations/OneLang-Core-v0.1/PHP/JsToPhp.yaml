@@ -28,10 +28,10 @@ expressions:
     if: what.type.name == "TsString"
     template: str_replace($what, $replacement, $this)
   TsString.includes(what): strpos($this, $what) !== false
-  TsString.startsWith(what): substr_compare($this, $what, 0, strlen($what)) === 0
-  TsString.startsWith(what, position): substr_compare($this, $what, $position, strlen($what)) === 0
-  TsString.endsWith(what): substr_compare($this, $what, strlen($this) - strlen($what), strlen($what)) === 0
-  TsString.endsWith(what, position): substr_compare($this, $what, $position - strlen($what), strlen($what)) === 0
+  TsString.startsWith(what): (substr_compare($this, $what, 0, strlen($what)) === 0)
+  TsString.startsWith(what, position): (substr_compare($this, $what, $position, strlen($what)) === 0)
+  TsString.endsWith(what): (substr_compare($this, $what, strlen($this) - strlen($what), strlen($what)) === 0)
+  TsString.endsWith(what, position): (substr_compare($this, $what, $position - strlen($what), strlen($what)) === 0)
   TsString.indexOf(what, start): strpos($this, $what, $start)
   TsString.lastIndexOf(what, start): strrpos($this, $what, $start - strlen($this))
   TsString.substr(start): substr($this, $start)
@@ -43,7 +43,7 @@ expressions:
   TsString.get(index): $this[$index]
   TsString.charCodeAt(index): ord($this[$index])
   TsMap.set(key, value): $this[$key] = $value
-  TsMap.get(key): "@$this[$key] ?? null"
+  TsMap.get(key): "(@$this[$key] ?? null)"
   TsMap.hasKey(key): array_key_exists($key, $this)
   Object.keys(obj): array_keys($obj)
   Object.values(obj): array_values($obj)
@@ -52,4 +52,5 @@ expressions:
   Math.floor(num): floor($num)
   RegExpExecArray.length: count($this)
   RegExpExecArray.get(index): $this[$index]
+  parseInt(str): intval($str)
   One.langName(): '"PHP"'
