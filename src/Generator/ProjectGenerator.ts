@@ -99,7 +99,7 @@ export class ProjectGenerator {
         this.outDir = `${this.projDir}/${this.projectFile.outputDir}`;
     }
 
-    async generate() {
+    async generate(): Promise<void> {
         // copy native source codes from one project
         const nativeSrcDir = `${this.projDir}/${this.projectFile.nativeSourceDir}`;
         for (const fn of OneFile.listFiles(nativeSrcDir, true))

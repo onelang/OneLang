@@ -55,6 +55,9 @@ class ReturnTypeInferer {
         if (checkType !== null && asyncType !== null && checkType instanceof ClassType && checkType.decl === asyncType.decl)
             checkType = checkType.typeArguments[0];
 
+        if (inferredType !== null && asyncType !== null && inferredType instanceof ClassType && inferredType.decl === asyncType.decl)
+            inferredType = inferredType.typeArguments[0];
+
         if (checkType !== null && !TypeHelper.isAssignableTo(inferredType, checkType))
             this.errorMan.throw(`${errorContext} returns different type (${inferredType.repr()}) than expected ${checkType.repr()}`);
 
