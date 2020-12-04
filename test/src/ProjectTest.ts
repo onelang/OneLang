@@ -13,22 +13,16 @@ import { Reflection } from 'One.Reflect-v0.1';
 
 class StateHandler implements ICompilerHooks {
     stage = 0;
-    pkgStates: PackageStateCapture[] = [];
-
-    get lastState() { return this.pkgStates[this.pkgStates.length - 1]; }
 
     constructor(public compiler: Compiler) { }
 
-    saveState() {
-        const state = new PackageStateCapture(this.compiler.projectPkg);
-        this.pkgStates.push(state);
-        return state;
-    }
+    getState() { return new PackageStateCapture(this.compiler.projectPkg); }
 
     afterStage(stageName: string): void {
-        const state = this.saveState();
+        const state = this.getState();
         const stageFn = `test/artifacts/ProjectTest/${this.compiler.projectPkg.name}/stages/${this.stage++}_${stageName}.txt`;
         const stageSummary = state.getSummary();
+
         console.log(`writing file... ${stageFn}`);
         writeFile(stageFn, stageSummary);
     }
@@ -50,9 +44,8 @@ async function compileProject(projDir: string) {
     compiler.hooks = stateHandler;
     compiler.processWorkspace();
 
-    stateHandler.saveState();
     console.log('writing lastState...');
-    writeFile(`test/artifacts/ProjectTest/${projGen.projectFile.name}/lastState.txt`, stateHandler.lastState.getSummary());
+    writeFile(`test/artifacts/ProjectTest/${projGen.projectFile.name}/lastState.txt`, stateHandler.getState().getSummary());
 
     await projGen.generate();
 }
