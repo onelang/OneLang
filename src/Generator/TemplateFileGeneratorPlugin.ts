@@ -123,12 +123,12 @@ export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, IVMHooks {
         if (!isCallExpr && !isFieldRef) return null; // quick return
 
         let codeTmpl: CodeTemplate = null;
-        const model: { [name: string]: IVMValue } = {};
-        const context = new VMContext(new ObjectValue(model), this);
+        const model = new ObjectValue({});
+        const context = new VMContext(model, this);
 
-        model["type"] = new TypeValue(expr.getType());
+        model.props["type"] = new TypeValue(expr.getType());
         for (const name of Object.keys(this.modelGlobals))
-            model[name] = this.modelGlobals[name];
+        model.props[name] = this.modelGlobals[name];
 
         if (isCallExpr) {
             const call = <ICallExpression>expr;
@@ -139,9 +139,9 @@ export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, IVMHooks {
 
             for (const callTmpl of callTmpls) {
                 if (expr instanceof InstanceMethodCallExpression)
-                    model["this"] = new ExpressionValue(expr.object);
+                    model.props["this"] = new ExpressionValue(expr.object);
                 for (let i = 0; i < callTmpl.args.length; i++)
-                    model[callTmpl.args[i]] = new ExpressionValue(call.args[i]);
+                    model.props[callTmpl.args[i]] = new ExpressionValue(call.args[i]);
 
                 if (callTmpl.template.ifExpr === null ||
                     (<BooleanValue>new ExprVM(context).evaluate(callTmpl.template.ifExpr)).value) {
@@ -155,7 +155,7 @@ export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, IVMHooks {
             if (field === null) return null;
 
             if (expr instanceof InstanceFieldReference || expr instanceof InstancePropertyReference)
-                model["this"] = new ExpressionValue((<IInstanceMemberReference>expr).object);
+                model.props["this"] = new ExpressionValue((<IInstanceMemberReference>expr).object);
             codeTmpl = field.template;
         } else
             return null;
