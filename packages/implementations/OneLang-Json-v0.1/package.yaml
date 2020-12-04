@@ -24,6 +24,7 @@ languages:
     native-dependencies:
       - { name: Newtonsoft.Json, version: 12.0.3 }
   php:
+    native-src-dir: PHP/src
     generator-plugins: [PHP/JsToPhp.yaml]
   python:
     generator-plugins: [Python/JsToPython.yaml]
