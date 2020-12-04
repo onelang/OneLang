@@ -10,6 +10,9 @@ import { NameUtils } from "./NameUtils";
 import { IExpression, IType } from "../One/Ast/Interfaces";
 import { IGenerator } from "./IGenerator";
 import { ITransformer } from "../One/ITransformer";
+import { IVMValue } from "../VM/Values";
+import { ExpressionValue, LambdaValue, TemplateFileGeneratorPlugin } from "./TemplateFileGeneratorPlugin";
+import { StringValue } from "../VM/Values";
 
 export class PythonGenerator implements IGenerator {
     tmplStrLevel = 0;
@@ -28,9 +31,25 @@ export class PythonGenerator implements IGenerator {
     getLangName(): string { return "Python"; }
     getExtension(): string { return "py"; }
     getTransforms(): ITransformer[] { return []; }
-    addPlugin(plugin: IGeneratorPlugin) { this.plugins.push(plugin); }
     addInclude(include: string): void { this.imports.add(include); }
     
+    addPlugin(plugin: IGeneratorPlugin) {
+        this.plugins.push(plugin);
+        
+        if (plugin instanceof TemplateFileGeneratorPlugin) {
+            plugin.modelGlobals["escape"] = new LambdaValue(args => 
+            new StringValue(this.escape(args[0])));
+        }
+    }
+
+    escape(value: IVMValue): string {
+        if (value instanceof ExpressionValue && value.value instanceof RegexLiteral)
+            return JSON.stringify(value.value.pattern);
+        else if (value instanceof StringValue)
+            return JSON.stringify(value.value);
+        throw new Error(`Not supported VMValue for escape()`);
+    }
+
     type(type: IType) {
         if (type instanceof ClassType) {
             if (type.decl.name === "TsString")       return "str";
@@ -495,7 +514,7 @@ export class PythonGenerator implements IGenerator {
         const main = sourceFile.mainBlock.statements.length > 0 ? this.block(sourceFile.mainBlock) : "";
 
         const imports: string[] = [];
-        for (const imp of this.imports)
+        for (const imp of this.imports.values())
             imports.push(imp);
 
         return [imports.join("\n"), enums.join("\n\n"), classes.join("\n\n"), main].filter(x => x !== "").join("\n\n");
