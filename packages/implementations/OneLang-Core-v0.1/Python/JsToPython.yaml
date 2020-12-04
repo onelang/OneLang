@@ -54,3 +54,4 @@ expressions:
   ArrayHelper.removeLastN(items, count): del $items[-$count:]
   RegExpExecArray.length: len($this)
   RegExpExecArray.get(index): $this[$index]
+  One.langName(): '"Python"'

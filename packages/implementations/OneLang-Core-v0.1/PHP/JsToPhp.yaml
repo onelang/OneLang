@@ -52,3 +52,4 @@ expressions:
   Math.floor(num): floor($num)
   RegExpExecArray.length: count($this)
   RegExpExecArray.get(index): $this[$index]
+  One.langName(): '"PHP"'
