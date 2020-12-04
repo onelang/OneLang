@@ -1,4 +1,7 @@
+// @php-use OneLang\Yaml\OneYaml
+// @php-use OneLang\Yaml\ValueType
 import { OneYaml, ValueType, YamlValue } from "One.Yaml-v0.1";
+
 import { ExpressionParser } from "../Parsers/Common/ExpressionParser";
 import { Expression, GlobalFunctionCallExpression, ICallExpression, Identifier, IMethodCallExpression, InstanceMethodCallExpression, NewExpression, PropertyAccessExpression, StaticMethodCallExpression, UnresolvedCallExpression, UnresolvedNewExpression } from "../One/Ast/Expressions";
 import { IExpression, IType } from "../One/Ast/Interfaces";
@@ -61,9 +64,10 @@ export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, IVMHooks {
 
         for (const exprStr of Object.keys(exprDict)) {
             const val = exprDict[exprStr];
-            const ifStr = val.str("if");
+            const tmplOnly = val.type() === ValueType.String;
+            const ifStr = tmplOnly ? null : val.str("if");
             const ifExpr = ifStr === null ? null : new TypeScriptParser2(ifStr, null).parseExpression();
-            const tmpl = val.type() === ValueType.String ? 
+            const tmpl = tmplOnly ? 
                 new CodeTemplate(val.asStr(), [], null) : 
                 new CodeTemplate(val.str("template"), val.strArr("includes"), ifExpr);
 
@@ -89,6 +93,7 @@ export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, IVMHooks {
 
     addMethod(name: string, callTmpl: CallTemplate): void {
         if (!(name in this.methods)) this.methods[name] = [];
+        // @php $this->methods[$name][] = $callTmpl;
         this.methods[name].push(callTmpl);
     }
 
