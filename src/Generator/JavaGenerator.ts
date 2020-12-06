@@ -108,7 +108,13 @@ export class JavaGenerator implements IGenerator {
     typeArgs(args: string[]): string { return args !== null && args.length > 0 ? `<${args.join(", ")}>` : ""; }
     typeArgs2(args: IType[]): string { return this.typeArgs(args.map(x => this.type(x))); }
 
+    unpackPromise(t: IType): IType {
+        return t instanceof ClassType && t.decl === this.currentClass.parentFile.literalTypes.promise.decl ? t.typeArguments[0] : t;
+    }
+
     type(t: IType, mutates = true, isNew = false): string {
+        t = this.unpackPromise(t);
+
         if (t instanceof ClassType || t instanceof InterfaceType) {
             const decl = (<IInterfaceType>t).getDecl();
             if (decl.parentFile.exportScope !== null)
@@ -138,8 +144,6 @@ export class JavaGenerator implements IGenerator {
                 const realType = isNew ? "LinkedHashSet" : "Set";
                 this.imports.add(`java.util.${realType}`);
                 return `${realType}<${this.type(t.typeArguments[0])}>`;
-            } else if (t.decl.name === "Promise") {
-                return t.typeArguments[0] instanceof VoidType ? "void" : `${this.type(t.typeArguments[0])}`;
             } else if (t.decl.name === "Object") {
                 //this.imports.add("System");
                 return `Object`;
@@ -162,10 +166,11 @@ export class JavaGenerator implements IGenerator {
         else if (t instanceof GenericsType)
             return `${t.typeVarName}`;
         else if (t instanceof LambdaType) {
-            const isFunc = !(t.returnType instanceof VoidType);
+            const retType = this.unpackPromise(t.returnType);
+            const isFunc = !(retType instanceof VoidType);
             const paramTypes = t.parameters.map(x => this.type(x.type, false));
             if (isFunc)
-                paramTypes.push(this.type(t.returnType, false));
+                paramTypes.push(this.type(retType, false));
             this.imports.add("java.util.function." + (isFunc ? "Function" : "Consumer"));
             return `${isFunc ? "Function" : "Consumer"}<${paramTypes.join(", ")}>`;
         } else if (t === null) {
@@ -298,7 +303,8 @@ export class JavaGenerator implements IGenerator {
         } else if (expr instanceof GlobalFunctionCallExpression) {
             res = `Global.${this.name_(expr.func.name)}${this.exprCall([], expr.args)}`;
         } else if (expr instanceof LambdaCallExpression) {
-            res = `${this.expr(expr.method)}.apply(${expr.args.map(x => this.expr(x)).join(", ")})`;
+            const resType = this.unpackPromise(expr.actualType);
+            res = `${this.expr(expr.method)}.${resType instanceof VoidType ? "accept" : "apply"}(${expr.args.map(x => this.expr(x)).join(", ")})`;
         } else if (expr instanceof BooleanLiteral) {
             res = `${expr.boolValue ? "true" : "false"}`;
         } else if (expr instanceof StringLiteral) { 

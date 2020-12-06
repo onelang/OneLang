@@ -64,3 +64,4 @@ expressions:
     includes: [io.onelang.std.core.RegExp]
     template: new RegExp($pattern, $modifiers)
   One.langName(): '"Java"'
+  Error.message: $this.toString()
