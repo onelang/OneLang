@@ -1,10 +1,11 @@
 import { AstTransformer } from "../AstTransformer";
-import { SourceFile, Class, Enum, Method, Lambda, GlobalFunction, IMethodBase, Constructor, Interface } from "../Ast/Types";
+import { SourceFile, Class, Enum, Method, Lambda, GlobalFunction, IMethodBase, Constructor, Interface, MethodParameter } from "../Ast/Types";
 import { ErrorManager } from "../ErrorManager";
 import { Identifier, Expression } from "../Ast/Expressions";
 import { IReferencable, Reference, StaticThisReference, ThisReference, SuperReference } from "../Ast/References";
 import { VariableDeclaration, ForStatement, ForeachStatement, Statement, IfStatement, TryStatement, Block } from "../Ast/Statements";
 import { ClassType } from "../Ast/AstTypes";
+import { IType } from "../Ast/Interfaces";
 
 /**
  * Converts Identifier (basically any single non-reserved words like 'variable' or first part of property accesses, e.g. the 'obj' part of 'obj.prop') to 
@@ -56,6 +57,8 @@ export class ResolveIdentifiers extends AstTransformer {
         super("ResolveIdentifiers");
         this.symbolLookup = new SymbolLookup();
     }
+
+    protected visitType(type: IType): IType { return type; }
 
     protected visitIdentifier(id: Identifier): Expression {
         super.visitIdentifier(id);
@@ -128,19 +131,15 @@ export class ResolveIdentifiers extends AstTransformer {
         this.symbolLookup.addSymbol(stmt.name, stmt);
         return super.visitVariableDeclaration(stmt);
     }
+
+    protected visitMethodParameter(param: MethodParameter) {
+        this.symbolLookup.addSymbol(param.name, param);
+        super.visitMethodParameter(param);
+    }
     
     protected visitMethodBase(method: IMethodBase) {
         this.symbolLookup.pushContext(method instanceof Method ? `Method: ${method.name}` : method instanceof Constructor ? "constructor" : "???");
-
-        for (const param of method.parameters) {
-            this.symbolLookup.addSymbol(param.name, param);
-            if (param.initializer !== null)
-                this.visitExpression(param.initializer);
-        }
-
-        if (method.body !== null)
-            super.visitBlock(method.body); // directly process method's body without opening a new scope again
-
+        super.visitMethodBase(method);
         this.symbolLookup.popContext();
     }
 

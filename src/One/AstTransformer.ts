@@ -253,6 +253,10 @@ export abstract class AstTransformer implements ITransformer {
         for (const item of method.parameters)
             this.visitMethodParameter(item);
 
+        if (method instanceof Constructor && method.superCallArgs !== null)
+            for (let i = 0; i < method.superCallArgs.length; i++)
+                method.superCallArgs[i] = this.visitExpression(method.superCallArgs[i]);
+
         if (method.body !== null)
             method.body = this.visitBlock(method.body);
     }
