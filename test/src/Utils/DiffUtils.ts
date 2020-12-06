@@ -8,27 +8,7 @@ class FileStateChanges {
     hasChanges() { return this.diff.length > 1; }
 
     colorText(mode: "full"|"summary"|"minimal") {
-        return this.diff.map((ch, i) => {
-            if(ch.type === ChangeType.Added) {
-                return color.green(ch.value);
-            } else if(ch.type === ChangeType.Removed) {
-                return color.red(ch.value);
-            } else if(ch.type === ChangeType.SameText) {
-                return ch.value;
-            } else if(ch.type === ChangeType.SameBlock) {
-                if (mode === "full") {
-                    return ch.value;
-                } else {
-                    const last = i === this.diff.length - 1;
-                    if (mode === "minimal" && (i === 0 || last)) return "";
-
-                    const nlOffs = ch.value.indexOf("\n");
-                    if (nlOffs === -1 || nlOffs === ch.value.length - 1)
-                        return ch.value;
-                    return "...\n";
-                }
-            }
-        }).join("");
+        return colorSummary(this.diff, mode);
     }
 }
 
@@ -56,7 +36,7 @@ class Change {
     constructor(public type: ChangeType, public value: string) { }
 }
 
-function cleverDiff(str1: string, str2: string) {
+export function cleverDiff(str1: string, str2: string): Change[] {
     const result: Change[] = [];
 
     const jsChanges = jsdiff.diffLines(str1, str2);
@@ -78,4 +58,28 @@ function cleverDiff(str1: string, str2: string) {
     }
 
     return result;
+}
+
+export function colorSummary(diff: Change[], mode: "full"|"summary"|"minimal"): string {
+    return diff.map((ch, i) => {
+        if(ch.type === ChangeType.Added) {
+            return color.green(ch.value);
+        } else if(ch.type === ChangeType.Removed) {
+            return color.red(ch.value);
+        } else if(ch.type === ChangeType.SameText) {
+            return ch.value;
+        } else if(ch.type === ChangeType.SameBlock) {
+            if (mode === "full") {
+                return ch.value;
+            } else {
+                const last = i === diff.length - 1;
+                if (mode === "minimal" && (i === 0 || last)) return "";
+
+                const nlOffs = ch.value.indexOf("\n");
+                if (nlOffs === -1 || nlOffs === ch.value.length - 1)
+                    return ch.value;
+                return "...\n";
+            }
+        }
+    }).join("");
 }

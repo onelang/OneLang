@@ -5,11 +5,11 @@ namespace OneLang;
 require __DIR__ . '/vendor/autoload.php';
 require_once("OneLoader.php");
 
-use OneLang\Test\SelfTestRunner\SelfTestRunner;
+use OneLang\Test\TestRunner\TestRunner;
 
-$testRunner = new SelfTestRunner("../../");
+$testRunner = new TestRunner("../../", $argv);
 try {
-    $testRunner->runTest();
+    $testRunner->runTests();
 } catch(Error $e) {
     print($e->getMessage() . "\n");
 }
