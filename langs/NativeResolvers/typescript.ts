@@ -99,6 +99,7 @@ class TsBoolean {
 class Error {
     static stackTraceLimit: number;
     stack: string;
+    message: string;
 
     constructor(msg: string) { 
         OneError.raise(msg);

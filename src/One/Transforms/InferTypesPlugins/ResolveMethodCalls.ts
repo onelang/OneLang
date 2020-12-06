@@ -71,7 +71,7 @@ export class ResolveMethodCalls extends InferTypesPlugin {
                 const lambdaField = intfType.fields.find(x => x.name === expr.methodName && x.type instanceof LambdaType && x.type.parameters.length === expr.args.length) || null;
                 if (lambdaField !== null) {
                     const lambdaCall = new LambdaCallExpression(new InstanceFieldReference(expr.object, lambdaField), expr.args);
-                    lambdaCall.setActualType((<LambdaType>lambdaField.type).returnType);
+                    lambdaCall.setActualType((<LambdaType>lambdaField.type).returnType, true);
                     return lambdaCall;
                 }
         
