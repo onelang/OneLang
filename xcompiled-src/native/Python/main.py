@@ -3,8 +3,6 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) + "/onepkg")
 
-from OneLang.Generator.CsharpGenerator import CsharpGenerator
-from OneLang.Test.SelfTestRunner import SelfTestRunner
+from OneLang.Test.TestRunner import TestRunner
 
-if not SelfTestRunner("../../").run_test(CsharpGenerator()):
-    sys.exit(1)
+TestRunner("../../", sys.argv).run_tests()

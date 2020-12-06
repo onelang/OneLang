@@ -193,7 +193,10 @@ export class CrossCompiledTestRunner {
         let diffSummary = "";
         const addDiff = (name: string, expected: string, result: string) => {
             if (result === expected) return;
-            diffSummary += `${color.yellow(name)}:\n${pad(colorSummary(cleverDiff(result, expected), "minimal"))}\n`;
+            if (result === "" && expected !== "")
+                diffSummary += `${color.yellow(name)}: file is empty\n`;
+            else
+                diffSummary += `${color.yellow(name)}:\n${pad(colorSummary(cleverDiff(result, expected), "minimal"))}\n`;
         };
 
         addDiff("Stdout", js.output, result.output);
@@ -220,6 +223,9 @@ export class CrossCompiledTestRunner {
 
         console.log(color.bgBlue(color.white("  ===  PHP  ===  ")));
         const phpResult = await new TestRunnerHandler(`php main.php --output-dir ${outDir}/PHP`, `${baseDir}/xcompiled/PHP`, result => this.checkResult(result)).run();
+
+        console.log(color.bgBlue(color.white("  ===  Python  ===  ")));
+        const pythonResult = await new TestRunnerHandler(`python3 -u main.py --output-dir ${outDir}/Python`, `${baseDir}/xcompiled/Python`, result => this.checkResult(result)).run();
     }
 }
 
