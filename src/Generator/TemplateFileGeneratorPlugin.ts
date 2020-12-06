@@ -1,5 +1,6 @@
 // @php-use OneLang\Yaml\OneYaml
 // @php-use OneLang\Yaml\ValueType
+// @python-import-all onelang_yaml
 import { OneYaml, ValueType, YamlValue } from "One.Yaml-v0.1";
 
 import { ExpressionParser } from "../Parsers/Common/ExpressionParser";
@@ -61,6 +62,7 @@ export class TemplateFileGeneratorPlugin implements IGeneratorPlugin, IVMHooks {
     constructor(public generator: IGenerator, templateYaml: string) {
         const root = OneYaml.load(templateYaml);
         const exprDict = root.dict("expressions");
+        if (exprDict === null) return;
 
         for (const exprStr of Object.keys(exprDict)) {
             const val = exprDict[exprStr];

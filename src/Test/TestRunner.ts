@@ -1,4 +1,6 @@
+// @python-import-all onelang_core
 import { One } from "One.Core-v0.1";
+
 import { CompilerHelper } from "../One/CompilerHelper";
 import { ITestCollection, TestCase } from "./TestCase";
 import { BasicTests } from "./TestCases/BasicTests";

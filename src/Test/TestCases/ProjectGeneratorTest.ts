@@ -1,5 +1,3 @@
-import { One } from "One.Core-v0.1";
-
 // @python-import-all onelang_file
 // @php-use OneLang\File\OneFile
 import { OneFile } from "One.File-v0.1";
@@ -16,7 +14,8 @@ export class StageExporter implements ICompilerHooks {
     constructor(public artifactDir: string, public compiler: Compiler) { }
 
     afterStage(stageName: string): void {
-        OneFile.writeText(`${this.artifactDir}/stages/${this.stage++}_${stageName}.txt`, new PackageStateCapture(this.compiler.projectPkg).getSummary());
+        OneFile.writeText(`${this.artifactDir}/stages/${this.stage}_${stageName}.txt`, new PackageStateCapture(this.compiler.projectPkg).getSummary());
+        this.stage++;
     }
 }
 

@@ -656,8 +656,10 @@ export class JavaGenerator implements IGenerator {
 
     toImport(scope: ExportScopeRef): string {
         // TODO: hack
-        if (scope.scopeName === "index")
-            return `io.onelang.std.${scope.packageName.split(/-/g)[0].replace(/One\./g, "").toLowerCase()}`;
+        if (scope.scopeName === "index") {
+            const name = scope.packageName.split(/-/g)[0].replace(/One\./g, "").toLowerCase();
+            return `io.onelang.std.${name}`;
+        }
         return `${scope.packageName}.${scope.scopeName.replace(/\//g, ".")}`;
     }
 
@@ -676,7 +678,8 @@ export class JavaGenerator implements IGenerator {
                     imports.add(`${impPkg}.${imp.name}`);
             }
 
-            const head = `package ${packageName};\n\n${Array.from(imports.values()).map(x => `import ${x};`).join("\n")}\n\n`;
+            const headImports = Array.from(imports.values()).map(x => `import ${x};`).join("\n");
+            const head = `package ${packageName};\n\n${headImports}\n\n`;
 
             for (const enum_ of file.enums) {
                 result.push(new GeneratedFile(`${dstDir}/${enum_.name}.java`, 

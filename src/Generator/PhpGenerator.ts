@@ -258,9 +258,9 @@ export class PhpGenerator implements IGenerator {
         } else if (expr instanceof BooleanLiteral) {
             res = `${expr.boolValue ? "true" : "false"}`;
         } else if (expr instanceof StringLiteral) {
-            res = `${JSON.stringify(expr.stringValue).replace(/\$/g, "\\$")}`;
+            res = JSON.stringify(expr.stringValue).replace(/\$/g, "\\$");
         } else if (expr instanceof NumericLiteral) { 
-            res = `${expr.valueAsText}`;
+            res = expr.valueAsText;
         } else if (expr instanceof CharacterLiteral) { 
             res = `'${expr.charValue}'`;
         } else if (expr instanceof ElementAccessExpression) {
@@ -544,7 +544,9 @@ export class PhpGenerator implements IGenerator {
                 (method.body !== null ? ` {\n${this.pad(this.stmts(method.body.statements))}\n}` : ";"));
         }
         resList.push(methods.join("\n\n"));
-        return ` {\n${this.pad(resList.filter(x => x !== "").join("\n\n"))}\n}` +
+
+        const resListJoined = this.pad(resList.filter(x => x !== "").join("\n\n"));
+        return ` {\n${resListJoined}\n}` +
             (staticConstructorStmts.length > 0 ? `\n${this.name_(cls.name)}::StaticInit();` : "");
     }
 

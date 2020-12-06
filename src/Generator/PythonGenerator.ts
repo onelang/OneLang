@@ -21,7 +21,7 @@ export class PythonGenerator implements IGenerator {
     imports: Set<string>;
     importAllScopes: Set<string>;
     currentClass: IInterface;
-    reservedWords: string[] = ["from", "async", "global", "lambda", "cls", "import", "pass"];
+    reservedWords: string[] = ["from", "async", "global", "lambda", "cls", "import", "pass", "class"];
     fieldToMethodHack: string[] = [];
     plugins: IGeneratorPlugin[] = [];
 
@@ -31,14 +31,14 @@ export class PythonGenerator implements IGenerator {
     getLangName(): string { return "Python"; }
     getExtension(): string { return "py"; }
     getTransforms(): ITransformer[] { return []; }
-    addInclude(include: string): void { this.imports.add(include); }
+    addInclude(include: string): void { this.imports.add(`import ${include}`); }
     
     addPlugin(plugin: IGeneratorPlugin) {
         this.plugins.push(plugin);
         
         if (plugin instanceof TemplateFileGeneratorPlugin) {
-            plugin.modelGlobals["escape"] = new LambdaValue(args => 
-            new StringValue(this.escape(args[0])));
+            plugin.modelGlobals["escape"] = new LambdaValue(args => new StringValue(this.escape(args[0])));
+            plugin.modelGlobals["escapeBackslash"] = new LambdaValue(args => new StringValue(this.escapeBackslash(args[0])));
         }
     }
 
@@ -47,6 +47,12 @@ export class PythonGenerator implements IGenerator {
             return JSON.stringify(value.value.pattern);
         else if (value instanceof StringValue)
             return JSON.stringify(value.value);
+        throw new Error(`Not supported VMValue for escape()`);
+    }
+
+    escapeBackslash(value: IVMValue): string {
+        if (value instanceof ExpressionValue && value.value instanceof StringLiteral)
+            return JSON.stringify(value.value.stringValue.replace(/\\/g, "\\\\"));
         throw new Error(`Not supported VMValue for escape()`);
     }
 
@@ -336,7 +342,10 @@ export class PythonGenerator implements IGenerator {
         } else if (stmt instanceof ReturnStatement) {
             return stmt.expression === null ? "return" : `return ${this.expr(stmt.expression)}`;
         } else if (stmt instanceof UnsetStatement) {
-            return `/* unset ${this.expr(stmt.expression)}; */`;
+            const obj = (<InstanceMethodCallExpression>stmt.expression).object;
+            const key = (<InstanceMethodCallExpression>stmt.expression).args[0];
+            // TODO: hack: transform unsets before this
+            return `del ${this.expr(obj)}[${this.expr(key)}]`;
         } else if (stmt instanceof ThrowStatement) {
             return `raise ${this.expr(stmt.expression)}`;
         } else if (stmt instanceof ExpressionStatement) {

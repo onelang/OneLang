@@ -1,8 +1,8 @@
 expressions:
   TsArray.length: len($this)
   TsArray.includes(key): $key in $this
-  TsArray.set(key, value): $this[$key] = $value
-  TsArray.get(key): $this[$key]
+  TsArray.set(idx, value): $this[$idx] = $value
+  TsArray.get(idx): $this[$idx]
   TsArray.join(separator): $separator.join($this)
   TsArray.map(selector): list(map($selector, $this))
   TsArray.push(item): $this.append($item)
@@ -24,7 +24,7 @@ expressions:
   TsString.replace(pattern, replacement):
     if: pattern.type.name == "RegExp"
     includes: [re]
-    template: re.sub(${escape(pattern)}, $replacement, $this)
+    template: re.sub(${escape(pattern)}, ${escapeBackslash(replacement)}, $this)
   TsString.replace(what, replacement):
     if: what.type.name == "TsString"
     template: $this.replace($what, $replacement)
@@ -43,7 +43,7 @@ expressions:
   TsString.get(index): $this[$index]
   TsString.charCodeAt(index): ord($this[$index])
   TsMap.set(key, value): $this[$key] = $value
-  TsMap.get(key): $this[$key]
+  TsMap.get(key): $this.get($key)
   TsMap.hasKey(key): $key in $this
   Object.keys(map): $map.keys()
   Object.values(map): $map.values()
@@ -55,3 +55,5 @@ expressions:
   RegExpExecArray.length: len($this)
   RegExpExecArray.get(index): $this[$index]
   One.langName(): '"Python"'
+  Error.message: $this.msg
+  parseInt(str): int($str)
