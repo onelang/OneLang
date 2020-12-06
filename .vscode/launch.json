@@ -50,7 +50,9 @@
           "name": "ProjectTest",
           "program": "${workspaceFolder}/test/lib/ProjectTest.js",
           "cwd": "${workspaceFolder}",
-          "protocol": "inspector"
+          "protocol": "inspector",
+          "autoAttachChildProcesses": false,
+          "console": "integratedTerminal"
         },
         {
           "type": "node",

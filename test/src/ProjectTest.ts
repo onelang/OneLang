@@ -11,6 +11,7 @@ import { PackageStateCapture } from "@one/Test/PackageStateCapture";
 import { CompilerHelper } from '@one/One/CompilerHelper';
 import { Reflection } from 'One.Reflect-v0.1';
 import { TestRunner } from "@one/Test/TestRunner";
+import { CrossCompiledTestRunner } from './CrossCompiledTestRunner';
 
 class StateHandler implements ICompilerHooks {
     stage = 0;
@@ -59,4 +60,7 @@ async function compileTests() {
 
 CompilerHelper.baseDir = `${baseDir}/`;
 //compileTests().then(() => console.log("DONE (Tests)."));
-compileProject(`${baseDir}/xcompiled-src`).then(() => console.log("DONE (OneLang compilation)."));
+compileProject(`${baseDir}/xcompiled-src`).then(() => {
+    console.log("DONE (OneLang compilation).");
+    new CrossCompiledTestRunner().run();
+});
