@@ -1,3 +1,13 @@
+from enum import Enum
+
+class VALUE_TYPE(Enum):
+    NULL = 0
+    BOOLEAN = 1
+    NUMBER = 2
+    STRING = 3
+    ARRAY = 4
+    OBJECT = 5
+
 class YamlValue:
     def __init__(self, value):
         self.value = value
@@ -26,3 +36,20 @@ class YamlValue:
         for key, value in obj.items():
             res[key] = YamlValue(value)
         return res
+
+    def as_str(self):
+        return str(self.value)
+
+    def type(self):
+        if self.value is None:
+            return VALUE_TYPE.NULL
+        elif isinstance(self.value, bool):
+            return VALUE_TYPE.BOOLEAN
+        elif isinstance(self.value, int) or isinstance(self.value, float):
+            return VALUE_TYPE.NUMBER
+        elif isinstance(self.value, str):
+            return VALUE_TYPE.STRING
+        elif isinstance(self.value, list):
+            return VALUE_TYPE.ARRAY
+        else:
+            return VALUE_TYPE.OBJECT

@@ -7,15 +7,15 @@ languages:
     package-dir: onelang_yaml
     native-src-dir: Python/src
     native-dependencies:
-      - { name: PyYAML, version: 5.3.1 }
+      - { name: PyYAML, version: '5.3.1' }
   java:
     package-dir: yaml
     native-src-dir: Java/src
     native-dependencies:
-      - { name: org.yaml:snakeyaml, version: 1.27 }
+      - { name: org.yaml:snakeyaml, version: '1.27' }
   csharp:
     native-src-dir: CSharp/src
     native-dependencies:
-      - { name: YamlDotNet, version: 8.1.0 }
+      - { name: YamlDotNet, version: '8.1.0' }
   php:
     native-src-dir: PHP/src
