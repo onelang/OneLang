@@ -4,6 +4,6 @@ import 'process';
 process.env.NODE_PATH = `${__dirname}/../../onepkg`;
 require("module").Module._initPaths();
 
-import { SelfTestRunner } from "@one/Test/SelfTestRunner";
+import { TestRunner } from "@one/Test/TestRunner";
 
-new SelfTestRunner(`${__dirname}/../../`).runTest().then(res => process.exit(res ? 0 : 1));
+new TestRunner(`${__dirname}/../../`, process.argv).runTests();

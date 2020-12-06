@@ -30,7 +30,7 @@ class CompilerHooks implements ICompilerHooks {
 
 export class SelfTestRunner {
     constructor(public baseDir: string) {
-        CompilerHelper.baseDir = baseDir;
+    CompilerHelper.baseDir = baseDir;
     }
 
     public async runTest(): Promise<boolean> {
