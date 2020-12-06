@@ -210,14 +210,16 @@ export class CrossCompiledTestRunner {
 
     async run() {
         const baseDir = `${__dirname}/../..`;
-        const outputDirArg = `--output-dir ${__dirname}/../artifacts/SelfTestRunner`;
+        const outDir = `${baseDir}/tmp/TestRunner`;
+        fs.rmdirSync(outDir, { recursive: true });
+
         console.log(color.bgBlue(color.white("  ===  JavaScript (baseline)  ===  ")));
-        const jsResult = await new TestRunnerHandler(`node --unhandled-rejections=strict SelfTest.js ${outputDirArg}/JS`, `${baseDir}/test/lib`, result => this.jsResultCallback(result)).run();
+        const jsResult = await new TestRunnerHandler(`node --unhandled-rejections=strict SelfTest.js --output-dir ${outDir}/JS`, `${baseDir}/test/lib`, result => this.jsResultCallback(result)).run();
         for (const result of jsResult.testResults)
             this.jsResults[`${result.collectionName}.${result.testName}`] = result;
 
         console.log(color.bgBlue(color.white("  ===  PHP  ===  ")));
-        const phpResult = await new TestRunnerHandler(`php main.php ${outputDirArg}/PHP`, `${baseDir}/xcompiled/PHP`, result => this.checkResult(result)).run();
+        const phpResult = await new TestRunnerHandler(`php main.php --output-dir ${outDir}/PHP`, `${baseDir}/xcompiled/PHP`, result => this.checkResult(result)).run();
     }
 }
 
