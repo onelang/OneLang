@@ -27,4 +27,6 @@ languages:
     native-src-dir: PHP/src
     generator-plugins: [PHP/JsToPhp.yaml]
   python:
+    package-dir: onelang_json
+    native-src-dir: Python/src
     generator-plugins: [Python/JsToPython.yaml]

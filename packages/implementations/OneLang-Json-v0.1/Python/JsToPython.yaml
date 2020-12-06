@@ -1,4 +1,4 @@
 expressions:
   JSON.stringify(obj):
     includes: [json]
-    template: json.dumps($obj)
+    template: json.dumps($obj, separators=(',', ':'))
