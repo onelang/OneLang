@@ -392,8 +392,8 @@ export class PhpGenerator implements IGenerator {
 
     stmtDefault(stmt: Statement): string {
         let res = "UNKNOWN-STATEMENT";
-        if (stmt.attributes !== null && "csharp" in stmt.attributes) {
-            res = stmt.attributes["csharp"];
+        if (stmt.attributes !== null && "php" in stmt.attributes) {
+            res = stmt.attributes["php"];
         } else if (stmt instanceof BreakStatement) {
             res = "break;";
         } else if (stmt instanceof ReturnStatement) {
