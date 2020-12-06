@@ -23,7 +23,7 @@ expressions:
     template: explode($separator, $this)
   TsString.replace(pattern, replacement):
     if: pattern.type.name == "RegExp"
-    template: preg_replace(${escape(pattern)}, $replacement, $this)
+    template: preg_replace(${escape(pattern)}, ${escapeBackslash(replacement)}, $this)
   TsString.replace(what, replacement):
     if: what.type.name == "TsString"
     template: str_replace($what, $replacement, $this)

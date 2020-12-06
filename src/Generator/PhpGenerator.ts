@@ -29,16 +29,24 @@ export class PhpGenerator implements IGenerator {
 
         // TODO: hack?
         if (plugin instanceof TemplateFileGeneratorPlugin) {
-            plugin.modelGlobals["escape"] = new LambdaValue(args => 
-                new StringValue(this.escape(args[0])));
+            plugin.modelGlobals["escape"] = new LambdaValue(args => new StringValue(this.escape(args[0])));
+            plugin.modelGlobals["escapeBackslash"] = new LambdaValue(args => new StringValue(this.escapeBackslash(args[0])));
         }
     }
 
     escape(value: IVMValue): string {
         if (value instanceof ExpressionValue && value.value instanceof RegexLiteral)
             return JSON.stringify("/" + value.value.pattern.replace(/\//g, "\\/") + "/");
+        else if (value instanceof ExpressionValue && value.value instanceof StringLiteral)
+            return JSON.stringify(value.value.stringValue);
         else if (value instanceof StringValue)
             return JSON.stringify(value.value);
+        throw new Error(`Not supported VMValue for escape()`);
+    }
+
+    escapeBackslash(value: IVMValue): string {
+        if (value instanceof ExpressionValue && value.value instanceof StringLiteral)
+            return JSON.stringify(value.value.stringValue.replace(/\\/g, "\\\\"));
         throw new Error(`Not supported VMValue for escape()`);
     }
 
@@ -250,7 +258,7 @@ export class PhpGenerator implements IGenerator {
         } else if (expr instanceof BooleanLiteral) {
             res = `${expr.boolValue ? "true" : "false"}`;
         } else if (expr instanceof StringLiteral) {
-            res = `${JSON.stringify(expr.stringValue).replace(/\$/, "\\$")}`;
+            res = `${JSON.stringify(expr.stringValue).replace(/\$/g, "\\$")}`;
         } else if (expr instanceof NumericLiteral) { 
             res = `${expr.valueAsText}`;
         } else if (expr instanceof CharacterLiteral) { 
@@ -333,7 +341,7 @@ export class PhpGenerator implements IGenerator {
             res = `${this.expr(expr.operand)}${expr.operator}`;
         } else if (expr instanceof MapLiteral) {
             const repr = expr.items.map(item => `${JSON.stringify(item.key)} => ${this.expr(item.value)}`).join(",\n");
-            res = "Array(" + (repr === "" ? "" : repr.includes("\n") ? `\n${this.pad(repr)}\n` : `(${repr}`) + ")";
+            res = "Array(" + (repr === "" ? "" : repr.includes("\n") ? `\n${this.pad(repr)}\n` : repr) + ")";
         } else if (expr instanceof NullLiteral) {
             res = `null`;
         } else if (expr instanceof AwaitExpression) {
