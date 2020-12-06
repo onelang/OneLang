@@ -250,7 +250,7 @@ export class PhpGenerator implements IGenerator {
         } else if (expr instanceof BooleanLiteral) {
             res = `${expr.boolValue ? "true" : "false"}`;
         } else if (expr instanceof StringLiteral) {
-            res = `${JSON.stringify(expr.stringValue.replace(/\$/, "\\$"))}`;
+            res = `${JSON.stringify(expr.stringValue).replace(/\$/, "\\$")}`;
         } else if (expr instanceof NumericLiteral) { 
             res = `${expr.valueAsText}`;
         } else if (expr instanceof CharacterLiteral) { 
@@ -466,9 +466,7 @@ export class PhpGenerator implements IGenerator {
                     !(field.initializer instanceof NumericLiteral);
 
                 const prefix = `${this.vis(field.visibility, true)}${this.preIf("static ", field.isStatic)}`;
-                if (field.interfaceDeclarations.length > 0)
-                    fieldReprs.push(`${prefix}${this.varWoInit(field, field)};`);
-                else if (isInitializerComplex) {
+                if (isInitializerComplex) {
                     if (field.isStatic)
                         staticConstructorStmts.push(new ExpressionStatement(new BinaryExpression(new StaticFieldReference(field), "=", field.initializer)));
                     else

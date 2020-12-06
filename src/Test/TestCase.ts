@@ -4,7 +4,7 @@ export class TestCase {
 
 export class SyncTestCase extends TestCase {
     constructor(name: string, public syncAction: (artifactDir: string) => void) {
-        super(name, artifactDir => this.execute(artifactDir));
+        super(name, (artifactDir: string) => this.execute(artifactDir));
     }
 
     async execute(artifactDir: string): Promise<void> {
