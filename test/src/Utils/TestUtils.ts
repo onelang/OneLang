@@ -7,7 +7,7 @@ import * as mkdirp from 'mkdirp';
 
 export { assert };
 
-export const baseDir = `${__dirname}/../..`;
+export const baseDir = `${__dirname}/../../..`;
 
 export function readFile(fn: string): string {
     return fs.readFileSync(`${baseDir}/${fn}`, "utf8");

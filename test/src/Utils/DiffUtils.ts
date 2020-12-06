@@ -1,6 +1,6 @@
 import * as jsdiff from "diff";
 import * as color from "ansi-colors";
-import { PackageStateCapture } from "../../src/Test/PackageStateCapture";
+import { PackageStateCapture } from "../../../src/Test/PackageStateCapture";
 
 class FileStateChanges {
     constructor(public pkgName: string, public fileName: string, public diff: Change[]) { }

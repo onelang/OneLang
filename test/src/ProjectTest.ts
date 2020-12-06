@@ -3,13 +3,14 @@ import 'module-alias/register';
 process.env.NODE_PATH = `${__dirname}/../../onepkg`;
 require("module").Module._initPaths();
 
-import { readDir, baseDir, writeFile } from "./TestUtils";
+import { readDir, baseDir, writeFile } from "./Utils/TestUtils";
 import { ProjectGenerator } from "@one/Generator/ProjectGenerator";
 import { Compiler, ICompilerHooks } from "@one/One/Compiler";
 import { JsonSerializer } from "@one/One/Serialization/JsonSerializer";
 import { PackageStateCapture } from "@one/Test/PackageStateCapture";
 import { CompilerHelper } from '@one/One/CompilerHelper';
 import { Reflection } from 'One.Reflect-v0.1';
+import { TestRunner } from "@one/Test/TestRunner";
 
 class StateHandler implements ICompilerHooks {
     stage = 0;

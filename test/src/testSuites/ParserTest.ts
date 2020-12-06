@@ -1,4 +1,4 @@
-import { glob, readFile } from '../TestUtils';
+import { glob, readFile } from '../Utils/TestUtils';
 import { TypeScriptParser2 } from "@one/Parsers/TypeScriptParser";
 
 function testFolder(folder: string) {
