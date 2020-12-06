@@ -9,6 +9,7 @@ import { IGenerator } from "./IGenerator";
 import { IExpression, IType } from "../One/Ast/Interfaces";
 import { ITransformer } from "../One/ITransformer";
 import { IGeneratorPlugin } from "./IGeneratorPlugin";
+import { TemplateFileGeneratorPlugin } from "./TemplateFileGeneratorPlugin";
 
 export class CsharpGenerator implements IGenerator {
     usings: Set<string>;
@@ -16,12 +17,21 @@ export class CsharpGenerator implements IGenerator {
     reservedWords = ["object", "else", "operator", "class", "enum", "void", "string", "implicit", "Type", "Enum", "params", "using", "throw", "ref", "base", "virtual", "interface", "int", "const"];
     fieldToMethodHack = ["length", "size"];
     instanceOfIds: { [name: string]: number } = {};
+    plugins: IGeneratorPlugin[] = [];
 
     getLangName(): string { return "CSharp"; }
     getExtension(): string { return "cs"; }
     getTransforms(): ITransformer[] { return []; }
-    addPlugin(plugin: IGeneratorPlugin) { /* TODO */ }
     addInclude(include: string): void { this.usings.add(include); }
+
+    addPlugin(plugin: IGeneratorPlugin) {
+        this.plugins.push(plugin);
+
+        // TODO: hack?
+        if (plugin instanceof TemplateFileGeneratorPlugin) {
+            // ...
+        }
+    }
 
     name_(name: string) {
         if (this.reservedWords.includes(name)) name += "_";
@@ -197,6 +207,12 @@ export class CsharpGenerator implements IGenerator {
     }
 
     expr(expr: IExpression): string {
+        for (const plugin of this.plugins) {
+            const result = plugin.expr(expr);
+            if (result !== null)
+                return result;
+        }
+
         let res = "UNKNOWN-EXPR";
         if (expr instanceof NewExpression) {
             res = `new ${this.type(expr.cls)}${this.callParams(expr.args, expr.cls.decl.constructor_ !== null ? expr.cls.decl.constructor_.parameters : [])}`;
@@ -418,9 +434,10 @@ export class CsharpGenerator implements IGenerator {
                     !(field.initializer instanceof NumericLiteral);
 
                 const prefix = `${this.vis(field.visibility)} ${this.preIf("static ", field.isStatic)}`;
-                if (field.interfaceDeclarations.length > 0)
-                    fieldReprs.push(`${prefix}${this.varWoInit(field, field)} { get; set; }`);
-                else if (isInitializerComplex) {
+                if (field.interfaceDeclarations.length > 0) {
+                    const init = field.initializer !== null ? ` = ${this.expr(field.initializer)};` : "";
+                    fieldReprs.push(`${prefix}${this.varWoInit(field, field)} { get; set; }${init}`);
+                } else if (isInitializerComplex) {
                     if (field.isStatic)
                         staticConstructorStmts.push(new ExpressionStatement(new BinaryExpression(new StaticFieldReference(field), "=", field.initializer)));
                     else
@@ -512,7 +529,7 @@ export class CsharpGenerator implements IGenerator {
                 baseClasses.push(cls.baseClass);
             for (const intf of cls.baseInterfaces)
                 baseClasses.push(intf);
-            classes.push(`public class ${this.name_(cls.name)}${this.typeArgs(cls.typeArguments)}${this.preArr(" : ", baseClasses.map(x => this.type(x)))} {\n${this.classLike(cls)}\n}`);
+            classes.push(`public class ${this.name_(cls.name)}${this.typeArgs(cls.typeArguments)}${this.preArr(" : ", baseClasses.map(x => this.type(x)))}\n{\n${this.classLike(cls)}\n}`);
         }
 
         const main = sourceFile.mainBlock.statements.length > 0 ? 

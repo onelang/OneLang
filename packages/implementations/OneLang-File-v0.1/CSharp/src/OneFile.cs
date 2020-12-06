@@ -19,6 +19,7 @@ public static class OneFile
     }
 
     public static void copy(string srcFn, string dstFn) {
-        File.Copy(srcFn, dstFn);
+        new DirectoryInfo(Path.GetDirectoryName(dstFn)).Create();
+        File.Copy(srcFn, dstFn, true);
     }
 }

@@ -20,6 +20,7 @@ languages:
     generator-plugins: [PHP/JsToPhp.yaml]
   csharp:
     native-src-dir: CSharp/src
+    generator-plugins: [CSharp/JsToCSharp.yaml]
   python:
     package-dir: onelang_core
     native-src-dir: Python/src

@@ -229,6 +229,10 @@ export class CrossCompiledTestRunner {
         console.log();
         console.log(color.bgBlue(color.white("  ===  Python  ===  ")));
         const pythonResult = await new TestRunnerHandler(`python3 -u main.py --output-dir ${outDir}/Python`, `${baseDir}/xcompiled/Python`, result => this.checkResult(result)).run();
+
+        console.log();
+        console.log(color.bgBlue(color.white("  ===  CSharp  ===  ")));
+        const csharpResult = await new TestRunnerHandler(`dotnet run --output-dir ${outDir}/CSharp`, `${baseDir}/xcompiled/CSharp`, result => this.checkResult(result)).run();
     }
 }
 

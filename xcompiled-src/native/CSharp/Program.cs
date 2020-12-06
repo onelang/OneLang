@@ -9,7 +9,7 @@ namespace CSharp
     {
         static async Task Main(string[] args)
         {
-            Environment.ExitCode = await new SelfTestRunner("../../").runTest(new CsharpGenerator()) ? 0 : 1;
+            await new TestRunner("../../", args).runTests();
         }
     }
 }

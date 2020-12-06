@@ -40,7 +40,7 @@ export class TestRunner {
                     console.log(`### TestCase -> ${test.name} -> OUTPUT-DIR -> ${outputDir} ###`);
                     await test.action(outputDir);
                 } catch(e) { 
-                    console.log(`### TestCase -> ${test.name} -> ERROR -> ${(<Error>e).message} ###`);
+                    console.log(`### TestCase -> ${test.name} -> ERROR -> ${e.message} ###`);
                 }
                 console.log(`### TestCase -> ${test.name} -> END ###`);
             }

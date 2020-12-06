@@ -13,7 +13,27 @@ public class YamlValue
         this.node = node;
     }
 
-    public ValueType type() { return ValueType.Null; }
+    public ValueType type() {
+        if (this.node.NodeType == YamlNodeType.Scalar) {
+            var value = ((YamlScalarNode)this.node).Value;
+
+            if (value == null)
+                return ValueType.Null;
+
+            if (value == "true" || value == "false") 
+                return ValueType.Boolean;
+
+            if (double.TryParse(value, out _))
+                return ValueType.Number;
+
+            return ValueType.String;
+        } else if (this.node.NodeType == YamlNodeType.Sequence) {
+            return ValueType.Array;
+        } else if (this.node.NodeType == YamlNodeType.Mapping) {
+            return ValueType.Object;
+        }
+        return ValueType.Object;
+    }
 
     public string asStr() { return ((YamlScalarNode)this.node).Value; }
 
@@ -36,7 +56,7 @@ public class YamlValue
 
     public Dictionary<string, YamlValue> dict(string key)
     { 
-        return this.Map.Children.TryGetValue(key, out var value)
+        return this.Map.Children.TryGetValue(key, out var value) && value is YamlMappingNode
             ? ((YamlMappingNode)value).Children.ToDictionary(x => ((YamlScalarNode)x.Key).Value, x => new YamlValue(x.Value))
             : new Dictionary<string, YamlValue>();
     }
