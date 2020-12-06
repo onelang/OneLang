@@ -4,6 +4,7 @@ import { One } from "One.Core-v0.1";
 import { CompilerHelper } from "../One/CompilerHelper";
 import { ITestCollection, TestCase } from "./TestCase";
 import { BasicTests } from "./TestCases/BasicTests";
+import { OneFileTests } from "./TestCases/OneFileTests";
 import { ProjectGeneratorTest } from "./TestCases/ProjectGeneratorTest";
 
 export class TestRunner {
@@ -14,6 +15,7 @@ export class TestRunner {
     constructor(public baseDir: string, public args: string[]) {
         CompilerHelper.baseDir = `${baseDir}/`;
         this.tests.push(new BasicTests());
+        this.tests.push(new OneFileTests(this.baseDir));
         this.tests.push(new ProjectGeneratorTest(this.baseDir));
 
         this.parseArgs();
