@@ -27,4 +27,5 @@ export declare class OneJValue {
 
 export declare class OneJson {
     static parse(str: string): OneJValue;
+    static serializeFormatted(obj: any): string;
 }

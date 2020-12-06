@@ -27,6 +27,8 @@ class OneJson {
     static parse(content) {
         return new OneJValue(JSON.parse(content));
     }
+
+    static serializeFormatted(obj) { return JSON.stringify(obj, null, 4); }
 }
 
 exports.OneJson = OneJson;
