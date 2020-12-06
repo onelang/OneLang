@@ -216,14 +216,17 @@ export class CrossCompiledTestRunner {
         const outDir = `${baseDir}/tmp/TestRunner`;
         fs.rmdirSync(outDir, { recursive: true });
 
+        console.log();
         console.log(color.bgBlue(color.white("  ===  JavaScript (baseline)  ===  ")));
         const jsResult = await new TestRunnerHandler(`node --unhandled-rejections=strict SelfTest.js --output-dir ${outDir}/JS`, `${baseDir}/test/lib`, result => this.jsResultCallback(result)).run();
         for (const result of jsResult.testResults)
             this.jsResults[`${result.collectionName}.${result.testName}`] = result;
 
+        console.log();
         console.log(color.bgBlue(color.white("  ===  PHP  ===  ")));
         const phpResult = await new TestRunnerHandler(`php main.php --output-dir ${outDir}/PHP`, `${baseDir}/xcompiled/PHP`, result => this.checkResult(result)).run();
 
+        console.log();
         console.log(color.bgBlue(color.white("  ===  Python  ===  ")));
         const pythonResult = await new TestRunnerHandler(`python3 -u main.py --output-dir ${outDir}/Python`, `${baseDir}/xcompiled/Python`, result => this.checkResult(result)).run();
     }
