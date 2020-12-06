@@ -55,6 +55,16 @@
         {
           "type": "node",
           "request": "launch",
+          "name": "CrossCompiledTestRunner",
+          "program": "${workspaceFolder}/test/lib/CrossCompiledTestRunner.js",
+          "cwd": "${workspaceFolder}",
+          "protocol": "inspector",
+          "autoAttachChildProcesses": false,
+          "console": "integratedTerminal"
+        },
+        {
+          "type": "node",
+          "request": "launch",
           "name": "SelfTest",
           "program": "${workspaceFolder}/test/lib/SelfTest.js",
           "cwd": "${workspaceFolder}",
