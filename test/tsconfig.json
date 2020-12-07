@@ -10,7 +10,8 @@
         "moduleResolution": "node",
         "sourceMap": true,
         "outDir": "lib",
-        "experimentalDecorators": true
+        "experimentalDecorators": true,
+        "lib": ["es2020.string"]
     },
     "include": ["src/**/*"],
     "references": [

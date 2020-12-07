@@ -10,12 +10,19 @@ export class OutputReader {
     metaEnd = " ###\n";
     metaPartSeparator = " -> ";
 
+    metaBuf = "";
+
     constructor(public input: Readable, public onMetadata: (parts: string[]) => void, public onData: (str: string) => void) {
         input.on('data', data => this.onInputData(data.toString('utf-8')));
     }
 
     onInputData(inputData: string) {
         let data = inputData;
+
+        // meta data is in multiple parts
+        if (this.metaBuf !== "")
+            data = this.metaBuf + data;
+
         while (true) {
             const metaPos = data.indexOf(this.metaStart);
             if (metaPos === -1) {
@@ -30,8 +37,15 @@ export class OutputReader {
 
             const metaStart = metaPos + this.metaStart.length;
             const metaEnd = data.indexOf(this.metaEnd, metaStart);
+            
+            if (metaEnd === -1) {
+                this.metaBuf = data.substring(metaPos);
+                break;
+            }
+
             const metaPart = data.substring(metaStart, metaEnd);
             this.onMetadata(metaPart.split(this.metaPartSeparator));
+            this.metaBuf = "";
             data = data.substring(metaEnd + this.metaEnd.length);
         }
     }
@@ -113,13 +127,15 @@ class TestRunnerHandler {
                 process.stdout.write(` ${color.bold(color.redBright("✗"))}\n`);
 
             if (this.currTest.checkResult?.notes)
-                console.log(`${pad(this.currTest.checkResult.notes, "      ")}`);
+                console.log(`${pad(this.currTest.checkResult.notes.trim(), "      ")}`);
+
+            if (this.currTest.error !== null)
+                console.log(`      ${color.red("Error:")}\n${pad(this.currTest.error.trim(), "        ")}`);
 
             this.testResults.push(this.currTest);
             this.currTest = null;
         } else if (component === "TestCase" && action === "ERROR") {
             this.currTest.error = meta[0];
-            console.log(`    ${color.red("Error:")}\n${pad(this.currTest.error, "      ")}`);
         } else {
             console.log(`${color.red("Unhandled meta action:")} ${color.bold(action)} on component ${color.bold(component)}`);
         }
@@ -137,10 +153,13 @@ class TestRunnerHandler {
 
     onStdErr(data: string) {
         this.stderr += data;
-        console.log(`${color.red("STDERR:")} ${data.trim()}`);
+        console.log(`\n\n${color.red("STDERR:")}\n${pad(data.trim(), "    ")}`);
     }
 
     onProcessExited(code: number, signal: string) {
+        if (this.currTest !== null)
+            console.log();
+
         if (code === 0 && signal === null)
             console.log(color.gray(`TestRunner exited successfully.`));
         else
@@ -150,7 +169,7 @@ class TestRunnerHandler {
     }
 
     async run() {
-        const cmdArgs = this.commandLine.split(' ');
+        const cmdArgs = Array.from(this.commandLine.matchAll(/(?:((?:[^" ]|"([^"]*)")+)|"([^"]*)")(?: |$)/g)).map(x => x[1] || x[2]);
         const cmdName = cmdArgs.shift();
         const proc = spawn(cmdName, cmdArgs, { cwd: this.workingDir });
 
@@ -194,9 +213,9 @@ export class CrossCompiledTestRunner {
         const addDiff = (name: string, expected: string, result: string) => {
             if (result === expected) return;
             if (result === "" && expected !== "")
-                diffSummary += `${color.yellow(name)}: file is empty\n`;
+                diffSummary += `${color.yellow(name)}: empty\n`;
             else
-                diffSummary += `${color.yellow(name)}:\n${pad(colorSummary(cleverDiff(result, expected), "minimal"))}\n`;
+                diffSummary += `${color.yellow(name)}:\n${pad(colorSummary(cleverDiff(result, expected), "minimal"), "  ")}\n`;
         };
 
         addDiff("Stdout", js.output, result.output);
@@ -233,6 +252,10 @@ export class CrossCompiledTestRunner {
         console.log();
         console.log(color.bgBlue(color.white("  ===  CSharp  ===  ")));
         const csharpResult = await new TestRunnerHandler(`dotnet run --output-dir ${outDir}/CSharp`, `${baseDir}/xcompiled/CSharp`, result => this.checkResult(result)).run();
+
+        console.log();
+        console.log(color.bgBlue(color.white("  ===  Java  ===  ")));
+        const javaResult = await new TestRunnerHandler(`gradle run --args="--output-dir ${outDir}/Java"`, `${baseDir}/xcompiled/Java`, result => this.checkResult(result)).run();
     }
 }
 
