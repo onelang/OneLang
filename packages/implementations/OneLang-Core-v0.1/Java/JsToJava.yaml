@@ -33,7 +33,7 @@ expressions:
   TsString.replace(pattern, replacement):
     if: pattern.type.name == "RegExp"
     includes: [java.util.regex.Pattern]
-    template: $this.replaceAll(${escape(pattern)}, $replacement)
+    template: $this.replaceAll(${escape(pattern)}, ${escapeRepl(replacement)})
   TsString.replace(what, replacement):
     if: pattern.type.name == "TsString"
     template: $this.replace($what, $replacement)
@@ -64,4 +64,6 @@ expressions:
     includes: [io.onelang.std.core.RegExp]
     template: new RegExp($pattern, $modifiers)
   One.langName(): '"Java"'
-  Error.message: $this.toString()
+  Error.message:
+    includes: [io.onelang.std.core.ExceptionHelper]
+    template: ExceptionHelper.toString($this)

@@ -16,9 +16,14 @@ public class OneFile {
         }
     }
 
+    public static String providePath(String fileName) throws IOException {
+        Files.createDirectories(Paths.get(fileName).getParent());
+        return fileName;
+    }
+
     public static void writeText(String fileName, String data) {
         try {
-            Files.writeString(Path.of(fileName), data);
+            Files.writeString(Path.of(OneFile.providePath(fileName)), data);
         } catch(Exception e) {
             console.error("[ERROR] writeText (fn = " + fileName + "): " + e);
         }
@@ -37,7 +42,7 @@ public class OneFile {
 
     public static void copy(String srcFn, String dstFn) {
         try {
-            Files.copy(Path.of(srcFn), Path.of(dstFn));
+            Files.copy(Path.of(srcFn), Path.of(OneFile.providePath(dstFn)));
         } catch(Exception e) {
             console.error("[ERROR] copy (srcFn = " + srcFn + ", dstFn = " + dstFn + "): " + e);
         }

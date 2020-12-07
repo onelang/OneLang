@@ -56,19 +56,22 @@ export class JavaGenerator implements IGenerator {
         throw new Error(`Not supported VMValue for escape()`);
     }
 
+    escapeRepl(value: IVMValue): string {
+        if (value instanceof ExpressionValue && value.value instanceof StringLiteral)
+            return JSON.stringify(value.value.stringValue.replace(/\\/g, "\\\\").replace(/\$/g, "\\$"));
+        throw new Error(`Not supported VMValue for escapeRepl()`);
+    }
+
     addPlugin(plugin: IGeneratorPlugin) {
         this.plugins.push(plugin);
 
         // TODO: hack?
         if (plugin instanceof TemplateFileGeneratorPlugin) {
-            plugin.modelGlobals["toStream"] = new LambdaValue(args => 
-                new StringValue(this.arrayStream((<ExpressionValue>args[0]).value)));
-            plugin.modelGlobals["isArray"] = new LambdaValue(args => 
-                new BooleanValue(this.isArray((<ExpressionValue>args[0]).value)));
-            plugin.modelGlobals["toArray"] = new LambdaValue(args => 
-                new StringValue(this.toArray((<TypeValue>args[0]).type)));
-            plugin.modelGlobals["escape"] = new LambdaValue(args => 
-                new StringValue(this.escape(args[0])));
+            plugin.modelGlobals["toStream"] = new LambdaValue(args => new StringValue(this.arrayStream((<ExpressionValue>args[0]).value)));
+            plugin.modelGlobals["isArray"] = new LambdaValue(args => new BooleanValue(this.isArray((<ExpressionValue>args[0]).value)));
+            plugin.modelGlobals["toArray"] = new LambdaValue(args => new StringValue(this.toArray((<TypeValue>args[0]).type)));
+            plugin.modelGlobals["escape"] = new LambdaValue(args => new StringValue(this.escape(args[0])));
+            plugin.modelGlobals["escapeRepl"] = new LambdaValue(args => new StringValue(this.escapeRepl(args[0])));
         }
     }
     
