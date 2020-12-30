@@ -1,7 +1,6 @@
 # TL;DR
- - Live demo on https://ide.onelang.io
- - [Compiler backend documentation on Wiki](https://github.com/koczkatamas/onelang/wiki/Compiler-backend)
- - Run locally: `git clone --recursive https://github.com/koczkatamas/onelang`, `./compile.sh`, `./serve.py`
+ - V1 live demo on https://ide.onelang.io
+ - V2 is in progress
  
 # What is OneLang.io?
 
@@ -14,20 +13,6 @@ So the question arises, is OneLang a **new programming language**? Although we c
 Thus let's just define OneLang as the following for the time being: **OneLang is a tool which helps writing code in multiple langauges at the same time**.
 
 It doesn't solve the problem for you, it just helps you a bit in it. You still need to master the target languages and OneLang to be able to produce anything usable.
-
-So you may ask:
-
-# What is its purpose?
-
-OneLang is the love child of [@koczkatamas](https://twitter.com/koczkatamas) and it was not a planned child. It just happened to be conceived on a long flight home from Vegas.
-
-Thanks to its luck and its parent's enthusiasm for understanding different programming languages, it survived the threatening monster of early abortion (this sadly cannot be said about its brother and sister projects which may rest in peace in the Git heavens...)
-
-So in the end, we can say OneLang came into this world **without explicit purpose**.
-
-# Maturity of OneLang
-
-OneLang is six months old at the time of writing and it already speaks, but don't expect any comfortable conversation with it yet. It cannot grow without a loving family, and as a single dad I cannot take care of it alone. It needs more mommies and daddies who can help raise it up.
 
 # Similar projects
 
