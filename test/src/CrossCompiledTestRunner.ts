@@ -169,9 +169,7 @@ class TestRunnerHandler {
     }
 
     async run() {
-        const cmdArgs = Array.from(this.commandLine.matchAll(/(?:((?:[^" ]|"([^"]*)")+)|"([^"]*)")(?: |$)/g)).map(x => x[1] || x[2]);
-        const cmdName = cmdArgs.shift();
-        const proc = spawn(cmdName, cmdArgs, { cwd: this.workingDir });
+        const proc = spawn('sh', ['-c', this.commandLine], { cwd: this.workingDir });
 
         new OutputReader(proc.stdout, meta => this.onMeta(meta), data => this.onData(data));
         proc.stderr.on('data', data => this.onStdErr(data.toString("utf-8")));
