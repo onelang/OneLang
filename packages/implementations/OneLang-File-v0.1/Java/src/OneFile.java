@@ -3,6 +3,7 @@ package io.onelang.std.file;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.io.IOException;
 import io.onelang.std.core.console;
 
@@ -31,8 +32,8 @@ public class OneFile {
 
     public static String[] listFiles(String directory, Boolean recursive) {
         try {
-            final var dirLen = directory.length();
-            var files = Files.walk(Paths.get(directory)).filter(Files::isRegularFile).map(Path::toString).map(x -> x.substring(dirLen)).sorted().toArray(String[]::new);
+            var dirPath = Path.of(directory);
+            var files = Files.walk(Paths.get(directory)).filter(Files::isRegularFile).map(x -> dirPath.relativize(x)).map(Path::toString).sorted().toArray(String[]::new);
             return files;
         } catch(Exception e) {
             console.error(e.toString());
@@ -42,7 +43,7 @@ public class OneFile {
 
     public static void copy(String srcFn, String dstFn) {
         try {
-            Files.copy(Path.of(srcFn), Path.of(OneFile.providePath(dstFn)));
+            Files.copy(Path.of(srcFn), Path.of(OneFile.providePath(dstFn)), StandardCopyOption.REPLACE_EXISTING);
         } catch(Exception e) {
             console.error("[ERROR] copy (srcFn = " + srcFn + ", dstFn = " + dstFn + "): " + e);
         }
