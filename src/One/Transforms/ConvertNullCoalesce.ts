@@ -57,12 +57,14 @@ export class ConvertNullCoalesce extends AstTransformer {
     // TODO: understand what goes wrong in C# -> if we convert this to array and then back to list then it won't work anymore (it removes all statements basically)
     protected visitBlock(block: Block): Block {
         // @csharp var prevStatements = this.statements;
+        // @java var prevStatements = this.statements;
         const prevStatements = this.statements;
         this.statements = [];
         for (const stmt of block.statements)
             this.statements.push(this.visitStatement(stmt));
         block.statements = this.statements;
         // @csharp this.statements = prevStatements;
+        // @java this.statements = prevStatements;
         this.statements = prevStatements;
         return block;
     }

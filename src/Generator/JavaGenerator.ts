@@ -342,7 +342,8 @@ export class JavaGenerator implements IGenerator {
                 }
                 else {
                     const repr = this.expr(part.expression);
-                    parts.push(part.expression instanceof ConditionalExpression ? `(${repr})` : repr);
+                    const isComplex = part.expression instanceof ConditionalExpression || part.expression instanceof BinaryExpression;
+                    parts.push(isComplex ? `(${repr})` : repr);
                 }
             }
             res = parts.join(' + ');
@@ -403,8 +404,9 @@ export class JavaGenerator implements IGenerator {
                 res = `new ${this.type(expr.actualType, true, true)}()`;
             } else {
                 this.imports.add(`java.util.Map`);
+                this.imports.add(`java.util.LinkedHashMap`);
                 const repr = expr.items.map(item => `${JSON.stringify(item.key)}, ${this.expr(item.value)}`).join(", ");
-                res = `Map.of(${repr})`;
+                res = `new LinkedHashMap<>(Map.of(${repr}))`;
             }
         } else if (expr instanceof NullLiteral) {
             res = `null`;
@@ -447,7 +449,7 @@ export class JavaGenerator implements IGenerator {
         } else if (expr instanceof EnumMemberReference) {
             res = `${this.name_(expr.decl.parentEnum.name)}.${this.name_(expr.decl.name)}`;
         } else if (expr instanceof NullCoalesceExpression) {
-            res = `${this.expr(expr.defaultExpr)} != null ? ${this.expr(expr.defaultExpr)} : ${this.mutatedExpr(expr.exprIfNull, expr.defaultExpr)}`;
+            res = `(${this.expr(expr.defaultExpr)} != null ? (${this.expr(expr.defaultExpr)}) : (${this.mutatedExpr(expr.exprIfNull, expr.defaultExpr)}))`;
         } else debugger;
         return res;
     }
@@ -512,7 +514,8 @@ export class JavaGenerator implements IGenerator {
         let res: string = null;
 
         if (stmt.attributes !== null && "java-import" in stmt.attributes)
-            this.imports.add(stmt.attributes["java-import"]);
+            for (const imp of stmt.attributes["java-import"].split(/\n/g))
+                this.imports.add(imp);
 
         if (stmt.attributes !== null && "java" in stmt.attributes) {
             res = stmt.attributes["java"];
@@ -613,11 +616,16 @@ export class JavaGenerator implements IGenerator {
 
             const superCall = cls.constructor_.superCallArgs !== null ? `super(${cls.constructor_.superCallArgs.map(x => this.expr(x)).join(", ")});\n` : "";
 
+            // @java var stmts = Stream.of(constrFieldInits, complexFieldInits, cls.constructor_.getBody().statements).flatMap(Collection::stream).toArray(Statement[]::new);
+            // @java-import java.util.Collection
+            // @java-import java.util.stream.Stream
+            const stmts = constrFieldInits.concat(complexFieldInits).concat(cls.constructor_.body.statements);
+
             // TODO: super calls
             resList.push(this.methodGen(
                 "public " + this.preIf("/* throws */ ", cls.constructor_.throws) + this.name_(cls.name),
                 cls.constructor_.parameters,
-                `\n{\n${this.pad(superCall + this.stmts(constrFieldInits.concat(complexFieldInits).concat(cls.constructor_.body.statements)))}\n}`));
+                `\n{\n${this.pad(superCall + this.stmts(stmts))}\n}`));
         } else if (complexFieldInits.length > 0)
             resList.push(`public ${this.name_(cls.name)}()\n{\n${this.pad(this.stmts(complexFieldInits))}\n}`);
 

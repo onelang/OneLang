@@ -514,13 +514,18 @@ export class PhpGenerator implements IGenerator {
 
                 const parentCall = cls.constructor_.superCallArgs !== null ? `parent::__construct(${cls.constructor_.superCallArgs.map(x => this.expr(x)).join(", ")});\n` : "";
 
+                // @java var stmts = Stream.of(constrFieldInits, complexFieldInits, ((Class)cls).constructor_.getBody().statements).flatMap(Collection::stream).toArray(Statement[]::new);
+                // @java-import java.util.Collection
+                // @java-import java.util.stream.Stream
+                const stmts = constrFieldInits.concat(complexFieldInits).concat(cls.constructor_.body.statements);
+
                 resList.push(
                     this.preIf("/* throws */ ", cls.constructor_.throws) + 
                     "function __construct" +
                     `(${cls.constructor_.parameters.map(p => this.var(p, p)).join(", ")})` +
                     ` {\n${this.pad(
                         parentCall +
-                        this.stmts(constrFieldInits.concat(complexFieldInits).concat(cls.constructor_.body.statements)))}\n}`);
+                        this.stmts(stmts))}\n}`);
             } else if (complexFieldInits.length > 0)
                 resList.push(`function __construct()\n{\n${this.pad(this.stmts(complexFieldInits))}\n}`);
 
