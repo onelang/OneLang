@@ -57,10 +57,9 @@ jobs:
           extensions: yaml
           coverage: none # disable Xdebug which limits call stack length
 
-      - name: '[Env/PHP] Install Composer dependencies'
-        uses: php-actions/composer@v5
-        with:
-          command: dump-autoload
+      - name: '[Env/PHP] Setup Composer deps'
+        run: composer dump-autoload
+        working-directory: ./xcompiled/PHP
 
       - name: '[Env/Java] Install Java JDK 1.11'
         uses: actions/setup-java@v1
