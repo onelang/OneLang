@@ -1,9 +1,0 @@
-implements:
-  - interface: { name: One.Regex, minver: 0.1, maxver: 0.1 }
-    language: python
-    native-includes: ["OneRegex.py"]
-    implementation:
-      classes:
-        OneRegex:
-          includes: ["OneRegex"]
-          template: "OneRegex"

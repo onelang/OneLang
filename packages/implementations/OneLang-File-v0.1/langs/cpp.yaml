@@ -1,8 +1,0 @@
-implements:
-  - interface: { name: One.File, minver: 0.1, maxver: 0.1 }
-    language: cpp
-    native-include-dir: "cpp"
-    implementation:
-      classes:
-        OneFile:
-          includes: ["OneLang-File-v0.1/OneFile.hpp"]

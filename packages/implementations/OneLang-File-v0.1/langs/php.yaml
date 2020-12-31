@@ -1,9 +1,0 @@
-implements:
-  - interface: { name: One.File, minver: 0.1, maxver: 0.1 }
-    language: php
-    implementation:
-      classes:
-        OneFile:
-          methods:
-            readText: "file_get_contents({{fn}})"
-            writeText: "file_put_contents({{fn}}, {{content}})"

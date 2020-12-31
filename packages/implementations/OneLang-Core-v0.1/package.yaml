@@ -2,18 +2,6 @@ file-version: 1
 vendor: OneLang
 name: Core
 version: 0.1
-includes:
-  - langs/cpp.yaml
-  - langs/csharp.yaml
-  - langs/go.yaml
-  - langs/java.yaml
-  - langs/javascript.yaml
-  - langs/perl.yaml
-  - langs/php.yaml
-  - langs/python.yaml
-  - langs/ruby.yaml
-  - langs/swift.yaml
-  - langs/typescript.yaml
 languages:
   php:
     native-src-dir: PHP/src

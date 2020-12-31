@@ -1,8 +1,0 @@
-implements:
-  - interface: { name: One.Regex, minver: 0.1, maxver: 0.1 }
-    language: cpp
-    native-include-dir: "cpp"
-    implementation:
-      classes:
-        OneRegex:
-          includes: ["OneLang-Regex-v0.1/OneRegex.hpp"]

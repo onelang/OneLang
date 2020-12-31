@@ -1,9 +1,0 @@
-implements:
-  - interface: { name: One.File, minver: 0.1, maxver: 0.1 }
-    language: ruby
-    implementation:
-      classes:
-        OneFile:
-          methods:
-            readText: "IO.read({{fn}})"
-            writeText: "IO.write({{fn}}, {{content}})"
