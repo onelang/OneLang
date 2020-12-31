@@ -12,7 +12,7 @@ languages:
     package-dir: yaml
     native-src-dir: Java/src
     native-dependencies:
-      - { name: org.yaml:snakeyaml, version: '1.27' }
+      - { name: 'org.yaml:snakeyaml', version: '1.27' }
   csharp:
     native-src-dir: CSharp/src
     native-dependencies:
