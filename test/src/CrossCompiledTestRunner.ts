@@ -239,27 +239,35 @@ export class CrossCompiledTestRunner {
 
         console.log();
         console.log(color.bgBlue(color.white("  ===  JavaScript (baseline)  ===  ")));
-        results["js"] = await new TestRunnerHandler(`node --unhandled-rejections=strict SelfTest.js --output-dir ${outDir}/JS`, `${baseDir}/test/lib`, result => this.jsResultCallback(result)).run();
-        for (const result of results["js"].testResults)
+        const jsResults = results["JavaScript"] = await new TestRunnerHandler(`node --unhandled-rejections=strict SelfTest.js --output-dir ${outDir}/JS`, `${baseDir}/test/lib`, result => this.jsResultCallback(result)).run();
+        for (const result of jsResults.testResults)
             this.jsResults[`${result.collectionName}.${result.testName}`] = result;
 
         console.log();
         console.log(color.bgBlue(color.white("  ===  PHP  ===  ")));
-        results["php"] = await new TestRunnerHandler(`php main.php --output-dir ${outDir}/PHP`, `${baseDir}/xcompiled/PHP`, result => this.checkResult(result)).run();
+        results["PHP"] = await new TestRunnerHandler(`php main.php --output-dir ${outDir}/PHP`, `${baseDir}/xcompiled/PHP`, result => this.checkResult(result)).run();
 
         console.log();
         console.log(color.bgBlue(color.white("  ===  Python  ===  ")));
-        results["python"] = await new TestRunnerHandler(`python3 -u main.py --output-dir ${outDir}/Python`, `${baseDir}/xcompiled/Python`, result => this.checkResult(result)).run();
+        results["Python"] = await new TestRunnerHandler(`python3 -u main.py --output-dir ${outDir}/Python`, `${baseDir}/xcompiled/Python`, result => this.checkResult(result)).run();
 
         console.log();
         console.log(color.bgBlue(color.white("  ===  CSharp  ===  ")));
-        results["csharp"] = await new TestRunnerHandler(`dotnet run --output-dir ${outDir}/CSharp`, `${baseDir}/xcompiled/CSharp`, result => this.checkResult(result)).run();
+        results["C#"] = await new TestRunnerHandler(`dotnet run --output-dir ${outDir}/CSharp`, `${baseDir}/xcompiled/CSharp`, result => this.checkResult(result)).run();
 
         console.log();
         console.log(color.bgBlue(color.white("  ===  Java  ===  ")));
-        results["java"] = await new TestRunnerHandler(`gradle run --args="--output-dir ${outDir}/Java"`, `${baseDir}/xcompiled/Java`, result => this.checkResult(result)).run();
+        results["Java"] = await new TestRunnerHandler(`gradle run --args="--output-dir ${outDir}/Java"`, `${baseDir}/xcompiled/Java`, result => this.checkResult(result)).run();
 
+        console.log();
+        console.log(color.bgBlue(color.white("  ===  Summary  ===  ")));
         const success = Object.values(results).every(x => x.passed);
+
+        for (const langName of Object.keys(results))
+            console.log(` - ${langName}: ${color.bold(results[langName].passed ? color.green("✔") : color.redBright("✗"))}`);
+        console.log();
+        console.log(color.bold(success ? color.green("Success.") : color.redBright("Failed!")));
+
         return success;
     }
 }

@@ -52,10 +52,13 @@ jobs:
       - name: '[Env/PHP] Install PHP with YAML'
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.4'
+          php-version: '8'
           tools: pecl
           extensions: yaml
           coverage: none # disable Xdebug which limits call stack length
+      
+      - name: '[Env/PHP] Show YAML version'
+        run: php -r 'phpinfo();'|grep -i yaml
 
       - name: '[Env/PHP] Setup Composer deps'
         run: composer dump-autoload
