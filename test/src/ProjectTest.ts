@@ -62,5 +62,5 @@ CompilerHelper.baseDir = `${baseDir}/`;
 //compileTests().then(() => console.log("DONE (Tests)."));
 compileProject(`${baseDir}/xcompiled-src`).then(() => {
     console.log("DONE (OneLang compilation).");
-    new CrossCompiledTestRunner().run();
+    //new CrossCompiledTestRunner().run();
 });

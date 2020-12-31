@@ -85,6 +85,8 @@ class TestResult {
 
 class TestRunnerResult {
     constructor(public testResults: TestResult[], public stderr: string, public exitCode: number, public signal: string) { }
+
+    get passed() { return this.testResults.every(x => x.checkResult.passed) && this.exitCode === 0 && this.signal === null; }
 }
 
 class CheckResult { 
@@ -233,29 +235,34 @@ export class CrossCompiledTestRunner {
         const outDir = `${baseDir}/tmp/TestRunner`;
         fs.rmdirSync(outDir, { recursive: true });
 
+        const results: { [langName: string]: TestRunnerResult } = {};
+
         console.log();
         console.log(color.bgBlue(color.white("  ===  JavaScript (baseline)  ===  ")));
-        const jsResult = await new TestRunnerHandler(`node --unhandled-rejections=strict SelfTest.js --output-dir ${outDir}/JS`, `${baseDir}/test/lib`, result => this.jsResultCallback(result)).run();
-        for (const result of jsResult.testResults)
+        results["js"] = await new TestRunnerHandler(`node --unhandled-rejections=strict SelfTest.js --output-dir ${outDir}/JS`, `${baseDir}/test/lib`, result => this.jsResultCallback(result)).run();
+        for (const result of results["js"].testResults)
             this.jsResults[`${result.collectionName}.${result.testName}`] = result;
 
         console.log();
         console.log(color.bgBlue(color.white("  ===  PHP  ===  ")));
-        const phpResult = await new TestRunnerHandler(`php main.php --output-dir ${outDir}/PHP`, `${baseDir}/xcompiled/PHP`, result => this.checkResult(result)).run();
+        results["php"] = await new TestRunnerHandler(`php main.php --output-dir ${outDir}/PHP`, `${baseDir}/xcompiled/PHP`, result => this.checkResult(result)).run();
 
         console.log();
         console.log(color.bgBlue(color.white("  ===  Python  ===  ")));
-        const pythonResult = await new TestRunnerHandler(`python3 -u main.py --output-dir ${outDir}/Python`, `${baseDir}/xcompiled/Python`, result => this.checkResult(result)).run();
+        results["python"] = await new TestRunnerHandler(`python3 -u main.py --output-dir ${outDir}/Python`, `${baseDir}/xcompiled/Python`, result => this.checkResult(result)).run();
 
         console.log();
         console.log(color.bgBlue(color.white("  ===  CSharp  ===  ")));
-        const csharpResult = await new TestRunnerHandler(`dotnet run --output-dir ${outDir}/CSharp`, `${baseDir}/xcompiled/CSharp`, result => this.checkResult(result)).run();
+        results["csharp"] = await new TestRunnerHandler(`dotnet run --output-dir ${outDir}/CSharp`, `${baseDir}/xcompiled/CSharp`, result => this.checkResult(result)).run();
 
         console.log();
         console.log(color.bgBlue(color.white("  ===  Java  ===  ")));
-        const javaResult = await new TestRunnerHandler(`gradle run --args="--output-dir ${outDir}/Java"`, `${baseDir}/xcompiled/Java`, result => this.checkResult(result)).run();
+        results["java"] = await new TestRunnerHandler(`gradle run --args="--output-dir ${outDir}/Java"`, `${baseDir}/xcompiled/Java`, result => this.checkResult(result)).run();
+
+        const success = Object.values(results).every(x => x.passed);
+        return success;
     }
 }
 
 if (require.main === module)
-    new CrossCompiledTestRunner().run();
+    new CrossCompiledTestRunner().run().then(success => process.exit(success ? 0 : 1));

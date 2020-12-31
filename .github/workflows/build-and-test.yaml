@@ -4,73 +4,79 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: '[Env] Checkout source repository (recursively)'
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - name: '[Env] Cleanup generated code'
-      working-directory: ./xcompiled-src/scripts
-      run: ./cleanup_generated_code.sh
-    - name: '[Env] Setup Node.js (12.x)'
-      uses: actions/setup-node@v1
-      with:
-        node-version: '12.x'
-    - name: '[Env] Cache npm modules'
-      uses: actions/cache@v2
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
-    - name: '[Build] Install OneLang npm dependencies'
-      run: npm install
-    - name: '[Build] Build OneLang TypeScript project'
-      run: npx tsc -b . test build
-    - name: '[Build] Compile OneLang TS into C# & Python & PHP & Java'
-      run: npx ./test/lib/ProjectTest.js
-    - name: '[Env] Install Java JDK 1.11'
-      uses: actions/setup-java@v1
-      with:
-        java-version: 11
-        java-package: jdk
-    - name: '[Test] Build & run SelfTest - Java'
-      run: ./gradlew run
-      working-directory: ./xcompiled/Java
-    - name: '[Test] Run SelfTest - TypeScript'
-      run: node --unhandled-rejections=strict ./test/lib/SelfTest.js
-    - name: '[Env] Setup Python (3.7)'
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.7
-    - name: '[Env] Install Python dependencies'
-      run: pip install -r requirements.txt
-      working-directory: ./xcompiled/Python
-    - name: '[Test] Run SelfTest - Python'
-      run: python main.py
-      working-directory: ./xcompiled/Python
-    - name: '[Env] Install .NET'
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '3.1.x'
-    - name: '[Test] Run SelfTest - C#'
-      run: dotnet run
-      working-directory: ./xcompiled/CSharp
-    - name: '[Env] Install PHP with YAML'
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '7.4'
-        tools: pecl
-        extensions: yaml
-        coverage: none # disable Xdebug which limits call stack length
-    - name: '[Test] Run SelfTest - PHP'
-      run: php main.php
-      working-directory: ./xcompiled/PHP
-    - name: '[CI] Slack notification on fail'
-      if: failure()
-      env:
-        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-      uses: voxmedia/github-action-slack-notify-build@v1
-      with:
-        channel: testruns
-        status: FAILED
-        color: danger
+      - name: '[Env] Checkout source repository (recursively)'
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+  
+      - name: '[Env] Cleanup generated code'
+        working-directory: ./xcompiled-src/scripts
+        run: ./cleanup_generated_code.sh
+
+      - name: '[Env] Setup Node.js (12.x)'
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+
+      - name: '[Env] Cache npm modules'
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: '[Build] Install OneLang npm dependencies'
+        run: npm install
+
+      - name: '[Build] Build OneLang TypeScript project'
+        run: npx tsc -b . test build
+  
+      - name: '[Build] Compile OneLang TS into C# & Python & PHP & Java'
+        run: npx ./test/lib/ProjectTest.js
+        
+      - name: '[Env/Python] Setup Python (3.7)'
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - name: '[Env/Python] Install Python dependencies'
+        run: pip install -r requirements.txt
+        working-directory: ./xcompiled/Python
+
+      - name: '[Env/.NET] Install .NET'
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x'
+
+      - name: '[Env/PHP] Install PHP with YAML'
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          tools: pecl
+          extensions: yaml
+          coverage: none # disable Xdebug which limits call stack length
+
+      - name: '[Env/PHP] Install Composer dependencies'
+        uses: php-actions/composer@v5
+        with:
+          command: dump-autoload
+
+      - name: '[Env/Java] Install Java JDK 1.11'
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+          java-package: jdk
+
+      - name: '[Test] Run cross-compiled tests'
+        run: npx ./test/lib/CrossCompiledTestRunner.js
+
+      - name: '[CI] Slack notification on fail'
+        if: failure()
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        uses: voxmedia/github-action-slack-notify-build@v1
+        with:
+          channel: testruns
+          status: FAILED
+          color: danger
