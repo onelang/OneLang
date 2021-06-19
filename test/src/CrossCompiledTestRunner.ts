@@ -233,7 +233,8 @@ export class CrossCompiledTestRunner {
     async run() {
         const baseDir = `${__dirname}/../..`;
         const outDir = `${baseDir}/tmp/TestRunner`;
-        fs.rmdirSync(outDir, { recursive: true });
+        if (fs.existsSync(outDir))
+            fs.rmSync(outDir, { recursive: true });
 
         const results: { [langName: string]: TestRunnerResult } = {};
 
