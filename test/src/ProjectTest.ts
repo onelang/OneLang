@@ -1,8 +1,3 @@
-import 'module-alias/register';
-
-process.env.NODE_PATH = `${__dirname}/../../onepkg`;
-require("module").Module._initPaths();
-
 import { readDir, baseDir, writeFile } from "./Utils/TestUtils";
 import { ProjectGenerator } from "@one/Generator/ProjectGenerator";
 import { Compiler, ICompilerHooks } from "@one/One/Compiler";

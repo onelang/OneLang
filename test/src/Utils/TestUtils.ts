@@ -1,4 +1,9 @@
 import 'module-alias/register';
+
+export const baseDir = `${__dirname}/../../..`;
+process.env.NODE_PATH = `${baseDir}/onepkg`;
+require("module").Module._initPaths();
+
 import * as assert from 'assert';
 import * as YAML from "js-yaml";
 import * as fs from 'fs';
@@ -6,8 +11,6 @@ import * as path from 'path';
 import * as mkdirp from 'mkdirp';
 
 export { assert };
-
-export const baseDir = `${__dirname}/../../..`;
 
 export function readFile(fn: string): string {
     return fs.readFileSync(`${baseDir}/${fn}`, "utf8");
