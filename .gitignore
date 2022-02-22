@@ -13,3 +13,4 @@ tmp/
 build/*.js
 packages/bundle.json
 dist/
+src_snapshot/

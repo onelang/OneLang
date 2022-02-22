@@ -8,7 +8,7 @@
         { "name": "OneLang-Reflect", "version": "0.1" },
         { "name": "OneLang-Yaml", "version": "0.1" }
     ],
-    "sourceDir": "../src",
+    "sourceDir": "../src_snapshot",
     "sourceLang": "ts",
     "nativeSourceDir": "native",
     "outputDir": "../xcompiled",
