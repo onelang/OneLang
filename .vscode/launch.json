@@ -89,6 +89,14 @@
         {
           "type": "node",
           "request": "launch",
+          "name": "QuickCompileTest",
+          "program": "${workspaceFolder}/test/lib/QuickCompileTest.js",
+          "cwd": "${workspaceFolder}",
+          "protocol": "inspector"
+        },
+        {
+          "type": "node",
+          "request": "launch",
           "name": "Generate AST helper code",
           "program": "${workspaceFolder}/build/generate-ast-helper-code.js",
           "cwd": "${workspaceFolder}",
