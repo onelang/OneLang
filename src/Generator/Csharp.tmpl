@@ -40,16 +40,16 @@
     #switch instanceof(stmt)
         #case BreakStatement
             break;
-        
+
         #case ReturnStatement
             #if expression
                 return $expression;
             #else
                 return;
-        
+
         #case UnsetStatement
             /* unset $expression; */
-        
+
         #case ThrowStatement
             throw $expression;
 
@@ -73,7 +73,7 @@
                 else $else_.statements[0]
             #elif else_
                 else $else_
-        
+
         #case WhileStatement
             while ($condition) $body
 
@@ -90,10 +90,10 @@
                 catch (Exception $catchVar.name) $catchBody
             #if finallyBody
                 finally $finallyBody
-        
+
         #case ContinueStatement
             continue;
-     
+
 
 #template Class cls
     #for fields sep=" "
@@ -165,7 +165,7 @@
                 #params isInterface=true
                     $method
             }
-        
+
         #for classes
             public class $name<$typeArgs> : $baseClasses
             {

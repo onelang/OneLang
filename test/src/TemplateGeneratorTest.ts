@@ -1,4 +1,4 @@
-import { readFile, baseDir } from './Utils/TestUtils';
+import { readFile, writeFile, baseDir } from './Utils/TestUtils';
 import { LinePositionStore } from "@one/Parsers/Common/Reader";
 import { extname } from 'path';
 
@@ -16,9 +16,10 @@ class Node {
 class EmptyNode extends Node { }
 
 class Block extends Node {
+    public childPad: number = 0;
     public children: Node[] = [];
 
-    constructor(public childPad: number, public header: string) {
+    constructor(public hdrPad: number, public header: string) {
         super();
     }
 }
@@ -34,24 +35,28 @@ class TreeBuilder implements ITreeBuilder {
 
     parentStack: Block[] = [];
     lastChildStack: Block[] = [];
+    childPadStack: number[] = [];
 
     root = new Block(0, null);
-    parent: Block = this.root;
 
+    parent: Block = this.root;
     // cache for parent's last block child where new indented nodes can be appended
     // EMPTY lines does not invalidate this value, but TEXT lines do 
     //   (new node should be appended to parent after a TEXT line)
     lastChildBlock: Block = null;
+    childPad = 0;
 
     pushState() {
         this.parentStack.push(this.parent);
         this.lastChildStack.push(this.lastChildBlock);
+        this.childPadStack.push(this.childPad);
     }
 
     popState() {
         if (this.parentStack.length === 0) debugger;
         this.parent = this.parentStack.pop();
         this.lastChildBlock = this.lastChildStack.pop();
+        this.childPad = this.childPadStack.pop();
     }
     
     reportPosition(pos: number) { this.pos = pos; }
@@ -62,11 +67,12 @@ class TreeBuilder implements ITreeBuilder {
         //     # child 1
         //     # lastChild       -> new parent
         //         # newNode     -> new lastChild (if block)
-        if (this.lastChildBlock !== null && padLen > this.parent.childPad) {
+        if (this.lastChildBlock !== null && padLen > this.childPad) {
             this.pushState();
             this.parent = this.lastChildBlock;
-            this.parent.childPad = padLen;
             this.lastChildBlock = null;
+            this.parent.childPad = padLen - this.childPad;
+            this.childPad = padLen;
             return;
         }
 
@@ -77,7 +83,7 @@ class TreeBuilder implements ITreeBuilder {
         //     # newNode
 
         // Find the node which should be the parent of a node at padLen.
-        while (padLen < this.parent.childPad)
+        while (padLen < this.childPad)
             this.popState();
     }
 
@@ -92,23 +98,25 @@ class TreeBuilder implements ITreeBuilder {
         // # parent
         //     # lastChild
         //   # newBlock         -> inconsistent padding
-        if (padLen < this.parent.childPad)
+        if (padLen < this.childPad)
             throw new Error("Inconsistent padding!");
 
-        const newBlock = new Block(-1, header);
+        const newBlock = new Block(padLen - this.childPad, header);
         this.parent.children.push(newBlock);
         this.lastChildBlock = newBlock;
     }
 
     addTextLine(padLen: number, fullLine: string) {
         this.preparePlace(padLen);
-        const text = fullLine.substring(this.parent.childPad);
+        const text = fullLine.substring(this.childPad);
         this.parent.children.push(new TextLine(text));
         // this text line separates future nodes from the previous block
         this.lastChildBlock = null;
     }
 }
 
+// parses Generator Template file line-by-line and identifies block starts ("#") and
+// delegates tree building to ITreeBuilder interface
 class BlockParser {
     constructor(public input: string, public builder: ITreeBuilder, public blockStart = "#") { }
 
@@ -145,8 +153,29 @@ class BlockParser {
     }
 }
 
+function stringifyTree(node: Node) {
+    if (node instanceof EmptyNode)
+        return "";
+    else if (node instanceof TextLine)
+        return node.text;
+    else if (node instanceof Block) {
+        let result = node.header !== null ? ' '.repeat(node.hdrPad) + "#" + node.header : "";
+        if (node.children.length > 0) {
+            const pad = ' '.repeat(node.childPad);
+            if (result !== "")
+                result += "\n";
+
+            result += node.children.map(x => 
+                pad + stringifyTree(x).replace(/\n/g, '\n' + pad)).join("\n");
+        }
+        return result;
+    }
+}
+
 const tmplStr = readFile("src/Generator/Csharp.tmpl");
 const treeBuilder = new TreeBuilder();
 BlockParser.parse(tmplStr, treeBuilder);
 console.log(treeBuilder.root);
+const treeStr = stringifyTree(treeBuilder.root).replace(/\n +(?=\n)/g, "\n");
+console.log(treeStr);
 debugger;
