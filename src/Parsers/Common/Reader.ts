@@ -15,7 +15,7 @@ export interface IReaderHooks {
 export class Reader {
     wsOffset = 0;
     offset = 0;
-    cursorSearch: CursorPositionSearch;
+    linePositions: LinePositionStore;
 
     lineComment = "//";
     supportsBlockComment = true;
@@ -34,12 +34,12 @@ export class Reader {
     prevTokenOffset = -1;
 
     constructor(public input: string) {
-        this.cursorSearch = new CursorPositionSearch(input);
+        this.linePositions = new LinePositionStore(input);
     }
 
     get eof() { return this.offset >= this.input.length; }
 
-    get cursor() { return this.cursorSearch.getCursorForOffset(this.offset); }
+    get cursor() { return this.linePositions.getCursorFor(this.offset); }
 
     linePreview(cursor: Cursor): string {
         const line = this.input.substring(cursor.lineStart, cursor.lineEnd - 1);
@@ -54,7 +54,7 @@ export class Reader {
     }
 
     fail(message: string, offset = -1): void {
-        const error = new ParseError(message, this.cursorSearch.getCursorForOffset(offset === -1 ? this.offset : offset), this);
+        const error = new ParseError(message, this.linePositions.getCursorFor(offset === -1 ? this.offset : offset), this);
         this.errors.push(error);
 
         if (this.hooks !== null)
@@ -309,42 +309,60 @@ export class Reader {
     }
 }
 
-class CursorPositionSearch {
-    lineOffsets = [0];
+export class BinarySearchUtils {
+    // values = [1,3], searchFor = 0  ->  result = -1
+    // values = [1,3], searchFor = 1  ->  result = 0
+    // values = [1,3], searchFor = 2  ->  result = 0
+    // values = [1,3], searchFor = 3  ->  result = 1
+    // values = [1,3], searchFor = 4  ->  result = 1
+    static exactOrSmallerIdx(values: number[], searchFor: number) {
+        let lowIdx = 0;
+        let highIdx = values.length - 1;
 
-    constructor(public input: string) {
-        for (let i = 0; i < input.length; i++)
-            if (input[i] === '\n')
-                this.lineOffsets.push(i + 1);
-        this.lineOffsets.push(input.length);
-    }
-
-    getLineIdxForOffset(offset: number) {
-        let low = 0;
-        let high = this.lineOffsets.length - 1;
-
-        while (low <= high) {
+        while (lowIdx <= highIdx) {
             // @java var middle = (int)Math.floor((low + high) / 2);
-            const middle = Math.floor((low + high) / 2);
-            const middleOffset = this.lineOffsets[middle];
-            if (offset == middleOffset)
-                return middle;
-            else if (offset <= middleOffset)
-                high = middle - 1;
+            const middleIdx = Math.floor((lowIdx + highIdx) / 2);
+            const middleValue = values[middleIdx];
+            if (searchFor === middleValue)
+                return middleIdx;
+            
+            if (searchFor <= middleValue)
+                highIdx = middleIdx - 1;
             else
-                low = middle + 1;
+                lowIdx = middleIdx + 1;
         }
 
-        return low - 1;
+        return lowIdx - 1;
+    }
+}
+
+export class LinePositionStore {
+    lineStarts: number[] = null;
+
+    constructor(public input: string) { }
+
+    processInput() {
+        this.lineStarts = [0];
+        let curr = 0;
+        while (true) {
+            curr = this.input.indexOf('\n', curr);
+            if (curr === -1) break;
+            this.lineStarts.push(curr);
+        }
     }
 
-    getCursorForOffset(offset: number): Cursor {
-        const lineIdx = this.getLineIdxForOffset(offset);
-        const lineStart = this.lineOffsets[lineIdx];
-        const lineEnd = this.lineOffsets[lineIdx + 1];
-        const column = offset - lineStart + 1;
-        if (column < 1)
-            throw new Error("Column should not be < 1");
-        return new Cursor(offset, lineIdx + 1, offset - lineStart + 1, lineStart, lineEnd);
+    getCursorFor(pos: number) {
+        const len = this.input.length;
+        if (pos < 0)
+            throw new Error(`Invalid position (${pos}), it should be greater than zero!`);
+        if (pos > len)
+            throw new Error(`Invalid position (${pos}), it should be equal or smaller than input length (${len}!`);
+        if (this.lineStarts === null)
+            this.processInput();
+
+        const lineIdx = BinarySearchUtils.exactOrSmallerIdx(this.lineStarts, pos);
+        const lineStart = this.lineStarts[lineIdx];
+        const lineEnd = lineIdx + 1 < this.lineStarts.length ? this.lineStarts[lineIdx + 1] : len;
+        return new Cursor(pos, lineIdx, pos - lineStart, lineStart, lineEnd);
     }
 }
