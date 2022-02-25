@@ -1,0 +1,183 @@
+#template Visibility
+    #switch
+        #case Private: private
+        #case Protected: protected
+        #case Public: public
+        #else: /* TODO: not set */public
+
+#template IExpression expr
+    #switch instanceof(expr) zip
+        #case NewExpression
+            new $expr.cls($newParams)
+
+        #case UnresolvedNewExpression
+            /* TODO: UnresolvedNewExpression */
+            new $cls($args)
+
+        #case Identifier
+            /* TODO: Identifier */
+            $text
+
+        #case PropertyAccessExpression
+            /* TODO: PropertyAccessExpression */
+            $object.$propertyName
+
+        #case UnresolvedCallExpression
+            /* TODO: UnresolvedCallExpression */
+            $func<$typeArgs>($args)
+
+        #case UnresolvedMethodCallExpression
+            /* TODO: UnresolvedMethodCallExpression */
+            $object.$methodName<$typeArgs>($args)
+
+        #case ThisReference
+            this
+
+        #case NullLiteral
+            null
+
+#template Statement stmt
+    #switch instanceof(stmt)
+        #case BreakStatement
+            break;
+        
+        #case ReturnStatement
+            #if expression
+                return $expression;
+            #else
+                return;
+        
+        #case UnsetStatement
+            /* unset $expression; */
+        
+        #case ThrowStatement
+            throw $expression;
+
+        #case ExpressionStatement
+            $expression;
+
+        #case VariableDeclaration
+            #if (initializer instanceof NullLiteral)
+                $type $name = null;
+            #elif (initializer)
+                var $name = $initializer;
+            #else
+                $type $name;
+
+        #case ForeachStatement
+            foreach (var $itemVar in $items) $body
+
+        #case IfStatement
+            if ($condition) $then
+            #if elseIf
+                else $else_.statements[0]
+            #elif else_
+                else $else_
+        
+        #case WhileStatement
+            while ($condition) $body
+
+        #case ForStatement
+            for ($itemVar; $condition; $incrementor) $body
+
+        #case DoStatement
+            do $body while ($condition)
+
+        #case TryStatement
+            try $tryBody
+            #if catchBody
+                #using System
+                catch (Exception $catchVar.name) $catchBody
+            #if finallyBody
+                finally $finallyBody
+        
+        #case ContinueStatement
+            continue;
+     
+
+#template Class cls
+    #for fields sep=" "
+        $visibility
+        #if static: static
+        $type $name
+        #if (interfaceDeclarations || !complexInitializer) sep=" "
+            { get; set; }
+            #if initializer: = $initializer;
+        #else: ;
+
+    #for properties sep=" "
+        $visibility
+        #if static: static
+        $type $name
+        #if (getter || setter) pre="\n"
+            {
+                #if getter auto-expand: get { $getter }
+                #if setter auto-expand: set { $setter }
+            }
+
+    #if staticConstructorStmts
+        static $name()
+        {
+            $staticConstructorStmts
+        }
+
+    #if constructor_ scoped sep=" "
+        public
+        #if throws: /* throws */
+        $cls.name($parameters)
+        #if superCallArgs
+            : base($superCallArgs)
+        #block trim expand: { $stmts }
+
+    #params isInterface=false
+        $method
+
+#template Method[]
+    #if isInterface: $visibility
+    #if isStatic: static
+    #if isVirtual: virtual
+    #if overrides: override
+    #if async: async
+    #if throws: /* throws */
+    $returnType
+    $name<$typeArguments>
+    #if body expand: { $body }
+    #else: ;
+
+#template SourceFile
+    #for usings
+        using $scope;
+
+    namespace $namespace
+    {
+        #for enums
+            public enum $name {
+                #for values sep=", " pre=" " post=" ":
+                    $name
+            }
+
+        #for interfaces
+            public interface $name<$typeArgs> : $baseInterfaces
+            {
+                #for fields sep=" "
+                    $type $name { get; set; }
+
+                #params isInterface=true
+                    $method
+            }
+        
+        #for classes
+            public class $name<$typeArgs> : $baseClasses
+            {
+                $scope
+            }
+
+        #if mainBlock
+            public class Program
+            {
+                static void Main(string[] args)
+                {
+                    $mainBlock
+                }
+            }
+    }
