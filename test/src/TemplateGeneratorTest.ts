@@ -410,20 +410,20 @@ class LineParser {
     }
 }
 
-function stringifyTree(node: Node) {
+function stringifyTree(node: Node, blockChar = ' ', childChar = ' ') {
     if (node instanceof EmptyLine)
         return "";
     else if (node instanceof TextLine)
         return node.text;
     else if (node instanceof Block) {
-        let result = node.header !== null ? ' '.repeat(node.blockPad) + "#" + node.header : "";
+        let result = node.header !== null ? blockChar.repeat(node.blockPad) + "#" + node.header : "";
         if (node.children.length > 0) {
-            const pad = node.childPad < 0 ? "" : ' '.repeat(node.blockPad + node.childPad);
+            const pad = node.childPad < 0 ? "" : blockChar.repeat(node.blockPad) + childChar.repeat(node.childPad);
             if (result !== "")
                 result += "\n";
 
             result += node.children.map(x => 
-                pad + stringifyTree(x).replace(/\n/g, '\n' + pad)).join("\n");
+                pad + stringifyTree(x, blockChar, childChar).replace(/\n/g, '\n' + pad)).join("\n");
         }
         return result;
     }
@@ -433,8 +433,8 @@ const tmplStr = readFile("src/Generator/Csharp.tmpl");
 const treeBuilder = new TreeBuilder();
 const root = LineParser.parse(tmplStr, treeBuilder);
 console.log(root);
+console.log(stringifyTree(root, '_', '.'));
 const treeStr = stringifyTree(root).replace(/\n +(?=\n)/g, "\n");
-console.log(treeStr);
 if (treeStr !== tmplStr) {
     writeFile("src/Generator/Csharp.tmpl.gen", treeStr);
     debugger;
