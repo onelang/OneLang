@@ -6,7 +6,7 @@
         #else: /* TODO: not set */public
 
 #template IExpression expr
-    #switch instanceof(expr) zip
+    #switch type(expr)
         #case NewExpression
             new $expr.cls($newParams)
 
@@ -37,7 +37,7 @@
             null
 
 #template Statement stmt
-    #switch instanceof(stmt)
+    #switch type(stmt)
         #case BreakStatement
             break;
 
@@ -152,7 +152,7 @@
     {
         #for enums
             public enum $name {
-                #for values sep=", " pre=" " post=" ":
+                #for values sep=", " pre=" " post=" "
                     $name
             }
 

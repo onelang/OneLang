@@ -1,7 +1,12 @@
 import { Utils } from "./Utils";
 
 export class Cursor {
-    constructor(public offset: number, public line: number, public column: number, public lineStart: number, public lineEnd: number) { }
+    constructor(public input: string, public offset: number, public line: number, public column: number, public lineStart: number, public lineEnd: number) { }
+
+    get preview(): string {
+        const line = this.input.substring(this.lineStart, this.lineEnd - 1);
+        return `${line}\n${" ".repeat(this.column)}^^^`;
+    }
 }
 
 export class ParseError {
@@ -207,6 +212,12 @@ export class Reader {
         return matches;
     }
 
+    readFirstRegex(pattern: string): string {
+        const matches = this.readRegex(pattern);
+        if (matches === null) return null;
+        return matches[0];
+    }
+
     skipWhitespaceAndComment(): void {
         if (this.commentDisabled) return;
 
@@ -307,6 +318,12 @@ export class Reader {
         }
         return result;
     }
+
+    readAll(): string {
+        const result = this.input.substring(this.offset);
+        this.offset = this.input.length;
+        return result;
+    }
 }
 
 export class BinarySearchUtils {
@@ -339,14 +356,17 @@ export class BinarySearchUtils {
 export class LinePositionStore {
     lineStarts: number[] = null;
 
-    constructor(public input: string) { }
+    constructor(public input: string) {
+        if (input === null)
+            throw new Error("Input cannot be null.")
+    }
 
     processInput() {
         this.lineStarts = [0];
         let curr = 0;
         while (true) {
-            curr = this.input.indexOf('\n', curr);
-            if (curr === -1) break;
+            curr = this.input.indexOf('\n', curr) + 1;
+            if (curr === 0) break;
             this.lineStarts.push(curr);
         }
     }
@@ -363,6 +383,6 @@ export class LinePositionStore {
         const lineIdx = BinarySearchUtils.exactOrSmallerIdx(this.lineStarts, pos);
         const lineStart = this.lineStarts[lineIdx];
         const lineEnd = lineIdx + 1 < this.lineStarts.length ? this.lineStarts[lineIdx + 1] : len;
-        return new Cursor(pos, lineIdx, pos - lineStart, lineStart, lineEnd);
+        return new Cursor(this.input, pos, lineIdx, pos - lineStart, lineStart, lineEnd);
     }
 }
