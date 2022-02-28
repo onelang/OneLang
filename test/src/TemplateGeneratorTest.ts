@@ -6,7 +6,7 @@ import { UnresolvedType } from '@one/One/Ast/AstTypes';
 
 interface ITreeBuilder {
     addLine(line: Node);
-    finish(): Block;
+    finish(): RootBlock;
 }
 
 class Node {
@@ -31,18 +31,15 @@ class Block extends Node {
     constructor(public header: string) { 
         super();
 
-        if (header !== null) {
-            const reader = new Reader(header);
-            this.type = reader.expectIdentifier();
-            reader.readToken(" "); // optional
-            this.args = reader.readAll();
-        }
+        const reader = new Reader(header);
+        this.type = reader.expectIdentifier();
+        reader.readToken(" "); // optional
+        this.args = reader.readAll();
     }
 }
 
-class NodeContext {
-    parent: Block;
-    lastChild: Block;
+class RootBlock extends Block {
+    constructor() { super("root"); }
 }
 
 class TemplateNode {
@@ -177,7 +174,7 @@ class TreeConverter {
 
         let result: TemplateNode = null;
         if (block.type === "template") {
-            const typeName = reader.readFirstRegex("[A-Za-z_][A-Za-z0-9_]*(\\[\\])?");
+            const typeName = reader.readIdentifier();
             const varAlias = reader.readIdentifier();
             result = new TypeTemplate(typeName, varAlias, body);
         } else if (block.type === "case") {
@@ -259,22 +256,22 @@ class TreeConverter {
         return new TemplateNode();
     }
 
+    convertRootNode(rootNode: RootBlock) {
+        const children = rootNode.children.map(x => this.convertNode(x));
+        const typeTemplates: TypeTemplate[] = [];
+        for (const child of children) {
+            if (child instanceof TypeTemplate) {
+                typeTemplates.push(child);
+            } else if (child instanceof Empty) {
+            } else
+                this.fail(child.node, "Only #template nodes are allowed as the root node of a template file");
+        }
+        return new GeneratorTemplateFile(typeTemplates);
+    }
+
     convertNode(node: Node): TemplateNode {
         if (node instanceof Block) {
             const children = node.children.map(x => this.convertNode(x));
-
-            if (node.header === null) { // root node, file itself
-                const typeTemplates: TypeTemplate[] = [];
-                for (const child of children) {
-                    if (child instanceof TypeTemplate) {
-                        typeTemplates.push(child);
-                    } else if (child instanceof Empty) {
-                    } else
-                        this.fail(child.node, "Only #template nodes are allowed as the root node of a template file");
-                }
-                return new GeneratorTemplateFile(typeTemplates);
-            }
-
             return this.convertBlock(node, new TemplateBlock(children));
         } else if (node instanceof EmptyLine) {
             return new Empty();
@@ -285,20 +282,8 @@ class TreeConverter {
     }
 }
 
-class LineData {
-    constructor(
-        public byteOffset: number,
-        public lineIdx: number,
-        public padLen: number,
-        public isBlockStart: boolean,
-        // content contains:
-        //   - isBlockStart is true: block header without pad and the start tag
-        //   - isBlockStart is false: the full text line with padding
-        public content: string) { }
-}
-
 class TreeBuilder implements ITreeBuilder {
-    root: Block = new Block(null);
+    root: RootBlock = new RootBlock();
     curr: Block = this.root;
     blockStack: Block[] = [this.root];
 
@@ -382,7 +367,7 @@ class LineParser {
         return -1; // whitespace line => pad === 0
     }
 
-    static parse(input: string, treeBuilder: ITreeBuilder, blockStart = "#"): Block {
+    static parse(input: string, treeBuilder: ITreeBuilder, blockStart = "#"): RootBlock {
         let lineIdx = 0;
         let byteOffset = 0;
         const lines = input.split('\n');
@@ -416,7 +401,7 @@ function stringifyTree(node: Node, blockChar = ' ', childChar = ' ') {
     else if (node instanceof TextLine)
         return node.text;
     else if (node instanceof Block) {
-        let result = node.header !== null ? blockChar.repeat(node.blockPad) + "#" + node.header : "";
+        let result = node instanceof RootBlock ? "" : blockChar.repeat(node.blockPad) + "#" + node.header;
         if (node.children.length > 0) {
             const pad = node.childPad < 0 ? "" : blockChar.repeat(node.blockPad) + childChar.repeat(node.childPad);
             if (result !== "")
@@ -439,5 +424,5 @@ if (treeStr !== tmplStr) {
     writeFile("src/Generator/Csharp.tmpl.gen", treeStr);
     debugger;
 }
-const tmplTree = new TreeConverter(tmplStr).convertNode(root);
+const tmplTree = new TreeConverter(tmplStr).convertRootNode(root);
 debugger;
